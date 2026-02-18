@@ -1,0 +1,1715 @@
+<?php
+namespace App\Controller;
+
+use Cake\Event\EventInterface;
+use Cake\Http\Response;
+
+/**
+ * Static content controller
+ *
+ * Override this controller by placing a copy in controllers directory of an application
+ *
+ * @package       app.Controller
+ * @link http://book.cakephp.org/2.0/en/controllers/pages-controller.html
+ */
+class StaffsController extends AppController {
+
+/**
+ * @var array
+ */
+	public $uses = array('User','PaymentSetup','Category','Product','Subscriber','Contact','Staff','NappUser','UserAnswer','LabFile','LabAssign','Coupon','UserPermission','Conformance','Department','ConformanceRelation','TaskDocuments','LoginHistory','Mailer','MailerComment','SpecUsearea');
+	public $components = array('Paginator');	
+	public function initialize(): void
+	{
+		parent::initialize();
+		// CakePHP 3 does not support $uses; load legacy models explicitly.
+		$this->loadModel('User');
+		$this->loadModel('PaymentSetup');
+		$this->loadModel('Category');
+		$this->loadModel('Product');
+		$this->loadModel('Subscriber');
+		$this->loadModel('Contact');
+		$this->loadModel('Staff');
+		$this->loadModel('NappUser');
+		$this->loadModel('UserAnswer');
+		$this->loadModel('LabFile');
+		$this->loadModel('LabAssign');
+		$this->loadModel('Coupon');
+		$this->loadModel('UserPermission');
+		$this->loadModel('Conformance');
+		$this->loadModel('Department');
+		$this->loadModel('ConformanceRelation');
+		$this->loadModel('TaskDocuments');
+		$this->loadModel('LoginHistory');
+		$this->loadModel('Mailer');
+		$this->loadModel('MailerComment');
+		$this->loadModel('SpecUsearea');
+	}
+
+	public function beforeFilter(EventInterface $event): ?Response
+    {
+		$result = parent::beforeFilter($event);
+		if ($result instanceof Response) {
+			return $result;
+		}
+		// Legacy controller code uses $this->Session->read()/write().
+		$this->Session = $this->request->getSession();
+		$this->callConstants();
+		try {
+			$permissions = $this->Session->read('Customer') ? $this->chkuserpermission() : [];
+		} catch (\Throwable $e) {
+			$permissions = [];
+		}
+		$this->set('chkuserpermission', $permissions);
+		return null;
+	}
+
+	
+	/***
+	/*Author  :Ranjit,
+	/*Comment : User Logout page
+	****/	
+	function logout()
+	{
+	
+		$userId = $this->Session->read('Customer.id');
+		$loginRec = $this->LoginHistory->find()
+			->where(['logouttime' => '0000-00-00 00:00:00', 'user_id' => $userId])
+			->orderDesc('id')
+			->first();
+		if($loginRec){
+			$loginRec->logouttime = date('Y-m-d H:i:s');
+			$this->LoginHistory->save($loginRec);
+		}
+		
+		$this->Session->destroy();
+		return $this->redirect('/login');
+	}
+	
+	function activeaccount($semployeeid=null){
+		
+		$this->autoRender = false;
+		
+		if(!empty($semployeeid)){
+			$email = base64_decode(base64_decode(base64_decode($semployeeid)));
+			//$email = 'web@xoroglobal.com';
+			$cus_arr = $this->NappUser->find('first',array('conditions'=>array('email'=>$email)));
+			if(!empty($cus_arr)){
+				$admin_arr = $this->User->find('first');	
+				$insert['LoginHistory']['admin_id'] = $admin_arr['User']['id'];
+				$insert['LoginHistory']['role'] = 'Admin';
+				$insert['LoginHistory']['logintime'] = date('Y-m-d H:i:s');
+				$this->LoginHistory->save($insert);
+				
+				$this->Session->write('User', $admin_arr['User']);
+				$this->Session->write('is_admin', 1);
+				$this->redirect('/admin/users/edit_staff/'.$cus_arr['NappUser']['id']);				
+				
+			}else{
+				$this->Session->setFlash('Sorry staff id missing','default',array('class' => 'alert alert-success'));
+				$this->redirect('/admin');
+			}
+		}else{
+			$this->Session->setFlash('Sorry staff id missing','default',array('class' => 'alert alert-success'));
+			$this->redirect('/admin');
+		}	
+		
+	}	
+	
+	public function dashboard() {
+		$this->layout='staff_inner_layout';
+		$this->set('title_for_layout',SITENAME.' Staff Dashboard Page');
+		$authRedirect = $this->checkSatffSession();
+		if ($authRedirect instanceof Response) {
+			return $authRedirect;
+		}
+				
+		$customer_id=$this->Session->read('Customer.id');
+		$cusEntity = $this->NappUser->find()
+			->where(['id' => $customer_id])
+			->first();
+		$cus_arr = $cusEntity ? ['NappUser' => $cusEntity->toArray()] : [];
+		$this->set('cus_arr',$cus_arr);
+
+		return null;
+	}
+
+	function profile()
+	{
+		$this->layout='staff_inner_layout';
+		$this->set('title_for_layout',SITENAME.' Profile Page');
+		$this->checkSatffSession();
+		$customer_id=$this->Session->read('Customer.id');
+			
+		$user = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$customer_id)));
+		if(!empty($this->request->data)){			
+			if(!empty($user)){
+				$this->request->data['NappUser']['id']=$customer_id;
+				
+				if ($this->NappUser->save($this->request->data)) {
+				$this->Session->setFlash('Your profile has been updated','default',array('class' => 'alert alert-success'));
+				$this->redirect('profile');
+				}else{
+				$this->Session->setFlash('Your profile has not updated','default',array('class' => 'alert alert-danger'));
+					
+				}
+			}
+		}	
+		$this->request->data = $user;
+		
+		$department = $this->Department->find('all');
+		$this->set('user',$user);
+		$this->set('departmentArr',$department);
+	}
+	
+	function change_password()
+	{
+		$this->layout='staff_inner_layout';
+		$this->set('title_for_layout',SITENAME.' Change Password Page');
+		$this->checkSatffSession();
+		if($this->request->is('post')){
+			$customer_id=$this->Session->read('Customer.id');
+			$user = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$customer_id)));
+			if(!empty($user)){
+				$this->NappUser->id=$user['NappUser']['id'];
+				if($this->request->data['NappUser']['new_password']==$this->request->data['NappUser']['confirm_password'])
+				{
+						
+					if($user['NappUser']['password']==$this->request->data['NappUser']['current_password'])
+					{
+						
+						$this->NappUser->saveField("password",$this->request->data['NappUser']['new_password']);
+						
+						$this->Session->setFlash('Your password has been changed successfully.','default',array('class' => 'alert alert-success'));
+						$this->request->data='';
+					}else{
+						$this->Session->setFlash('Current password not correct.Please, try again.','default',array('class' => 'alert alert-danger'));
+					}
+				}else{
+					
+					$this->Session->setFlash('New and confirm password not matched.Please, try again.','default',array('class' => 'alert alert-danger'));
+				}
+				
+				
+			}else{
+				$this->Session->setFlash('User record not found.Please, try again.','default',array('class' => 'alert alert-danger'));
+			}
+			
+		}
+	}
+	
+	function datasheet(){
+		
+		$this->layout='staff_inner_layout';
+		$this->set('title_for_layout',SITENAME.' Product Datasheet');
+		$this->checkSatffSession();
+		$user_id=$this->Session->read('Customer.id');
+		
+		$this->Product->bindModel(
+		array('belongsTo' => array('Category' => array(
+			'className' => 'Category',			 
+			'foreignKey' => 'category_id',				
+			'conditions' => array(),
+			'fields' => '',
+			'order' => array(),
+		))));
+		$name = '';
+		$category_id = '';
+		if(!empty($this->request->data)){
+			$name = $this->request->data['productname'];
+			$category_id = $this->request->data['category_id'];
+			if(!empty($category_id) && !empty($name)){
+				$this->paginate = array('conditions'=>array('Product.category_id'=>$category_id,'Product.status'=>1,'Product.is_deleted'=>0,'Product.datasheet !='=>'','Product.title LIKE'=>'%'.$name.'%'),'page' => 1,'page' => 1, 'limit' => 20);
+			}else if(!empty($category_id)){
+				$this->paginate = array('conditions'=>array('Product.category_id'=>$category_id,'Product.status'=>1,'Product.is_deleted'=>0),'page' => 1,'page' => 1, 'limit' => 20);
+			}else if(!empty($name)){
+				$this->paginate = array('conditions'=>array('Product.status'=>1,'Product.is_deleted'=>0,'Product.datasheet !='=>'','Product.title LIKE'=>'%'.$name.'%'),'page' => 1,'page' => 1, 'limit' => 20);
+			}		
+			
+		}else{
+			$this->paginate = array('conditions'=>array('Product.status'=>1,'Product.is_deleted'=>0,'Product.datasheet !='=>''),'page' => 1, 'limit' => 25,'order'=>array('Product.title'=>'asc'));
+		}
+		
+		$productArr = $this->Paginator->paginate('Product');		
+		$this->set('productArr',$productArr);
+		$this->set('category_id',$category_id);
+		$this->set('name',$name);
+		
+		$categoryArr = $this->Category->find('all',array('conditions'=>array('Category.is_deteled'=>0,'Category.status'=>1)));
+		$this->set('categoryArr',$categoryArr);
+		
+		
+		$upermission = $this->UserPermission->find('all',array('conditions'=>array('UserPermission.user_id'=>$user_id)));
+		$this->set('upermission',$upermission);			
+	
+	}	
+	
+	function document($product_code=null,$type=null,$num=null){
+		
+		$this->layout='staff_inner_layout';
+		$this->set('title_for_layout',SITENAME.' Product Datasheet');
+		$this->checkSatffSession();
+		$user_id=$this->Session->read('Customer.id');
+		if(!empty($product_code) && !empty($type)){
+			$product_code = base64_decode($product_code);
+			$data = $this->Product->find('first',array('conditions'=>array('Product.product_code'=>$product_code)));
+					
+			if(empty($data)){
+				$this->Session->setFlash('Something missing','default',array('class' => 'alert alert-success'));
+				$this->redirect('datasheet');
+			}	
+			$this->set('data',$data);			
+			$this->set('type',$type);			
+			$this->set('num',$num);			
+		}else{
+			$this->Session->setFlash('Something missing','default',array('class' => 'alert alert-success'));
+			$this->redirect('datasheet');
+		}	
+	}
+	
+	function autologin($conformance_id=null){
+		
+		$this->autoRender = false;
+		
+		$ConformanceArr = $this->Conformance->find('first',array('conditions'=>array('Conformance.id'=>base64_decode($conformance_id))));
+		if(!empty($ConformanceArr)){
+			
+			$userArr  = $this->User->find('first',array('conditions'=>array('User.id'=>2)));
+			$insert['LoginHistory']['admin_id'] = $userArr['User']['id'];
+			$insert['LoginHistory']['role'] = 'Admin';
+			$insert['LoginHistory']['logintime'] = date('Y-m-d H:i:s');
+			$this->LoginHistory->save($insert);
+			if(!empty($userArr)){				
+				$this->Session->write('User', $userArr['User']);
+				$this->Session->write('is_admin', 1);			
+				$this->redirect('/admin/staffs/replyto/'.$conformance_id);
+			}			
+		}else{
+			$this->redirect('/admin');
+		}	
+			
+	}	
+	
+	function replyto($conformance_id=null,$emp_id=null){
+		$this->layout='staff_inner_layout';
+		$this->set('title_for_layout',SITENAME.' Conformance Reply');
+		$this->checkSatffSession();
+	
+		$user_id=$this->Session->read('Customer.id');
+		$dept_id=$this->Session->read('Customer.dept_id');
+		
+		$Department = $this->Department->find('first',array('Department.id'=>$dept_id));
+		
+		$name = $this->Session->read('Customer.name').' '.$this->Session->read('Customer.lname').' ('.$Department['Department']['department_title'].')';
+				
+		$this->ConformanceRelation->bindModel(
+		array('belongsTo' => array('Conformance' => array(
+			'className' => 'Conformance',			 
+			'foreignKey' => 'conformance_id',				
+			'conditions' => array(),
+			'fields' => array(),
+			'order' => array(),
+		))));
+		$ConformanceArr = $this->ConformanceRelation->find('first',array('conditions'=>array('ConformanceRelation.emp_id'=>base64_decode($emp_id),'ConformanceRelation.conformance_id'=>base64_decode($conformance_id))));	
+				
+		if(!empty($this->request->data)){
+						
+			$conformance_id = $ConformanceArr['Conformance']['id'];					
+			$ConformanceRelation_id = $ConformanceArr['ConformanceRelation']['id'];						
+			$updaterelation['ConformanceRelation']['id'] =  $ConformanceRelation_id;		
+			
+			$updaterelation['ConformanceRelation']['corrective_action_taken'] =  $this->request->data['Conformance']['corrective_action_taken'];
+			//$updaterelation['ConformanceRelation']['preventive_action'] =  $this->request->data['Conformance']['preventive_action'];
+			$updaterelation['ConformanceRelation']['created'] =  date('Y-m-d H:i:s');
+			$this->ConformanceRelation->save($updaterelation);
+			
+			// send email to intiative
+			$compaint_by = $ConformanceArr['Conformance']['compaint_by'];			
+			$NappUserArr = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$compaint_by)));			
+			$to_email = $NappUserArr['NappUser']['email'];
+			//$to_email = 'web@xoroglobal.com';
+			$to_name  = $NappUserArr['NappUser']['name'];	
+			$subject = SITENAME." :: Non Conformance ".$ConformanceArr['Conformance']['nc_number']." By ".$this->Session->read('Customer.name');				
+			$template_name = 'replyconformance';	
+			$non_conforance = $ConformanceArr['Conformance']['non_conforance'];			
+			$variables = array('name'=>$this->Session->read('Customer.name'),'to_name'=>$to_name,'title'=>$non_conforance,'nc_number'=>$ConformanceArr['Conformance']['nc_number']);		
+			try{
+				$this->sendemail($to_email,$subject,$template_name,$variables);
+			}catch (Exception $e){
+				
+			}	
+			
+			$admin_email = 'kal@durotechindustries.com.au';
+			#$admin_email = 'web@xoroglobal.com';
+			$admin_subject = SITENAME." :: Non Conformance ".$ConformanceArr['Conformance']['nc_number']." By ".$this->Session->read('Customer.name');
+
+			$autologinurl = SITEURL.'staffs/autologin/'.base64_encode($ConformanceArr['Conformance']['id']);	
+			$admin_template_name = 'autoreplyconformance';	
+			$non_conforance = $ConformanceArr['Conformance']['non_conforance'];			
+			$admin_variables = array('autologinurl'=>$autologinurl,'name'=>$this->Session->read('Customer.name'),'to_name'=>'Kal','title'=>$non_conforance,'nc_number'=>$ConformanceArr['Conformance']['nc_number']);		
+			try{
+				$this->sendemail($admin_email,$admin_subject,$admin_template_name,$admin_variables);
+			}catch (Exception $e){
+				
+			}
+			
+			$updateConformance['Conformance']['id'] =  $conformance_id;			
+		 	if(!empty($this->request->data['Conformance']['corrective_action_taken'])){
+				$updateConformance['Conformance']['corrective_action_taken'] =  $this->request->data['Conformance']['corrective_action_taken'];
+				$updateConformance['Conformance']['is_corrective'] =  $name;
+			}
+		/*	
+			if(!empty($this->request->data['Conformance']['preventive_action'])){
+				$updateConformance['Conformance']['preventive_action'] =  $this->request->data['Conformance']['preventive_action'];
+				$updateConformance['Conformance']['is_preventive'] =  $name;
+			}	 */
+			$updateConformance['Conformance']['why_1'] =  $this->request->data['Conformance']['why_1'];	
+			$updateConformance['Conformance']['why_2'] =  $this->request->data['Conformance']['why_2'];	
+			$updateConformance['Conformance']['why_3'] =  $this->request->data['Conformance']['why_3'];	
+			$updateConformance['Conformance']['why_4'] =  $this->request->data['Conformance']['why_4'];	
+			$updateConformance['Conformance']['why_5'] =  $this->request->data['Conformance']['why_5'];	
+			
+			if($this->request->data['Conformance']['why_1'] !=  '' || $this->request->data['Conformance']['why_2'] !=  '' || $this->request->data['Conformance']['why_3'] !=  '' || $this->request->data['Conformance']['why_4'] !=  '' || $this->request->data['Conformance']['why_5'] !=  ''){
+				$updateConformance['Conformance']['is_corrective'] =  $name;
+			}
+			$updateConformance['Conformance']['status'] = 2;	
+			$updateConformance['Conformance']['created'] =  date('Y-m-d H:i:s');
+			$this->Conformance->save($updateConformance);
+			
+			if(!empty($this->request->data['ConformanceRelationnew']['emp_id'])){
+				
+				$emp_id = $this->request->data['ConformanceRelationnew']['emp_id'];
+				$insertrelation['ConformanceRelation']['id'] =  '';		
+				$insertrelation['ConformanceRelation']['conformance_id'] =  $conformance_id;		
+				$insertrelation['ConformanceRelation']['emp_id'] = $emp_id;					
+				$this->ConformanceRelation->save($insertrelation);
+				
+				
+				// $template_name = 'replyconformance';	
+				// $non_conforance = $ConformanceArr['Conformance']['non_conforance'];			
+				// $variables = array('name'=>$this->Session->read('Customer.name'),'to_name'=>$to_name,'title'=>$non_conforance,'nc_number'=>$ConformanceArr['Conformance']['nc_number']);		
+				// try{
+					// $this->sendemail($to_email,$subject,$template_name,$variables);
+				// }catch (Exception $e){
+					
+				// }	
+				
+			}	
+		
+			$this->Session->setFlash('Replied successfully','default',array('class' => 'alert alert-success'));
+			$this->redirect('conformancelist');
+		}	
+		$this->set('conformanceArr',$ConformanceArr);
+		
+		$confrel = $this->ConformanceRelation->find('list',array('conditions'=>array('ConformanceRelation.conformance_id'=>base64_decode($conformance_id)),'fields'=>array('emp_id')));	
+		
+		$NappUser = $this->NappUser->find('all',array('conditions'=>array('NappUser.id !='=>$confrel,'NappUser.is_staff_id'=>1)));
+		$this->set('NappUser',$NappUser);
+		$this->set('user_id',$user_id);
+	
+	}	
+	function conformance($complaint_id=null){
+		
+		$this->layout='staff_inner_layout';
+		$this->set('title_for_layout',SITENAME.' Conformance List');
+		$this->checkSatffSession();
+		
+		if(!empty($complaint_id)){
+			$complaint_id = base64_decode($complaint_id);
+			
+			$complaintArr = $this->Conformance->find('first',array('conditions'=>array('Conformance.complaintid'=>$complaint_id)));
+			if(!empty($complaintArr)){
+				$this->redirect('index');
+			}	
+		}else{
+			$complaint_id = 0;
+		}	
+		
+		
+		
+		$user_id=$this->Session->read('Customer.id');			
+		$name=$this->Session->read('Customer.name');	
+		if(!empty($this->request->data)){
+			
+			$confirm = $this->Conformance->find('first',array('order'=>array('Conformance.id'=>'DESC')));
+			$randnumber = 1000 + $confirm['Conformance']['id'];		
+		
+			$this->request->data['Conformance']['nc_number'] = 'DT-NCR-'.$randnumber;				
+			$this->request->data['Conformance']['compaint_by'] = $user_id;				
+			$this->request->data['Conformance']['status'] = 1;	
+					
+			$this->request->data['Conformance']['complaintid'] = $complaint_id;				
+			$this->request->data['Conformance']['created'] = date('Y-m-d H:i:s');	
+			
+			//ConformanceRelation
+			$this->Conformance->save($this->request->data);	
+
+
+			$compaint_to = $this->request->data['Conformance']['compaint_to'];
+			$NappUserArr = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$compaint_to)));			
+			$to_email = $NappUserArr['NappUser']['email'];
+			$to_name  = $NappUserArr['NappUser']['name'];	
+			$subject = SITENAME." :: Non Conformance DT-NC-".$randnumber." By ".ucfirst($name);				
+			$template_name = 'conformance';	
+			$non_conforance = $this->request->data['Conformance']['non_conforance'];			
+			$variables = array('name'=>$name,'to_name'=>$to_name,'title'=>$non_conforance);		
+			try{
+				$this->sendemail($to_email,$subject,$template_name,$variables);
+			}catch (Exception $e){
+				
+			}		
+			
+			$conformance_id = $this->Conformance->id;
+				// assign to
+			$instConformanceRelation['ConformanceRelation']['id'] = '';
+			$instConformanceRelation['ConformanceRelation']['conformance_id'] = $conformance_id;
+			$instConformanceRelation['ConformanceRelation']['emp_id'] = $user_id;
+			$this->ConformanceRelation->save($instConformanceRelation);
+				// assig by
+			$instConformanceRelation['ConformanceRelation']['id'] = '';
+			$instConformanceRelation['ConformanceRelation']['conformance_id']  = $conformance_id;
+			$instConformanceRelation['ConformanceRelation']['emp_id'] = $this->request->data['Conformance']['compaint_to'];
+			$this->ConformanceRelation->save($instConformanceRelation);
+			
+			$this->Session->setFlash('Generated successfully','default',array('class' => 'alert alert-success'));
+			$this->redirect('conformancelist');
+		}
+		$department = $this->Department->find('all');
+		$this->set('departmentArr',$department);
+
+		$NappUser = $this->NappUser->find('all',array('conditions'=>array('NappUser.id !='=>$user_id,'NappUser.is_staff_id'=>1)));
+		$this->set('NappUser',$NappUser);	
+		
+	}	
+	
+	// function detail($complaint_id=null){
+		
+		// $this->layout='staff_inner_layout';
+		// $this->set('title_for_layout',SITENAME.' Conformance List');
+		// $this->checkSatffSession();
+		// $user_id=$this->Session->read('Customer.id');
+		
+		// $this->Conformance->find('first',array('conditions'=>array('Conformance.id')));
+	// }	
+	
+	function conformancelist(){
+		
+		$this->viewBuilder()->setLayout('staff_inner_layout');
+		$this->set('title_for_layout',SITENAME.' Conformance List');
+		$this->checkSatffSession();
+		$user_id = $this->request->getSession()->read('Customer.id');
+		
+		// Get conformance IDs where user is assigned
+		$confrelEntities = $this->ConformanceRelation->find()
+			->select(['conformance_id'])
+			->where(['ConformanceRelation.emp_id' => $user_id])
+			->toArray();
+		$confrel = [];
+		foreach ($confrelEntities as $entity) {
+			$confrel[] = $entity->conformance_id;
+		}
+		
+		// Build query with associations using contain() instead of bindModel()
+		$query = $this->Conformance->find()
+			->contain([
+				'NappUser1' => function($q) {
+					return $q->select(['id', 'name', 'lname']);
+				},
+				'Department',
+				'User' => function($q) {
+					return $q->select(['id', 'name']);
+				},
+				'ConformanceRelation' => [
+					'NappUser' => function($q) {
+						return $q->select(['id', 'name', 'lname']);
+					}
+				],
+				'TaskDocuments'
+			]);
+		
+		// Apply conditions - filter by conformance IDs where user is assigned
+		if (!empty($confrel)) {
+			$query->where(['Conformance.id IN' => $confrel]);
+		} else {
+			// If no conformances found, return empty result
+			$query->where(['Conformance.id' => 0]);
+		}
+		
+		$query->orderDesc('Conformance.id');
+		
+		// Paginate using CakePHP 3 style
+		$ConformanceArr = $this->paginate($query, ['limit' => 25]);
+		
+		// Convert entities to CakePHP 2 style array for view compatibility
+		// View expects: ['Conformance' => [...], 'NappUser1' => [...], 'ConformanceRelation' => [...]]
+		$ConformanceArrArray = [];
+		foreach ($ConformanceArr as $conformance) {
+			$conformanceData = $conformance->toArray();
+			
+			// Extract main Conformance data (remove association keys)
+			$conformanceMain = $conformanceData;
+			unset($conformanceMain['napp_user1'], $conformanceMain['department'], 
+			      $conformanceMain['user'], $conformanceMain['conformance_relation'], 
+			      $conformanceMain['task_documents']);
+			
+			$result = ['Conformance' => $conformanceMain];
+			
+			// Extract NappUser1 association
+			if (isset($conformanceData['napp_user1']) && is_array($conformanceData['napp_user1'])) {
+				$result['NappUser1'] = $conformanceData['napp_user1'];
+			} elseif (isset($conformance->napp_user1) && $conformance->napp_user1) {
+				$result['NappUser1'] = $conformance->napp_user1->toArray();
+			} else {
+				$result['NappUser1'] = ['id' => null, 'name' => '', 'lname' => ''];
+			}
+			
+			// Extract Department association
+			if (isset($conformanceData['department']) && is_array($conformanceData['department'])) {
+				$result['Department'] = $conformanceData['department'];
+			} elseif (isset($conformance->department) && $conformance->department) {
+				$result['Department'] = $conformance->department->toArray();
+			}
+			
+			// Extract User association
+			if (isset($conformanceData['user']) && is_array($conformanceData['user'])) {
+				$result['User'] = $conformanceData['user'];
+			} elseif (isset($conformance->user) && $conformance->user) {
+				$result['User'] = $conformance->user->toArray();
+			}
+			
+			// Extract ConformanceRelation (hasMany)
+			$result['ConformanceRelation'] = [];
+			if (isset($conformanceData['conformance_relation']) && is_array($conformanceData['conformance_relation'])) {
+				foreach ($conformanceData['conformance_relation'] as $rel) {
+					$relArray = is_array($rel) ? $rel : $rel->toArray();
+					// Map nested NappUser association
+					if (isset($relArray['napp_user']) && is_array($relArray['napp_user'])) {
+						$relArray['NappUser'] = $relArray['napp_user'];
+						unset($relArray['napp_user']);
+					} elseif (isset($rel->napp_user) && $rel->napp_user) {
+						$relArray['NappUser'] = $rel->napp_user->toArray();
+					}
+					$result['ConformanceRelation'][] = $relArray;
+				}
+			} elseif (isset($conformance->conformance_relation) && !empty($conformance->conformance_relation)) {
+				foreach ($conformance->conformance_relation as $rel) {
+					$relArray = $rel->toArray();
+					if (isset($rel->napp_user) && $rel->napp_user) {
+						$relArray['NappUser'] = $rel->napp_user->toArray();
+					}
+					$result['ConformanceRelation'][] = $relArray;
+				}
+			}
+			
+			// Extract TaskDocuments (hasMany)
+			$result['TaskDocuments'] = [];
+			if (isset($conformanceData['task_documents']) && is_array($conformanceData['task_documents'])) {
+				foreach ($conformanceData['task_documents'] as $doc) {
+					$result['TaskDocuments'][] = is_array($doc) ? $doc : $doc->toArray();
+				}
+			} elseif (isset($conformance->task_documents) && !empty($conformance->task_documents)) {
+				foreach ($conformance->task_documents as $doc) {
+					$result['TaskDocuments'][] = $doc->toArray();
+				}
+			}
+			
+			// Also provide TaskDocument (singular) for backward compatibility with views
+			$result['TaskDocument'] = $result['TaskDocuments'];
+			
+			$ConformanceArrArray[] = $result;
+		}
+		$ConformanceArr = $ConformanceArrArray;
+		
+		$this->set('ConformanceArr',$ConformanceArr);
+		$this->set('user_id',$user_id);	
+		
+		// Convert User query to CakePHP 3
+		$users = $this->User->find()
+			->where(['User.is_investigate' => 1])
+			->select(['name'])
+			->toArray();
+		
+		// Convert to CakePHP 2 style array for view compatibility
+		$UserArr = [];
+		foreach ($users as $user) {
+			$UserArr[] = ['User' => $user->toArray()];
+		}
+		$this->set('UserArr',$UserArr);	
+	}
+	
+	function detail($nc_number=null,$type=null){
+		
+		$this->layout='staff_inner_layout';
+		$this->set('title_for_layout',SITENAME.' Conformance Detail');
+		$this->checkSatffSession();
+		 $user_id=$this->Session->read('Customer.id');
+		
+		$confrel = $this->ConformanceRelation->find('list',array('conditions'=>array('ConformanceRelation.emp_id'=>$user_id),'fields'=>array('conformance_id')));	
+		
+		$this->Conformance->bindModel(
+		array('belongsTo' => array('NappUser1' => array(
+			'className' => 'NappUser',			 
+			'foreignKey' => 'compaint_by',				
+			'conditions' => array(),
+			'fields' => array('name','lname','id'),
+			'order' => array(),
+		))));
+
+		
+		$this->Conformance->bindModel(
+		array('belongsTo' => array('Department' => array(
+			'className' => 'Department',			 
+			'foreignKey' => 'dept_id',				
+			'conditions' => array(),
+			'fields' => '',
+			'order' => array(),
+		))));
+		
+		$this->Conformance->bindModel(
+		array('hasMany' => array('ConformanceRelation' => array(
+			'className' => 'ConformanceRelation',			 
+			'foreignKey' => 'conformance_id',				
+			'conditions' => array(),
+			'fields' => array(),
+			'order' => array(),
+		))));
+		$this->ConformanceRelation->bindModel(
+		array('belongsTo' => array('NappUser' => array(
+			'className' => 'NappUser',			 
+			'foreignKey' => 'emp_id',				
+			'conditions' => array(),
+			'fields' => array('name','lname','id'),
+			'order' => array(),
+		))));
+		$this->Conformance->bindModel(
+		array('belongsTo' => array('User' => array(
+			'className' => 'User',			 
+			'foreignKey' => 'admin_id',				
+			'conditions' => array(),
+			'fields' => array('name'),
+			'order' => array(),
+		))));
+		$this->Conformance->bindModel(
+		array('belongsTo' => array('Complaint' => array(
+			'className' => 'Complaint',			 
+			'foreignKey' => 'complaintid',				
+			'conditions' => array('complaintid'),
+			'fields' => '',
+			'order' => array(),
+		))));
+		$this->Conformance->bindModel(
+		array('hasMany' => array('TaskDocument'=>array(
+			'className' => 'TaskDocument',			 
+			'foreignKey' => 'con_id',				
+			'conditions' => array(),
+			'fields' => array(),
+			'order' => array(),
+		))));
+		$nc_number = base64_decode($nc_number);
+		$this->Conformance->recursive = 3;
+		$ConformanceArr = $this->Conformance->find('first',array('conditions'=>array('Conformance.nc_number'=>$nc_number)));
+		
+		$this->set('ComplaintArr',$ConformanceArr);
+		$this->set('type',$type);
+		$this->set('user_id',$user_id);	
+		
+		$UserArr = $this->User->find('all',array('conditions'=>array('User.is_investigate'=>1),'fields'=>array('name')));
+		$this->set('UserArr',$UserArr);		
+		
+	}
+
+	public function adminDetail($nc_number = null, $type = null)
+	{
+		return $this->admin_detail($nc_number, $type);
+	}
+	
+	function admin_detail($nc_number=null,$type=null){
+		
+		$this->viewBuilder()->setLayout('admin_layout');
+		$this->set('title_for_layout',SITENAME.' Conformance Detail');
+		$this->checkAdminSession();
+		
+		$nc_number = base64_decode($nc_number);
+		
+		// Build query with associations using contain() instead of bindModel()
+		$query = $this->Conformance->find()
+			->contain([
+				'NappUser1' => function($q) {
+					return $q->select(['id', 'name', 'lname']);
+				},
+				'Department',
+				'User' => function($q) {
+					return $q->select(['id', 'name']);
+				},
+				'ConformanceRelation' => [
+					'NappUser' => function($q) {
+						return $q->select(['id', 'name', 'lname']);
+					}
+				],
+				'TaskDocuments'
+			])
+			->where(['Conformance.nc_number' => $nc_number]);
+		
+		$conformance = $query->first();
+		
+		if (!$conformance) {
+			$this->Flash->error('Conformance not found.');
+			return $this->redirect(['action' => 'conformancelist']);
+		}
+		
+		// Convert entity to CakePHP 2 style array for view compatibility
+		$conformanceData = $conformance->toArray();
+		
+		// Extract main Conformance data (remove association keys)
+		$conformanceMain = $conformanceData;
+		unset($conformanceMain['napp_user1'], $conformanceMain['department'], 
+		      $conformanceMain['user'], $conformanceMain['conformance_relation'], 
+		      $conformanceMain['task_documents']);
+		
+		$result = ['Conformance' => $conformanceMain];
+		
+		// Extract NappUser1 association
+		if (isset($conformanceData['napp_user1']) && is_array($conformanceData['napp_user1'])) {
+			$result['NappUser1'] = $conformanceData['napp_user1'];
+		} elseif (isset($conformance->napp_user1) && $conformance->napp_user1) {
+			$result['NappUser1'] = $conformance->napp_user1->toArray();
+		} else {
+			$result['NappUser1'] = ['id' => null, 'name' => '', 'lname' => ''];
+		}
+		
+		// Extract Department association
+		if (isset($conformanceData['department']) && is_array($conformanceData['department'])) {
+			$result['Department'] = $conformanceData['department'];
+		} elseif (isset($conformance->department) && $conformance->department) {
+			$result['Department'] = $conformance->department->toArray();
+		}
+		
+		// Extract User association
+		if (isset($conformanceData['user']) && is_array($conformanceData['user'])) {
+			$result['User'] = $conformanceData['user'];
+		} elseif (isset($conformance->user) && $conformance->user) {
+			$result['User'] = $conformance->user->toArray();
+		}
+		
+		// Extract ConformanceRelation (hasMany)
+		$result['ConformanceRelation'] = [];
+		if (isset($conformanceData['conformance_relation']) && is_array($conformanceData['conformance_relation'])) {
+			foreach ($conformanceData['conformance_relation'] as $rel) {
+				$relArray = is_array($rel) ? $rel : $rel->toArray();
+				// Map nested NappUser association
+				if (isset($relArray['napp_user']) && is_array($relArray['napp_user'])) {
+					$relArray['NappUser'] = $relArray['napp_user'];
+					unset($relArray['napp_user']);
+				} elseif (isset($rel->napp_user) && $rel->napp_user) {
+					$relArray['NappUser'] = $rel->napp_user->toArray();
+				}
+				$result['ConformanceRelation'][] = $relArray;
+			}
+		} elseif (isset($conformance->conformance_relation) && !empty($conformance->conformance_relation)) {
+			foreach ($conformance->conformance_relation as $rel) {
+				$relArray = $rel->toArray();
+				if (isset($rel->napp_user) && $rel->napp_user) {
+					$relArray['NappUser'] = $rel->napp_user->toArray();
+				}
+				$result['ConformanceRelation'][] = $relArray;
+			}
+		}
+		
+		// Extract TaskDocuments (hasMany)
+		$result['TaskDocuments'] = [];
+		if (isset($conformanceData['task_documents']) && is_array($conformanceData['task_documents'])) {
+			foreach ($conformanceData['task_documents'] as $doc) {
+				$result['TaskDocuments'][] = is_array($doc) ? $doc : $doc->toArray();
+			}
+		} elseif (isset($conformance->task_documents) && !empty($conformance->task_documents)) {
+			foreach ($conformance->task_documents as $doc) {
+				$result['TaskDocuments'][] = $doc->toArray();
+			}
+		}
+		
+		// Also provide TaskDocument (singular) for backward compatibility with views
+		$result['TaskDocument'] = $result['TaskDocuments'];
+		
+		$ConformanceArr = $result;
+		
+		$this->set('ComplaintArr',$ConformanceArr);
+		$this->set('type',$type);
+		
+		// Convert User query to CakePHP 3
+		$users = $this->User->find()
+			->where(['User.is_investigate' => 1])
+			->select(['name'])
+			->toArray();
+		
+		// Convert to CakePHP 2 style array for view compatibility
+		$UserArr = [];
+		foreach ($users as $user) {
+			$UserArr[] = ['User' => $user->toArray()];
+		}
+		$this->set('UserArr',$UserArr);	
+	
+	}
+	function admin_replyto($conformance_id=null){
+		
+		$this->layout='admin_layout';
+		$this->set('title_for_layout',SITENAME.' Conformance Reply');
+		$this->checkAdminSession();
+		$admin_id = $this->Session->read('User.id');
+					
+		$ConformanceArr = $this->Conformance->find('first',array('conditions'=>array('Conformance.id'=>base64_decode($conformance_id))));					
+		if(!empty($this->request->data)){		
+			
+			
+			$compaint_by = $ConformanceArr['Conformance']['compaint_by'];			
+			$NappUserArr = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$compaint_by)));			
+			$to_email = $NappUserArr['NappUser']['email'];
+			#$to_email = 'web@xoroglobal.com';
+			$to_name  = $NappUserArr['NappUser']['name'];	
+			$subject = SITENAME." :: Non Conformance ".$ConformanceArr['Conformance']['nc_number']." By ".$this->Session->read('User.name');				
+			$template_name = 'replyconformance';	
+			$non_conforance = $ConformanceArr['Conformance']['non_conforance'];			
+			$variables = array('name'=>$this->Session->read('User.name'),'to_name'=>$to_name,'title'=>$non_conforance,'nc_number'=>$ConformanceArr['Conformance']['nc_number']);		
+			try{
+				if($this->request->data['Conformance']['status'] > 1){
+					//$this->sendemail($to_email,$subject,$template_name,$variables);
+				}
+			}catch (Exception $e){
+				
+			}
+			
+			$conformance_id = $ConformanceArr['Conformance']['id'];			
+			$updaterelation['Conformance']['id'] =  $conformance_id;	
+			$updaterelation['Conformance']['admin_id'] =  $admin_id;	
+			$updaterelation['Conformance']['short_term'] =  $this->request->data['Conformance']['short_term'];	
+			$updaterelation['Conformance']['follow_up'] =  $this->request->data['Conformance']['follow_up'];	
+			$updaterelation['Conformance']['corrective_action_successfull'] =  $this->request->data['Conformance']['corrective_action_successfull'];	
+			$updaterelation['Conformance']['support_document'] =  $this->request->data['Conformance']['support_document'];	
+			$updaterelation['Conformance']['ncr_closed_date'] =  $this->request->data['Conformance']['ncr_closed_date'];	
+			$updaterelation['Conformance']['status'] =  $this->request->data['Conformance']['status'];	
+			if($this->request->data['Conformance']['status'] == 3){
+				$this->request->data['Conformance']['complete_date'] = date('Y-m-d H:i:s');
+			}				
+			$this->Conformance->save($updaterelation);	
+			
+			$this->Session->setFlash('Replied successfully','default',array('class' => 'alert alert-success'));
+			$this->redirect('conformancelist');
+		}	
+		$this->set('conformanceArr',$ConformanceArr);
+		
+		
+	}
+
+	/**
+	 * CamelCase wrapper for admin_conformancelist
+	 */
+	public function adminConformancelist()
+	{
+		return $this->admin_conformancelist();
+	}
+	
+	function admin_conformancelist(){
+		
+		$this->viewBuilder()->setLayout('admin_layout');
+		$this->set('title_for_layout',SITENAME.' Conformance List');
+		$this->checkAdminSession();
+		$user_id=$this->request->getSession()->read('Customer.id');
+	
+		$nc_number = '';		
+		// Use CakePHP 3 query builder with contain() to load associations
+		// Associations are now defined in ConformanceTable class
+		
+		$query = $this->Conformance->find()
+			->contain([
+				'NappUser1' => function($q) {
+					return $q->select(['id', 'name', 'lname']);
+				},
+				'Department',
+				'User' => function($q) {
+					return $q->select(['id', 'name']);
+				},
+				'ConformanceRelation' => [
+					'NappUser' => function($q) {
+						return $q->select(['id', 'name', 'lname', 'dept_id'])
+							->contain(['Department' => function($q) {
+								return $q->select(['id', 'department_title']);
+							}]);
+					}
+				],
+				'TaskDocuments'
+			]);
+		
+		// Apply conditions based on nc_number search
+		if(!empty($this->request->getData('nc_number'))){
+			$nc_number = $this->request->getData('nc_number');	
+			$query->where(['Conformance.nc_number' => $nc_number]);
+		}
+		
+		$query->orderDesc('Conformance.id');
+		
+		$ConformanceArr = $this->paginate($query, ['limit' => 25]);
+		
+		// Convert entities to CakePHP 2 style array for view compatibility
+		// View expects: ['Conformance' => [...], 'NappUser1' => [...], 'ConformanceRelation' => [...]]
+		$ConformanceArrArray = [];
+		foreach ($ConformanceArr as $conformance) {
+			$conformanceData = $conformance->toArray();
+			
+			// Extract main Conformance data (remove association keys)
+			$conformanceMain = $conformanceData;
+			unset($conformanceMain['napp_user1'], $conformanceMain['department'], 
+			      $conformanceMain['user'], $conformanceMain['conformance_relation'], 
+			      $conformanceMain['task_documents']);
+			
+			$result = ['Conformance' => $conformanceMain];
+			
+			// Extract NappUser1 association
+			if (isset($conformanceData['napp_user1']) && is_array($conformanceData['napp_user1'])) {
+				$result['NappUser1'] = $conformanceData['napp_user1'];
+			} elseif (isset($conformance->napp_user1) && $conformance->napp_user1) {
+				$result['NappUser1'] = $conformance->napp_user1->toArray();
+			} else {
+				$result['NappUser1'] = ['id' => null, 'name' => '', 'lname' => ''];
+			}
+			
+			// Extract Department association
+			if (isset($conformanceData['department']) && is_array($conformanceData['department'])) {
+				$result['Department'] = $conformanceData['department'];
+			} elseif (isset($conformance->department) && $conformance->department) {
+				$result['Department'] = $conformance->department->toArray();
+			}
+			
+			// Extract User association
+			if (isset($conformanceData['user']) && is_array($conformanceData['user'])) {
+				$result['User'] = $conformanceData['user'];
+			} elseif (isset($conformance->user) && $conformance->user) {
+				$result['User'] = $conformance->user->toArray();
+			}
+			
+			// Extract ConformanceRelation (hasMany)
+			$result['ConformanceRelation'] = [];
+			if (isset($conformanceData['conformance_relation']) && is_array($conformanceData['conformance_relation'])) {
+				foreach ($conformanceData['conformance_relation'] as $rel) {
+					$relArray = is_array($rel) ? $rel : $rel->toArray();
+					// Map nested NappUser association
+					if (isset($relArray['napp_user']) && is_array($relArray['napp_user'])) {
+						$relArray['NappUser'] = $relArray['napp_user'];
+						unset($relArray['napp_user']);
+						// Map nested Department
+						if (isset($relArray['NappUser']['department']) && is_array($relArray['NappUser']['department'])) {
+							$relArray['NappUser']['Department'] = $relArray['NappUser']['department'];
+							unset($relArray['NappUser']['department']);
+						}
+					} elseif (isset($rel->napp_user) && $rel->napp_user) {
+						$relArray['NappUser'] = $rel->napp_user->toArray();
+						if (isset($rel->napp_user->department) && $rel->napp_user->department) {
+							$relArray['NappUser']['Department'] = $rel->napp_user->department->toArray();
+						}
+					}
+					$result['ConformanceRelation'][] = $relArray;
+				}
+			} elseif (isset($conformance->conformance_relation) && !empty($conformance->conformance_relation)) {
+				foreach ($conformance->conformance_relation as $rel) {
+					$relArray = $rel->toArray();
+					if (isset($rel->napp_user) && $rel->napp_user) {
+						$relArray['NappUser'] = $rel->napp_user->toArray();
+						if (isset($rel->napp_user->department) && $rel->napp_user->department) {
+							$relArray['NappUser']['Department'] = $rel->napp_user->department->toArray();
+						}
+					}
+					$result['ConformanceRelation'][] = $relArray;
+				}
+			}
+			
+			// Extract TaskDocuments (hasMany)
+			$result['TaskDocuments'] = [];
+			if (isset($conformanceData['task_documents']) && is_array($conformanceData['task_documents'])) {
+				foreach ($conformanceData['task_documents'] as $doc) {
+					$result['TaskDocuments'][] = is_array($doc) ? $doc : $doc->toArray();
+				}
+			} elseif (isset($conformance->task_documents) && !empty($conformance->task_documents)) {
+				foreach ($conformance->task_documents as $doc) {
+					$result['TaskDocuments'][] = $doc->toArray();
+				}
+			}
+			
+			// Also provide TaskDocument (singular) for backward compatibility with views
+			$result['TaskDocument'] = $result['TaskDocuments'];
+			
+			$ConformanceArrArray[] = $result;
+		}
+		$ConformanceArr = $ConformanceArrArray;
+		
+		
+		// echo '<pre>';
+		// print_r($ConformanceArr);
+		// die();
+		
+		$this->set('ConformanceArr',$ConformanceArr);
+		$this->set('user_id',$user_id);	
+		$this->set('nc_number',$nc_number);	
+				
+		$users = $this->User->find()
+			->where(['User.is_investigate' => 1])
+			->select(['name'])
+			->toArray();
+		
+		// Convert to CakePHP 2 style array for view compatibility
+		$UserArr = [];
+		foreach ($users as $user) {
+			$UserArr[] = ['User' => $user->toArray()];
+		}
+		$this->set('UserArr',$UserArr);	
+	}	
+	function sendsms(){
+		
+		$this->autoRender = false;
+		
+		$confirgArr =$this->Config->find('first');
+				
+		$sid = TSID;	
+		$token = TOKEN;	
+		$to = '+61402963688';	
+		$from = FROM_NUMBER;	
+		$message = 'Test Message';	
+		
+		$url = SITEURL."twilio/index.php";						
+		$fields = array(
+			'sid' => urlencode($sid),
+			'token' => urlencode($token),							
+			'to' => urlencode($to),							
+			'from' => urlencode($from),							
+			'message' => urlencode($message),							
+		);	
+		$fields_string = '';
+		//url-ify the data for the POST
+		foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
+		rtrim($fields_string, '&');
+		//open connection
+		$ch = curl_init();
+		//set the url, number of POST vars, POST data
+		curl_setopt($ch,CURLOPT_URL, $url);
+		curl_setopt($ch,CURLOPT_POST, count($fields));
+		curl_setopt($ch,CURLOPT_POSTFIELDS, $fields_string);
+		//execute post
+		$result = curl_exec($ch);
+		//close connection
+		curl_close($ch);
+			
+		echo '<pre>';
+		print_r($result);
+		die();	
+	}	
+	
+	function cronsnew(){
+		$this->autoRender = false;
+		
+		$this->Conformance->bindModel(
+		array('hasMany' => array('ConformanceRelation' => array(
+			'className' => 'ConformanceRelation',			 
+			'foreignKey' => 'conformance_id',				
+			'conditions' => array(),
+			'fields' => array(),
+			'order' => array(),
+		))));
+		$this->ConformanceRelation->bindModel(
+		array('belongsTo' => array('NappUser' => array(
+			'className' => 'NappUser',			 
+			'foreignKey' => 'emp_id',				
+			'conditions' => array(),
+			'fields' => array('name','lname','email','mobile_number','id','country'),
+			'order' => array(),
+		))));
+		$this->Conformance->bindModel(
+		array('belongsTo' => array('User' => array(
+			'className' => 'User',			 
+			'foreignKey' => 'admin_id',				
+			'conditions' => array(),
+			'fields' => array('name','email'),
+			'order' => array(),
+		))));
+		$this->Conformance->recursive = 2;
+		$ConformanceArr = $this->Conformance->find('all',array('conditions'=>array('Conformance.is_reminder'=>1,'Conformance.status <'=>3),'order'=>array('Conformance.id'=>'DESC')));
+		// echo '<pre>';
+		// print_r($ConformanceArr);
+		// die();
+	
+		if(!empty($ConformanceArr)){
+			foreach($ConformanceArr as $Conformances){
+				$last_update = $Conformances['Conformance']['lastupdated'];
+				
+				$nc_number = $Conformances['Conformance']['nc_number'];
+				$is_reminder = $Conformances['Conformance']['is_reminder'];
+				$is_email = $Conformances['Conformance']['is_email'];
+				$is_sms = $Conformances['Conformance']['is_sms'];
+				$is_both = $Conformances['Conformance']['is_both'];
+				$send_to = $Conformances['Conformance']['send_to'];
+				$period = $Conformances['Conformance']['period'];
+				if($is_reminder == 1){					
+					if($is_both == 1){
+						 if(!empty($Conformances['ConformanceRelation'])){
+							foreach($Conformances['ConformanceRelation'] as $ConformancesArr){
+								if($Conformances['Conformance']['compaint_by'] != $ConformancesArr['NappUser']['id']){
+									$name = $ConformancesArr['NappUser']['name'].' '.$ConformancesArr['NappUser']['lname'];
+									$email = $ConformancesArr['NappUser']['email'];
+									$country = $ConformancesArr['NappUser']['country'];
+									
+									if($country  == 'india'){
+										date_default_timezone_set('Asia/Kolkata');
+									}	
+									$todate = strtotime($last_update); 
+									$fromdate = time();
+									$diff = $fromdate - $todate;
+									
+									if($diff > 0){		
+									
+									$min = intval($diff / 60);	 					
+									$hour = date('H'); 	
+									
+									$s_flag = 0;
+									if($period == '30 min'){
+										if($min > 30){
+											$s_flag = 1;
+										}	
+									}else if($period == 'hour'){
+										if($min > 60){
+											$s_flag = 1;
+										}
+									}else if($period == 'day'){
+										if($min > 1440){
+											$s_flag = 1;
+										}
+									}
+									if($Conformances['Conformance']['send_to'] == 1){
+										// Office Work Hour
+										if($hour >= 9 && $hour <= 17){
+											$flag =1;	
+										}else{
+											$flag = 0;	
+										}		
+									}else{
+										// 24 hour
+										$flag =1;
+									}
+								
+									if(($flag == 1) && ($s_flag == 1)){	
+										$udpateArrs['Conformance']['lastupdated'] = date('Y-m-d H:i:s');
+										$udpateArrs['Conformance']['id'] = $Conformances['Conformance']['id'];
+										$this->Conformance->save($udpateArrs);
+										
+										$receivername = $ConformancesArr['NappUser']['name'].' '.$ConformancesArr['NappUser']['lname'];
+										$email = $ConformancesArr['NappUser']['email'];
+										if(!empty($email)){											
+											$subject = SITENAME.' :: Any update on non conformance('.$nc_number.')';				
+											$template_name = 'nc_reminder';										
+											$variables = array('to_name'=>$receivername,'nc_number'=>$nc_number);				
+											try{
+												$this->sendemail($email ,$subject,$template_name,$variables);
+											}catch (Exception $e){
+												
+											} 										
+										}
+										
+										if(!empty($ConformancesArr['NappUser']['mobile_number'])){
+											if($country  != 'india'){
+												$phones = str_replace(' ','',$NappUser['NappUser']['mobile_number']);
+												$phone = ltrim($phones,'+');
+												
+												$to = '+'.$phone;
+												$sid = TSID;	
+												$token = TOKEN;							
+												$from = FROM_NUMBER;	
+												$body = "Hi ".$receivername.' Any update on non conformance('.$nc_number.')';				
+												$this->Twilio->AccountSid = TSID;   
+												$this->Twilio->AccountToken = TOKEN;						
+												$response = $this->Twilio->sendsms($to,$from,$body);
+											}	
+										}	
+										}																		
+									}
+								}
+							}					
+						}
+					
+					}
+					if($is_email == 1){
+						if(!empty($Conformances['ConformanceRelation'])){
+							foreach($Conformances['ConformanceRelation'] as $ConformancesArr){
+								if($Conformances['Conformance']['compaint_by'] != $ConformancesArr['NappUser']['id']){
+									$name = $ConformancesArr['NappUser']['name'].' '.$ConformancesArr['NappUser']['lname'];
+									$email = $ConformancesArr['NappUser']['email'];
+									$country = $ConformancesArr['NappUser']['country'];
+									
+									if($country  == 'india'){
+										date_default_timezone_set('Asia/Kolkata');
+									}	
+									$todate = strtotime($last_update); 
+									$fromdate = time();
+									$diff = $fromdate - $todate;
+									
+									if($diff > 0){		
+									
+									$min = intval($diff / 60);	 					
+									$hour = date('H'); 
+									
+									$s_flag = 0;
+									if($period == '30 min'){
+										if($min > 30){
+											$s_flag = 1;
+										}	
+									}else if($period == 'hour'){
+										if($min > 60){
+											$s_flag = 1;
+										}
+									}else if($period == 'day'){
+										if($min > 1440){
+											$s_flag = 1;
+										}
+									}
+									if($Conformances['Conformance']['send_to'] == 1){
+										// Office Work Hour
+										if($hour >= 9 && $hour <= 17){
+											$flag =1;	
+										}else{
+											$flag = 0;	
+										}		
+									}else{
+										// 24 hour
+										$flag =1;
+									}
+									
+									if(($flag == 1) && ($s_flag == 1)){	
+									
+							
+										$udpateArrs['Conformance']['lastupdated'] = date('Y-m-d H:i:s');
+										$udpateArrs['Conformance']['id'] = $Conformances['Conformance']['id'];
+										$this->Conformance->save($udpateArrs);										
+										$receivername = $ConformancesArr['NappUser']['name'].' '.$ConformancesArr['NappUser']['lname'];
+										$email = $ConformancesArr['NappUser']['email'];
+										
+										if(!empty($email)){			
+											
+											$subject = SITENAME.' :: Any update on non conformance('.$nc_number.')';				
+											$template_name = 'nc_reminder';										
+											$variables = array('to_name'=>$receivername,'nc_number'=>$nc_number);				
+											try{
+												$this->sendemail($email ,$subject,$template_name,$variables);
+											}catch (Exception $e){
+												
+											} 										
+										}
+										
+									}																		
+									}
+								}
+							}					
+						}					
+					}
+					if($is_sms == 1){
+						if(!empty($Conformances['ConformanceRelation'])){
+							foreach($Conformances['ConformanceRelation'] as $ConformancesArr){
+								if($Conformances['Conformance']['compaint_by'] != $ConformancesArr['NappUser']['id']){
+									$name = $ConformancesArr['NappUser']['name'].' '.$ConformancesArr['NappUser']['lname'];
+									$email = $ConformancesArr['NappUser']['email'];
+									$country = $ConformancesArr['NappUser']['country'];
+									
+									if($country  == 'india'){
+										date_default_timezone_set('Asia/Kolkata');
+									}	
+									$todate = strtotime($last_update); 
+									$fromdate = time();
+									$diff = $fromdate - $todate;
+									
+									if($diff > 0){		
+									
+									$min = intval($diff / 60);	 					
+									$hour = date('H'); 	
+									
+									$s_flag = 0;
+									if($period == '30 min'){
+										if($min > 30){
+											$s_flag = 1;
+										}	
+									}else if($period == 'hour'){
+										if($min > 60){
+											$s_flag = 1;
+										}
+									}else if($period == 'day'){
+										if($min > 1440){
+											$s_flag = 1;
+										}
+									}
+									if($Conformances['Conformance']['send_to'] == 1){
+										// Office Work Hour
+										if($hour >= 9 && $hour <= 17){
+											$flag =1;	
+										}else{
+											$flag = 0;	
+										}		
+									}else{
+										// 24 hour
+										$flag =1;
+									}
+											
+									if(($flag == 1) && ($s_flag == 1)){
+											if($country  != 'india'){
+												$udpateArrs['Conformance']['lastupdated'] = date('Y-m-d H:i:s');
+												$udpateArrs['Conformance']['id'] = $Conformances['Conformance']['id'];
+												$this->Conformance->save($udpateArrs);											
+												$receivername = $ConformancesArr['NappUser']['name'].' '.$ConformancesArr['NappUser']['lname'];																				
+												if(!empty($ConformancesArr['NappUser']['mobile_number'])){
+													$phones = str_replace(' ','',$NappUser['NappUser']['mobile_number']);
+													$phone = ltrim($phones,'+');
+													
+													$to = '+'.$phone;
+													$sid = TSID;	
+													$token = TOKEN;							
+													$from = FROM_NUMBER;	
+													$body = "Hi ".$receivername.' Any update on non conformance('.$nc_number.')';				
+													$this->Twilio->AccountSid = TSID;   
+													$this->Twilio->AccountToken = TOKEN;						
+													$response = $this->Twilio->sendsms($to,$from,$body);
+												}	
+											}	
+										}																		
+									}
+								}
+							}					
+						}
+							
+					}	
+				}	
+				
+			}
+		}	
+		
+	}
+	function admin_reminder($conformance_id=null,$emp_id=null){
+		$this->layout='admin_layout';
+		$this->set('title_for_layout',SITENAME.' Conformance Edit');
+		$this->checkAdminSession();
+		$user_id=$this->Session->read('User.id');
+		$ConformanceArr = $this->Conformance->find('first',array('conditions'=>array('Conformance.id'=>base64_decode($conformance_id))));	
+		
+		if(!empty($this->request->data)){
+			
+			isset($this->request->data['is_reminder'])?	 $is_reminder = $this->request->data['is_reminder'] : $is_reminder = 0;
+			isset($this->request->data['is_email'])?	 $is_email = $this->request->data['is_email'] : $is_email = 0;
+			isset($this->request->data['is_sms'])?	 $is_sms = $this->request->data['is_sms'] : $is_sms = 0;
+			isset($this->request->data['is_both'])?	 $is_both = $this->request->data['is_both'] : $is_both = 0;
+			isset($this->request->data['send_to'])?	 $send_to = $this->request->data['send_to'] : $send_to = 0;
+			isset($this->request->data['period'])?	 $period = $this->request->data['period'] : $period = '';
+			
+			$update['Conformance']['id'] = $ConformanceArr['Conformance']['id'];
+			$update['Conformance']['is_reminder'] = $is_reminder;
+			$update['Conformance']['is_email'] = $is_email;
+			$update['Conformance']['is_sms'] = $is_sms;
+			$update['Conformance']['is_both'] = $is_both;
+			$update['Conformance']['send_to'] = $send_to;
+			$update['Conformance']['period'] = $period;
+			$update['Conformance']['lastupdated'] = date('Y-m-d H:i:s');
+			if($this->Conformance->save($update)){
+				$this->Session->setFlash('Reminder set successfully','default',array('class' => 'alert alert-success'));
+				$this->redirect('conformancelist');
+			}
+		}	
+		
+		$this->set('user_id',$user_id);
+		$this->set('ConformanceArr',$ConformanceArr);
+	}	
+	
+	function admin_edit($conformance_id=null,$emp_id=null){
+		$this->layout='admin_layout';
+		$this->set('title_for_layout',SITENAME.' Conformance Edit');
+		$this->checkAdminSession();
+	
+		$user_id=$this->Session->read('User.id');
+		
+		$this->Conformance->bindModel(
+		array('hasMany' => array('TaskDocument'=>array(
+			'className' => 'TaskDocument',			 
+			'foreignKey' => 'con_id',				
+			'conditions' => array(),
+			'fields' => array(),
+			'order' => array(),
+		))));
+		
+		$ConformanceArr = $this->Conformance->find('first',array('conditions'=>array('Conformance.id'=>base64_decode($conformance_id))));	
+		
+		if(!empty($this->request->data)){
+			
+			$conformance_ids = base64_decode($conformance_id);
+			$path  = WWW_ROOT.'document/conformance';	
+			
+			if(!empty($_FILES['document']['name'][0])){
+				$i=0;
+				
+				foreach($_FILES['document']['name'] as $name){					
+					$ext = pathinfo($name, PATHINFO_EXTENSION);
+					$filename =  time().'_'.$name;
+					$tempname = $_FILES['document']['tmp_name'][$i];						
+					move_uploaded_file($tempname,$path.'/'.$filename);
+					
+					$TaskDocument['TaskDocument']['id'] = '';
+					$TaskDocument['TaskDocument']['title'] =  '';
+					$TaskDocument['TaskDocument']['admin_id'] =  $user_id;
+					$TaskDocument['TaskDocument']['con_id'] =  $conformance_ids;	
+					$TaskDocument['TaskDocument']['document'] =  'conformance';
+					$TaskDocument['TaskDocument']['filename'] =  $filename;
+					$TaskDocument['TaskDocument']['ext'] =  $ext;
+					$TaskDocument['TaskDocument']['created'] =  date('Y-m-d H:i:s');
+					$TaskDocument['TaskDocument']['is_upload'] =  1; 			
+					$this->TaskDocuments->save($TaskDocument);					
+					$i++;					
+				}
+			}
+			
+			$updateConformance['Conformance']['non_conforance'] = $this->request->data['Conformance']['non_conforance'];				
+			#$updateConformance['Conformance']['non_conforance_raised'] = $this->request->data['Conformance']['non_conforance_raised'];				
+			$updateConformance['Conformance']['customer_name'] = $this->request->data['Conformance']['customer_name'];				
+			$updateConformance['Conformance']['client_detail'] = $this->request->data['Conformance']['client_detail'];				
+			$updateConformance['Conformance']['other_detail'] = $this->request->data['Conformance']['other_detail'];				
+			$updateConformance['Conformance']['status'] = 2;		
+			$updateConformance['Conformance']['id'] = $conformance_ids;		
+				
+			$this->Conformance->save($updateConformance);		
+		
+			$this->Session->setFlash('updated successfully','default',array('class' => 'alert alert-success'));
+			$this->redirect('conformancelist');
+		}	
+		$this->set('ConformanceArr',$ConformanceArr);	
+		$this->set('user_id',$user_id);
+	
+	}
+	function edit($conformance_id=null,$emp_id=null){
+		$this->layout='staff_inner_layout';
+		$this->set('title_for_layout',SITENAME.' Conformance Reply');
+		$this->checkSatffSession();
+	
+		$user_id=$this->Session->read('Customer.id');
+		$dept_id=$this->Session->read('Customer.dept_id');
+		
+		$Department = $this->Department->find('first',array('Department.id'=>$dept_id));
+		
+		$name = $this->Session->read('Customer.name').' '.$this->Session->read('Customer.lname').' ('.$Department['Department']['department_title'].')';
+				
+		$this->Conformance->bindModel(
+		array('hasMany' => array('TaskDocument'=>array(
+			'className' => 'TaskDocument',			 
+			'foreignKey' => 'con_id',				
+			'conditions' => array(),
+			'fields' => array(),
+			'order' => array(),
+		))));
+		
+		$ConformanceArr = $this->Conformance->find('first',array('conditions'=>array('Conformance.id'=>base64_decode($conformance_id))));	
+		
+		if(!empty($this->request->data)){
+			
+			$conformance_ids = base64_decode($conformance_id);
+			$path  = WWW_ROOT.'document/conformance';	
+			
+			if(!empty($_FILES['document']['name'][0])){
+				
+				$i=0;
+				foreach($_FILES['document']['name'] as $name){					
+					$ext = pathinfo($name, PATHINFO_EXTENSION);
+					$filename =  time().'_'.$name;
+					$tempname = $_FILES['document']['tmp_name'][$i];						
+					move_uploaded_file($tempname,$path.'/'.$filename);
+					
+					$TaskDocument['TaskDocument']['id'] = '';
+					$TaskDocument['TaskDocument']['title'] =  '';
+					$TaskDocument['TaskDocument']['employe_id'] =  $user_id;
+					$TaskDocument['TaskDocument']['con_id'] =  $conformance_ids;	
+					$TaskDocument['TaskDocument']['document'] =  'conformance';
+					$TaskDocument['TaskDocument']['filename'] =  $filename;
+					$TaskDocument['TaskDocument']['ext'] =  $ext;
+					$TaskDocument['TaskDocument']['created'] =  date('Y-m-d H:i:s');
+					$TaskDocument['TaskDocument']['is_upload'] =  1; 			
+					$this->TaskDocuments->save($TaskDocument);					
+					$i++;					
+				}
+			}
+			
+			/* // send email to intiative
+			$compaint_by = $ConformanceArr['Conformance']['compaint_by'];			
+			$NappUserArr = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$compaint_by)));			
+			$to_email = $NappUserArr['NappUser']['email'];
+			//$to_email = 'web@xoroglobal.com';
+			$to_name  = $NappUserArr['NappUser']['name'];	
+			$subject = SITENAME." :: Non Conformance ".$ConformanceArr['Conformance']['nc_number']." By ".$this->Session->read('Customer.name');				
+			$template_name = 'replyconformance';	
+			$non_conforance = $ConformanceArr['Conformance']['non_conforance'];			
+			$variables = array('name'=>$this->Session->read('Customer.name'),'to_name'=>$to_name,'title'=>$non_conforance,'nc_number'=>$ConformanceArr['Conformance']['nc_number']);		
+			try{
+				$this->sendemail($to_email,$subject,$template_name,$variables);
+			}catch (Exception $e){
+				
+			}	
+			
+			$admin_email = 'kal@durotechindustries.com.au';
+			#$admin_email = 'web@xoroglobal.com';
+			$admin_subject = SITENAME." :: Non Conformance ".$ConformanceArr['Conformance']['nc_number']." By ".$this->Session->read('Customer.name');
+
+			$autologinurl = SITEURL.'staffs/autologin/'.base64_encode($ConformanceArr['Conformance']['id']);	
+			$admin_template_name = 'autoreplyconformance';	
+			$non_conforance = $ConformanceArr['Conformance']['non_conforance'];			
+			$admin_variables = array('autologinurl'=>$autologinurl,'name'=>$this->Session->read('Customer.name'),'to_name'=>'Kal','title'=>$non_conforance,'nc_number'=>$ConformanceArr['Conformance']['nc_number']);		
+			try{
+				$this->sendemail($admin_email,$admin_subject,$admin_template_name,$admin_variables);
+			}catch (Exception $e){
+				
+			} */
+			
+			$updateConformance['Conformance']['non_conforance'] = $this->request->data['Conformance']['non_conforance'];$updateConformance['Conformance']['customer_name'] = $this->request->data['Conformance']['customer_name'];				
+			#$updateConformance['Conformance']['non_conforance_raised'] = $this->request->data['Conformance']['non_conforance_raised'];				
+			$updateConformance['Conformance']['client_detail'] = $this->request->data['Conformance']['client_detail'];				
+			$updateConformance['Conformance']['other_detail'] = $this->request->data['Conformance']['other_detail'];				
+			$updateConformance['Conformance']['status'] = 2;		
+			$updateConformance['Conformance']['id'] = $conformance_ids;		
+				
+			$this->Conformance->save($updateConformance);			
+		
+			$this->Session->setFlash('updated successfully','default',array('class' => 'alert alert-success'));
+			$this->redirect('conformancelist');
+		}	
+		$this->set('ConformanceArr',$ConformanceArr);
+		
+		
+		$this->set('user_id',$user_id);
+	
+	}
+
+	public function staff_specRequest_form() 
+		{
+
+		$this->layout = 'staff_inner_layout';
+		$this->set('title_for_layout', 'Submit New Spec Request');
+		$this->checkSatffSession(); 
+
+		$user_id=$this->Session->read('Customer.id');
+	
+		if (!empty($this->request->data)) {
+
+			$refrmon = array('01'=>'a','02'=>'b','03'=>'c','04'=>'d','05'=>'e','06'=>'f','07'=>'g','08'=>'h','09'=>'i','10'=>'j','11'=>'k','12'=>'l');
+			$mailerid = $this->Mailer->find('count',array('conditions'=>array('type'=>3),'order'=>array('Mailer.id'=>'desc')));
+			$id= $mailerid + 1;
+
+			$yr = date('y');
+			$mm = date('m');
+			if(strlen($id) == 1){
+			$code = '00'.$id;
+			}else if(strlen($id) == 2){
+			$code = '0'.$id;
+			}else{
+			$code = $id;
+			}			
+			$refernce = 'DTSPEC '.$yr.'-'.$mm.'-'.$code; 
+
+			$tracknumber = $refernce;
+			$name = $this->request->data['name'];
+			$email = $this->request->data['email'];
+			$company = $this->request->data['company'];
+			$address = $this->request->data['address'];
+			$specification = $this->request->data['specification'];
+			$date = date('Y-m-d',strtotime($this->request->data['date']));
+			$type = $this->request->data['type'];
+			$subject = $this->request->data['subject'];
+			//$mft = $this->request->data['mft'];
+			//$warranty_period = $this->request->data['warranty_period'];
+			isset($this->request->data['use_area'])? $use_area = $this->request->data['use_area'] : $use_area =1;
+			
+			$inserty['Mailer']['user_id'] = $user_id;
+			$inserty['Mailer']['name'] = $name;
+			$inserty['Mailer']['tracknumber'] = '';
+			$inserty['Mailer']['address'] = $address;
+			$inserty['Mailer']['specification'] = $specification;
+			$inserty['Mailer']['date'] = $date;
+			$inserty['Mailer']['email'] = $email;
+			$inserty['Mailer']['company'] = $company;
+			$inserty['Mailer']['type'] = $type;
+			$inserty['Mailer']['subject'] = $subject;
+			$inserty['Mailer']['use_area'] = $use_area;
+
+			$inserty['Mailer']['created'] = date('Y-m-d H:i:s');
+			
+			if($this->Mailer->save($inserty)){
+				$lastinsertId = $this->Mailer->id;
+				
+				if(!empty($this->request->data['comment'])){
+					foreach($this->request->data['comment'] as $comment){
+						$MailerCommentinsert['MailerComment']['id'] = '';
+						$MailerCommentinsert['MailerComment']['mailer_id'] = $lastinsertId;
+						$MailerCommentinsert['MailerComment']['use_area'] = 1;
+						$MailerCommentinsert['MailerComment']['comment'] = $comment;				
+						$this->MailerComment->save($MailerCommentinsert);
+					}
+				}
+				
+				if(!empty($this->request->data['product'])){
+					foreach($this->request->data['product'] as $key=>$prodt){
+						isset($this->request->data['title'][$this->request->data['types'][$key]])? $title = $this->request->data['title'][$this->request->data['types'][$key]] :  $title = '';
+						$insert['SpecUsearea']['id'] = '';
+						$insert['SpecUsearea']['mailer_id'] = $lastinsertId;
+						$insert['SpecUsearea']['use_area'] = 1;
+						$insert['SpecUsearea']['title'] = $title;
+						$insert['SpecUsearea']['product'] = $prodt;
+						$insert['SpecUsearea']['types'] = $this->request->data['types'][$key];
+						$insert['SpecUsearea']['serial'] = $this->request->data['serial'][$key];
+						$insert['SpecUsearea']['coverage'] = $this->request->data['coverage'][$key];
+						$insert['SpecUsearea']['Warranty'] = $this->request->data['Warranty'][$key];
+						$insert['SpecUsearea']['coverage_by_pack'] = $this->request->data['coverage_by_pack'][$key];
+						$this->SpecUsearea->save($insert);
+					}
+				}
+				
+				$pdfname = $lastinsertId.'-'.$tracknumber;
+				$fields = array(
+					'tracknumber' => urlencode($tracknumber),
+					'mailer_id' => urlencode($lastinsertId),
+					'name' => urlencode($name),
+					'email' => urlencode($email),				
+					'address' => urlencode($address),
+					'company' => urlencode($company),
+					'specification' => urlencode($specification),
+					'date' => urlencode($this->request->data['date']),
+					'subject' => urlencode($subject),
+					'type' => urlencode($type),
+					'pdfname' => urlencode($pdfname),					
+					//'mft' => urlencode($mft),					
+					//'warranty_period' => urlencode($warranty_period),					
+					'use_area' => urlencode($use_area),					
+				);		
+																
+				$fields_string = '';
+				//url-ify the data for the POST
+				foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }			
+				$fields_string = rtrim($fields_string, '&');
+				if($this->request->data['spectype'] == 1)
+				{
+					$url = SITEURL.'dompdf/generatepdf.php?'.$fields_string;	
+				}else{
+					$url = SITEURL.'dompdf/generatewithoutpdf.php?'.$fields_string;	
+				}
+				$arrContextOptions=array(
+					"ssl"=>array(
+						"verify_peer"=>false,
+						"verify_peer_name"=>false,
+					),
+				);  
+				$result = file_get_contents($url, false, stream_context_create($arrContextOptions));
+								
+				
+				$this->Session->setFlash('PDF file generated successfully.','default',array('class' => 'alert alert-success'));
+
+                return $this->redirect(array('action' => 'staff_specRequest_form'));
+
+		
+		} else {
+			$this->Session->setFlash('Failed to submit.');
+		}
+	  }
+
+   }
+	
+}

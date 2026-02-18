@@ -1,0 +1,2 @@
+ <iframe src="https://xoroglobal.com/widget.php" style="margin-top:172px; height:200px; width:50%; overflow-x:hidden; border-radius:10px;" title="Giftcard" allowtransparency="true" id="iframe" ></iframe>
+				

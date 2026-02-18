@@ -1,0 +1,20 @@
+<?php
+declare(strict_types=1);
+
+namespace App\Model\Table;
+
+use Cake\ORM\Table;
+
+class PurchaseRequirementTable extends Table
+{
+    public function initialize(array $config): void
+    {
+        parent::initialize($config);
+        $this->setTable('purchase_requirements');
+        $this->setPrimaryKey('id');
+        $this->belongsTo('Purchases', [
+            'className' => 'Purchase',
+            'foreignKey' => 'purchase_id',
+        ]);
+    }
+}

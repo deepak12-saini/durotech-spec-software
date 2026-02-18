@@ -1,0 +1,49 @@
+<link rel="stylesheet" href="<?php echo SITEURL; ?>theme/css/bootstrap.css" />
+<link rel="stylesheet" href="<?php echo SITEURL; ?>theme/css/font-awesome.css" />
+<!-- page specific plugin styles -->
+<!-- text fonts -->
+<link rel="stylesheet" href="<?php echo SITEURL; ?>theme/css/ace-fonts.css" />
+<!-- ace styles -->
+<link rel="stylesheet" href="<?php echo SITEURL; ?>theme/css/ace.css" class="ace-main-stylesheet" id="main-ace-style" />
+<script src="<?php echo SITEURL; ?>theme/js/jquery.js"></script>
+<script src="<?php echo SITEURL; ?>theme/js/jquery.validate.js"></script>
+<style>
+	.ErrorField{ border-color:red !important;}
+</style>
+	<div class="page-content" style="height:402px;">
+		<div class="page-header">
+		<div class="right_btn pull-right"><a href="<?php echo $this->Url->build(['controller' => 'Clients', 'action' => 'admin_clienttype']); ?>" class="btn btn-xs btn-inverse">Back</a></div>
+		<h1><small>Edit Category</small></h1>
+	</div>
+	<div class="row">
+		<div class="col-xs-12">
+		<?php
+		$ctRow = $ClientTypeArr[0]['ClientType'] ?? $ClientTypeArr['ClientType'] ?? $ClientTypeArr;
+		$ctId = is_array($ctRow) ? ($ctRow['id'] ?? '') : ($ctRow->id ?? '');
+		echo $this->Form->create(null, ['class' => 'form-horizontal', 'url' => ['controller' => 'Clients', 'action' => 'admin_clienttype_edit', $ctId]]);
+		$ctName = is_array($ctRow) ? ($ctRow['name'] ?? '') : ($ctRow->name ?? '');
+		?>
+			<div class="form-group">
+				<div class="col-sm-9">
+					<?php echo $this->Form->control('name', ['div' => false, 'label' => false, 'class' => 'col-xs-10 col-sm-5', 'id' => 'name', 'placeholder' => 'Client Category Name', 'value' => $ctName]); ?>&nbsp;
+				
+				</div>
+			</div>			
+			<div class="form-group">
+				<div class="col-md-offset-3 col-md-9">
+					<?php echo $this->Form->submit('Edit', ['div' => false, 'label' => false, 'class' => 'btn btn-xs btn-success', 'id' => 'add_ser_prd_btn']); ?>&nbsp;
+					
+				</div>
+			</div>
+			<?php echo $this->Form->end(); ?>
+		</div>
+	</div>	
+	</div>	
+<script type="text/javascript">
+	jQuery(function(){ 
+		$("#name").validate({
+			 expression: "if (VAL) return true; else return false;",
+			message: ""
+		});
+	});
+</script>	

@@ -1,0 +1,97 @@
+<div class="page-content">
+		<div class="page-header">
+			<h1>EOI Email Logs 
+			<?php echo $this->Html->link('Send Mail',array('controller' => 'mailers','action' => 'eoisend'),array('class'=>'btn btn-info btn-xs top-button')); ?>
+			
+			
+			<p>
+			<i class="label label-danger arrowed-in arrowed-in-right">KPI Limit: <?php echo $NappUser['NappUser']['kpi']; ?> per day</i>
+			<i class="label label-danger arrowed-in arrowed-in-right">Today Sent: <?php echo $totaltoaysent; ?> per day</i>
+			
+			<i class="label label-danger arrowed-in arrowed-in-right">Total Sent: <?php echo $totalsent; ?></i>
+			</p>
+			<?php //echo $this->Html->link('Download CSV',array('controller' => 'mailers','action' => 'exportcsv'),array('class'=>'btn btn-warning btn-xs top-button')); ?>
+			
+			</h1>
+		</div>
+	
+	<div class="row">
+		<div class="col-xs-12">
+			<div class="table-responsive">
+			<table class="table table-striped table-bordered table-hover" id="simple-table" >
+				<thead>
+				<tr>
+					<th><?php echo $this->Paginator->sort('id'); ?></th>
+					
+					<th><?php echo $this->Paginator->sort('mailer_id','ReferenceId'); ?></th>
+					<th><?php echo $this->Paginator->sort('inserindivdualname','Individual Name'); ?></th>
+					<th><?php echo $this->Paginator->sort('insertcompanyname','Company Name'); ?></th>
+					<th><?php echo $this->Paginator->sort('projectname'); ?></th>
+					<th><?php echo $this->Paginator->sort('date'); ?></th>
+					<th><?php echo $this->Paginator->sort('insertname','Insert Name'); ?></th>
+					<th><?php echo $this->Paginator->sort('mobile','Mobile No.'); ?></th>
+					<th><?php echo $this->Paginator->sort('landlineno','Landline No.'); ?></th>
+					<th><?php echo $this->Paginator->sort('sender_email','Sender Email'); ?></th>
+					<th><?php echo $this->Paginator->sort('subject'); ?></th>
+					<th><?php echo $this->Paginator->sort('client_requested'); ?></th>
+					<th><?php echo $this->Paginator->sort('created'); ?></th>
+				</tr>
+				</thead>
+				<tbody>
+					<?php 
+					
+				//	echo '<pre>';
+					//print_r($mailers);
+					//die();
+					
+					foreach ($mailers as $mailer): ?>
+					<tr>
+					<td>#<?php echo h($mailer['EoiMailer']['id']); ?>&nbsp;</td>
+					<td><?php echo h($mailer['EoiMailer']['mailer_id']); ?>&nbsp;</td>
+					<td><?php echo h($mailer['EoiMailer']['inserindivdualname']); ?>&nbsp;</td>
+					<td><?php echo h($mailer['EoiMailer']['insertcompanyname']); ?>&nbsp;</td>
+					<td><?php echo h($mailer['EoiMailer']['projectname']); ?>&nbsp;</td>
+					<!--td><?php echo h($mailer['EoiMailer']['insertbuilderemal']); ?>&nbsp;</td-->
+					<td><?php echo h($mailer['EoiMailer']['date']); ?>&nbsp;</td>
+					<td><?php echo h($mailer['EoiMailer']['insertname']); ?>&nbsp;</td>
+					<td><?php echo h($mailer['EoiMailer']['mobile']); ?>&nbsp;</td>
+					<td><?php echo h($mailer['EoiMailer']['landlineno']); ?>&nbsp;</td>
+					<td><?php echo h($mailer['EoiMailer']['sender_email']); ?>&nbsp;</td>
+					<td><?php echo h($mailer['EoiMailer']['subject']); ?>&nbsp;</td>
+					<td><?php echo h($mailer['EoiMailer']['client_requested']); ?>&nbsp;</td>
+				
+					 <!--td>
+						<?php if($category['Category']['status']==1){?>
+							<span class="label label-success">Active</span>
+						<?php }else{ ?>
+						<span class="label label-danger">Inactive</span>
+						<?php }?>&nbsp;
+						</td-->
+                    <td> <?php echo date('d-M-Y h:i a',strtotime($mailer['EoiMailer']['created'])); ?></td>
+					
+					</tr>
+					<?php endforeach; ?>
+
+				</tbody>
+			</table>			
+			</div>
+		</div>
+	</div>		
+	<div class="row">
+		<div class="col-xs-6">
+			<div class="dataTables_info" id="dynamic-table_info" role="status" aria-live="polite"><?php	echo $this->Paginator->counter(array(
+'format' => __('showing {{current}} records out of {{count}} entries')));?>	</div>
+		</div>
+		<div class="col-xs-6">
+			<div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+			<ul class="pagination">
+				<li class="paginate_button previous disabled" aria-controls="dynamic-table" tabindex="0" id="dynamic-table_previous"><?php
+				echo $this->Paginator->prev('< ' . __('previous'), array(), null, array('class' => 'prev disabled'));?></li>
+				
+				<li class="paginate_button next" aria-controls="dynamic-table" tabindex="0" id="dynamic-table_next"><?php echo $this->Paginator->next(__('next') . ' >', array(), null, array('class' => 'next disabled'));?></li>
+				
+			</ul>
+			</div>
+		</div>
+	</div>	
+</div>		

@@ -1,0 +1,16 @@
+<?php
+declare(strict_types=1);
+
+namespace App\Model\Table;
+
+use Cake\ORM\Table;
+
+class VocCertificateTable extends Table
+{
+    public function initialize(array $config): void
+    {
+        parent::initialize($config);
+        $this->setTable('voc_certificates');
+        $this->setPrimaryKey('id');
+    }
+}
