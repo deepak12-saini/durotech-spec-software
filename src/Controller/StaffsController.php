@@ -849,50 +849,96 @@ class StaffsController extends AppController {
 		$this->set('UserArr',$UserArr);	
 	
 	}
-	function admin_replyto($conformance_id=null){
+	
+	/**
+	 * CamelCase wrapper for admin_replyto
+	 */
+	public function adminReplyto($id = null)
+	{
+		return $this->admin_replyto($id);
+	}
+	
+	function admin_replyto($id=null){
 		
-		$this->layout='admin_layout';
+		$this->viewBuilder()->setLayout('admin_layout');
 		$this->set('title_for_layout',SITENAME.' Conformance Reply');
 		$this->checkAdminSession();
-		$admin_id = $this->Session->read('User.id');
+		$admin_id = $this->request->getSession()->read('User.id');
+		
+		// Decode id if it's base64 encoded (from URL)
+		$conformance_id = $id;
+		$decoded_id = base64_decode($id, true);
+		if ($decoded_id !== false && is_numeric($decoded_id)) {
+			$conformance_id = (int)$decoded_id;
+		} elseif (is_numeric($id)) {
+			$conformance_id = (int)$id;
+		}
 					
-		$ConformanceArr = $this->Conformance->find('first',array('conditions'=>array('Conformance.id'=>base64_decode($conformance_id))));					
-		if(!empty($this->request->data)){		
+		$ConformanceEntity = $this->Conformance->find()
+			->where(['Conformance.id' => $conformance_id])
+			->first();
+		
+		if (!$ConformanceEntity) {
+			$this->Flash->error('Conformance record not found');
+			return $this->redirect(['action' => 'admin_conformancelist']);
+		}
+		
+		// Convert to array format for view compatibility
+		$ConformanceArr = ['Conformance' => $ConformanceEntity->toArray()];
+					
+		if(!empty($this->request->getData())){		
 			
+			$data = $this->request->getData();
 			
-			$compaint_by = $ConformanceArr['Conformance']['compaint_by'];			
-			$NappUserArr = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$compaint_by)));			
-			$to_email = $NappUserArr['NappUser']['email'];
-			#$to_email = 'web@xoroglobal.com';
-			$to_name  = $NappUserArr['NappUser']['name'];	
-			$subject = SITENAME." :: Non Conformance ".$ConformanceArr['Conformance']['nc_number']." By ".$this->Session->read('User.name');				
-			$template_name = 'replyconformance';	
-			$non_conforance = $ConformanceArr['Conformance']['non_conforance'];			
-			$variables = array('name'=>$this->Session->read('User.name'),'to_name'=>$to_name,'title'=>$non_conforance,'nc_number'=>$ConformanceArr['Conformance']['nc_number']);		
-			try{
-				if($this->request->data['Conformance']['status'] > 1){
-					//$this->sendemail($to_email,$subject,$template_name,$variables);
+			$compaint_by = $ConformanceArr['Conformance']['compaint_by'];
+			$NappUserEntity = $this->NappUser->find()
+				->where(['NappUser.id' => $compaint_by])
+				->first();
+			
+			if ($NappUserEntity) {
+				$to_email = $NappUserEntity->email;
+				$to_name = $NappUserEntity->name;
+				$subject = SITENAME." :: Non Conformance ".$ConformanceArr['Conformance']['nc_number']." By ".$this->request->getSession()->read('User.name');				
+				$template_name = 'replyconformance';	
+				$non_conforance = $ConformanceArr['Conformance']['non_conforance'];			
+				$variables = [
+					'name' => $this->request->getSession()->read('User.name'),
+					'to_name' => $to_name,
+					'title' => $non_conforance,
+					'nc_number' => $ConformanceArr['Conformance']['nc_number']
+				];		
+				try{
+					if(isset($data['Conformance']['status']) && $data['Conformance']['status'] > 1){
+						//$this->sendemail($to_email,$subject,$template_name,$variables);
+					}
+				}catch (\Exception $e){
+					
 				}
-			}catch (Exception $e){
-				
 			}
 			
-			$conformance_id = $ConformanceArr['Conformance']['id'];			
-			$updaterelation['Conformance']['id'] =  $conformance_id;	
-			$updaterelation['Conformance']['admin_id'] =  $admin_id;	
-			$updaterelation['Conformance']['short_term'] =  $this->request->data['Conformance']['short_term'];	
-			$updaterelation['Conformance']['follow_up'] =  $this->request->data['Conformance']['follow_up'];	
-			$updaterelation['Conformance']['corrective_action_successfull'] =  $this->request->data['Conformance']['corrective_action_successfull'];	
-			$updaterelation['Conformance']['support_document'] =  $this->request->data['Conformance']['support_document'];	
-			$updaterelation['Conformance']['ncr_closed_date'] =  $this->request->data['Conformance']['ncr_closed_date'];	
-			$updaterelation['Conformance']['status'] =  $this->request->data['Conformance']['status'];	
-			if($this->request->data['Conformance']['status'] == 3){
-				$this->request->data['Conformance']['complete_date'] = date('Y-m-d H:i:s');
-			}				
-			$this->Conformance->save($updaterelation);	
+			$conformance_id = $ConformanceArr['Conformance']['id'];
 			
-			$this->Session->setFlash('Replied successfully','default',array('class' => 'alert alert-success'));
-			$this->redirect('conformancelist');
+			// Update using entity-based save
+			$entity = $this->Conformance->get($conformance_id);
+			$updateData = [
+				'admin_id' => $admin_id,
+				'short_term' => isset($data['Conformance']['short_term']) ? $data['Conformance']['short_term'] : null,
+				'follow_up' => isset($data['Conformance']['follow_up']) ? $data['Conformance']['follow_up'] : null,
+				'corrective_action_successfull' => isset($data['Conformance']['corrective_action_successfull']) ? $data['Conformance']['corrective_action_successfull'] : null,
+				'support_document' => isset($data['Conformance']['support_document']) ? $data['Conformance']['support_document'] : null,
+				'ncr_closed_date' => isset($data['Conformance']['ncr_closed_date']) ? $data['Conformance']['ncr_closed_date'] : null,
+				'status' => isset($data['Conformance']['status']) ? $data['Conformance']['status'] : null
+			];
+			
+			if(isset($data['Conformance']['status']) && $data['Conformance']['status'] == 3){
+				$updateData['complete_date'] = date('Y-m-d H:i:s');
+			}
+			
+			$entity = $this->Conformance->patchEntity($entity, $updateData, ['validate' => false]);
+			$this->Conformance->save($entity);
+			
+			$this->Flash->success('Replied successfully');
+			return $this->redirect(['action' => 'admin_conformancelist']);
 		}	
 		$this->set('conformanceArr',$ConformanceArr);
 		
@@ -1383,33 +1429,60 @@ class StaffsController extends AppController {
 		}	
 		
 	}
+
+	/**
+	 * CamelCase wrapper for admin_reminder
+	 */
+	public function adminReminder($id = null, $emp_id = null)
+	{
+		return $this->admin_reminder($id, $emp_id);
+	}
+
 	function admin_reminder($conformance_id=null,$emp_id=null){
-		$this->layout='admin_layout';
+		$this->viewBuilder()->setLayout('admin_layout');
 		$this->set('title_for_layout',SITENAME.' Conformance Edit');
 		$this->checkAdminSession();
-		$user_id=$this->Session->read('User.id');
-		$ConformanceArr = $this->Conformance->find('first',array('conditions'=>array('Conformance.id'=>base64_decode($conformance_id))));	
+		$user_id = $this->request->getSession()->read('User.id');
+
+		// Decode id if base64 encoded
+		$decoded_id = base64_decode($conformance_id, true);
+		$conformance_primary_id = ($decoded_id !== false && is_numeric($decoded_id)) ? (int)$decoded_id : (is_numeric($conformance_id) ? (int)$conformance_id : null);
+		if ($conformance_primary_id === null) {
+			$this->Flash->error('Invalid conformance');
+			return $this->redirect(['action' => 'admin_conformancelist']);
+		}
+
+		$ConformanceEntity = $this->Conformance->find()
+			->where(['Conformance.id' => $conformance_primary_id])
+			->first();
+		if (!$ConformanceEntity) {
+			$this->Flash->error('Conformance not found');
+			return $this->redirect(['action' => 'admin_conformancelist']);
+		}
+		$ConformanceArr = ['Conformance' => $ConformanceEntity->toArray()];	
 		
-		if(!empty($this->request->data)){
-			
-			isset($this->request->data['is_reminder'])?	 $is_reminder = $this->request->data['is_reminder'] : $is_reminder = 0;
-			isset($this->request->data['is_email'])?	 $is_email = $this->request->data['is_email'] : $is_email = 0;
-			isset($this->request->data['is_sms'])?	 $is_sms = $this->request->data['is_sms'] : $is_sms = 0;
-			isset($this->request->data['is_both'])?	 $is_both = $this->request->data['is_both'] : $is_both = 0;
-			isset($this->request->data['send_to'])?	 $send_to = $this->request->data['send_to'] : $send_to = 0;
-			isset($this->request->data['period'])?	 $period = $this->request->data['period'] : $period = '';
-			
-			$update['Conformance']['id'] = $ConformanceArr['Conformance']['id'];
-			$update['Conformance']['is_reminder'] = $is_reminder;
-			$update['Conformance']['is_email'] = $is_email;
-			$update['Conformance']['is_sms'] = $is_sms;
-			$update['Conformance']['is_both'] = $is_both;
-			$update['Conformance']['send_to'] = $send_to;
-			$update['Conformance']['period'] = $period;
-			$update['Conformance']['lastupdated'] = date('Y-m-d H:i:s');
-			if($this->Conformance->save($update)){
-				$this->Session->setFlash('Reminder set successfully','default',array('class' => 'alert alert-success'));
-				$this->redirect('conformancelist');
+		if($this->request->is('post') && !empty($this->request->getData())){
+			$data = $this->request->getData();
+			$is_reminder = isset($data['is_reminder']) ? (int)$data['is_reminder'] : 0;
+			$is_email = isset($data['is_email']) ? (int)$data['is_email'] : 0;
+			$is_sms = isset($data['is_sms']) ? (int)$data['is_sms'] : 0;
+			$is_both = isset($data['is_both']) ? (int)$data['is_both'] : 0;
+			$send_to = isset($data['send_to']) ? (int)$data['send_to'] : 0;
+			$period = isset($data['period']) ? $data['period'] : '';
+
+			$entity = $this->Conformance->get($ConformanceArr['Conformance']['id']);
+			$entity = $this->Conformance->patchEntity($entity, [
+				'is_reminder' => $is_reminder,
+				'is_email' => $is_email,
+				'is_sms' => $is_sms,
+				'is_both' => $is_both,
+				'send_to' => $send_to,
+				'period' => $period,
+				'lastupdated' => date('Y-m-d H:i:s')
+			], ['validate' => false]);
+			if ($this->Conformance->save($entity)) {
+				$this->Flash->success('Reminder set successfully');
+				return $this->redirect(['action' => 'admin_conformancelist']);
 			}
 		}	
 		

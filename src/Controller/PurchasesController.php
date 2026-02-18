@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Cake\Event\EventInterface;
+use Cake\Http\Response;
 use Cake\ORM\TableRegistry;
 
 /**
@@ -20,10 +21,11 @@ class PurchasesController extends AppController
         $this->loadModel('NappUser');
     }
 
-    public function beforeFilter(EventInterface $event)
+    public function beforeFilter(EventInterface $event): ?Response
     {
         parent::beforeFilter($event);
         $this->callConstants();
+        return null;
     }
 
     public function add()
@@ -305,6 +307,11 @@ class PurchasesController extends AppController
 
     public function adminResourceRequirement()
     {
+        return $this->admin_resource_requirement();
+    }
+
+    public function admin_resource_requirement()
+    {
         $this->viewBuilder()->setLayout('admin_layout');
         $this->set('title_for_layout', SITENAME . ' Resource Requirement List');
         $this->checkAdminSession();
@@ -322,6 +329,11 @@ class PurchasesController extends AppController
     }
 
     public function adminIndex()
+    {
+        return $this->admin_index();
+    }
+
+    public function admin_index()
     {
         $this->viewBuilder()->setLayout('admin_layout');
         $this->set('title_for_layout', SITENAME . ' Purcashes List');
@@ -545,9 +557,9 @@ class PurchasesController extends AppController
         $n1 = $entity->get('napp_user_1') ?? $entity->get('napp_user1') ?? null;
         $n2 = $entity->get('napp_user') ?? null;
         $n3 = $entity->get('napp_user_2') ?? $entity->get('napp_user2') ?? null;
-        $out['NappUser_1'] = $n1 ? (is_object($n1) ? $n1->toArray() : (array)$n1) : [];
-        $out['NappUser'] = $n2 ? (is_object($n2) ? $n2->toArray() : (array)$n2) : [];
-        $out['NappUser_2'] = $n3 ? (is_object($n3) ? $n3->toArray() : (array)$n3) : [];
+        $out['NappUser_1'] = $n1 ? (is_object($n1) ? $n1->toArray() : (array)$n1) : ['id' => null, 'name' => '', 'lname' => ''];
+        $out['NappUser'] = $n2 ? (is_object($n2) ? $n2->toArray() : (array)$n2) : ['id' => null, 'name' => '', 'lname' => ''];
+        $out['NappUser_2'] = $n3 ? (is_object($n3) ? $n3->toArray() : (array)$n3) : ['id' => null, 'name' => '', 'lname' => ''];
         $prs = $entity->get('purchase_requirements') ?? [];
         if ($prs) {
             $out['PurchaseRequirement'] = [];

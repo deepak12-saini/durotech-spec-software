@@ -132,7 +132,15 @@
 	  </div>	 
 	</div>
   </div>
-</div>	
+</div>
+<script>
+$(document).ready(function() {
+	// When Sheet Sharing modal is closed, clear iframe so next open loads fresh (no stale checks)
+	$('#mySharedModal').on('hidden.bs.modal', function () {
+		$('#iframe-id').attr('src', 'about:blank');
+	});
+});
+</script>	
 
 <div id="myModal" class="modal fade" role="dialog">
   <div class="modal-dialog">

@@ -1,0 +1,164 @@
+	<div class="page-content">
+		<div class="page-header">
+			<h1>Document Receive Inspection List</h1>
+		</div>
+	
+	<div class="row">
+		<div class="col-xs-12">
+			<div class="table-responsive">
+			<table class="table table-striped table-bordered table-hover" id="simple-table" >
+				<thead>
+				<tr>
+					<th><?php echo $this->Paginator->sort('documentid'); ?></th>
+					<th><?php echo $this->Paginator->sort('user_id','Added By'); ?></th>				
+					<!-- <th><?php echo $this->Paginator->sort('format'); ?></th> -->
+					<th><?php echo $this->Paginator->sort('date'); ?></th>
+					<th><?php echo $this->Paginator->sort('product_name'); ?></th>
+					<th><?php echo $this->Paginator->sort('signature','Signature'); ?></th>
+					<th><?php echo $this->Paginator->sort('finaldate'); ?></th>
+					<th><?php echo $this->Paginator->sort('pass_fail','Pass or Fail'); ?></th>
+					<th><?php echo $this->Paginator->sort('concessional_pass'); ?></th>
+					<th><?php echo $this->Paginator->sort('status'); ?></th>
+					<th><?php echo $this->Paginator->sort('created'); ?></th>
+				
+				</tr>
+				</thead>
+				<tbody>
+					<?php
+					$k = 1;
+					foreach ($DocumentLibraryArr as $DocumentLibraryArrs): ?>
+					<tr>
+						<td><a data-toggle="modal" data-target="#myModal_<?php echo $k; ?>" href="#null"><?php echo h($DocumentLibraryArrs['DocumentReceiveInspection']['documentid']); ?></a>&nbsp;</td>
+						<td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?>&nbsp;</td>
+						
+						<!-- <td><?php echo h($DocumentLibraryArrs['DocumentReceiveInspection']['format']); ?>&nbsp;</td> -->
+						<td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentReceiveInspection']['date'])); ?>&nbsp;</td>
+						<td><?php echo h($DocumentLibraryArrs['DocumentReceiveInspection']['product_name']); ?>&nbsp;</td>
+						<td><?php echo h($DocumentLibraryArrs['DocumentReceiveInspection']['signature']); ?>&nbsp;</td>
+						<td><?php echo h($DocumentLibraryArrs['DocumentReceiveInspection']['finaldate']); ?>&nbsp;</td>				
+						<td><?php echo h($DocumentLibraryArrs['DocumentReceiveInspection']['pass_fail']); ?>&nbsp;</td>				
+						<td><?php echo h($DocumentLibraryArrs['DocumentReceiveInspection']['concessional_pass']); ?>&nbsp;</td>				
+						<td>
+						<?php
+							if($DocumentLibraryArrs['DocumentReceiveInspection']['status'] == 1){
+								echo '<span class="label label-primary">Pending</span>';
+							}else if($DocumentLibraryArrs['DocumentReceiveInspection']['status'] == 2){
+								echo '<span class="label label-success">Active</span>';
+							}	
+						?>&nbsp;
+						</td>					
+						<td> <?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentReceiveInspection']['created'])); ?></td>
+										
+					</tr>
+					<?php $k++; endforeach; ?>
+				</tbody>
+			</table>			
+			</div>
+		</div>
+	</div>		
+	<div class="row">
+		<div class="col-xs-6">
+			<div class="dataTables_info" id="dynamic-table_info" role="status" aria-live="polite"><?php	echo $this->Paginator->counter([
+'format' => __('showing {{current}} records out of {{count}} entries')
+]);?>	</div>
+		</div>
+		<div class="col-xs-6">
+			<div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
+			<ul class="pagination">
+				<li class="paginate_button previous disabled" aria-controls="dynamic-table" tabindex="0" id="dynamic-table_previous"><?php
+				echo $this->Paginator->prev('< ' . __('previous'), array(), null, array('class' => 'prev disabled'));?></li>
+				
+				<li class="paginate_button next" aria-controls="dynamic-table" tabindex="0" id="dynamic-table_next"><?php echo $this->Paginator->next(__('next') . ' >', array(), null, array('class' => 'next disabled'));?></li>
+				
+			</ul>
+			</div>
+		</div>
+	</div>	
+</div>		
+
+<?php 
+	$j=1;
+	foreach ($DocumentLibraryArr as $DocumentLibraryArrs): 
+	
+	?>
+	<div id="myModal_<?php echo $j; ?>" class="modal fade" role="dialog">
+	  <div class="modal-dialog">
+
+		<!-- Modal content-->
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal">&times;</button>
+			<h4 class="modal-title">Document Receive Inspection: <?php echo h($DocumentLibraryArrs['DocumentReceiveInspection']['documentid']); ?></h4>
+		  </div>
+		  <div class="modal-body">
+			<div class="row">
+			<div class="col-xs-12">
+				<div class="table-responsive">
+				<table class="table table-striped table-bordered table-hover"  >
+					<tbody>
+					<tr><th>Documentid: </th><td><span class="label label-inverse"><?php echo h($DocumentLibraryArrs['DocumentReceiveInspection']['documentid']); ?></span></td></tr>	
+					
+					<tr><th>Added By: </th><td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?></td></tr>	
+					
+					<tr><th>Date: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentReceiveInspection']['date'])); ?></td></tr>	
+					<tr><th>Project Name: </th><td><?php echo $DocumentLibraryArrs['DocumentReceiveInspection']['product_name']; ?></td></tr>	
+					<tr><th>Signature: </th><td><?php echo $DocumentLibraryArrs['DocumentReceiveInspection']['signature']; ?></td></tr>	
+					<tr><th>Finaldate: </th><td><?php echo $DocumentLibraryArrs['DocumentReceiveInspection']['finaldate']; ?></td></tr>						
+					<tr><th>Pass Fail: </th><td><?php echo $DocumentLibraryArrs['DocumentReceiveInspection']['pass_fail']; ?></td></tr>						
+					<tr><th>Concessional Pass: </th><td><?php echo $DocumentLibraryArrs['DocumentReceiveInspection']['concessional_pass']; ?></td></tr>						
+					<tr><th>Status: </th><td>
+					<?php 
+					if($DocumentLibraryArrs['DocumentReceiveInspection']['status'] == 1){
+						echo '<span class="label label-primary">Pending</span>';
+					}else if($DocumentLibraryArrs['DocumentReceiveInspection']['status'] == 2){
+						echo '<span class="label label-success">Active</span>';
+					}	 ?>
+					</td></tr>	
+					
+					<tr><th>Created: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentReceiveInspection']['created'])); ?></td></tr>	
+					</tbody>
+					
+				</table>
+				<table class="table table-striped table-bordered table-hover"  >
+					<thead>		
+						<tr>
+							<th>Property</th>
+							<th>Result From Certificate</th>
+							<th>Actual Result</th>							
+						<tr>	
+					</thead>
+					<tbody>						
+						<tr>							
+							<th><?php echo $DocumentLibraryArrs['DocumentReceiveInspection']['ph_property']; ?></th>
+							<th><?php echo $DocumentLibraryArrs['DocumentReceiveInspection']['ph_certificate_result']; ?></th>
+							<th><?php echo $DocumentLibraryArrs['DocumentReceiveInspection']['ph_actual_result']; ?></th>										
+						<tr>
+						<tr>							
+							<th><?php echo $DocumentLibraryArrs['DocumentReceiveInspection']['solid_property']; ?></th>
+							<th><?php echo $DocumentLibraryArrs['DocumentReceiveInspection']['solid_certificate_result']; ?></th>
+							<th><?php echo $DocumentLibraryArrs['DocumentReceiveInspection']['solid_actual_result']; ?></th>										
+						<tr>
+						<tr>							
+							<th><?php echo $DocumentLibraryArrs['DocumentReceiveInspection']['gravity_property']; ?></th>
+							<th><?php echo $DocumentLibraryArrs['DocumentReceiveInspection']['gravity_certificate_result']; ?></th>
+							<th><?php echo $DocumentLibraryArrs['DocumentReceiveInspection']['gravity_actual_result']; ?></th>										
+						<tr>
+						<tr>							
+							<th><?php echo $DocumentLibraryArrs['DocumentReceiveInspection']['viscosity_property']; ?></th>
+							<th><?php echo $DocumentLibraryArrs['DocumentReceiveInspection']['viscosity_certificate_result']; ?></th>
+							<th><?php echo $DocumentLibraryArrs['DocumentReceiveInspection']['viscosity_actual_result']; ?></th>										
+						<tr>		
+					</tbody>
+				</table>
+
+				</div>
+			</div>
+		</div>		
+		  </div>
+		 
+		</div>
+
+	  </div>
+	</div>
+	<?php $j++; endforeach;  ?>
+					

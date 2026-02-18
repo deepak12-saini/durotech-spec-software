@@ -173,7 +173,10 @@
 		$('#example-getting-started').multiselect();			
 		
 		<?php if($status == 'success'){ ?>
-			//$(".alert").hide();
+			// Clear multiselect selection so dropdown checkboxes are removed
+			$('#example-getting-started').multiselect('deselectAll', false);
+			$('#example-getting-started').multiselect('updateButtonText');
+			// Then close the iframe
 			$("#closeIframe").trigger('click');
 		<?php } ?>			
 	});

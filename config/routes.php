@@ -195,6 +195,30 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/careers/index', ['controller' => 'Careers', 'action' => 'index']);
     $routes->connect('/careers/apply/:id', ['controller' => 'Careers', 'action' => 'apply'], ['pass' => ['id']]);
 
+    // Admin HR
+    $routes->connect('/admin/hrs', ['controller' => 'Hrs', 'action' => 'admin_index']);
+    $routes->connect('/admin/hrs/index', ['controller' => 'Hrs', 'action' => 'admin_index']);
+    $routes->connect('/admin/hrs/hr_appraisal_form', ['controller' => 'Hrs', 'action' => 'admin_hr_appraisal_form']);
+    $routes->connect('/admin/hrs/format_evaluation_employe', ['controller' => 'Hrs', 'action' => 'admin_format_evaluation_employe']);
+    $routes->connect('/admin/hrs/format_training_calendars', ['controller' => 'Hrs', 'action' => 'admin_format_training_calendars']);
+    $routes->connect('/admin/hrs/res_during_leave', ['controller' => 'Hrs', 'action' => 'admin_res_during_leave']);
+    $routes->connect('/admin/hrs/reportorganization', ['controller' => 'Hrs', 'action' => 'admin_reportorganization']);
+    $routes->connect('/admin/hrs/newjoining', ['controller' => 'Hrs', 'action' => 'admin_newjoining']);
+    $routes->connect('/admin/hrs/performancefeedback', ['controller' => 'Hrs', 'action' => 'admin_performancefeedback']);
+    $routes->connect('/admin/hrs/attendence', ['controller' => 'Hrs', 'action' => 'admin_attendence']);
+
+    // Admin Organisations
+    $routes->connect('/admin/organisations', ['controller' => 'Organisations', 'action' => 'admin_index']);
+    $routes->connect('/admin/organisations/index', ['controller' => 'Organisations', 'action' => 'admin_index']);
+    $routes->connect('/admin/organisations/result/:circular_id', ['controller' => 'Organisations', 'action' => 'admin_result'], ['pass' => ['circular_id']]);
+    $routes->connect('/admin/organisations/detail/:complaint_id/:type', ['controller' => 'Organisations', 'action' => 'admin_detail'], ['pass' => ['complaint_id', 'type']]);
+    $routes->connect('/admin/organisations/detail/:complaint_id', ['controller' => 'Organisations', 'action' => 'admin_detail'], ['pass' => ['complaint_id']]);
+
+    // Admin Purchases (must be before fallbacks to avoid "Controller Admin could not be found")
+    $routes->connect('/admin/purchases', ['controller' => 'Purchases', 'action' => 'admin_index'], ['_name' => 'adminPurchases']);
+    $routes->connect('/admin/purchases/index', ['controller' => 'Purchases', 'action' => 'admin_index'], ['_name' => 'adminPurchasesIndex']);
+    $routes->connect('/admin/purchases/resource_requirement', ['controller' => 'Purchases', 'action' => 'admin_resource_requirement'], ['_name' => 'adminPurchasesResourceRequirement']);
+
     // Staff portal (CakePHP 2 URLs mapped to StaffsController in CakePHP 3)
     $routes->connect('/staffs/dashboard', ['controller' => 'Staffs', 'action' => 'dashboard']);
     $routes->connect('/staffs/profile', ['controller' => 'Staffs', 'action' => 'profile']);
@@ -205,10 +229,28 @@ Router::scope('/', function (RouteBuilder $routes) {
 
     // Admin staff conformance URLs used by legacy views/redirects
     $routes->connect('/admin/staffs/conformancelist', ['controller' => 'Staffs', 'action' => 'admin_conformancelist']);
-    $routes->connect('/admin/staffs/replyto/:id', ['controller' => 'Staffs', 'action' => 'admin_replyto'], ['pass' => ['id']]);
+    $routes->connect('/admin/staffs/replyto/:id', ['controller' => 'Staffs', 'action' => 'adminReplyto'], ['pass' => ['id'], 'id' => '[^/]+']);
     $routes->connect('/admin/staffs/detail/:nc_number/:type', ['controller' => 'Staffs', 'action' => 'admin_detail'], ['pass' => ['nc_number', 'type']]);
     $routes->connect('/admin/staffs/edit/:id', ['controller' => 'Staffs', 'action' => 'admin_edit'], ['pass' => ['id']]);
-    $routes->connect('/admin/staffs/reminder/:id', ['controller' => 'Staffs', 'action' => 'admin_reminder'], ['pass' => ['id']]);
+    $routes->connect('/admin/staffs/reminder/:id/:emp_id', ['controller' => 'Staffs', 'action' => 'adminReminder'], ['pass' => ['id', 'emp_id'], 'emp_id' => '[^/]+']);
+    $routes->connect('/admin/staffs/reminder/:id', ['controller' => 'Staffs', 'action' => 'adminReminder'], ['pass' => ['id'], 'id' => '[^/]+']);
+
+    // Admin Complaints routes
+    $routes->connect('/admin/complaints', ['controller' => 'Complaints', 'action' => 'adminIndex']);
+    $routes->connect('/admin/complaints/index', ['controller' => 'Complaints', 'action' => 'adminIndex']);
+    $routes->connect('/admin/complaints/detail/:complaint_id/:type', ['controller' => 'Complaints', 'action' => 'adminDetail'], ['pass' => ['complaint_id', 'type'], 'complaint_id' => '[^/]+']);
+    $routes->connect('/admin/complaints/detail/:complaint_id', ['controller' => 'Complaints', 'action' => 'adminDetail'], ['pass' => ['complaint_id'], 'complaint_id' => '[^/]+']);
+    $routes->connect('/admin/complaints/autologin/:complaint_id/:user_id', ['controller' => 'Complaints', 'action' => 'adminAutologin'], ['pass' => ['complaint_id', 'user_id']]);
+    $routes->connect('/admin/complaints/isapproveddisapproved/:type/:complaint_id/:user_id', ['controller' => 'Complaints', 'action' => 'adminIsapproveddisapproved'], ['pass' => ['type', 'complaint_id', 'user_id']]);
+
+    // Admin Documents routes
+    $routes->connect('/admin/documents', ['controller' => 'Documents', 'action' => 'adminIndex']);
+    $routes->connect('/admin/documents/index', ['controller' => 'Documents', 'action' => 'adminIndex']);
+    $routes->connect('/admin/documents/nc_closure', ['controller' => 'Documents', 'action' => 'adminNcClosure']);
+    $routes->connect('/admin/documents/receiving_insepction', ['controller' => 'Documents', 'action' => 'adminReceivingInsepction']);
+    $routes->connect('/admin/documents/preventive_maintenance', ['controller' => 'Documents', 'action' => 'adminPreventiveMaintenance']);
+    $routes->connect('/admin/documents/executive_duty_requisition', ['controller' => 'Documents', 'action' => 'adminExecutiveDutyRequisition']);
+    $routes->connect('/admin/documents/calibration_equipment', ['controller' => 'Documents', 'action' => 'adminCalibrationEquipment']);
 
     // Admin Products menu (CategoriesController, ProductsController - no AdminController)
     $routes->connect('/admin/categories', ['controller' => 'Categories', 'action' => 'adminIndex']);

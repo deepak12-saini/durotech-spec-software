@@ -20,7 +20,7 @@
 				</div>				
 				<div class="form-group">
 					<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Customer Name: </label>
-					<label class="col-sm-9" style="padding-top: 7px; font-weight:bold;"><?php echo $conformanceArr['Conformance']['customer_name'];?></label>				
+					<label class="col-sm-9" style="padding-top: 7px; font-weight:bold;"><?php echo h(isset($conformanceArr['Conformance']['customer_name']) ? $conformanceArr['Conformance']['customer_name'] : ''); ?></label>				
 				</div>
 				<div class="form-group">
 					<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Route Cause and Analysis: </label>

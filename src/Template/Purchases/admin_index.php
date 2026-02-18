@@ -31,9 +31,9 @@
 						<td><?php echo $purchaseArrs['Purchase']['item_details']; ?></td>
 						<td><?php echo $purchaseArrs['Purchase']['requisitioner_name']; ?></td>
 						<td><?php echo $purchaseArrs['Purchase']['date']; ?></td>						
-						<td><?php echo $purchaseArrs['NappUser_1']['name'].' '.$purchaseArrs['NappUser_1']['name']; ?></td>
-						<td><?php echo $purchaseArrs['NappUser']['name'].' '.$purchaseArrs['NappUser']['name']; ?></td>		
-						<td><?php echo $purchaseArrs['NappUser_2']['name'].' '.$purchaseArrs['NappUser_2']['name']; ?></td>
+						<td><?php echo isset($purchaseArrs['NappUser_1']['name']) ? h($purchaseArrs['NappUser_1']['name']) : ''; ?> <?php echo isset($purchaseArrs['NappUser_1']['lname']) ? h($purchaseArrs['NappUser_1']['lname']) : ''; ?></td>
+						<td><?php echo isset($purchaseArrs['NappUser']['name']) ? h($purchaseArrs['NappUser']['name']) : ''; ?> <?php echo isset($purchaseArrs['NappUser']['lname']) ? h($purchaseArrs['NappUser']['lname']) : ''; ?></td>		
+						<td><?php echo isset($purchaseArrs['NappUser_2']['name']) ? h($purchaseArrs['NappUser_2']['name']) : ''; ?> <?php echo isset($purchaseArrs['NappUser_2']['lname']) ? h($purchaseArrs['NappUser_2']['lname']) : ''; ?></td>
 						<td><?php echo $purchaseArrs['Purchase']['name_of_receiver']; ?></td>
 						<td>
 						<?php 
@@ -103,11 +103,11 @@ foreach($purchaseArr as $purchaseArrs):
 							<tr><th>Item Details: </th><td><?php echo h($purchaseArrs['Purchase']['item_details']); ?></td></tr>	
 							<tr><th>Name of the Requisitioner: </th><td><?php echo h($purchaseArrs['Purchase']['requisitioner_name']); ?></td></tr>	
 							
-							<tr><th>Permitted By: </th><td><?php echo $purchaseArrs['NappUser']['name'].' '.$purchaseArrs['NappUser']['name']; ?></td></tr>	
+							<tr><th>Permitted By: </th><td><?php echo isset($purchaseArrs['NappUser']['name']) ? h($purchaseArrs['NappUser']['name']) : ''; ?> <?php echo isset($purchaseArrs['NappUser']['lname']) ? h($purchaseArrs['NappUser']['lname']) : ''; ?></td></tr>	
 							 
-							<tr><th>Prepared By: </th><td><?php echo $purchaseArrs['NappUser_1']['name'].' '.$purchaseArrs['NappUser_1']['name']; ?></td></tr>	
+							<tr><th>Prepared By: </th><td><?php echo isset($purchaseArrs['NappUser_1']['name']) ? h($purchaseArrs['NappUser_1']['name']) : ''; ?> <?php echo isset($purchaseArrs['NappUser_1']['lname']) ? h($purchaseArrs['NappUser_1']['lname']) : ''; ?></td></tr>	
 							
-							<tr><th>Authorized By: </th><td><?php echo h($purchaseArrs['NappUser_2']['name'].' '.$purchaseArrs['NappUser_2']['name']); ?></td></tr>	
+							<tr><th>Authorized By: </th><td><?php echo isset($purchaseArrs['NappUser_2']['name']) ? h($purchaseArrs['NappUser_2']['name']) : ''; ?> <?php echo isset($purchaseArrs['NappUser_2']['lname']) ? h($purchaseArrs['NappUser_2']['lname']) : ''; ?></td></tr>	
 							<tr><th>Name of Receiver: </th><td><?php echo h($purchaseArrs['Purchase']['name_of_receiver']); ?></td></tr>	
 							<tr><th>status: </th>
 							<td>
