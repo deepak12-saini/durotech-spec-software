@@ -1,15 +1,11 @@
 <?php
 
 session_start();
-// $db['hostname'] = 'localhost';
-// $db['username'] = 'customer_duro';
-// $db['password'] = 'fI06li!2'; 
-// $db['database'] = 'customer_durotech';
-
+// Database connection details from app_local.php
 $db['hostname'] = 'localhost';
-$db['username'] = 'root';
-$db['password'] = ''; 
-$db['database'] = 'custom_durotech';
+$db['username'] = 'customer_durotech';
+$db['password'] = '_XTH3oe3wm~ajnp6'; 
+$db['database'] = 'xoroglobal_customer_durotech';
 $link = mysqli_connect($db['hostname'], $db['username'], $db['password'], $db['database']);
 
 date_default_timezone_set('Asia/Kolkata');

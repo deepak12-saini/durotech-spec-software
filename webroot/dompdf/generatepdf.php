@@ -12,15 +12,11 @@ require_once 'lib/php-font-lib/src/FontLib/Autoloader.php';
 require_once 'lib/php-svg-lib/src/autoload.php';
 require_once 'src/Autoloader.php';
 
+// Database connection details from app_local.php
 $db['hostname'] = 'localhost';
-$db['username'] = 'root';
-$db['password'] = ''; 
-$db['database'] = 'customer_durotech';
-
-// $db['hostname'] = 'localhost';
-// $db['username'] = 'root';
-// $db['password'] = ''; 
-// $db['database'] = 'customer_durotech';
+$db['username'] = 'customer_durotech';
+$db['password'] = '_XTH3oe3wm~ajnp6'; 
+$db['database'] = 'xoroglobal_customer_durotech';
 $con = mysqli_connect($db['hostname'], $db['username'], $db['password'], $db['database']);
 
 
