@@ -87,6 +87,8 @@
 							  }else{
 								$product_image=SITEURL.'img/default.product.png';
 							  }
+							  $imgVer = isset($product['Product']['modified']) ? strtotime($product['Product']['modified']) : (isset($product['Product']['id']) ? (int)$product['Product']['id'] : time());
+							  $product_image .= (strpos($product_image, '?') !== false ? '&' : '?') . 'v=' . $imgVer;
 							  
 							  $title_length=strlen($product['Product']['title']);
 								if($title_length>80)

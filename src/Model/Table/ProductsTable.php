@@ -13,6 +13,8 @@ class ProductsTable extends Table
         $this->setPrimaryKey('id');
         $this->setDisplayField('title');
 
+        $this->addBehavior('Timestamp');
+
         $this->belongsTo('Categories', [
             'foreignKey' => 'category_id',
         ]);

@@ -327,6 +327,7 @@ public function index()
 
     $employee_id = $this->Session->read('Employee.id');
 
+    $this->loadModel('Mailer');
     $query = $this->Mailer->find()
         ->where([
             'Mailer.spec_v' => 0,
@@ -334,6 +335,16 @@ public function index()
         ])
         ->contain(['Employee'])
         ->orderDesc('Mailer.id');
+
+    // Exclude drafts from list so only submitted specs show (no duplicate-looking rows)
+    if ($this->Mailer->getSchema()->getColumn('save_status')) {
+        $query->andWhere([
+            'OR' => [
+                ['Mailer.save_status' => 'submitted'],
+                ['Mailer.save_status IS' => null],
+            ],
+        ]);
+    }
 
     $mailers = $this->paginate($query, [
         'limit' => 20,
@@ -364,6 +375,38 @@ public function employee_send_v3() {
             $formData = (array)$this->request->data;
         }
 
+        $isFinalSubmit = !empty($formData['submit_spec']) && $formData['submit_spec'] === '1';
+        $draftIdFromForm = isset($formData['draft_id']) ? (int)$formData['draft_id'] : 0;
+        $hasSaveStatusColumn = $this->Mailer->getSchema()->getColumn('save_status');
+
+        // If final submit with valid draft: update that record to submitted (no duplicate)
+        if ($isFinalSubmit && $draftIdFromForm > 0 && $hasSaveStatusColumn) {
+            $existing = $this->Mailer->get($draftIdFromForm);
+            if ($existing && (int)$existing->employee_id === (int)$employee_id && $existing->save_status === 'draft') {
+                $this->_saveEmployeeSpecAsSubmitted($draftIdFromForm, $formData, $employee_id);
+                $this->Flash->success('Spec generated successfully.');
+                return $this->redirect(['action' => 'index']);
+            }
+        }
+
+        // When creating a new submitted spec, remove any leftover draft for this employee so we don't get two entries
+        if ($hasSaveStatusColumn && $isFinalSubmit) {
+            $draftIds = $this->Mailer->find()
+                ->where([
+                    'Mailer.employee_id' => $employee_id,
+                    'Mailer.save_status' => 'draft',
+                    'Mailer.type' => 3,
+                ])
+                ->all()
+                ->extract('id')
+                ->toArray();
+            if (!empty($draftIds)) {
+                $this->MailerComment->deleteAll(['mailer_id IN' => $draftIds]);
+                $this->SpecUsearea->deleteAll(['mailer_id IN' => $draftIds]);
+                $this->Mailer->deleteAll(['id IN' => $draftIds]);
+            }
+        }
+
         $uploadPath = WWW_ROOT . 'uploads' . DS . 'datasheets' . DS;
         if (!file_exists($uploadPath)) {
             mkdir($uploadPath, 0777, true);
@@ -390,7 +433,7 @@ public function employee_send_v3() {
             $formattedDate = "$year-$month-$day";
 
 
-        // Collect form fields
+        // Collect form fields (new spec)
         $inserty['Mailer'] = array(
             'employee_id'   => $employee_id,
             'tracknumber'   => $formData['tracknumber'] ?? '',
@@ -405,6 +448,9 @@ public function employee_send_v3() {
             'use_area'      => isset($formData['use_area']) ? $formData['use_area'] : 1,
             'created'       => date('Y-m-d H:i:s'),
         );
+        if ($hasSaveStatusColumn) {
+            $inserty['Mailer']['save_status'] = 'submitted';
+        }
 
         $mailerPayload = $inserty['Mailer'];
         $mailerEntity = $this->Mailer->newEntity($mailerPayload);
@@ -537,7 +583,7 @@ public function employee_send_v3() {
         }
     }
 
-    // Generate tracknumber reference code
+    // Generate tracknumber reference code (for new spec or display)
     $refrmon = array('01'=>'a','02'=>'b','03'=>'c','04'=>'d','05'=>'e','06'=>'f','07'=>'g','08'=>'h','09'=>'i','10'=>'j','11'=>'k','12'=>'l');
     $mailerid = $this->Mailer->find()
         ->where(['type' => 3])
@@ -545,10 +591,275 @@ public function employee_send_v3() {
     $id = $mailerid + 1;
     $yr = date('y');
     $mm = date('m');
-    $code = str_pad($id, 3, '0', STR_PAD_LEFT);
+    $code = str_pad((string)$id, 3, '0', STR_PAD_LEFT);
     $refernce = 'DTSPEC ' . $yr . '-' . $mm . '-' . $code;
 
-    $this->set('refernce', $refernce);
+    // Load latest draft for this employee so form can pre-fill and we pass draft_id for auto-save
+    $draft = null;
+    $draftId = null;
+    if ($this->Mailer->getSchema()->getColumn('save_status')) {
+        $draft = $this->Mailer->find()
+            ->where(['Mailer.employee_id' => $employee_id, 'Mailer.save_status' => 'draft', 'Mailer.type' => 3])
+            ->orderDesc('Mailer.id')
+            ->first();
+        if ($draft) {
+            $draftId = $draft->id;
+            $draft->comments = $this->MailerComment->find()->where(['mailer_id' => $draftId])->all();
+            $draft->spec_useareas = $this->SpecUsearea->find()->where(['mailer_id' => $draftId])->orderAsc('id')->all();
+        }
+    }
+    $this->set(compact('refernce', 'draft', 'draftId'));
+}
+
+/**
+ * Save an existing draft mailer as submitted: set tracknumber, status, comments/spec_useareas, PDF, email.
+ */
+protected function _saveEmployeeSpecAsSubmitted(int $mailerId, array $formData, $employee_id): void
+{
+    $mailer = $this->Mailer->get($mailerId);
+    $mailerid = $this->Mailer->find()->where(['type' => 3])->count();
+    $id = $mailerid;
+    $yr = date('y');
+    $mm = date('m');
+    $code = str_pad((string)$id, 3, '0', STR_PAD_LEFT);
+    $tracknumber = 'DTSPEC ' . $yr . '-' . $mm . '-' . $code;
+
+    $dateInput = (string)($formData['date'] ?? date('d/m/Y'));
+    $dateParts = explode('/', $dateInput);
+    $formattedDate = count($dateParts) === 3
+        ? $dateParts[2] . '-' . $dateParts[1] . '-' . $dateParts[0]
+        : date('Y-m-d');
+
+    $mailer->tracknumber = $tracknumber;
+    $mailer->name = $formData['name'] ?? '';
+    $mailer->email = $formData['email'] ?? '';
+    $mailer->company = $formData['company'] ?? '';
+    $mailer->address = $formData['address'] ?? '';
+    $mailer->specification = $formData['specification'] ?? '';
+    $mailer->date = $formattedDate;
+    $mailer->type = $formData['type'] ?? 3;
+    $mailer->subject = $formData['subject'] ?? '';
+    $mailer->use_area = $formData['use_area'] ?? 1;
+    $mailer->save_status = 'submitted';
+
+    if (!empty($formData['datasheet_pdf']['tmp_name'])) {
+        $uploadPath = WWW_ROOT . 'uploads' . DS . 'datasheets' . DS;
+        if (!file_exists($uploadPath)) {
+            mkdir($uploadPath, 0777, true);
+        }
+        $file = (array)$formData['datasheet_pdf'];
+        $filename = time() . '_' . preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $file['name']);
+        $fullPath = $uploadPath . $filename;
+        move_uploaded_file($file['tmp_name'], $fullPath);
+        $mailer->pdf_attachment = 'uploads/datasheets/' . $filename;
+    }
+    $this->Mailer->save($mailer);
+
+    $this->MailerComment->deleteAll(['mailer_id' => $mailerId]);
+    $this->SpecUsearea->deleteAll(['mailer_id' => $mailerId]);
+
+    if (!empty($formData['comment']) && is_array($formData['comment'])) {
+        foreach ($formData['comment'] as $comment) {
+            $commentEntity = $this->MailerComment->newEntity([
+                'mailer_id' => $mailerId,
+                'use_area' => 1,
+                'comment' => $comment,
+            ]);
+            $this->MailerComment->save($commentEntity);
+        }
+    }
+    if (!empty($formData['product']) && is_array($formData['product'])) {
+        foreach ($formData['product'] as $key => $prodt) {
+            $title = isset($formData['title'][$formData['types'][$key]]) ? $formData['title'][$formData['types'][$key]] : '';
+            $specEntity = $this->SpecUsearea->newEntity([
+                'mailer_id' => $mailerId,
+                'use_area' => 1,
+                'title' => $title,
+                'product' => $prodt,
+                'types' => $formData['types'][$key] ?? '',
+                'serial' => $formData['serial'][$key] ?? '',
+                'coverage' => $formData['coverage'][$key] ?? '',
+                'Warranty' => $formData['Warranty'][$key] ?? '',
+                'coverage_by_pack' => $formData['coverage_by_pack'][$key] ?? '',
+            ]);
+            $this->SpecUsearea->save($specEntity);
+        }
+    }
+
+    $pdfname = $mailerId . '-' . $tracknumber;
+    $fields = [
+        'tracknumber' => $tracknumber,
+        'mailer_id' => $mailerId,
+        'name' => $mailer->name,
+        'email' => $mailer->email,
+        'address' => $mailer->address,
+        'company' => $mailer->company,
+        'specification' => $mailer->specification,
+        'date' => $formData['date'] ?? '',
+        'subject' => $mailer->subject,
+        'type' => $mailer->type,
+        'pdfname' => $pdfname,
+        'use_area' => $mailer->use_area,
+    ];
+    $fields_string = http_build_query($fields);
+    $url = ((int)($formData['spectype'] ?? 1) === 1)
+        ? SITEURL . 'dompdf/generatepdf.php?' . $fields_string
+        : SITEURL . 'dompdf/generatewithoutpdf.php?' . $fields_string;
+    $arrContextOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]];
+    $pdfResponse = @file_get_contents($url, false, stream_context_create($arrContextOptions));
+
+    $generatedPdfFileName = $pdfname . '.pdf';
+    if ($pdfResponse !== false) {
+        $json = json_decode($pdfResponse, true);
+        if (is_array($json) && !empty($json['filename'])) {
+            $generatedPdfFileName = (string)$json['filename'];
+        }
+    }
+    $pdfFilePath = WWW_ROOT . 'dompdf' . DS . $generatedPdfFileName;
+    if (file_exists($pdfFilePath)) {
+        $email = new Email('default');
+        $email->from(['deepaksaini10036@gmail.com' => 'Durotech Industries']);
+        $email->to('deepaksaini10036@gmail.com');
+        $email->subject('New Spec Created – ' . $tracknumber);
+        $email->emailFormat('html');
+        $email->attachments([
+            $generatedPdfFileName => ['file' => $pdfFilePath, 'mimetype' => 'application/pdf'],
+        ]);
+        $email->send(
+            '<p>A new specification has been created.</p>' .
+            '<p><b>Track No:</b> ' . $tracknumber . '<br><b>Company:</b> ' . $mailer->company . '<br><b>Specification:</b> ' . $mailer->specification . '</p>' .
+            '<p>Please find the specification PDF attached.</p><p>Regards,<br>Durotech System</p>'
+        );
+    }
+}
+
+/**
+ * AJAX: Auto-save spec form as draft. Creates or updates one draft (no duplicate).
+ * Expects POST with form fields and optional draft_id.
+ */
+public function specDraftAutosave()
+{
+    $this->request->allowMethod(['post']);
+    $this->viewBuilder()->setLayout(false);
+    $this->viewBuilder()->disableAutoLayout();
+    $this->viewBuilder()->setClassName('Cake\View\View');
+
+    $this->checkEmployeeSession();
+    $this->loadModel('Mailer');
+    $this->loadModel('MailerComment');
+    $this->loadModel('SpecUsearea');
+
+    $employee_id = $this->request->getSession()->read('Employee.id');
+
+    $hasSaveStatusColumn = $this->Mailer->getSchema()->getColumn('save_status');
+    if (!$hasSaveStatusColumn) {
+        return $this->_specDraftJsonResponse(['success' => false, 'error' => 'Draft not configured.']);
+    }
+
+    $data = $this->request->getData();
+    $draftIdFromForm = isset($data['draft_id']) ? (int)$data['draft_id'] : 0;
+
+    $mailer = null;
+    if ($draftIdFromForm > 0) {
+        $mailer = $this->Mailer->get($draftIdFromForm);
+        if (!$mailer || (int)$mailer->employee_id !== (int)$employee_id || $mailer->save_status !== 'draft') {
+            $mailer = null;
+        }
+    }
+
+    $dateInput = (string)($data['date'] ?? date('d/m/Y'));
+    $dateParts = explode('/', $dateInput);
+    $formattedDate = count($dateParts) === 3
+        ? $dateParts[2] . '-' . $dateParts[1] . '-' . $dateParts[0]
+        : date('Y-m-d');
+
+    $name = $data['name'] ?? '';
+    $email = $data['email'] ?? '';
+    $company = $data['company'] ?? '';
+    $address = $data['address'] ?? '';
+    $specification = $data['specification'] ?? '';
+    $type = $data['type'] ?? 3;
+    $subject = $data['subject'] ?? '';
+    $use_area = $data['use_area'] ?? 1;
+
+    if ($mailer) {
+        $mailer->name = $name;
+        $mailer->email = $email;
+        $mailer->company = $company;
+        $mailer->address = $address;
+        $mailer->specification = $specification;
+        $mailer->date = $formattedDate;
+        $mailer->type = $type;
+        $mailer->subject = $subject;
+        $mailer->use_area = $use_area;
+        $this->Mailer->save($mailer);
+        $draftId = $mailer->id;
+    } else {
+        $entity = $this->Mailer->newEntity([
+            'employee_id' => $employee_id,
+            'tracknumber' => '',
+            'name' => $name,
+            'email' => $email,
+            'company' => $company,
+            'address' => $address,
+            'specification' => $specification,
+            'date' => $formattedDate,
+            'type' => $type,
+            'subject' => $subject,
+            'use_area' => $use_area,
+            'save_status' => 'draft',
+            'created' => date('Y-m-d H:i:s'),
+        ]);
+        if ($this->Mailer->save($entity)) {
+            $draftId = $entity->id;
+        } else {
+            return $this->_specDraftJsonResponse(['success' => false, 'error' => 'Save failed.']);
+        }
+    }
+
+    $this->MailerComment->deleteAll(['mailer_id' => $draftId]);
+    $this->SpecUsearea->deleteAll(['mailer_id' => $draftId]);
+
+    if (!empty($data['comment']) && is_array($data['comment'])) {
+        foreach ($data['comment'] as $comment) {
+            $commentEntity = $this->MailerComment->newEntity([
+                'mailer_id' => $draftId,
+                'use_area' => 1,
+                'comment' => $comment,
+            ]);
+            $this->MailerComment->save($commentEntity);
+        }
+    }
+    if (!empty($data['product']) && is_array($data['product'])) {
+        foreach ($data['product'] as $key => $prodt) {
+            $typesKey = $data['types'][$key] ?? null;
+            $title = isset($data['title'][$typesKey]) ? $data['title'][$typesKey] : '';
+            $specEntity = $this->SpecUsearea->newEntity([
+                'mailer_id' => $draftId,
+                'use_area' => 1,
+                'title' => $title,
+                'product' => $prodt,
+                'types' => $data['types'][$key] ?? '',
+                'serial' => $data['serial'][$key] ?? '',
+                'coverage' => $data['coverage'][$key] ?? '',
+                'Warranty' => $data['Warranty'][$key] ?? '',
+                'coverage_by_pack' => $data['coverage_by_pack'][$key] ?? '',
+            ]);
+            $this->SpecUsearea->save($specEntity);
+        }
+    }
+
+    return $this->_specDraftJsonResponse(['success' => true, 'draft_id' => (int)$draftId]);
+}
+
+/**
+ * Return JSON response for spec draft autosave (no template needed).
+ */
+protected function _specDraftJsonResponse(array $data)
+{
+    $this->response = $this->response->withType('application/json')
+        ->withStringBody(json_encode($data));
+    return $this->response;
 }
 
 /**
@@ -556,6 +867,33 @@ public function employee_send_v3() {
  */
 public function employeeSendV3() {
     return $this->employee_send_v3();
+}
+
+/**
+ * Delete a spec. Employee can only delete their own spec.
+ */
+public function deleteSpec($id = null)
+{
+    $this->request->allowMethod(['post', 'delete']);
+    $this->checkEmployeeSession();
+
+    $employee_id = $this->Session->read('Employee.id');
+    $this->loadModel('Mailer');
+    $this->loadModel('MailerComment');
+    $this->loadModel('SpecUsearea');
+
+    $mailer = $this->Mailer->get($id);
+    if (!$mailer || (int)$mailer->employee_id !== (int)$employee_id) {
+        $this->Flash->error('Spec not found or you cannot delete it.');
+        return $this->redirect(['action' => 'index']);
+    }
+
+    $this->MailerComment->deleteAll(['mailer_id' => $id]);
+    $this->SpecUsearea->deleteAll(['mailer_id' => $id]);
+    $this->Mailer->delete($mailer);
+
+    $this->Flash->success('Spec deleted.');
+    return $this->redirect(['action' => 'index']);
 }
 
 public function editsend_v3($id = null) {

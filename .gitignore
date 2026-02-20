@@ -6,6 +6,9 @@
 /tmp/*
 /vendor/*
 
+# Webroot: exclude so server keeps its own webroot (do not overwrite on deploy)
+/webroot/
+
 # OS generated files #
 ######################
 node_modules/

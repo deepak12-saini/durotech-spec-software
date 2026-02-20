@@ -193,6 +193,14 @@ class ProductsController extends AppController
 				foreach ($productsQuery as $row) {
 					$products[] = ['Product' => $row->toArray()];
 				}
+				// Custom display order for polyurethane-waterproofing-membrane category
+				if ($slug === 'polyurethane-waterproofing-membrane' && !empty($products)) {
+					$products = $this->_sortPolyurethaneProducts($products);
+				}
+				// Custom display order for sealants-and-silicone category
+				if ($slug === 'sealants-and-silicone' && !empty($products)) {
+					$products = $this->_sortSealantsProducts($products);
+				}
 				$meta_keyword = $categoryArr->get('meta_keyword');
 				$meta_title = $categoryArr->get('meta_title');
 				$meta_description = $categoryArr->get('meta_description');
@@ -248,6 +256,97 @@ class ProductsController extends AppController
 		}
 	}
 
+	/**
+	 * Re-order products for polyurethane-waterproofing-membrane category:
+	 * Row 1: NEP STD, NEP HV, NEP SL
+	 * Row 2: PUM PRO, PPM STD, PPM SL
+	 * Row 3: PU BLACK ECO, TTC, ATC
+	 *
+	 * @param array<int, array<string, array>> $products Array of ['Product' => [...]]
+	 * @return array<int, array<string, array>>
+	 */
+	protected function _sortPolyurethaneProducts(array $products): array
+	{
+		$orderKeys = [
+			'NEP STD',
+			'NEP HV',
+			'NEP SL',
+			'PUM PRO',
+			'PPM STD',
+			'PPM SL',
+			'PU BLACK ECO',
+			'TTC',
+			'ATC',
+		];
+
+		usort($products, function ($a, $b) use ($orderKeys) {
+			$titleA = (string)($a['Product']['title'] ?? '');
+			$titleB = (string)($b['Product']['title'] ?? '');
+			$posA = 999;
+			$posB = 999;
+			foreach ($orderKeys as $idx => $key) {
+				if (stripos($titleA, $key) !== false) {
+					$posA = $idx;
+					break;
+				}
+			}
+			foreach ($orderKeys as $idx => $key) {
+				if (stripos($titleB, $key) !== false) {
+					$posB = $idx;
+					break;
+				}
+			}
+			return $posA <=> $posB;
+		});
+
+		return $products;
+	}
+
+	/**
+	 * Re-order products for sealants-and-silicone category:
+	 * Row 1: 50FC, 25C, DuroFire A
+	 * Row 2: 40fc(PU), FC PRO, 488
+	 * Row 3: DS100, DS200, DuroGlaze Pro
+	 *
+	 * @param array<int, array<string, array>> $products Array of ['Product' => [...]]
+	 * @return array<int, array<string, array>>
+	 */
+	protected function _sortSealantsProducts(array $products): array
+	{
+		$orderKeys = [
+			'50FC',
+			'25C',
+			'DuroFire A',
+			'40fc(PU)',
+			'FC PRO',
+			'488',
+			'DS100',
+			'DS200',
+			'DuroGlaze Pro',
+		];
+
+		usort($products, function ($a, $b) use ($orderKeys) {
+			$titleA = (string)($a['Product']['title'] ?? '');
+			$titleB = (string)($b['Product']['title'] ?? '');
+			$posA = 999;
+			$posB = 999;
+			foreach ($orderKeys as $idx => $key) {
+				if (stripos($titleA, $key) !== false) {
+					$posA = $idx;
+					break;
+				}
+			}
+			foreach ($orderKeys as $idx => $key) {
+				if (stripos($titleB, $key) !== false) {
+					$posB = $idx;
+					break;
+				}
+			}
+			return $posA <=> $posB;
+		});
+
+		return $products;
+	}
 
 	public function categories()
 	{

@@ -144,8 +144,9 @@
 									}
 									echo $this->Html->link('Send Mail', array('controller' => 'employees', 'action' => 'emp_sendemail', $mailerId), array('class' => 'btn btn-mini btn-danger', 'onclick' => 'return confirm("Are you sure send email?")'));
 
-
 									echo $this->Html->link('Download', SITEURL . 'dompdf/' . $pdffilename, array('class' => 'btn btn-mini btn-info', 'target' => '_blank')) . '&nbsp;';
+
+									echo $this->Form->postLink('Delete', array('controller' => 'employees', 'action' => 'deleteSpec', $mailerId), array('class' => 'btn btn-mini btn-xs btn-default', 'confirm' => 'Delete this spec? This cannot be undone.', 'escape' => false));
 
 								?>
 							</td>
