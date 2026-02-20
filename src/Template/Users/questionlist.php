@@ -4,6 +4,13 @@
 }
 table tr td { font-size: 20px; font-weight:bold;}
 </style>
+<?php
+// Support CakePHP 3 entity or CakePHP 2 array
+$isCpdPresentation = false;
+if (!empty($user)) {
+	$isCpdPresentation = (int)(is_object($user) ? ($user->is_cpd_presentation ?? 0) : ($user['NappUser']['is_cpd_presentation'] ?? 0)) === 1;
+}
+?>
 <div class="page-content">
 	<div class="page-header">
 	<h1>
@@ -24,7 +31,7 @@ table tr td { font-size: 20px; font-weight:bold;}
 						<!-- <input type="submit" name="submit" id="formSubmit" value="Save" class="btn btn-primary" style="float:right;"> -->
 					</h3>			  			  
 				</div>
-				<?php if(($user['NappUser']['is_cpd_presentation'] == 1)  ||  ($is_access == 2)){ ?>
+				<?php if ($isCpdPresentation || ($is_access == 2)) { ?>
 				<?php	$nums = count($question);	 ?>
 				<div class="box-body">
 				  <table  class="table table-bordered table-striped">
@@ -194,13 +201,13 @@ table tr td { font-size: 20px; font-weight:bold;}
 					</tfoot>
 				  </table>
 				</div>
-				<?php }else  if($is_access == 0){ ?>
+				<?php } elseif ($is_access == 0) { ?>
 					<h3> Sorry, you don't have access to this folder. You can request the admin to give you access. <a href="<?php echo SITEURL.'users/access/0'; ?>">Click here</a></h3>
-				<?php }?>
+				<?php } ?>
 			</form>
 			
 			
-			<?php if(($user['NappUser']['is_cpd_presentation'] == 0) && ($is_access == 0)){ ?>
+			<?php if (!$isCpdPresentation && ($is_access == 0)) { ?>
 			<br><br>
 			<div class="durolab_product_section col-xs-12">		
 				<div class="span3 widget-container-span ui-sortable">

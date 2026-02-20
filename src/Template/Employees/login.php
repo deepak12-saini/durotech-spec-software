@@ -21,20 +21,19 @@
 
 								<div class="space-6"></div>
 
-								<?php echo $this->Form->create('Employees',array('action'=> 'login','name'=>'loginForm','id'=>'loginForm'));?>
+								<?php echo $this->Form->create(null, ['url' => ['action' => 'login'], 'name' => 'loginForm', 'id' => 'loginForm']); ?>
 								<?php echo $this->Flash->render(); ?>
 									<fieldset>
 										<label class="block clearfix">
 											<span class="block input-icon input-icon-right">
-												
-												<?php echo $this->Form->input('Employee.name',array('div'=>false,'label'=>false, 'class' => array('form-control'),'placeholder'=>'username','id'=>'username'))?>
+												<?php echo $this->Form->control('Employee.name', ['div' => false, 'label' => false, 'class' => 'form-control', 'placeholder' => 'username', 'id' => 'username']); ?>
 												<i class="ace-icon fa fa-user"></i>
 											</span>
 										</label>
 
 										<label class="block clearfix">
 											<span class="block input-icon input-icon-right">
-												<?php echo $this->Form->input('Employee.password',array('div'=>false,'label'=>false, 'class' =>array('form-control') ,'placeholder'=>'Password','type' =>'password','id'=>'password'))?>
+												<?php echo $this->Form->control('Employee.password', ['div' => false, 'label' => false, 'class' => 'form-control', 'placeholder' => 'Password', 'type' => 'password', 'id' => 'password']); ?>
 												<i class="ace-icon fa fa-lock"></i>
 											</span>
 										</label>
@@ -42,11 +41,7 @@
 										<div class="space"></div>
 
 										<div class="clearfix">
-											<!--label class="inline">
-												<input type="checkbox" class="ace" />
-												<span class="lbl"> Remember Me</span>
-											</label-->
-												<?php echo $this->Form->submit('Login',array('div'=>false,'class'=>'width-35 pull-right btn btn-sm btn-primary'));?>
+											<?php echo $this->Form->submit('Login', ['div' => false, 'class' => 'width-35 pull-right btn btn-sm btn-primary']); ?>
 											<!--button type="button" class="width-35 pull-right btn btn-sm btn-primary">
 												<i class="ace-icon fa fa-key"></i>
 												<span class="bigger-110">Login</span>

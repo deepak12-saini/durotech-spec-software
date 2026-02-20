@@ -22,33 +22,26 @@ use Dompdf\Options;
 // instantiate and use the dompdf class
 
 $options = new Options();
-$options->set('isRemoteEnabled', TRUE);
+$options->set('isRemoteEnabled', false);
 $dompdf = new Dompdf($options);
 $name  = base64_decode(base64_decode($_REQUEST['userid'])); 
 $name  =  ucfirst($name);
 $date = date('d/M/Y');
-$html = '<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body>
-
-	<div class="certificate_container" style="margin: 0 auto;	width: 80%;" > 
-	<p>Date: '.$date.'</p>
-	<div class="thanku_page">
-		   <img style="width:100%;" src="https://www.durotechindustries.com.au/wp-content/uploads/image_cerificate.jpg">
-		   <div  class="content" style="padding:20px 0px 5px 82px;font-size:15px;font-family:lato,sans-serif;border: none; color:#353535;"> 
-		   <p>This is to certify that <b>'.$name.'</b> </p>	   
-		  <p> Attended and successfully completed the CPD workshop assessment.</p>		
-		   <p>CPD Formal Points awarded: 1.0  </p>
-		  <p> AACA competence standards: Documention </p></div>			   
-		   <img style="width:100%;" src="https://www.durotechindustries.com.au/wp-content/uploads/refel.jpg">         
-	  </div>  
-	</div>
-</body> 
-</html>';
+// Minimal block-only HTML to avoid dompdf "No block-level parent" error. All text in <p> only.
+$safeName = htmlspecialchars($name, ENT_QUOTES, 'UTF-8');
+$safeDate = htmlspecialchars($date, ENT_QUOTES, 'UTF-8');
+$html = '<!DOCTYPE html><html><head><meta charset="utf-8"></head><body>'
+  . '<div style="display:block; margin:0 auto; width:80%;">'
+  . '<p style="display:block;">Date: ' . $safeDate . '</p>'
+  . '<p style="display:block; margin:0;">[Certificate Header]</p>'
+  . '<div style="display:block; padding:20px 0 5px 20px; font-size:15px;">'
+  . '<p style="display:block;">This is to certify that ' . $safeName . '</p>'
+  . '<p style="display:block;">Attended and successfully completed the CPD workshop assessment.</p>'
+  . '<p style="display:block;">CPD Formal Points awarded: 1.0</p>'
+  . '<p style="display:block;">AACA competence standards: Documention</p>'
+  . '</div>'
+  . '<p style="display:block; margin:0;">[Certificate Footer]</p>'
+  . '</div></body></html>';
 
 $dompdf->loadHtml($html);
 //$dompdf->loadHtml('<h1>INPATI</h1>');

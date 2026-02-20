@@ -289,6 +289,12 @@ class UsersController extends AppController
 	/*Author  :Ranjit,
 	/*Comment : Admin profile
 ****/	
+	/** CamelCase wrapper for routing */
+	public function adminProfile(): ?Response
+	{
+		return $this->admin_profile();
+	}
+
 	public function admin_profile(): ?Response
 	{
 		$this->viewBuilder()->setLayout('admin_layout');
@@ -310,14 +316,31 @@ class UsersController extends AppController
 		return null;
 	}
 
+	/** CamelCase wrapper for routing */
+	public function adminSubscriberList()
+	{
+		return $this->admin_subscriber_list();
+	}
+
 	public function admin_subscriber_list()
 	{
 		$this->viewBuilder()->setLayout('admin_layout');
 		$this->set('title_for_layout', SITENAME . ' Subscriber List');
 		$this->checkAdminSession();
 		$this->paginate = ['limit' => 10, 'order' => ['Subscriber.id' => 'DESC']];
-		$Subscribers = $this->paginate($this->Subscriber->find());
+		$results = $this->paginate($this->Subscriber->find());
+		// Convert entities to CakePHP 2-style array for view
+		$Subscribers = [];
+		foreach ($results as $entity) {
+			$Subscribers[] = ['Subscriber' => $entity->toArray()];
+		}
 		$this->set(compact('Subscribers'));
+	}
+
+	/** CamelCase wrapper for routing */
+	public function adminContactus()
+	{
+		return $this->admin_contactus();
 	}
 
 	public function admin_contactus()
@@ -326,8 +349,19 @@ class UsersController extends AppController
 		$this->set('title_for_layout', SITENAME . ' Contact List');
 		$this->checkAdminSession();
 		$this->paginate = ['limit' => 10, 'order' => ['Contact.id' => 'DESC']];
-		$contact = $this->paginate($this->Contact->find());
+		$results = $this->paginate($this->Contact->find());
+		// Convert entities to CakePHP 2-style array for view
+		$contact = [];
+		foreach ($results as $entity) {
+			$contact[] = ['Contact' => $entity->toArray()];
+		}
 		$this->set(compact('contact'));
+	}
+
+	/** CamelCase wrapper for routing */
+	public function adminContactDelete($id = null): ?Response
+	{
+		return $this->admin_contact_delete($id);
 	}
 
 	public function admin_contact_delete($id = null): ?Response
@@ -345,12 +379,21 @@ class UsersController extends AppController
 	
 
 	
+	/** CamelCase wrapper for routing */
+	public function adminWebSetting(): ?Response
+	{
+		return $this->admin_web_setting();
+	}
+
 	public function admin_web_setting(): ?Response
 	{
 		$this->viewBuilder()->setLayout('admin_layout');
 		$this->set('title_for_layout', SITENAME . ' Web setting');
 		$this->checkAdminSession();
 		$Config = $this->Config->find()->where(['Config.id' => 1])->first();
+		if (!$Config) {
+			$Config = $this->Config->find()->first();
+		}
 		if ($this->request->is('post') && !empty($this->request->getData())) {
 			$data = $this->request->getData();
 			if (!empty($data['image']['name'])) {
@@ -366,13 +409,20 @@ class UsersController extends AppController
 				}
 			}
 			if ($Config) {
-				$Config = $this->Config->patchEntity($Config, $data['Config'] ?? []);
+				$configData = array_merge($Config->toArray(), $data['Config'] ?? []);
+				$Config = $this->Config->patchEntity($Config, $configData, ['guard' => false]);
 				if ($this->Config->save($Config)) {
 					$this->Flash->success('Your web setting has been updated');
 					return $this->redirect(['action' => 'admin_web_setting']);
 				}
 			}
 			$this->Flash->error('Your web setting has not updated');
+		}
+		// View expects $Config['Config']['field']; convert Entity to that array format
+		if ($Config && is_object($Config)) {
+			$Config = ['Config' => $Config->toArray()];
+		} elseif (!$Config) {
+			$Config = ['Config' => []];
 		}
 		$this->set(compact('Config'));
 		return null;
@@ -414,7 +464,7 @@ class UsersController extends AppController
 	{
 		if($this->request->is('post')){
 			
-			$User = $this->NappUser->find('first',array('conditions'=>array('NappUser.email'=>$this->request->getData()['User']['email'])));
+			$User = $this->NappUser->find()->where(['NappUser.email' => $this->request->getData()['User']['email']])->first();
 			if(!empty($User)){
 				
 				//$this->NappUser->id = $User['NappUser']['id'];
@@ -447,7 +497,7 @@ class UsersController extends AppController
 		$this->viewBuilder()->setLayout('admin_login');
 		
 		$userId = base64_decode(base64_decode(base64_decode($usersId)));
-		$usersArr = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$userId)));
+		$usersArr = $this->NappUser->find()->where(['NappUser.id' => $userId])->first();
 		if(empty($usersArr)){
 			$this->Flash->error('This users is not exits. Please try again!');	
 			$this->redirect('/login');	
@@ -484,7 +534,7 @@ class UsersController extends AppController
 	function admin_forgot_password()
 	{
 		if($this->request->is('post')){
-			$User = $this->User->find('first',array('conditions'=>array('User.email'=>$this->request->getData()['User']['email'])));
+			$User = $this->User->find()->where(['User.email' => $this->request->getData()['User']['email']])->first();
 			if(!empty($User)){
 				$this->User->id=$User['User']['id'];
 				$password=$this->random_password(8);
@@ -523,7 +573,7 @@ class UsersController extends AppController
 		$this->set('title_for_layout',SITENAME.' payment setting');
 		$this->checkAdminSession();
 		$admin_id= $this->request->getSession()->read('User.id');
-		$PaymentSetup = $this->PaymentSetup->find('first',array('conditions'=>array('PaymentSetup.id'=>1)));
+		$PaymentSetup = $this->PaymentSetup->find()->where(['PaymentSetup.id' => 1])->first();
 		if(!empty($this->request->getData())){			
 			if(!empty($PaymentSetup)){
 				$this->request->getData()['PaymentSetup']['id']=$PaymentSetup['PaymentSetup']['id'];
@@ -794,7 +844,7 @@ class UsersController extends AppController
 		$this->autoRender = false;
 		
 		isset($_REQUEST['customer_id']) ? $customer_id = $_REQUEST['customer_id'] : $customer_id = 0;		
-		$user = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$customer_id)));
+		$user = $this->NappUser->find()->where(['NappUser.id' => $customer_id])->first();
 		if(!empty($user)){			
 			$custId = base64_encode(base64_encode($customer_id));
 			$url = SITEURL.'admin/users/accesstouser/'.$custId;
@@ -904,7 +954,7 @@ class UsersController extends AppController
 		$this->set('title_for_layout',SITENAME.' | Price PDF File');	
 		
 		$customer_id=$this->request->getSession()->read('Customer.id');
-		$LabFile = $this->LabFile->find('first',array('conditions'=>array('LabFile.dir'=>$dir)));
+		$LabFile = $this->LabFile->find()->where(['LabFile.dir' => $dir])->first();
 		if(empty($LabFile)){
 			$this->redirect('labfile');
 		}	
@@ -913,7 +963,7 @@ class UsersController extends AppController
 		$pdfaceess = $this->request->getSession()->read('pdfaceess');
 		if(!empty($this->request->getData())){
 			$uotp = $this->request->getData()['otp'];
-			$userArr = $this->NappUser->find('first',array('conditions'=>array('NappUser.otp'=>$uotp,'NappUser.id'=>$customer_id)));
+			$userArr = $this->NappUser->find()->where(['NappUser.otp' => $uotp, 'NappUser.id' => $customer_id])->first();
 			
 			if(!empty($userArr)){
 				$update['NappUser']['id'] = $customer_id;
@@ -935,7 +985,7 @@ class UsersController extends AppController
 			$update['NappUser']['otp'] = $rand;
 			$this->NappUser->save($update);	
 			
-			$userArr = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$customer_id)));
+			$userArr = $this->NappUser->find()->where(['NappUser.id' => $customer_id])->first();
 	
 			
 			$name = $userArr['NappUser']['name'].' '.$userArr['NappUser']['lname'];
@@ -1036,6 +1086,12 @@ class UsersController extends AppController
 		return $this->admin_access($id);
 	}
 	
+	/** CamelCase wrapper for routing */
+	public function adminAddStaff()
+	{
+		return $this->admin_add_staff();
+	}
+
 	function admin_add_staff()
 	{
 		$this->viewBuilder()->setLayout('admin_layout');
@@ -1121,6 +1177,12 @@ class UsersController extends AppController
 		$this->set('departmentArr', $departmentList);
 	} 
 	
+	/** CamelCase wrapper for routing */
+	public function adminEditNewStaff($id = null)
+	{
+		return $this->admin_edit_new_staff($id);
+	}
+
 	function admin_edit_new_staff($id=null)
 	{
 		$this->viewBuilder()->setLayout('admin_layout');
@@ -1165,44 +1227,58 @@ class UsersController extends AppController
 		$this->viewBuilder()->setLayout('admin_login');
 		$this->set('title_for_layout',SITENAME.' Customer Register Page');
 
-		if(!empty($this->request->getData())){
+		$data = $this->request->getData('data.NappUser') ?? $this->request->getData('NappUser') ?? ($this->request->getData()['data']['NappUser'] ?? $this->request->getData()['NappUser'] ?? null);
+		if (!empty($data) && is_array($data)) {
 
-			// $this->redirect('/login');
-
-			$email = $this->request->getData()['NappUser']['email'];
-			$cus_arr = $this->NappUser->find('first',array('conditions'=>array('email'=>$email)));
-			if(empty($cus_arr)){
+			$email = trim((string)($data['email'] ?? ''));
+			$name = trim((string)($data['name'] ?? ''));
+			$pass = (string)($data['password'] ?? '');
+			if ($email === '' || $name === '' || $pass === '') {
+				$this->Flash->error('Please fill in Register Type, First Name, Last Name, Email and Password.');
+			} else {
+			$existing = $this->NappUser->find()->where(['email' => $email])->first();
+			if (!$existing) {
 				
 				$empid = 'DT-'.rand(000000,999999);
-				
-				$password = $this->request->getData()['NappUser']['password'];
-				$autopassword =  md5($this->request->getData()['NappUser']['password']);
-				$this->request->getData()['NappUser']['insert_date'] = date('Y-m-d H;i:s');
-				$this->request->getData()['NappUser']['emp_id'] =$empid;
-				$this->request->getData()['NappUser']['password'] =$autopassword;
-				$this->request->getData()['NappUser']['address_5'] = $password;
-				$this->NappUser->save($this->request->getData());
-				
-								
-				$to = $this->request->getData()['NappUser']['email'];				
-				$subject = SITENAME." :: Welcome To Durotech Activate Your Account.";				
-				$template_name = 'activation';
-				$variables = array('password'=>base64_encode($to) ,'name'=>$this->request->getData()['NappUser']['name'],'email'=>$this->request->getData()['NappUser']['email'],'type'=>'activation');		
-				try{
-					$this->sendemail($to , $subject ,$template_name,$variables);
-					$this->Flash->success('Register successfully. Please check your mail and activate your account.');
-					$this->redirect('/login');
-				}catch (Exception $e){
-				
-					$this->Flash->success('Register successfully.');
-					$this->redirect('/login');
-				}				
-			}else{
-				$this->Flash->success('Email id already exist.');
-					
+				$password = $data['password'] ?? '';
+				$autopassword = md5($password);
+
+				$userData = [
+					'name' => $data['name'] ?? '',
+					'lname' => $data['lname'] ?? '',
+					'email' => $email,
+					'password' => $autopassword,
+					'address_5' => $password,
+					'emp_id' => $empid,
+					'is_staff_id' => isset($data['is_staff_id']) ? (int)$data['is_staff_id'] : 0,
+					'insert_date' => date('Y-m-d H:i:s'),
+				];
+
+				$entity = $this->NappUser->newEntity($userData, ['guard' => false]);
+				if ($this->NappUser->save($entity)) {
+					$to = $email;
+					$subject = SITENAME." :: Welcome To Durotech Activate Your Account.";
+					$template_name = 'activation';
+					$variables = [
+						'password' => base64_encode($to),
+						'name' => $userData['name'],
+						'email' => $to,
+						'type' => 'activation'
+					];
+					try {
+						$this->sendemail($to, $subject, $template_name, $variables);
+						$this->Flash->success('Register successfully. Please check your mail and activate your account.');
+					} catch (\Throwable $e) {
+						$this->Flash->success('Register successfully.');
+					}
+					return $this->redirect('/login');
+				}
+				$this->Flash->error('Registration could not be saved. Please try again.');				
+			} else {
+				$this->Flash->error('Email id already exist.');
 			}
-			
-		}	
+			}
+		}
 	}
 
 	function activateaccount($code=null){
@@ -1210,7 +1286,7 @@ class UsersController extends AppController
 		$this->autoRender = false;
 		if(!empty($code)){
 			$code = base64_decode($code);
-			$cus_arr = $this->NappUser->find('first',array('conditions'=>array('email'=>$code)));
+			$cus_arr = $this->NappUser->find()->where(['email' => $code])->first();
 		
 			if(!empty($cus_arr)){		
 				if($cus_arr['NappUser']['is_active'] == 0){	
@@ -1284,7 +1360,7 @@ class UsersController extends AppController
 		}		
 		if(!empty($email)){
 			
-			$cus_arr = $this->NappUser->find('first',array('conditions'=>array('email'=>$email)));
+			$cus_arr = $this->NappUser->find()->where(['email' => $email])->first();
 			// echo '<pre>';
 			// print_r($cus_arr);
 			// die();			
@@ -1402,7 +1478,7 @@ class UsersController extends AppController
 		$cpdquestionaceess=$this->request->getSession()->read('cpdquestionaceess');		
 		if(!empty($this->request->getData()['otp'])){
 			$uotp = $this->request->getData()['otp'];
-			$userArr = $this->NappUser->find('first',array('conditions'=>array('NappUser.otp'=>$uotp,'NappUser.id'=>$user_id)));
+			$userArr = $this->NappUser->find()->where(['NappUser.otp' => $uotp, 'NappUser.id' => $user_id])->first();
 			
 			if(!empty($userArr)){
 				$update['NappUser']['id'] = $user_id;
@@ -1426,7 +1502,7 @@ class UsersController extends AppController
 			$update['NappUser']['otp'] = $rand;
 			$this->NappUser->save($update);	
 			
-			$userArr = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$user_id)));				
+			$userArr = $this->NappUser->find()->where(['NappUser.id' => $user_id])->first();				
 			$name = $userArr['NappUser']['name'].' '.$userArr['NappUser']['lname'];			
 			$to = $userArr['NappUser']['email'];								
 			$subject= SITENAME." :: Secure One-Time-Password (OTP) for  Architect CPD Questionnaire. OTP is ".$rand;				
@@ -1459,132 +1535,138 @@ class UsersController extends AppController
 		
 		
 		//$this->viewBuilder()->setLayout('inner_layout');
-		$this->set('title_for_layout',SITENAME.' Customer questionlist');	
-		$customer_id=$this->request->getSession()->read('Customer.id');
-		$user = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$customer_id)));
-		$this->set('user',$user);
+		$this->set('title_for_layout', SITENAME . ' Customer questionlist');
+		$customer_id = $this->request->getSession()->read('Customer.id');
+		$user = $this->NappUser->find()->where(['NappUser.id' => $customer_id])->first();
+		$this->set('user', $user);
+
+		$questionQuery = $this->Question->find()->contain(['QuestionOptions'])->orderAsc('Question.id');
+		$questionResult = $questionQuery->all();
+		// Convert to CakePHP 2-style array for view compatibility
+		$question = [];
+		foreach ($questionResult as $q) {
+			$row = ['Question' => $q->toArray(), 'QuestionOption' => []];
+			foreach ($q->question_options ?? [] as $opt) {
+				$row['QuestionOption'][] = is_object($opt) ? $opt->toArray() : $opt;
+			}
+			$question[] = $row;
+		}
+		$this->set('question', $question);
+
+		$user_answers = $this->UserAnswer->find()->where(['UserAnswer.user_id' => $customer_id])->all();
+		$this->set('user_answers', $user_answers);
 		
-		$this->Question->bindModel(
-			array('hasMany' => array('QuestionOption' => array(
-			'className' => 'QuestionOption',    
-			'foreignKey' => 'question_id',    
-			'conditions' => array(),
-			'fields' => array(),
-			'order' => array(),
-			))));	
-	
-		
-		$question = $this->Question->find('all');
-		$this->set('question',$question);
-		
-		$user_answers = $this->UserAnswer->find('all',array('conditions'=>array('UserAnswer.user_id'=>$customer_id)));
-		$this->set('question',$question);
-		
-		if(!empty($this->request->getData())){
-					
-			$name = $this->request->getData()['name'];
-			$lname = $this->request->getData()['lname'];
-			$email = $this->request->getData()['email'];
-			$phone = $this->request->getData()['mobile'];
-			$landlineno = $this->request->getData()['landlineno'];
-			$company = $this->request->getData()['company'];
-			$company_address = $this->request->getData()['company_address'];
-			
-			$QuestionSubmit['QuestionSubmit']['user_id'] = $customer_id;
-			$QuestionSubmit['QuestionSubmit']['name'] = $name;
-			$QuestionSubmit['QuestionSubmit']['lname'] = $lname;
-			$QuestionSubmit['QuestionSubmit']['phone'] = $phone;
-			$QuestionSubmit['QuestionSubmit']['email'] = $email;
-			$QuestionSubmit['QuestionSubmit']['landlineno'] = $landlineno;
-			$QuestionSubmit['QuestionSubmit']['company'] = $company;
-			$QuestionSubmit['QuestionSubmit']['company_address'] = $company_address;
-			$QuestionSubmit['QuestionSubmit']['created'] = date('Y-m-d H:i:s');
-			$this->QuestionSubmit->save($QuestionSubmit);
-			
-			$url = SITEURL.'finalsubmit.php?user_id='.$customer_id;			
-			$res = file_get_contents($url);
-			$custname  = base64_encode(base64_encode($name));
-			$this->redirect('thanks/'.$custname);		
+		if (!empty($this->request->getData())) {
+			$data = $this->request->getData();
+			$name = $data['name'] ?? '';
+			$lname = $data['lname'] ?? '';
+			$email = $data['email'] ?? '';
+			$phone = $data['mobile'] ?? '';
+			$landlineno = $data['landlineno'] ?? '';
+			$company = $data['company'] ?? '';
+			$company_address = $data['company_address'] ?? '';
+
+			$entity = $this->QuestionSubmits->newEntity([
+				'user_id' => $customer_id,
+				'name' => $name,
+				'lname' => $lname,
+				'phone' => $phone,
+				'email' => $email,
+				'landlineno' => $landlineno,
+				'company' => $company,
+				'company_address' => $company_address,
+			]);
+			if ($this->QuestionSubmits->save($entity)) {
+				$url = rtrim(SITEURL, '/') . '/finalsubmit.php?user_id=' . $customer_id;
+				@file_get_contents($url);
+				$custname = base64_encode(base64_encode($name));
+				return $this->redirect(['action' => 'thanks', $custname]);
+			}
 		}	
 		
 	}
 	
 	
 	function welcomemailer(){
-		
-		$this->viewBuilder()->setLayout('staff_inner_layout');	
+		$this->viewBuilder()->setLayout('staff_inner_layout');
 		$this->checkSatffSession();
-		$user_id=$this->request->getSession()->read('Customer.id');
-		if(!empty($this->request->getData())){
-			
-			$name = $this->request->getData()['name'];
-			$lname = $this->request->getData()['lname'];
-			$email = $this->request->getData()['email'];
-			$phone = $this->request->getData()['phone'];
-			
-			$QuestionSubmit['CpdMailer']['user_id'] = $user_id;
-			$QuestionSubmit['CpdMailer']['name'] = $name;
-			$QuestionSubmit['CpdMailer']['lname'] = $lname;
-			$QuestionSubmit['CpdMailer']['phone'] = $phone;
-			$QuestionSubmit['CpdMailer']['email'] = $email;
-			
-			$QuestionSubmit['CpdMailer']['created'] = date('Y-m-d H:i:s');
-			$this->CpdMailer->save($QuestionSubmit);
-			$QuestionSubmitId = $this->CpdMailer->id; 			
-			$url = SITEURL.'welcomecertifcatie.php?user_id='.$QuestionSubmitId;		
-			$res = file_get_contents($url);
-			$custname  = base64_encode(base64_encode($name));
-			$this->Flash->success('CPD Presentation Mailer sent successfully ');			
-			$this->redirect('welcomemailer');		
+		$user_id = $this->request->getSession()->read('Customer.id');
+
+		if ($this->request->is('post') && !empty($this->request->getData())) {
+			$data = $this->request->getData();
+			$name = $data['name'] ?? '';
+			$lname = $data['lname'] ?? '';
+			$email = $data['email'] ?? '';
+			$phone = $data['phone'] ?? '';
+
+			$entity = $this->CpdMailer->newEntity([
+				'user_id' => $user_id,
+				'name' => $name,
+				'lname' => $lname,
+				'phone' => $phone,
+				'email' => $email,
+			]);
+			if ($this->CpdMailer->save($entity)) {
+				$QuestionSubmitId = $entity->id;
+				$url = rtrim(SITEURL, '/') . '/welcomecertifcatie.php?user_id=' . $QuestionSubmitId;
+				@file_get_contents($url);
+				$this->Flash->success('CPD Presentation Mailer sent successfully.');
+				return $this->redirect(['action' => 'welcomemailer']);
+			}
 		}
-		
-		$this->paginate = array('conditions'=>array('CpdMailer.user_id'=>$user_id),'page' => 1, 'limit' => 10,'order'=>array('CpdMailer.id'=>'desc'));		
-		$this->CpdMailer->recursive = 2;
-		$CpdMailerArr = $this->Paginator->paginate('CpdMailer');					 
-		$this->set('CpdMailer',$CpdMailerArr);	
-		
+
+		$query = $this->CpdMailer->find()
+			->where(['CpdMailer.user_id' => $user_id])
+			->orderDesc('CpdMailer.id');
+		$results = $this->paginate($query, ['limit' => 10]);
+		$CpdMailerArr = [];
+		foreach ($results as $row) {
+			$CpdMailerArr[] = ['CpdMailer' => $row->toArray()];
+		}
+		$this->set('CpdMailer', $CpdMailerArr);
 	}	
 	
 	function cert(){
-		
-		$this->viewBuilder()->setLayout('staff_inner_layout');	
+		$this->viewBuilder()->setLayout('staff_inner_layout');
 		$this->checkSatffSession();
-		
-		if(!empty($this->request->getData())){
-								
-			$name = $this->request->getData()['name'];
-			$lname = $this->request->getData()['lname'];
-			$email = $this->request->getData()['email'];
-			$phone = $this->request->getData()['phone'];
-			$landlineno = $this->request->getData()['landlineno'];
-			$company = $this->request->getData()['company'];
-			$company_address = $this->request->getData()['company_address'];
-			
-			$QuestionSubmit['QuestionSubmit']['user_id'] = 0;
-			$QuestionSubmit['QuestionSubmit']['name'] = $name;
-			$QuestionSubmit['QuestionSubmit']['lname'] = $lname;
-			$QuestionSubmit['QuestionSubmit']['phone'] = $phone;
-			$QuestionSubmit['QuestionSubmit']['email'] = $email;
-			$QuestionSubmit['QuestionSubmit']['landlineno'] = $landlineno;
-			$QuestionSubmit['QuestionSubmit']['company'] = $company;
-			$QuestionSubmit['QuestionSubmit']['company_address'] = $company_address;
-			$QuestionSubmit['QuestionSubmit']['created'] = date('Y-m-d H:i:s');
-			$this->QuestionSubmit->save($QuestionSubmit);
-			$QuestionSubmitId = $this->QuestionSubmit->id; 
-			
-			$url = SITEURL.'finalcertifcatie.php?user_id='.$QuestionSubmitId;			
-			$res = file_get_contents($url);
-			$custname  = base64_encode(base64_encode($name));
-			
-			$this->Flash->success('Cpd certification sent successfully');
-			$this->redirect('cert');
+
+		if ($this->request->is('post') && !empty($this->request->getData())) {
+			$data = $this->request->getData();
+			$name = $data['name'] ?? '';
+			$lname = $data['lname'] ?? '';
+			$email = $data['email'] ?? '';
+			$phone = $data['phone'] ?? '';
+			$landlineno = $data['landlineno'] ?? '';
+			$company = $data['company'] ?? '';
+			$company_address = $data['company_address'] ?? '';
+
+			$entity = $this->QuestionSubmits->newEntity([
+				'user_id' => 0,
+				'name' => $name,
+				'lname' => $lname,
+				'phone' => $phone,
+				'email' => $email,
+				'landlineno' => $landlineno,
+				'company' => $company,
+				'company_address' => $company_address,
+			]);
+			if ($this->QuestionSubmits->save($entity)) {
+				$QuestionSubmitId = $entity->id;
+				$url = rtrim(SITEURL, '/') . '/finalcertifcatie.php?user_id=' . $QuestionSubmitId;
+				@file_get_contents($url);
+				$custname = base64_encode(base64_encode($name));
+				$this->Flash->success('Cpd certification sent successfully');
+				return $this->redirect(['action' => 'cert']);
+			}
 		}
-		
-		$this->paginate = array('conditions'=>array(),'page' => 1, 'limit' => 10,'order'=>array('QuestionSubmit.id'=>'desc'));		
-		$this->QuestionSubmit->recursive = 2;
-		$QuestionSubmitArr = $this->Paginator->paginate('QuestionSubmit');					 
-		$this->set('QuestionSubmitArr',$QuestionSubmitArr);	
-		
+
+		$query = $this->QuestionSubmits->find()->orderDesc('QuestionSubmits.id');
+		$results = $this->paginate($query, ['limit' => 10]);
+		$QuestionSubmitArr = [];
+		foreach ($results as $row) {
+			$QuestionSubmitArr[] = ['QuestionSubmit' => $row->toArray()];
+		}
+		$this->set('QuestionSubmitArr', $QuestionSubmitArr);
 	}	
 	public function thanks($custname=null) {
 		
@@ -1609,7 +1691,7 @@ class UsersController extends AppController
 		$this->checkCustomerSession();
 		$customer_id=$this->request->getSession()->read('Customer.id');
 			
-		$user = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$customer_id)));
+		$user = $this->NappUser->find()->where(['NappUser.id' => $customer_id])->first();
 		if(!empty($this->request->getData())){
 			if(!empty($user)){
 				$data = $this->request->getData();
@@ -1677,7 +1759,7 @@ class UsersController extends AppController
 		$this->checkCustomerSession();
 		if($this->request->is('post')){
 			$customer_id=$this->request->getSession()->read('Customer.id');
-			$user = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$customer_id)));
+			$user = $this->NappUser->find()->where(['NappUser.id' => $customer_id])->first();
 			if(!empty($user)){
 				$this->NappUser->id=$user['NappUser']['id'];
 				if($this->request->getData()['NappUser']['new_password']==$this->request->getData()['NappUser']['confirm_password'])
@@ -1710,9 +1792,9 @@ class UsersController extends AppController
 		$this->autoRender = false;
 		if(!empty($custId)){
 			$custId = base64_decode(base64_decode($custId));
-			$user = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$custId)));
+			$user = $this->NappUser->find()->where(['NappUser.id' => $custId])->first();
 			if(!empty($user)){						
-				$admin_arr = $this->User->find('first');
+				$admin_arr = $this->User->find()->first();
 				if(!empty($admin_arr)){				
 				$this->request->getSession()->write('User', $admin_arr['User']);
 				$this->request->getSession()->write('is_admin', 1);			
@@ -1738,7 +1820,7 @@ class UsersController extends AppController
 		$this->autoRender = false;
 		
 		$customer_id = $this->request->getSession()->read('Customer.id');	
-		$user = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$customer_id)));
+		$user = $this->NappUser->find()->where(['NappUser.id' => $customer_id])->first();
 		if(!empty($user)){			
 			$custId = base64_encode(base64_encode($customer_id));
 			$url = SITEURL.'admin/users/accesstouser/'.$custId;
@@ -1762,7 +1844,7 @@ class UsersController extends AppController
 		
 		$this->autoRender = false;
 		$customer_id=$this->request->getSession()->read('Customer.id');
-		$user = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$customer_id)));
+		$user = $this->NappUser->find()->where(['NappUser.id' => $customer_id])->first();
 		if(!empty($user)){
 			
 			if($status == 0){
@@ -1802,7 +1884,7 @@ class UsersController extends AppController
 		isset($_REQUEST['code'])? $code = $_REQUEST['code'] : $code = '';
 		if(!empty($code)){
 			
-			$codeArr = $this->Coupon->find('first',array('conditions'=>array('Coupon.code'=>$code)));
+			$codeArr = $this->Coupon->find()->where(['Coupon.code' => $code])->first();
 			if(!empty($codeArr)){
 				
 				if($codeArr['Coupon']['is_read'] == 0){
@@ -1847,7 +1929,7 @@ class UsersController extends AppController
 		
 		if(!empty($this->request->getData())){
 			$uotp = $this->request->getData()['otp'];
-			$userArr = $this->NappUser->find('first',array('conditions'=>array('NappUser.otp'=>$uotp,'NappUser.id'=>$user_id)));
+			$userArr = $this->NappUser->find()->where(['NappUser.otp' => $uotp, 'NappUser.id' => $user_id])->first();
 			
 			if(!empty($userArr)){
 				$update['NappUser']['id'] = $user_id;
@@ -1870,7 +1952,7 @@ class UsersController extends AppController
 			$update['NappUser']['otp'] = $rand;
 			$this->NappUser->save($update);	
 			
-			$userArr = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$user_id)));				
+			$userArr = $this->NappUser->find()->where(['NappUser.id' => $user_id])->first();				
 			$name = $userArr['NappUser']['name'].' '.$userArr['NappUser']['lname'];			
 			$to = $userArr['NappUser']['email'];								
 			$subject= SITENAME." :: Secure One-Time-Password (OTP) for CPD Presentation. OTP is ".$rand;				
@@ -1902,7 +1984,7 @@ class UsersController extends AppController
 		}	
 		
 		$customer_id=$this->request->getSession()->read('Customer.id');
-		$user = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$customer_id)));
+		$user = $this->NappUser->find()->where(['NappUser.id' => $customer_id])->first();
 		$this->set('user',$user);
 	}
 	public function presentation($type=null){
@@ -1920,7 +2002,7 @@ class UsersController extends AppController
 		
 		if(!empty($this->request->getData())){
 			$uotp = $this->request->getData()['otp'];
-			$userArr = $this->NappUser->find('first',array('conditions'=>array('NappUser.otp'=>$uotp,'NappUser.id'=>$user_id)));
+			$userArr = $this->NappUser->find()->where(['NappUser.otp' => $uotp, 'NappUser.id' => $user_id])->first();
 			
 			if(!empty($userArr)){
 				$update['NappUser']['id'] = $user_id;
@@ -1943,7 +2025,7 @@ class UsersController extends AppController
 			$update['NappUser']['otp'] = $rand;
 			$this->NappUser->save($update);	
 			
-			$userArr = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$user_id)));				
+			$userArr = $this->NappUser->find()->where(['NappUser.id' => $user_id])->first();				
 			$name = $userArr['NappUser']['name'].' '.$userArr['NappUser']['lname'];			
 			$to = $userArr['NappUser']['email'];								
 			$subject= SITENAME." :: Secure One-Time-Password (OTP) for Architect Presentation. OTP is ".$rand;				
@@ -1974,9 +2056,9 @@ class UsersController extends AppController
 			$this->set('is_access',0);
 		}	
 		
-		$customer_id=$this->request->getSession()->read('Customer.id');
-		$user = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$customer_id)));
-		$this->set('user',$user);
+		$customer_id = $this->request->getSession()->read('Customer.id');
+		$user = $customer_id ? $this->NappUser->find()->where(['NappUser.id' => $customer_id])->first() : null;
+		$this->set('user', $user);
 		
 	}
 	function contact()
@@ -2008,35 +2090,31 @@ class UsersController extends AppController
 		
 		
 	}
-	
+
+	/** CamelCase wrapper for routing */
+	public function adminContact()
+	{
+		return $this->admin_contact();
+	}
+
 	function admin_contact()
 	{
 		$this->viewBuilder()->setLayout('admin_layout');
 		$this->set('title_for_layout',SITENAME.' Staff List');
 		$this->checkAdminSession();
-	
-		$this->Staff->bindModel(
-		array('belongsTo' => array('Department' => array(
-			'className' => 'Department',			 
-			'foreignKey' => 'dept_id',				
-			'conditions' => array(),
-			'fields' => '',
-			'order' => array(),
-		))));
-		
-		// if(!empty($this->request->getData())){
-			// $name = rtrim($this->request->getData()['name'],' ');
-			// $name = ltrim($name,' ');
-			// $this->paginate = array('conditions'=>array('NappUser.is_staff_id'=>1,'OR'=>array('NappUser.name LIKE'=>'%'.$name.'%','NappUser.lname LIKE'=>'%'.$name.'%','NappUser.email LIKE'=>'%'.$name.'%')),'page' => 1, 'limit' => 25,'order'=>array('NappUser.id'=>'desc'));
-		// }else{
-			// $this->paginate = array('conditions'=>array('NappUser.is_staff_id'=>1),'page' => 1, 'limit' => 25,'order'=>array('NappUser.id'=>'desc'));
-		// }	
-		$this->NappUser->recursive = 2;		
-		$staffArr = $this->Paginator->paginate('Staff');	
-		//echo '<pre>'; print_r($staffArr); die;
-		$this->set('staffArr',$staffArr);	
-		
-		
+
+		$query = $this->Staff->find()->contain(['Department'])->orderDesc('Staff.id');
+		$results = $this->paginate($query, ['limit' => 25]);
+		// Convert to CakePHP 2-style array for view
+		$staffArr = [];
+		foreach ($results as $entity) {
+			$row = ['Staff' => $entity->toArray()];
+			$row['Department'] = (isset($entity->department) && $entity->department)
+				? $entity->department->toArray()
+				: ['id' => null, 'department_title' => ''];
+			$staffArr[] = $row;
+		}
+		$this->set('staffArr', $staffArr);
 	}
 
 	/**
@@ -2067,7 +2145,7 @@ class UsersController extends AppController
 		$this->checkAdminSession();
 		$this->autoRender = false;
 		
-		$cus_arr = $this->NappUser->find('first',array('conditions'=>array('email'=>'kal@durotechindustries.com.au')));
+		$cus_arr = $this->NappUser->find()->where(['email' => 'kal@durotechindustries.com.au'])->first();
 		if(!empty($cus_arr)){
 			$this->request->getSession()->write('Customer', $cus_arr['NappUser']);
 			$this->request->getSession()->write('is_staff', 1);			
@@ -2079,7 +2157,7 @@ class UsersController extends AppController
 		$this->checkAdminSession();
 		$this->autoRender = false;
 		
-		$admin_arr = $this->User->find('first',array('conditions'=>array('id'=>2)));
+		$admin_arr = $this->User->find()->where(['id' => 2])->first();
 		if(!empty($admin_arr)){
 			$this->request->getSession()->write('User', $admin_arr['User']);
 			$this->request->getSession()->write('is_admin', 1);					

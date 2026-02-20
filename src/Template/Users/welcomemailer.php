@@ -16,8 +16,7 @@ table tr td { }
 	</div><!-- /.page-header -->
 	<div class="row">
 		<div class="col-xs-12">
-		
-		 <form action="" method="post" >
+		<?php echo $this->Form->create(null, ['url' => ['action' => 'welcomemailer'], 'type' => 'post']); ?>
           <div class="box">
 				<div class="box-header">
 					<h3 class="box-title" style="width:100%;">
@@ -75,8 +74,7 @@ table tr td { }
 						</tbody>				
 				  </table>
 				</div>
-				
-			</form>
+		<?php echo $this->Form->end(); ?>
 			
 		</div>
 	</div>

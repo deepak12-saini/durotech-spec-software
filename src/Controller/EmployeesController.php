@@ -71,7 +71,7 @@ class EmployeesController extends AppController {
 
     public function login() 
     {
-        $this->layout = 'admin_login';
+        $this->viewBuilder()->setLayout('admin_login');
         $this->set('title_for_layout', SITENAME . ' Employee Login');
 
         if ($this->Session->read('is_employee')) {
@@ -113,7 +113,7 @@ class EmployeesController extends AppController {
 
     public function register()
     {
-        $this->layout = 'admin_login';
+        $this->viewBuilder()->setLayout('admin_login');
         $this->set('title_for_layout', SITENAME . ' Employee Registration');
 
         if ($this->request->is('post')) {
@@ -139,7 +139,7 @@ class EmployeesController extends AppController {
 
 
 	public function dashboard() {
-		$this->layout='employee_layout';
+		$this->viewBuilder()->setLayout('employee_layout');
 		$this->set('title_for_layout',SITENAME.' Employee Dashboard Page');
 		$this->checkEmployeeSession(); 
 		
@@ -209,7 +209,7 @@ public function send_forgot_password()
 
 public function forgot_password($usersId = null)
 {
-    $this->layout = 'employee_layout'; // or use 'employee_login' if different
+    $this->viewBuilder()->setLayout('employee_layout');
 
     $userId = base64_decode(base64_decode(base64_decode($usersId)));
     $employeeArr = $this->Employee->find()->where(['id' => $userId])->first();
@@ -259,7 +259,7 @@ public function change_password()
 {
     // debug($this->request->data);
 
-    $this->layout = 'employee_layout';
+    $this->viewBuilder()->setLayout('employee_layout');
     $this->set('title_for_layout', SITENAME . ' Change Password Page');
     $this->checkEmployeeSession();
 
@@ -297,7 +297,7 @@ public function changePassword()
 
 public function profile()
 {
-    $this->layout = 'employee_layout';
+    $this->viewBuilder()->setLayout('employee_layout');
     $this->set('title_for_layout', SITENAME . ' Profile Page');
     $this->checkEmployeeSession();
 
@@ -320,7 +320,7 @@ public function profile()
 
 public function index()
 {
-    $this->layout = 'employee_layout';
+    $this->viewBuilder()->setLayout('employee_layout');
     $this->set('title_for_layout', SITENAME . ' DuroEzy Specification Employee');
 
     $this->checkEmployeeSession();
@@ -347,7 +347,7 @@ public function index()
 
 
 public function employee_send_v3() {
-    $this->layout = 'employee_layout';
+    $this->viewBuilder()->setLayout('employee_layout');
     $this->set('title_for_layout', SITENAME . ' DuroEzy Specification Mailer');
     $this->checkEmployeeSession(); 
     $this->loadModel('Mailer'); // ✅ Required to use Mailer in this controller
@@ -560,7 +560,7 @@ public function employeeSendV3() {
 
 public function editsend_v3($id = null) {
    
-    $this->layout = 'employee_layout';
+    $this->viewBuilder()->setLayout('employee_layout');
     $this->set('title_for_layout', SITENAME . ' DuroEzy Specification Mailer');
     $this->checkEmployeeSession(); 
 
@@ -896,7 +896,7 @@ public function editsendV3($id = null) {
      * Case Studies list for logged-in employee (CakePHP 3).
      */
     public function case_studies() {
-        $this->layout = 'employee_layout';
+        $this->viewBuilder()->setLayout('employee_layout');
         $this->set('title_for_layout', (defined('SITENAME') ? SITENAME . ' - ' : '') . 'Case Studies');
         $this->checkEmployeeSession();
 
@@ -925,7 +925,7 @@ public function editsendV3($id = null) {
 
     public function case_add() {
        
-        $this->layout = 'employee_layout';
+        $this->viewBuilder()->setLayout('employee_layout');
         $this->set('title_for_layout', SITENAME . 'Case Detail Page');
         $this->checkEmployeeSession();
          $employeeId = $this->Session->read('Employee.id');
@@ -1245,7 +1245,7 @@ public function test_email() {
 
 public function case_delete($id = null)
 {
-    $this->layout = 'employee_layout';
+    $this->viewBuilder()->setLayout('employee_layout');
     $this->set('title_for_layout', SITENAME . ' | Delete Case Study');
 
     if (!$id || !$this->CaseStudy->exists(['id' => $id])) {
@@ -1302,7 +1302,7 @@ protected function _deleteDirectory($dir)
 
     public function case_edit($id = null) 
     {
-        $this->layout = 'employee_layout';
+        $this->viewBuilder()->setLayout('employee_layout');
         $this->set('title_for_layout', SITENAME . 'Case Detail Page');
         $this->response = $this->response
             ->withHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
@@ -1546,7 +1546,7 @@ protected function _deleteDirectory($dir)
      */
     public function delete_case_image($caseId = null, $imageId = null)
     {
-        $this->layout = 'employee_layout';
+        $this->viewBuilder()->setLayout('employee_layout');
         if (!$caseId || !$imageId) {
             $this->Flash->error(__('Invalid request.'));
             return $this->redirect(['action' => 'case_studies']);
@@ -1582,7 +1582,7 @@ protected function _deleteDirectory($dir)
 
 public function monthlySpecs() {
 
-    $this->layout = 'employee_layout';
+    $this->viewBuilder()->setLayout('employee_layout');
     $this->checkEmployeeSession();
 
     $this->loadModel('Mailer');

@@ -18,20 +18,23 @@
 			<h1>Clients Management 
 			<?php echo $this->Html->link('Add New',array('controller' => 'clients','action' => 'add'),array('class'=>'btn btn-info btn-xs top-button')); ?>
 			
-			<form action="" method="post" style="float:right;">
-				
+			<?= $this->Form->create(null, ['url' => ['action' => 'index'], 'type' => 'post', 'style' => 'float:right;']) ?>
 				<select name="data[category_id]" style="width:160px;">
 					<option value="">Select Category </option>
-					<?php foreach($ClientTypeArr as $ClientTypeArrs){ ?>
-						<option <?php if($category_id == $ClientTypeArrs['ClientType']['id']){ echo 'selected'; } ?> value="<?php echo $ClientTypeArrs['ClientType']['id']; ?>"><?php echo $ClientTypeArrs['ClientType']['name']; ?></option>
-					<?php  } ?>
+					<?php foreach (($ClientTypeArr ?? []) as $ClientTypeArrs) {
+						$ct = $ClientTypeArrs['ClientType'] ?? $ClientTypeArrs;
+						$ctId = is_array($ct) ? ($ct['id'] ?? '') : ($ct->id ?? '');
+						$ctName = is_array($ct) ? ($ct['name'] ?? '') : ($ct->name ?? '');
+						?>
+						<option <?php if (isset($category_id) && $category_id == $ctId) echo 'selected'; ?> value="<?php echo h($ctId); ?>"><?php echo h($ctName); ?></option>
+					<?php } ?>
 				</select>
 				<input type="search" name="search" placeholder="Search  name or email or phone" value="<?php echo $search; ?>" style="width:220px">
 				<input type="submit"  class="btn btn-xs btn-primary" value="Search">
 				
 				<a class="btn btn-xs btn-warning" href="<?php echo SITEURL.'clients/index/clear'; ?>" >Clear All</a>
 				<a class="btn btn-xs btn-info" href="#null" onclick="return dialclients()">Dial Number</a>
-			</form>
+			<?= $this->Form->end() ?>
 				
 			</h1>
 			
@@ -65,42 +68,68 @@
 				</thead>
 				<tbody>
 					
-						<?php $i=1; foreach ($clientArr as $clientArrs): ?>
-						 
-							<tr>							
-							<td><input type="checkbox" value="<?php echo $clientArrs['Client']['id']; ?>" name="dialnumber" class="ckbCheckAll"></td>
-							<td><a href="#null"  onclick="openpoup(<?php echo $clientArrs['Client']['id']; ?>)"><i class="fa fa-comment"></i></a></td>
-							
-							<!-- <td>#<?php echo h($clientArrs['Client']['id']); ?>&nbsp;</td> -->
-							<td><input type="text" value="<?php echo h($clientArrs['ClientType']['name']); ?>" style="border: 0px;width: 350px !important;"></td>&nbsp;</td>
+						<?php
+					$clientArr = $clientArr ?? [];
+					$i = 1;
+					foreach ($clientArr as $clientArrs):
+						$isEntity = is_object($clientArrs);
+						$cid = $isEntity ? ($clientArrs->id ?? '') : ($clientArrs['Client']['id'] ?? '');
+						$cfname = $isEntity ? ($clientArrs->fname ?? '') : ($clientArrs['Client']['fname'] ?? '');
+						$cemail = $isEntity ? ($clientArrs->email ?? '') : ($clientArrs['Client']['email'] ?? '');
+						$cmobile = $isEntity ? ($clientArrs->mobile ?? '') : ($clientArrs['Client']['mobile'] ?? '');
+						$clandline = $isEntity ? ($clientArrs->landline ?? '') : ($clientArrs['Client']['landline'] ?? '');
+						$ccompany = $isEntity ? ($clientArrs->company ?? '') : ($clientArrs['Client']['company'] ?? '');
+						$ccatId = $isEntity ? ($clientArrs->category_id ?? '') : ($clientArrs['Client']['category_id'] ?? '');
+						$catName = '';
+						if ($isEntity) {
+							$ctAssoc = $clientArrs->client_type ?? $clientArrs->client_types ?? null;
+							$catName = ($ctAssoc && is_object($ctAssoc)) ? ($ctAssoc->name ?? '') : '';
+						} elseif (!empty($clientArrs['ClientType']['name'])) {
+							$catName = $clientArrs['ClientType']['name'];
+						}
+						if ($catName === '' && $ccatId !== '' && !empty($ClientTypeArr)) {
+							foreach ($ClientTypeArr as $ctRow) {
+								$ct = $ctRow['ClientType'] ?? $ctRow;
+								$ctId = is_array($ct) ? ($ct['id'] ?? null) : ($ct->id ?? null);
+								if ((string)$ctId === (string)$ccatId) {
+									$catName = is_array($ct) ? ($ct['name'] ?? '') : ($ct->name ?? '');
+									break;
+								}
+							}
+						}
+						$staffList = [];
+						if ($isEntity && !empty($clientArrs->staff_clients)) {
+							foreach ($clientArrs->staff_clients as $sc) {
+								$nu = $sc->napp_user ?? null;
+								if ($nu) $staffList[] = trim(($nu->name ?? '') . ' ' . ($nu->lname ?? ''));
+							}
+						} elseif (!empty($clientArrs['StaffClient'])) {
+							foreach ($clientArrs['StaffClient'] as $StaffClients) {
+								$staffList[] = trim(($StaffClients['NappUser']['name'] ?? '') . ' ' . ($StaffClients['NappUser']['lname'] ?? ''));
+							}
+						}
+						$cleintname = implode(' , ', $staffList);
+					?>
+							<tr>
+							<td><input type="checkbox" value="<?php echo h($cid); ?>" name="dialnumber" class="ckbCheckAll"></td>
+							<td><a href="#null" onclick="openpoup(<?php echo (int)$cid; ?>)"><i class="fa fa-comment"></i></a></td>
+							<td><input type="text" value="<?php echo h($catName); ?>" style="border: 0px;width: 350px !important;"></td>
+							<td><?php if ($cfname !== '') { ?><input type="text" value="<?php echo h($cfname); ?>" style="border: 0px;width: 150px !important;"><?php } ?></td>
+							<td><input type="text" value="<?php echo h($cemail); ?>" style="border: 0px;width: 350px !important;"></td>
+							<td><input type="text" value="<?php echo h($cmobile); ?>" style="border: 0px;width: 130px !important;"></td>
+							<td><input type="text" value="<?php echo h($clandline); ?>" style="border: 0px;width: 130px !important;"></td>
+							<td><input type="text" value="<?php echo h($ccompany); ?>" style="border: 0px;width: 160px !important;"></td>
+							<td><span class="label label-info"><?php echo h($cleintname); ?></span></td>
 							<td>
-							<?php if(!empty($clientArrs['Client']['fname'])){ ?>
-							<input type="text" value="<?php echo h($clientArrs['Client']['fname']); ?>" style="border: 0px;width: 150px !important;"> <?php } ?> 
-							</td>
-							<td><input type="text" value="<?php echo h($clientArrs['Client']['email']); ?>" style="border: 0px;width: 350px !important;"></td>
-							<td><input type="text" value="<?php echo h($clientArrs['Client']['mobile']); ?>" style="border: 0px;width: 130px !important;"></td>
-							<td><input type="text" value="<?php echo h($clientArrs['Client']['landline']); ?>" style="border: 0px;width: 130px !important;"></td>
-							<td><input type="text" value="<?php echo h($clientArrs['Client']['company']); ?>" style="border: 0px;width: 160px !important;"> </td>
-							<td>
-								<?php
-								$cleintname = '';	
-								if(!empty($clientArrs['StaffClient'])){
-									foreach($clientArrs['StaffClient'] as $StaffClients){									
-									$cleintname .= $StaffClients['NappUser']['name'].' '.$StaffClients['NappUser']['lname'].' , ';
-								} } 
-								echo '<span class="label label-info">'.$cleintname.'</span>';
-								?>
-							</td>
-							<td>
-							<?php 
-								if($clientArrs['Client']['category_id'] == 13){
-									echo $this->Html->link('Edit',array('controller' => 'clients','action' => 'edit/'.$clientArrs[	'Client']['id']),array('class'=>'btn btn-primary btn-xs top-button')); 
-								}else{
+							<?php
+								if ((int)$ccatId === 13) {
+									echo $this->Html->link('Edit', ['controller' => 'clients', 'action' => 'edit', $cid], ['class' => 'btn btn-primary btn-xs top-button']);
+								} else {
 									echo 'N/A';
 								}
 							?>
 							</td>
-							</tr>					
+							</tr>
 						<?php $i++; endforeach; ?>
 					
 				</tbody>
@@ -112,7 +141,7 @@
 	<div class="row">
 		<div class="col-xs-6">
 			<div class="dataTables_info" id="dynamic-table_info" role="status" aria-live="polite"><?php	echo $this->Paginator->counter(array(
-'format' => __('showing {:current} records out of {:count} entries')));?>	</div>
+'format' => __('showing {{current}} records out of {{count}} entries')));?>	</div>
 		</div>
 		<div class="col-xs-6">
 			<div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">

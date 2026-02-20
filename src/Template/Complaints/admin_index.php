@@ -82,7 +82,7 @@
 						</td>
 						<td><?php echo h($ComplaintArrs['Complaint']['customer_name']); ?></td>							
 						<td><?php echo h($ComplaintArrs['Department']['department_title']); ?></td>
-						<td><?php echo h($ComplaintArrs['ComplaintType']['title']); ?></td>							
+						<td><?php echo h($ComplaintArrs['ComplaintType']['title'] ?? ''); ?></td>							
 						
 						<td>
 						<?php 
@@ -163,7 +163,7 @@
 				<tr><th>Department</th><td><?php echo h($ComplaintArrs['Department']['department_title']); ?></td><tr>				
 				<tr><th>Product Name</th><td><span class="label label-info"><?php echo h($ComplaintArrs['Complaint']['product_name']); ?></span></td><tr>					
 				<tr><th>Product Color</th><td><?php echo h($ComplaintArrs['Complaint']['product_color']); ?></td><tr>	
-				<?php if($ComplaintArrs['ComplaintType']['title'] != ''){ ?>	
+				<?php if(isset($ComplaintArrs['ComplaintType']['title']) && $ComplaintArrs['ComplaintType']['title'] !== ''){ ?>	
 					<tr><th>Complaint Type</th><td><?php echo h($ComplaintArrs['ComplaintType']['title']); ?></td><tr>	
 				<?php }else{ ?>	
 					<tr><th>Other Complaint Type</th><td><?php echo h($ComplaintArrs['Complaint']['other']); ?></td><tr>						

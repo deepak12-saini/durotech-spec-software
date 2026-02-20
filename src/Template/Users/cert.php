@@ -15,8 +15,7 @@
 	</div><!-- /.page-header -->
 	<div class="row">
 		<div class="col-xs-12">
-		
-		 <form action="" method="post" >
+		<?php echo $this->Form->create(null, ['url' => ['action' => 'cert'], 'type' => 'post']); ?>
           <div class="box">
 				<div class="box-header">
 					<h3 class="box-title" style="width:100%;">
@@ -100,8 +99,7 @@
 						</tbody>				
 				  </table>
 				</div>
-				
-			</form>
+		<?php echo $this->Form->end(); ?>
 			
 		</div>
 	</div>
@@ -138,7 +136,7 @@
 					
 					$name = $QuestionSubmitArrs['QuestionSubmit']['name'].' '.$QuestionSubmitArrs['QuestionSubmit']['lname'];
 					$useremail = base64_encode(base64_encode($name));
-					
+					$certId = $QuestionSubmitArrs['QuestionSubmit']['id'] ?? '';
 					?>
 					<tr>
 						
@@ -159,7 +157,7 @@
 						
 						<td> <?php echo date('d-M-Y H:i:s',strtotime($QuestionSubmitArrs['QuestionSubmit']['created'])); ?></td>
 						<td> 
-						<a href="<?php echo SITEURL.'certificate.php?userid='.$useremail ?>" class="label label-info" >Download</a>		
+						<a href="<?php echo SITEURL.'certificate.php?userid='.$useremail.'&id='.$certId; ?>" class="label label-info">Download</a>		
 						</td>
 										
 					</tr>

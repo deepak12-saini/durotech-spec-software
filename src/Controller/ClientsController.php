@@ -384,7 +384,11 @@ class ClientsController extends AppController
             }
             $this->Flash->error('The customer could not be saved. Please, try again.');
         }
-        $ClientTypeArr = $this->ClientTypes->find('all')->all();
+        $clientTypes = $this->ClientTypes->find()->all();
+        $ClientTypeArr = [];
+        foreach ($clientTypes as $entity) {
+            $ClientTypeArr[] = ['ClientType' => $entity->toArray()];
+        }
         $this->set(compact('ClientTypeArr'));
     }
 
@@ -435,7 +439,11 @@ class ClientsController extends AppController
         $this->paginate = ['limit' => 300, 'order' => ['Clients.fname' => 'asc']];
         $query = $this->Clients->find()->contain(['ClientTypes', 'StaffClients' => ['NappUser' => ['fields' => ['name', 'lname']]]])->where($conditions);
         $clientArr = $this->paginate($query);
-        $ClientTypeArr = $this->ClientTypes->find('all')->all();
+        $clientTypes = $this->ClientTypes->find()->all();
+        $ClientTypeArr = [];
+        foreach ($clientTypes as $entity) {
+            $ClientTypeArr[] = ['ClientType' => $entity->toArray()];
+        }
         $userper = $this->UserPermission->find('list', ['valueField' => 'user_id'])->where(['UserPermission.meta_val' => 'sr'])->toArray();
         $userIds = array_values($userper);
         $cuserQuery = $this->NappUser->find('all', ['fields' => ['id', 'name', 'lname']])

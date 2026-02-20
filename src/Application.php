@@ -43,12 +43,12 @@ class Application extends BaseApplication
         }
 
         /*
-         * Only try to load DebugKit in development mode
-         * Debug Kit should not be installed on a production system
+         * DebugKit disabled - removes the CakePHP toolbar/icon from all pages.
+         * Re-enable by uncommenting the block below when you need the debug toolbar.
          */
-        if (Configure::read('debug')) {
-            $this->addPlugin('DebugKit');
-        }
+        // if (Configure::read('debug')) {
+        //     $this->addPlugin('DebugKit');
+        // }
 
         // Load more plugins here
     }

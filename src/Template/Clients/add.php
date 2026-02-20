@@ -14,9 +14,13 @@
 				<div class="col-sm-9">
 					<select name="data[Client][category_id]" id="category_id" class ='col-xs-10 col-sm-5'>
 						<option value="">Select Category </option>
-						<?php foreach($ClientTypeArr as $ClientTypeArrs){ ?>
-							<option value="<?php echo $ClientTypeArrs['ClientType']['id']; ?>"><?php echo $ClientTypeArrs['ClientType']['name']; ?></option>
-						<?php  } ?>
+						<?php foreach (($ClientTypeArr ?? []) as $ClientTypeArrs) {
+							$ct = $ClientTypeArrs['ClientType'] ?? $ClientTypeArrs;
+							$ctId = is_array($ct) ? ($ct['id'] ?? '') : ($ct->id ?? '');
+							$ctName = is_array($ct) ? ($ct['name'] ?? '') : ($ct->name ?? '');
+							?>
+							<option value="<?php echo h($ctId); ?>"><?php echo h($ctName); ?></option>
+						<?php } ?>
 					</select>
 				</div>
 			</div>	

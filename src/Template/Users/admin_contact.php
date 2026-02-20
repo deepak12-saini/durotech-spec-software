@@ -30,7 +30,7 @@
 						<td><?php echo $staffArrs['Staff']['name']; ?>&nbsp;</td>
 					<td><?php echo h($staffArrs['Staff']['email']); ?>&nbsp;</td>
 					<td><?php echo h($staffArrs['Staff']['phone']); ?>&nbsp;</td>		
-					<td><?php echo h($staffArrs['Department']['department_title']); ?>&nbsp;</td>
+					<td><?php echo isset($staffArrs['Department']['department_title']) ? h($staffArrs['Department']['department_title']) : ''; ?>&nbsp;</td>
 					<td><?php echo $staffArrs['Staff']['designation']; ?>&nbsp;</td>
 											
 					<td><?php if($staffArrs['Staff']['status'] == 1){ echo '<span class="label label-danger">Active</span>'; }else{ echo '<span class="label label-success">Deactive</span>'; } ?>&nbsp;</td>					
@@ -49,8 +49,9 @@
 	</div>		
 	<div class="row">
 		<div class="col-xs-6">
-			<div class="dataTables_info" id="dynamic-table_info" role="status" aria-live="polite"><?php	echo $this->Paginator->counter(array(
-'format' => __('showing {{current}} records out of {{count}} entries')));?>	</div>
+			<div class="dataTables_info" id="dynamic-table_info" role="status" aria-live="polite"><?php	echo $this->Paginator->counter([
+'format' => __('showing {{current}} records out of {{count}} entries')
+]);?>	</div>
 		</div>
 		<div class="col-xs-6">
 			<div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">

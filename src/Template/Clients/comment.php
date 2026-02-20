@@ -46,34 +46,39 @@
 						<div class="widget-main padding-8">
 							<div id="profile-feed-1" class="profile-feed">
 								<?php
-								
-									
-									if(!empty($clientArr)){
-									foreach($clientArr as $TaskAssigns){
-									
-									if($TaskAssigns['ClientComment']['type'] == 1){
-										$name = $TaskAssigns['User']['name'];
-									}else{
-										$name = $TaskAssigns['NappUser']['name'].' '.$TaskAssigns['NappUser']['name'];
-									}	
-									
+									$clientArr = $clientArr ?? [];
+									if (!empty($clientArr)) {
+										foreach ($clientArr as $TaskAssigns) {
+											$isEntity = is_object($TaskAssigns);
+											$type = $isEntity ? ($TaskAssigns->type ?? 0) : ($TaskAssigns['ClientComment']['type'] ?? 0);
+											if ($type == 1) {
+												$name = $isEntity ? (isset($TaskAssigns->user) ? ($TaskAssigns->user->name ?? '') : '') : ($TaskAssigns['User']['name'] ?? '');
+											} else {
+												$nu = $isEntity ? ($TaskAssigns->napp_user ?? null) : ($TaskAssigns['NappUser'] ?? null);
+												$name = $isEntity
+													? (($nu && is_object($nu)) ? trim(($nu->name ?? '') . ' ' . ($nu->lname ?? '')) : '')
+													: trim(($nu['name'] ?? '') . ' ' . ($nu['lname'] ?? ''));
+											}
+											$comment = $isEntity ? ($TaskAssigns->comment ?? '') : ($TaskAssigns['ClientComment']['comment'] ?? '');
+											$documents = $isEntity ? ($TaskAssigns->documents ?? '') : ($TaskAssigns['ClientComment']['documents'] ?? '');
+											$created = $isEntity ? ($TaskAssigns->created ?? null) : ($TaskAssigns['ClientComment']['created'] ?? null);
 								?>
 								<div class="profile-activity clearfix">
 									<div>
-										<?php if($TaskAssigns['ClientComment']['type'] == 1){ ?>
+										<?php if ((int)$type == 1) { ?>
 											<i class="pull-left thumbicon icon-picture btn-info no-hover"></i>
-										<?php }else{ ?>
+										<?php } else { ?>
 											<i class="pull-left thumbicon icon-picture btn-warning no-hover"></i>
 										<?php } ?>
-										<a class="user" href="#"> <?php echo $name; ?>: </a>
-										<?php echo $TaskAssigns['ClientComment']['comment']; ?>
-										<?php if(!empty($TaskAssigns['ClientComment']['documents'])){ ?>
-											<a href="<?php echo SITEURL.'admin/clients/commentdownload/'.base64_encode(base64_encode($TaskAssigns['ClientComment']['documents']));?>"><i class="fa fa-download"></i></a>
+										<a class="user" href="#"> <?php echo h($name); ?>: </a>
+										<?php echo h($comment); ?>
+										<?php if ($documents !== '' && $documents !== null) { ?>
+											<a href="<?php echo SITEURL.'admin/clients/commentdownload/'.base64_encode(base64_encode($documents));?>"><i class="fa fa-download"></i></a>
 										<?php } ?>
 										<div class="time">
 											<i class="icon-time bigger-110"></i>
-											<?php  
-												echo date('d M Y h:i a',strtotime($TaskAssigns['ClientComment']['created']));
+											<?php
+												if ($created) echo date('d M Y h:i a', strtotime($created));
 											?>
 										</div>
 									</div>
@@ -81,16 +86,16 @@
 										<a href="#" class="blue">
 											<i class="icon-pencil bigger-125"></i>
 										</a>
-
 										<a href="#" class="red">
 											<i class="icon-remove bigger-125"></i>
 										</a>
 									</div>
 								</div>
-								<?php } }else{ ?>
+								<?php }
+									} else { ?>
 								<div class="profile-activity clearfix">
 									<div>
-										<p> No C   omment Found</p>
+										<p>No Comment Found</p>
 									</div>
 								</div>
 								<?php } ?>

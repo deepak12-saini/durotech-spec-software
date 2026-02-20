@@ -18,12 +18,15 @@
 				</thead>
 				<tbody>
 						<?php foreach ($Subscribers as $Subscriber): ?>
+					<?php
+						$row = isset($Subscriber['Subscriber']) ? $Subscriber['Subscriber'] : (is_object($Subscriber) ? $Subscriber->toArray() : []);
+					?>
 					<tr>
-					<td>#<?php echo h($Subscriber['Subscriber']['id']); ?>&nbsp;</td>
-					<td><?php echo h($Subscriber['Subscriber']['email']); ?>&nbsp;</td>
-					<td><?php echo h($Subscriber['Subscriber']['popup']); ?>&nbsp;</td>
+					<td>#<?php echo h($row['id'] ?? ''); ?>&nbsp;</td>
+					<td><?php echo h($row['email'] ?? ''); ?>&nbsp;</td>
+					<td><?php echo h($row['popup'] ?? $row['offer'] ?? ''); ?>&nbsp;</td>
 					
-                    <td> <?php echo date('d-M-Y',strtotime($Subscriber['Subscriber']['created'])); ?></td>
+                    <td> <?php echo !empty($row['created']) ? date('d-M-Y', strtotime($row['created'])) : ''; ?></td>
 					
 					</tr>
 					<?php endforeach; ?>

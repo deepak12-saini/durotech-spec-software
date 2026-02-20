@@ -151,5 +151,13 @@
 		<script src="<?php echo SITEURL ;?>theme/js/ace/ace.widget-on-reload.js"></script>
 		<script src="<?php echo SITEURL ;?>theme/js/ace/ace.searchbox-autocomplete.js"></script>
 	<?php //echo $this->element('sql_dump'); ?>
+	<script type="text/javascript">
+		jQuery(function($) {
+			$('.flash-message-auto-hide').each(function() {
+				var $el = $(this);
+				setTimeout(function() { $el.fadeOut(400, function() { $el.remove(); }); }, 4500);
+			});
+		});
+	</script>
 </body>
 </html>

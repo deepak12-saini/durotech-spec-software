@@ -64,6 +64,13 @@ function closeNav() {
     document.getElementById("myNav").style.width = "0%";
 }
 </script>
+<?php
+// Support CakePHP 3 entity or CakePHP 2 array
+$isNatspec = false;
+if (!empty($user)) {
+	$isNatspec = (int)(is_object($user) ? ($user->is_natspec_presentation ?? 0) : ($user['NappUser']['is_natspec_presentation'] ?? 0)) === 1;
+}
+?>
 <div class="page-content">
 	<div class="page-header">
 	<h1>
@@ -72,9 +79,9 @@ function closeNav() {
 	<i class="ace-icon fa fa-angle-double-right"></i>
 		Architect Presentation
 	</small>
-	<?php if(($user['NappUser']['is_natspec_presentation'] == 1)  ||  ($is_access == 2)){ ?>
+	<?php if ($isNatspec || ($is_access == 2)) { ?>
 		<span class="btn btn-mini btn-inverse" onclick="openNav()" style="float:right;"> Open in Full Screen</span>
-	<?php }?>
+	<?php } ?>
 	</h1>
 	</div><!-- /.page-header -->
 	<div class="row">
@@ -85,18 +92,18 @@ function closeNav() {
 					<div class="box-header">				  
 					</div>					
 					<div class="box-body">
-						<?php if(($user['NappUser']['is_natspec_presentation'] == 1)  ||  ($is_access == 2)){ ?>
+						<?php if ($isNatspec || ($is_access == 2)) { ?>
 							<iframe src="<?php echo SITEURL.'wp-content/uploads/Durotech Workshop  Presentation - final.pdf'?>" style="width:100%; height:530px; border:none;"></iframe>
 							<br/><br/>
 							<a class="btn btn-mini btn-inverse" style="float:right;" href="<?php echo SITEURL ?>users/questionlist">Continue To Architect  CPD Questionnaire</a>
-						<?php }else  if($is_access == 0){ ?>
+						<?php } elseif ($is_access == 0) { ?>
 							<h3> Sorry, you don't have access to this folder. You can request the admin to give you access. <a href="<?php echo SITEURL.'users/access/1'; ?>">Click here</a></h3>
-						<?php }?>
+						<?php } ?>
 					</div>
 				</div>
 			</form>
 			
-			<?php if(($user['NappUser']['is_natspec_presentation'] == 0) && ($is_access == 0)){ ?>
+			<?php if (!$isNatspec && ($is_access == 0)) { ?>
 			<br><br>
 			<div class="durolab_product_section col-xs-12">		
 				<div class="span3 widget-container-span ui-sortable">
@@ -119,11 +126,15 @@ function closeNav() {
 				<div class="col-xs-12">
 				
 					<form action="" class="form-horizontal" id="" method="post" accept-charset="utf-8">
-						<?php if(!empty($usernewArr['NappUser']['email']) && !empty($usernewArr['NappUser']['mobile_number']) && ($usernewArr['NappUser']['is_active_otp'] > 0) ){ ?>
-							<p><b>Form enhaced security of your account, we have sent One-Time Password (OTP) to your mobile number <?php echo $usernewArr['NappUser']['mobile_number'] ?> and email Id <?php echo $usernewArr['NappUser']['email'] ?></b></p>	
-						<?php }else { ?>
-							<p><b>Form enhaced security of your account, we have sent One-Time Password (OTP) to you email Id <?php echo $usernewArr['NappUser']['email'] ?></b></p>	
-						<?php  } ?>
+						<?php
+						$nuEmail = !empty($usernewArr) ? (is_object($usernewArr) ? ($usernewArr->email ?? '') : ($usernewArr['NappUser']['email'] ?? '')) : '';
+						$nuMobile = !empty($usernewArr) ? (is_object($usernewArr) ? ($usernewArr->mobile_number ?? '') : ($usernewArr['NappUser']['mobile_number'] ?? '')) : '';
+						$nuActiveOtp = !empty($usernewArr) ? (int)(is_object($usernewArr) ? ($usernewArr->is_active_otp ?? 0) : ($usernewArr['NappUser']['is_active_otp'] ?? 0)) : 0;
+						if (!empty($nuEmail) && !empty($nuMobile) && $nuActiveOtp > 0) { ?>
+							<p><b>Form enhaced security of your account, we have sent One-Time Password (OTP) to your mobile number <?php echo h($nuMobile); ?> and email Id <?php echo h($nuEmail); ?></b></p>
+						<?php } else { ?>
+							<p><b>Form enhaced security of your account, we have sent One-Time Password (OTP) to you email Id <?php echo h($nuEmail); ?></b></p>
+						<?php } ?>
 						<div class="form-group">
 							<label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Please enter One Time Password (OTP): </label>
 							<div class="col-sm-9">

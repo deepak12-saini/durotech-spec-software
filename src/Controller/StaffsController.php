@@ -136,30 +136,28 @@ class StaffsController extends AppController {
 
 	function profile()
 	{
-		$this->layout='staff_inner_layout';
-		$this->set('title_for_layout',SITENAME.' Profile Page');
+		$this->viewBuilder()->setLayout('staff_inner_layout');
+		$this->set('title_for_layout', SITENAME . ' Profile Page');
 		$this->checkSatffSession();
-		$customer_id=$this->Session->read('Customer.id');
-			
-		$user = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$customer_id)));
-		if(!empty($this->request->data)){			
-			if(!empty($user)){
-				$this->request->data['NappUser']['id']=$customer_id;
-				
-				if ($this->NappUser->save($this->request->data)) {
-				$this->Session->setFlash('Your profile has been updated','default',array('class' => 'alert alert-success'));
-				$this->redirect('profile');
-				}else{
-				$this->Session->setFlash('Your profile has not updated','default',array('class' => 'alert alert-danger'));
-					
+		$customer_id = $this->request->getSession()->read('Customer.id');
+
+		$user = $customer_id ? $this->NappUser->find()->where(['NappUser.id' => $customer_id])->first() : null;
+
+		if ($this->request->is('post')) {
+			$data = $this->request->getData();
+			if (!empty($user) && !empty($data['NappUser'])) {
+				$user = $this->NappUser->patchEntity($user, $data['NappUser']);
+				if ($this->NappUser->save($user)) {
+					$this->Flash->success('Your profile has been updated');
+					return $this->redirect(['action' => 'profile']);
 				}
+				$this->Flash->error('Your profile has not updated');
 			}
-		}	
-		$this->request->data = $user;
-		
-		$department = $this->Department->find('all');
-		$this->set('user',$user);
-		$this->set('departmentArr',$department);
+		}
+
+		$this->set('user', $user);
+		$department = $this->Department->find()->all();
+		$this->set('departmentArr', $department);
 	}
 	
 	function change_password()
@@ -1653,136 +1651,125 @@ class StaffsController extends AppController {
 	
 	}
 
-	public function staff_specRequest_form() 
-		{
+	/** CamelCase alias for URL staffs/staff-spec-request-form */
+	public function staffSpecRequestForm()
+	{
+		return $this->staff_specRequest_form();
+	}
 
-		$this->layout = 'staff_inner_layout';
+	public function staff_specRequest_form()
+	{
+		$this->viewBuilder()->setLayout('staff_inner_layout');
 		$this->set('title_for_layout', 'Submit New Spec Request');
-		$this->checkSatffSession(); 
+		$this->checkSatffSession();
 
-		$user_id=$this->Session->read('Customer.id');
+		$user_id = $this->request->getSession()->read('Customer.id');
 	
-		if (!empty($this->request->data)) {
+		$data = $this->request->getData();
+		if (!empty($data)) {
 
-			$refrmon = array('01'=>'a','02'=>'b','03'=>'c','04'=>'d','05'=>'e','06'=>'f','07'=>'g','08'=>'h','09'=>'i','10'=>'j','11'=>'k','12'=>'l');
-			$mailerid = $this->Mailer->find('count',array('conditions'=>array('type'=>3),'order'=>array('Mailer.id'=>'desc')));
-			$id= $mailerid + 1;
+			$mailerid = $this->Mailer->find()->where(['Mailer.type' => 3])->orderDesc('Mailer.id')->count();
+			$id = $mailerid + 1;
 
 			$yr = date('y');
 			$mm = date('m');
-			if(strlen($id) == 1){
-			$code = '00'.$id;
-			}else if(strlen($id) == 2){
-			$code = '0'.$id;
-			}else{
-			$code = $id;
-			}			
-			$refernce = 'DTSPEC '.$yr.'-'.$mm.'-'.$code; 
+			$code = str_pad((string)$id, 3, '0', STR_PAD_LEFT);
+			$refernce = 'DTSPEC ' . $yr . '-' . $mm . '-' . $code;
 
 			$tracknumber = $refernce;
-			$name = $this->request->data['name'];
-			$email = $this->request->data['email'];
-			$company = $this->request->data['company'];
-			$address = $this->request->data['address'];
-			$specification = $this->request->data['specification'];
-			$date = date('Y-m-d',strtotime($this->request->data['date']));
-			$type = $this->request->data['type'];
-			$subject = $this->request->data['subject'];
-			//$mft = $this->request->data['mft'];
-			//$warranty_period = $this->request->data['warranty_period'];
-			isset($this->request->data['use_area'])? $use_area = $this->request->data['use_area'] : $use_area =1;
-			
-			$inserty['Mailer']['user_id'] = $user_id;
-			$inserty['Mailer']['name'] = $name;
-			$inserty['Mailer']['tracknumber'] = '';
-			$inserty['Mailer']['address'] = $address;
-			$inserty['Mailer']['specification'] = $specification;
-			$inserty['Mailer']['date'] = $date;
-			$inserty['Mailer']['email'] = $email;
-			$inserty['Mailer']['company'] = $company;
-			$inserty['Mailer']['type'] = $type;
-			$inserty['Mailer']['subject'] = $subject;
-			$inserty['Mailer']['use_area'] = $use_area;
+			$name = $data['name'] ?? '';
+			$email = $data['email'] ?? '';
+			$company = $data['company'] ?? '';
+			$address = $data['address'] ?? '';
+			$specification = $data['specification'] ?? '';
+			$date = !empty($data['date']) ? date('Y-m-d', strtotime($data['date'])) : date('Y-m-d');
+			$type = $data['type'] ?? '';
+			$subject = $data['subject'] ?? '';
+			$use_area = $data['use_area'] ?? 1;
 
-			$inserty['Mailer']['created'] = date('Y-m-d H:i:s');
-			
-			if($this->Mailer->save($inserty)){
-				$lastinsertId = $this->Mailer->id;
-				
-				if(!empty($this->request->data['comment'])){
-					foreach($this->request->data['comment'] as $comment){
-						$MailerCommentinsert['MailerComment']['id'] = '';
-						$MailerCommentinsert['MailerComment']['mailer_id'] = $lastinsertId;
-						$MailerCommentinsert['MailerComment']['use_area'] = 1;
-						$MailerCommentinsert['MailerComment']['comment'] = $comment;				
-						$this->MailerComment->save($MailerCommentinsert);
+			$entity = $this->Mailer->newEntity([
+				'user_id' => $user_id,
+				'name' => $name,
+				'tracknumber' => '',
+				'address' => $address,
+				'specification' => $specification,
+				'date' => $date,
+				'email' => $email,
+				'company' => $company,
+				'type' => $type,
+				'subject' => $subject,
+				'use_area' => $use_area,
+				'created' => date('Y-m-d H:i:s'),
+			]);
+
+			if ($this->Mailer->save($entity)) {
+				$lastinsertId = $entity->id;
+
+				if (!empty($data['comment']) && is_array($data['comment'])) {
+					foreach ($data['comment'] as $comment) {
+						$commentEntity = $this->MailerComment->newEntity([
+							'mailer_id' => $lastinsertId,
+							'use_area' => 1,
+							'comment' => $comment,
+						]);
+						$this->MailerComment->save($commentEntity);
 					}
 				}
-				
-				if(!empty($this->request->data['product'])){
-					foreach($this->request->data['product'] as $key=>$prodt){
-						isset($this->request->data['title'][$this->request->data['types'][$key]])? $title = $this->request->data['title'][$this->request->data['types'][$key]] :  $title = '';
-						$insert['SpecUsearea']['id'] = '';
-						$insert['SpecUsearea']['mailer_id'] = $lastinsertId;
-						$insert['SpecUsearea']['use_area'] = 1;
-						$insert['SpecUsearea']['title'] = $title;
-						$insert['SpecUsearea']['product'] = $prodt;
-						$insert['SpecUsearea']['types'] = $this->request->data['types'][$key];
-						$insert['SpecUsearea']['serial'] = $this->request->data['serial'][$key];
-						$insert['SpecUsearea']['coverage'] = $this->request->data['coverage'][$key];
-						$insert['SpecUsearea']['Warranty'] = $this->request->data['Warranty'][$key];
-						$insert['SpecUsearea']['coverage_by_pack'] = $this->request->data['coverage_by_pack'][$key];
-						$this->SpecUsearea->save($insert);
+
+				if (!empty($data['product']) && is_array($data['product'])) {
+					foreach ($data['product'] as $key => $prodt) {
+						$typesKey = $data['types'][$key] ?? null;
+						$title = isset($data['title'][$typesKey]) ? $data['title'][$typesKey] : '';
+						$specEntity = $this->SpecUsearea->newEntity([
+							'mailer_id' => $lastinsertId,
+							'use_area' => 1,
+							'title' => $title,
+							'product' => $prodt,
+							'types' => $data['types'][$key] ?? '',
+							'serial' => $data['serial'][$key] ?? '',
+							'coverage' => $data['coverage'][$key] ?? '',
+							'Warranty' => $data['Warranty'][$key] ?? '',
+							'coverage_by_pack' => $data['coverage_by_pack'][$key] ?? '',
+						]);
+						$this->SpecUsearea->save($specEntity);
 					}
 				}
-				
-				$pdfname = $lastinsertId.'-'.$tracknumber;
-				$fields = array(
-					'tracknumber' => urlencode($tracknumber),
-					'mailer_id' => urlencode($lastinsertId),
-					'name' => urlencode($name),
-					'email' => urlencode($email),				
-					'address' => urlencode($address),
-					'company' => urlencode($company),
-					'specification' => urlencode($specification),
-					'date' => urlencode($this->request->data['date']),
-					'subject' => urlencode($subject),
-					'type' => urlencode($type),
-					'pdfname' => urlencode($pdfname),					
-					//'mft' => urlencode($mft),					
-					//'warranty_period' => urlencode($warranty_period),					
-					'use_area' => urlencode($use_area),					
-				);		
-																
-				$fields_string = '';
-				//url-ify the data for the POST
-				foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }			
-				$fields_string = rtrim($fields_string, '&');
-				if($this->request->data['spectype'] == 1)
-				{
-					$url = SITEURL.'dompdf/generatepdf.php?'.$fields_string;	
-				}else{
-					$url = SITEURL.'dompdf/generatewithoutpdf.php?'.$fields_string;	
+
+				$pdfname = $lastinsertId . '-' . $tracknumber;
+				$fields = [
+					'tracknumber' => $tracknumber,
+					'mailer_id' => $lastinsertId,
+					'name' => $name,
+					'email' => $email,
+					'address' => $address,
+					'company' => $company,
+					'specification' => $specification,
+					'date' => $data['date'] ?? '',
+					'subject' => $subject,
+					'type' => $type,
+					'pdfname' => $pdfname,
+					'use_area' => $use_area,
+				];
+				$fields_string = http_build_query($fields);
+				$baseUrl = rtrim(SITEURL, '/');
+				if (!empty($data['spectype']) && (int)$data['spectype'] == 1) {
+					$url = $baseUrl . '/dompdf/generatepdf.php?' . $fields_string;
+				} else {
+					$url = $baseUrl . '/dompdf/generatewithoutpdf.php?' . $fields_string;
 				}
-				$arrContextOptions=array(
-					"ssl"=>array(
-						"verify_peer"=>false,
-						"verify_peer_name"=>false,
-					),
-				);  
-				$result = file_get_contents($url, false, stream_context_create($arrContextOptions));
-								
-				
-				$this->Session->setFlash('PDF file generated successfully.','default',array('class' => 'alert alert-success'));
+				$arrContextOptions = [
+					'ssl' => [
+						'verify_peer' => false,
+						'verify_peer_name' => false,
+					],
+				];
+				@file_get_contents($url, false, stream_context_create($arrContextOptions));
 
-                return $this->redirect(array('action' => 'staff_specRequest_form'));
+				$this->Flash->success('PDF file generated successfully.');
+				return $this->redirect(['action' => 'staff_specRequest_form']);
+			}
 
-		
-		} else {
-			$this->Session->setFlash('Failed to submit.');
+			$this->Flash->error('Failed to submit.');
 		}
-	  }
-
-   }
-	
+	}
 }

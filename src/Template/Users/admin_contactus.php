@@ -20,16 +20,19 @@
 				</tr>
 				</thead>
 				<tbody>
-						<?php foreach ($contact as $contacts ): ?>
+						<?php foreach ($contact as $contacts): ?>
+					<?php
+						$row = isset($contacts['Contact']) ? $contacts['Contact'] : (is_object($contacts) ? $contacts->toArray() : []);
+					?>
 					<tr>
-					<td>#<?php echo h($contacts['Contact']['id']); ?>&nbsp;</td>
-					<td><?php echo h($contacts['Contact']['name']); ?>&nbsp;</td>
-					<td><?php echo h($contacts['Contact']['email']); ?>&nbsp;</td>
-					<td><?php echo h($contacts['Contact']['phone']); ?>&nbsp;</td>
-					<td><?php echo h($contacts['Contact']['message']); ?>&nbsp;</td>					
-                    <td> <?php echo date('d-M-Y',strtotime($contacts['Contact']['created'])); ?></td>
+					<td>#<?php echo h($row['id'] ?? ''); ?>&nbsp;</td>
+					<td><?php echo h($row['name'] ?? ''); ?>&nbsp;</td>
+					<td><?php echo h($row['email'] ?? ''); ?>&nbsp;</td>
+					<td><?php echo h($row['phone'] ?? ''); ?>&nbsp;</td>
+					<td><?php echo h($row['message'] ?? ''); ?>&nbsp;</td>					
+                    <td> <?php echo !empty($row['created']) ? date('d-M-Y', strtotime($row['created'])) : ''; ?></td>
 					<td><a class="btn btn-mini btn-success" 
-					href="<?= $this->Url->build(['action' => 'admin_contact_delete', $contacts['Contact']['id']]) ?>"> Delete</a></td>
+					href="<?= $this->Url->build(['action' => 'admin_contact_delete', $row['id'] ?? '']) ?>"> Delete</a></td>
 					</tr>
 					<?php endforeach; ?>
 

@@ -73,9 +73,20 @@ Router::scope('/', function (RouteBuilder $routes) {
                     return true;
                 }
             }
+
+            // Skip for Mailers list (AJAX product list e.g. staff spec request form)
+            if ($controller === 'mailers' && in_array(strtolower($action), ['list', 'adminlist'], true)) {
+                return true;
+            }
+            if (stripos($path, 'mailers/list') !== false) {
+                return true;
+            }
             
             // Also check by path as fallback
             $skipPaths = [
+                'admin/mailers/list',
+                '/admin/mailers/list',
+                '/cake3app/admin/mailers/list',
                 '/admin/sheets/addnew',
                 '/cake3app/admin/sheets/addnew',
                 '/admin/sheets/setcall',
@@ -112,6 +123,9 @@ Router::scope('/', function (RouteBuilder $routes) {
         $routes->connect('/login', ['controller' => 'Users', 'action' => 'login']);
     $routes->connect('/register', ['controller' => 'Users', 'action' => 'register']);
 
+    // Category slug → CategoryController (forwards to Products::index so "Controller Category could not be found" is avoided)
+    $routes->connect('/category/*', ['controller' => 'Category', 'action' => 'index']);
+
     // Admin panel: use UsersController (no AdminController)
     $routes->connect('/admin', ['controller' => 'Users', 'action' => 'adminLogin']);
     $routes->connect('/admin/dashboard', ['controller' => 'Users', 'action' => 'adminDashboard']);
@@ -129,7 +143,7 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/users/labfile', ['controller' => 'Users', 'action' => 'admin_labfile']);
     $routes->connect('/admin/users/quizz', ['controller' => 'Users', 'action' => 'admin_quizz']);
     $routes->connect('/admin/users/subscriber_list', ['controller' => 'Users', 'action' => 'admin_subscriber_list']);
-    $routes->connect('/admin/users/contactus', ['controller' => 'Users', 'action' => 'admin_contactus']);
+    $routes->connect('/admin/users/contactus', ['controller' => 'Users', 'action' => 'adminContactus']);
     $routes->connect('/admin/users/contact', ['controller' => 'Users', 'action' => 'admin_contact']);
     $routes->connect('/admin/users/logintostaff', ['controller' => 'Users', 'action' => 'admin_logintostaff']);
     $routes->connect('/admin/users/add_staff', ['controller' => 'Users', 'action' => 'admin_add_staff']);
@@ -213,6 +227,12 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/organisations/result/:circular_id', ['controller' => 'Organisations', 'action' => 'admin_result'], ['pass' => ['circular_id']]);
     $routes->connect('/admin/organisations/detail/:complaint_id/:type', ['controller' => 'Organisations', 'action' => 'admin_detail'], ['pass' => ['complaint_id', 'type']]);
     $routes->connect('/admin/organisations/detail/:complaint_id', ['controller' => 'Organisations', 'action' => 'admin_detail'], ['pass' => ['complaint_id']]);
+
+    // Admin Audits (Quality Assurance)
+    $routes->connect('/admin/audits', ['controller' => 'Audits', 'action' => 'admin_index']);
+    $routes->connect('/admin/audits/index', ['controller' => 'Audits', 'action' => 'admin_index']);
+    $routes->connect('/admin/audits/circularinternalauditlist', ['controller' => 'Audits', 'action' => 'admin_circularinternalauditlist']);
+    $routes->connect('/admin/audits/circularinternalauditresult/:id', ['controller' => 'Audits', 'action' => 'admin_circularinternalauditresult'], ['pass' => ['id']]);
 
     // Admin Purchases (must be before fallbacks to avoid "Controller Admin could not be found")
     $routes->connect('/admin/purchases', ['controller' => 'Purchases', 'action' => 'admin_index'], ['_name' => 'adminPurchases']);

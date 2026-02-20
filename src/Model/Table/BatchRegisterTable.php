@@ -15,5 +15,6 @@ class BatchRegisterTable extends Table
         parent::initialize($config);
         $this->setTable('batch_registers');
         $this->setPrimaryKey('id');
+        $this->belongsTo('NappUser', ['foreignKey' => 'user_id']);
     }
 }

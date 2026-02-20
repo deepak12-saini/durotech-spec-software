@@ -24,12 +24,12 @@
 											<div class="space-6"></div>
 											<p> Enter your details to begin: </p>
 
-											<form action="<?php echo SITEURL.'users/register'?>" method="post">
+											<?= $this->Form->create(null, ['url' => ['controller' => 'Users', 'action' => 'register'], 'type' => 'post', 'id' => 'user-register-form']) ?>
 											<?= $this->Flash->render() ?>
 												<fieldset>
 													<label class="block clearfix">
 														<span class="block input-icon input-icon-right">
-															<select name="data[NappUser][is_staff_id]" id="is_staff_id" class="form-control" >
+															<select name="data[NappUser][is_staff_id]" id="is_staff_id" class="form-control" required>
 																<option value="">Select Register Type</option>
 																<option value="0" >Customer</option>
 																<option value="1" >Staff</option>
@@ -39,25 +39,25 @@
 													</label>
 													<label class="block clearfix">
 														<span class="block input-icon input-icon-right">
-															<input type="text" class="form-control" name="data[NappUser][name]" id="Cname" placeholder="First Name" />
+															<input type="text" class="form-control" name="data[NappUser][name]" id="Cname" placeholder="First Name" required />
 															<i class="ace-icon fa fa-user"></i>
 														</span>
 													</label>
 													<label class="block clearfix">
 														<span class="block input-icon input-icon-right">
-															<input type="text" class="form-control" name="data[NappUser][lname]" id="Clname" placeholder="Last Name" />
+															<input type="text" class="form-control" name="data[NappUser][lname]" id="Clname" placeholder="Last Name" required />
 															<i class="ace-icon fa fa-user"></i>
 														</span>
 													</label>
 													<label class="block clearfix">
 														<span class="block input-icon input-icon-right">
-															<input type="email" class="form-control" name="data[NappUser][email]" id="Cemail" placeholder="Email" />
+															<input type="email" class="form-control" name="data[NappUser][email]" id="Cemail" placeholder="Email" required />
 															<i class="ace-icon fa fa-envelope"></i>
 														</span>
 													</label>
 													<label class="block clearfix">
 														<span class="block input-icon input-icon-right">
-															<input type="password" class="form-control" name="data[NappUser][password]" id="Cpassword" placeholder="Password" />
+															<input type="password" class="form-control" name="data[NappUser][password]" id="Cpassword" placeholder="Password" required />
 															<i class="ace-icon fa fa-lock"></i>
 														</span>
 													</label>
@@ -78,7 +78,7 @@
 														</button>
 													</div>
 												</fieldset>
-											</form>
+											<?= $this->Form->end() ?>
 										</div>
 
 										<div class="toolbar center">
@@ -96,29 +96,15 @@
 					</div><!-- /.col -->
 				</div><!-- /.row -->
 <script type="text/javascript">
-jQuery(function(){ //short for $(document).ready(function(){
-	jQuery("#is_staff_id").validate({
-		 expression: "if (VAL) return true; else return false;",
-		message: "Please select register type"
-	});	$("#Cname").validate({
-		 expression: "if (VAL) return true; else return false;",
-		message: "Please enter name"
-	});	$("#Clname").validate({
-		 expression: "if (VAL) return true; else return false;",
-		message: "Please enter last name"
-	}); $("#password").validate({
-		 expression: "if (VAL) return true; else return false;",
-		message: "Please enter password"
-	});	$("#Cpassword").validate({
-		 expression: "if (VAL) return true; else return false;",
-		message: "Please enter password"
-	}); $("#Cemail").validate({
-		 expression: "if (VAL) return true; else return false;",
-		message: "Please enter email"
+jQuery(function($) {
+	// Form uses HTML5 required + server-side validation; custom .validate() was blocking submit
+	$('#user-register-form').on('submit', function() {
+		var $form = $(this);
+		if (!$form[0].checkValidity || $form[0].checkValidity()) return true;
+		// Ensure first invalid field gets focus and browser shows its message
+		var firstInvalid = $form.find(':invalid').first();
+		if (firstInvalid.length) firstInvalid.focus();
+		return false;
 	});
-		jQuery("#Cemail").validate({
-		expression: "if (VAL.match(\/^([a-zA-Z0-9_\\.\\-])+\\@(([a-zA-Z0-9\\-])+\\.)+([a-zA-Z0-9]{2,4})+$\/) && VAL) return true; else return false;",
-		message: "Please enter valid email"
-	}); 	
 });
 </script>

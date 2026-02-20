@@ -339,11 +339,14 @@
 	}
 
     function onkeyups(id,newdiv){
-	
+		var csrfToken = $('input[name="_csrfToken"]').val() || '';
 		$.ajax({
 		type: "POST",
 		url: "<?php echo SITEURL.'admin/mailers/list' ?>/"+id+"/"+newdiv,
-		data:'keyword='+$("#pro_"+id+"_"+newdiv).val(),
+		data: {
+			keyword: $("#pro_"+id+"_"+newdiv).val(),
+			_csrfToken: csrfToken
+		},
 		beforeSend: function(){
 			//$("#search-box").css("background","#FFF url(LoaderIcon.gif) no-repeat 165px");
 		},

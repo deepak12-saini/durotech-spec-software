@@ -12,5 +12,8 @@ class StaffTable extends Table
         parent::initialize($config);
         $this->setTable('staffs');
         $this->setPrimaryKey('id');
+        $this->belongsTo('Department', [
+            'foreignKey' => 'dept_id',
+        ]);
     }
 }
