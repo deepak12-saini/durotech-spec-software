@@ -817,25 +817,30 @@ class MailersController extends AppController
 		
 	}
 	
-	public function eoi(){	
-	
+	public function eoi(){
 		$this->viewBuilder()->setLayout('staff_inner_layout');
-		$this->set('title_for_layout',SITENAME.' Staff Eoi Mailer');		
-		$this->checkSatffSession(); 
-		$customer_id=$this->request->getSession()->read('Customer.id');
-		
-		$NappUser = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$customer_id)));
+		$this->set('title_for_layout', SITENAME . ' Staff Eoi Mailer');
+		$this->checkSatffSession();
+		$customer_id = $this->request->getSession()->read('Customer.id');
+
+		$NappUser = $this->NappUser->find()->where(['NappUser.id' => $customer_id])->first();
 		$this->set('NappUser', $NappUser);
-		
-		$this->EoiMailer->recursive = 0;
-		$this->paginate = array('conditions'=>array('EoiMailer.user_id'=>$customer_id),'page' => 1, 'limit' => 25,'order'=>array('EoiMailer.id'=>'desc'));
-		$mailers = $this->Paginator->paginate('EoiMailer');	
+
+		$mailers = $this->paginate($this->EoiMailer->find()
+			->where(['EoiMailer.user_id' => $customer_id])
+			->orderDesc('EoiMailer.id'), [
+			'limit' => 25,
+		]);
 		$this->set('mailers', $mailers);
-		$date =  date('Y-m-d');
-		$totaltoaysent = $this->EoiMailer->find('count',array('conditions'=>array('EoiMailer.user_id'=>$customer_id,'DATE(EoiMailer.created)'=>$date)));	
+
+		$date = date('Y-m-d');
+		$totaltoaysent = $this->EoiMailer->find()->where([
+			'EoiMailer.user_id' => $customer_id,
+			'DATE(EoiMailer.created)' => $date,
+		])->count();
 		$this->set('totaltoaysent', $totaltoaysent);
-		
-		$totalsent = $this->EoiMailer->find('count',array('conditions'=>array('EoiMailer.user_id'=>$customer_id)));
+
+		$totalsent = $this->EoiMailer->find()->where(['EoiMailer.user_id' => $customer_id])->count();
 		$this->set('totalsent', $totalsent);
 	}
 	
@@ -853,18 +858,19 @@ class MailersController extends AppController
 					
 					
 									
-					$mailerid = $this->EoiMailer->find('count',array('conditions'=>array(),'order'=>array('EoiMailer.id'=>'desc')));
-					$id= $mailerid + 1;						
+					$mailerid = $this->EoiMailer->find()->orderDesc('EoiMailer.id')->count();
+					$id = $mailerid + 1;
 					$yr = date('y');
 					$mm = date('m');
-					if(strlen($id) == 1){
-						$code = '00'.$id;
-					}else if(strlen($id) == 2){
-						$code = '0'.$id;
-					}else{
-						$code = $id;
-					}			
-					$mailer_id = 'DTEOI '.$yr.'-'.$mm.'-'.$code; 				
+					$idStr = (string)$id;
+					if (strlen($idStr) == 1) {
+						$code = '00' . $idStr;
+					} elseif (strlen($idStr) == 2) {
+						$code = '0' . $idStr;
+					} else {
+						$code = $idStr;
+					}
+					$mailer_id = 'DTEOI ' . $yr . '-' . $mm . '-' . $code; 				
 					
 					$inserIndivdualtname = $this->request->getData()['inserIndivdualtname'][$i];
 					$insertcompanyname = $this->request->getData()['insertcompanyname'][$i];
@@ -877,7 +883,7 @@ class MailersController extends AppController
 					$mobile =$this->request->getData()['mobile'][$i]; 
 					$landline =$this->request->getData()['landline'][$i]; 
 					
-					$ifesxistmail = $this->EoiMailer->find('first',array('conditions'=>array('insertbuilderemal'=>$insertbuildersname)));
+					$ifesxistmail = $this->EoiMailer->find()->where(['insertbuilderemal' => $insertbuildersname])->first();
 					if(empty($ifesxistmail)){
 						if(!empty($this->request->getData()['senderemail'][$i])){
 							$senderemail = $this->request->getData()['senderemail'][$i]; 
@@ -931,23 +937,25 @@ class MailersController extends AppController
 
 						//close connection
 						curl_close($ch); */					
-						$Mailerinsert['EoiMailer']['id'] = '';
-						$Mailerinsert['EoiMailer']['mailer_id'] = $mailer_id;
-						$Mailerinsert['EoiMailer']['user_id'] = $user_id;
-						$Mailerinsert['EoiMailer']['inserindivdualname'] = $inserIndivdualtname;
-						$Mailerinsert['EoiMailer']['insertcompanyname'] = $insertcompanyname;
-						$Mailerinsert['EoiMailer']['insertbuilderemal'] = $insertbuildersname;					
-						$Mailerinsert['EoiMailer']['date'] = $datenew;
-						$Mailerinsert['EoiMailer']['projectname'] = $projectname;
-						$Mailerinsert['EoiMailer']['insertname'] = $insertname;
-						$Mailerinsert['EoiMailer']['subject'] = $subject;
-						$Mailerinsert['EoiMailer']['sender_email'] = $senderemail;
-						$Mailerinsert['EoiMailer']['mobile'] = $mobile;
-						$Mailerinsert['EoiMailer']['client_requested'] = $client_requested;
-						$Mailerinsert['EoiMailer']['landlineno'] = $landline;
-						$Mailerinsert['EoiMailer']['created'] = date('Y-m-d H:i:s');
-						$Mailerinsert['EoiMailer']['status'] = 1;				
-						$this->EoiMailer->save($Mailerinsert);		
+						$Mailerinsert = [
+							'mailer_id' => $mailer_id,
+							'user_id' => $user_id,
+							'inserindivdualname' => $inserIndivdualtname,
+							'insertcompanyname' => $insertcompanyname,
+							'insertbuilderemal' => $insertbuildersname,
+							'date' => $datenew,
+							'projectname' => $projectname,
+							'insertname' => $insertname,
+							'subject' => $subject,
+							'sender_email' => $senderemail,
+							'mobile' => $mobile,
+							'client_requested' => $client_requested,
+							'landlineno' => $landline,
+							'created' => date('Y-m-d H:i:s'),
+							'status' => 1,
+						];
+						$entity = $this->EoiMailer->newEntity($Mailerinsert);
+						$this->EoiMailer->save($entity);		
 				}else{
 					$this->Flash->error('This email id already exists.');
 				}	
@@ -1197,7 +1205,7 @@ class MailersController extends AppController
 		
 	}
 	
-	public function price_list_log(){		
+	public function priceListLog(){		
 		
 		$this->viewBuilder()->setLayout('staff_inner_layout');
 		$this->set('title_for_layout',SITENAME.' Price List Logs');		
@@ -1215,7 +1223,7 @@ class MailersController extends AppController
 		$this->set('mailers', $mailers);		
 	}
 	
-	function price_list_mailers(){
+	public function priceListMailers(){
 	
 		$this->viewBuilder()->setLayout('staff_inner_layout');
 		$this->set('title_for_layout',SITENAME.' Price List Logs');		
@@ -1226,53 +1234,36 @@ class MailersController extends AppController
 				
 				
 				
-			$refrmon = array('01'=>'a','02'=>'b','03'=>'c','04'=>'d','05'=>'e','06'=>'f','07'=>'g','08'=>'h','09'=>'i','10'=>'j','11'=>'k','12'=>'l');
-			$mailerid = $this->NewPriceListLog->find('count',array('order'=>array('NewPriceListLog.id'=>'desc')));
-			$id= $mailerid + 1;
-			
+			$mailerid = (int)$this->NewPriceListLog->find()->count();
+			$id = $mailerid + 1;
 			$yr = date('y');
 			$mm = date('m');
-			if(strlen($id) == 1){
-				$code = '00'.$id;
-			}else if(strlen($id) == 2){
-				$code = '0'.$id;
-			}else{
-				$code = $id;
-			}			
-			$reference_id = 'DTNPL '.$yr.'-'.$mm.'-'.$code; 
-		
-			
-			$name = $this->request->getData()['NewPriceListLog']['name'];
-			$email = $this->request->getData()['NewPriceListLog']['email'];			
-			$subject = $this->request->getData()['NewPriceListLog']['subject'];
-			$message = $this->request->getData()['NewPriceListLog']['message'];
-			$date = $this->request->getData()['NewPriceListLog']['date'];
-			
-			$inserty['NewPriceListLog']['user_id'] = $customer_id;		
-			$inserty['NewPriceListLog']['email'] = $email;		
-			$inserty['NewPriceListLog']['name'] = $name;		
-			$inserty['NewPriceListLog']['subject'] = $subject;		
-			$inserty['NewPriceListLog']['message'] = $message;		
-			$inserty['NewPriceListLog']['reference_id'] = $reference_id;		
-			$inserty['NewPriceListLog']['date'] = $date;		
-			$inserty['NewPriceListLog']['status'] = 1;		
-			$inserty['NewPriceListLog']['created'] = date('Y-m-d H:i:s');	
-			if($this->NewPriceListLog->save($inserty)){
-			$lastinsertId = $this->NewPriceListLog->id;
-				$fields = array(
-					'lastinsertId' => urlencode($lastinsertId),									
-				);
-								
-				$fields_string = '';
-				//url-ify the data for the POST
-				foreach($fields as $key=>$value) { $fields_string .= $key.'='.$value.'&'; }
-				rtrim($fields_string, '&');
-				
-				$fields_string = rtrim($fields_string, '&');
-				$url = SITEURL.'cws/newpricelog.php?'.$fields_string;	
+			$code = str_pad((string)$id, 3, '0', STR_PAD_LEFT);
+			$reference_id = 'DTNPL ' . $yr . '-' . $mm . '-' . $code;
 
+			$data = $this->request->getData('NewPriceListLog');
+			$name = $data['name'] ?? '';
+			$email = $data['email'] ?? '';
+			$subject = $data['subject'] ?? '';
+			$message = $data['message'] ?? '';
+			$date = $data['date'] ?? date('Y-m-d');
+
+			$entity = $this->NewPriceListLog->newEntity([
+				'user_id' => $customer_id,
+				'email' => $email,
+				'name' => $name,
+				'subject' => $subject,
+				'message' => $message,
+				'reference_id' => $reference_id,
+				'date' => $date,
+				'status' => 1,
+			]);
+			if ($this->NewPriceListLog->save($entity)) {
+				$lastinsertId = $entity->id;
+				$url = (defined('SITEURL') ? SITEURL : '') . 'cws/newpricelog.php?lastinsertId=' . urlencode((string)$lastinsertId);
+				@file_get_contents($url);
 				$this->Flash->success('Mailer sent successfully.');
-				return $this->redirect(array('action' => 'price_list_log'));
+				return $this->redirect(['action' => 'priceListLog']);
 			}
 		}	
 	}	

@@ -123,6 +123,14 @@ Router::scope('/', function (RouteBuilder $routes) {
         $routes->connect('/login', ['controller' => 'Users', 'action' => 'login']);
     $routes->connect('/register', ['controller' => 'Users', 'action' => 'register']);
 
+    // Legal Actions (staff) – ensure controller name is LegalActions
+    $routes->connect('/legal_actions', ['controller' => 'LegalActions', 'action' => 'index']);
+    $routes->connect('/legal_actions/:action/*', ['controller' => 'LegalActions']);
+
+    // Site Visits (staff) – ensure controller name is SiteVisits
+    $routes->connect('/site_visits', ['controller' => 'SiteVisits', 'action' => 'index']);
+    $routes->connect('/site_visits/:action/*', ['controller' => 'SiteVisits']);
+
     // Category slug → CategoryController (forwards to Products::index so "Controller Category could not be found" is avoided)
     $routes->connect('/category/*', ['controller' => 'Category', 'action' => 'index']);
 
@@ -333,6 +341,43 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/duro_orders', ['controller' => 'DuroOrders', 'action' => 'admin_index']);
     $routes->connect('/admin/duro_orders/index', ['controller' => 'DuroOrders', 'action' => 'admin_index']);
     $routes->connect('/admin/duro_orders/edit/:id', ['controller' => 'DuroOrders', 'action' => 'admin_edit'], ['pass' => ['id']]);
+
+    // Staff panel Duro Orders (explicit routes so controller resolves to DuroOrders, not Duro_orders)
+    $routes->connect('/duro_orders', ['controller' => 'DuroOrders', 'action' => 'index']);
+    $routes->connect('/duro_orders/index', ['controller' => 'DuroOrders', 'action' => 'index']);
+    $routes->connect('/duro_orders/add', ['controller' => 'DuroOrders', 'action' => 'add']);
+    $routes->connect('/duro_orders/edit/:id', ['controller' => 'DuroOrders', 'action' => 'edit'], ['pass' => ['id']]);
+    $routes->connect('/duro_orders/driver', ['controller' => 'DuroOrders', 'action' => 'driver']);
+    $routes->connect('/duro_orders/editdriver/:id', ['controller' => 'DuroOrders', 'action' => 'editdriver'], ['pass' => ['id']]);
+    $routes->connect('/duro_orders/delivery', ['controller' => 'DuroOrders', 'action' => 'delivery']);
+    $routes->connect('/duro_orders/delivery_add', ['controller' => 'DuroOrders', 'action' => 'delivery_add']);
+    $routes->connect('/duro_orders/delivery_edit/:id', ['controller' => 'DuroOrders', 'action' => 'delivery_edit'], ['pass' => ['id']]);
+    $routes->connect('/duro_orders/delivery_delete/:id', ['controller' => 'DuroOrders', 'action' => 'delivery_delete'], ['pass' => ['id']]);
+
+    // Staff panel Debit Collections (explicit routes so controller resolves to DebitCollections, not Debit_collections)
+    $routes->connect('/debit_collections', ['controller' => 'DebitCollections', 'action' => 'index']);
+    $routes->connect('/debit_collections/index', ['controller' => 'DebitCollections', 'action' => 'index']);
+    $routes->connect('/debit_collections/addnew', ['controller' => 'DebitCollections', 'action' => 'addnew']);
+    $routes->connect('/debit_collections/edit/:id', ['controller' => 'DebitCollections', 'action' => 'edit'], ['pass' => ['id']]);
+    $routes->connect('/debit_collections/sendnotification', ['controller' => 'DebitCollections', 'action' => 'sendnotification']);
+    $routes->connect('/debit_collections/send_notification', ['controller' => 'DebitCollections', 'action' => 'send_notification']);
+    $routes->connect('/debit_collections/send_notification_second', ['controller' => 'DebitCollections', 'action' => 'send_notification_second']);
+    $routes->connect('/debit_collections/send_notification_third', ['controller' => 'DebitCollections', 'action' => 'send_notification_third']);
+    $routes->connect('/debit_collections/send_notification_fourth', ['controller' => 'DebitCollections', 'action' => 'send_notification_fourth']);
+
+    // Staff panel Meets (minute meetings, staff in/out) – explicit routes so controller resolves to Meets
+    $routes->connect('/meets', ['controller' => 'Meets', 'action' => 'meetingform']);
+    $routes->connect('/meets/meetingform', ['controller' => 'Meets', 'action' => 'meetingform']);
+    $routes->connect('/meets/informalmeeting', ['controller' => 'Meets', 'action' => 'informalmeeting']);
+    $routes->connect('/meets/view/:id', ['controller' => 'Meets', 'action' => 'view'], ['pass' => ['id']]);
+    $routes->connect('/meets/sendpdf/:referid', ['controller' => 'Meets', 'action' => 'sendpdf'], ['pass' => ['referid']]);
+    $routes->connect('/meets/staffinoutlist', ['controller' => 'Meets', 'action' => 'staffinoutlist']);
+    $routes->connect('/meets/sendurl', ['controller' => 'Meets', 'action' => 'sendurl']);
+    $routes->connect('/meets/autologin/:unique_id/:user_id', ['controller' => 'Meets', 'action' => 'autologin'], ['pass' => ['unique_id', 'user_id']]);
+    $routes->connect('/meets/noexist/:referid', ['controller' => 'Meets', 'action' => 'noexist'], ['pass' => ['referid']]);
+    $routes->connect('/meets/staffinout/:referid', ['controller' => 'Meets', 'action' => 'staffinout'], ['pass' => ['referid']]);
+    $routes->connect('/meets/starttime/:id/:name/:phone', ['controller' => 'Meets', 'action' => 'starttime'], ['pass' => ['id', 'name', 'phone']]);
+    $routes->connect('/meets/newtemplate', ['controller' => 'Meets', 'action' => 'newtemplate']);
 
     // Admin Sales (sales staff, attendance, dashboard, reports)
     $routes->connect('/admin/sales', ['controller' => 'Sales', 'action' => 'admin_index']);

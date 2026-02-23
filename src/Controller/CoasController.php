@@ -31,6 +31,40 @@ class CoasController extends AppController
     }
 
     /**
+     * Front /coas list (staff or admin): list COAs for current user.
+     */
+    public function index(): ?Response
+    {
+        $this->viewBuilder()->setLayout('staff_inner_layout');
+        $this->set('title_for_layout', (defined('SITENAME') ? SITENAME : '') . ' COA Durotech');
+        $result = $this->checkSatffSession();
+        if ($result instanceof Response) {
+            return $result;
+        }
+        $userId = (int)$this->request->getSession()->read('Customer.id');
+        if (!$userId) {
+            $userId = (int)$this->request->getSession()->read('User.id');
+        }
+        $query = $this->Coas->find()
+            ->where(['Coas.admin_id' => $userId])
+            ->contain(['User' => function ($q) {
+                return $q->select(['id', 'name', 'username']);
+            }])
+            ->orderDesc('Coas.id');
+        $paginated = $this->paginate($query, ['limit' => 25]);
+        $coa = [];
+        foreach ($paginated as $entity) {
+            $user = $entity->user ?? null;
+            $coa[] = [
+                'Coa' => $entity->toArray(),
+                'NappUser' => $user ? ['name' => $user->name ?? '', 'lname' => $user->get('lname') ?? $user->get('username') ?? ''] : ['name' => '', 'lname' => ''],
+            ];
+        }
+        $this->set(compact('coa'));
+        return null;
+    }
+
+    /**
      * Admin: list COAs for logged-in admin
      */
     public function admin_index(): ?Response
@@ -56,6 +90,74 @@ class CoasController extends AppController
     public function adminIndex(): ?Response
     {
         return $this->admin_index();
+    }
+
+    /**
+     * Staff: create new COA (/coas/create)
+     */
+    public function create(): ?Response
+    {
+        $this->viewBuilder()->setLayout('staff_inner_layout');
+        $this->set('title_for_layout', (defined('SITENAME') ? SITENAME : '') . ' Create COA');
+        $result = $this->checkSatffSession();
+        if ($result instanceof Response) {
+            return $result;
+        }
+        $userId = (int)$this->request->getSession()->read('Customer.id');
+        if (!$userId) {
+            $userId = (int)$this->request->getSession()->read('User.id');
+        }
+        if ($this->request->is('post') && $this->request->getData()) {
+            $data = $this->request->getData();
+            $coa = $this->Coas->newEntity([]);
+            $coa->admin_id = $userId;
+            $coa->subject = $data['subject'] ?? '';
+            $coa->name = $data['name'] ?? '';
+            $coa->email = $data['email'] ?? '';
+            $coa->product = $data['product'] ?? '';
+            $coa->batch_no = $data['batch_no'] ?? '';
+            $coa->date_of_manu = $data['date_of_manu'] ?? null;
+            $coa->expiry_date = $data['expiry_date'] ?? null;
+            $coa->form_no = $data['form_no'] ?? '';
+            $coa->signature_date = $data['signature_date'] ?? null;
+            $coa->created = date('Y-m-d H:i:s');
+            $pdfname = 'COA-' . rand(111111, 999999);
+            $coa->pdfname = $pdfname . '.pdf';
+
+            if ($this->Coas->save($coa)) {
+                $lastinsertId = (int)$coa->id;
+                $tests = $data['test'] ?? [];
+                $results = $data['result'] ?? [];
+                $specs = $data['specfication'] ?? [];
+                foreach ($tests as $key => $testVal) {
+                    $res = $this->CoaResults->newEntity([]);
+                    $res->coa_id = $lastinsertId;
+                    $res->test = $testVal;
+                    $res->result = $results[$key] ?? '';
+                    $res->specfication = $specs[$key] ?? '';
+                    $this->CoaResults->save($res);
+                }
+                $fields = [
+                    'pdfname' => urlencode($pdfname),
+                    'coa_id' => urlencode((string)$lastinsertId),
+                    'name' => urlencode($coa->name),
+                    'email' => urlencode($coa->email),
+                    'product' => urlencode($coa->product),
+                    'batch_no' => urlencode($coa->batch_no),
+                    'form_no' => urlencode($coa->form_no),
+                    'date_of_manu' => urlencode(date('M Y', strtotime($coa->date_of_manu ?? 'now'))),
+                    'date' => urlencode(date('M Y', strtotime($coa->expiry_date ?? 'now'))),
+                    'signature_date' => urlencode(date('M Y', strtotime($coa->signature_date ?? 'now'))),
+                ];
+                $fieldsString = http_build_query($fields);
+                $url = (defined('SITEURL') ? SITEURL : '') . 'dompdf/generatecoapdf.php?' . $fieldsString;
+                @file_get_contents($url);
+
+                $this->Flash->success('COA PDF file generated successfully.');
+                return $this->redirect(['action' => 'index']);
+            }
+        }
+        return null;
     }
 
     /**
@@ -125,6 +227,93 @@ class CoasController extends AppController
     public function adminCreate(): ?Response
     {
         return $this->admin_create();
+    }
+
+    /**
+     * Staff: edit COA (/coas/edit/:id)
+     */
+    public function edit($id = null): ?Response
+    {
+        $this->viewBuilder()->setLayout('staff_inner_layout');
+        $this->set('title_for_layout', (defined('SITENAME') ? SITENAME : '') . ' Edit COA');
+        $result = $this->checkSatffSession();
+        if ($result instanceof Response) {
+            return $result;
+        }
+        $userId = (int)$this->request->getSession()->read('Customer.id');
+        if (!$userId) {
+            $userId = (int)$this->request->getSession()->read('User.id');
+        }
+        $id = $id !== null ? (int)$id : null;
+        if (!$id || !$this->Coas->exists(['id' => $id, 'admin_id' => $userId])) {
+            $this->Flash->error('Invalid COA.');
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $entity = $this->Coas->get($id, ['contain' => ['CoaResults']]);
+        $CoaArr = [
+            'Coa' => $entity->toArray(),
+            'CoaResult' => array_map(function ($r) {
+                return $r->toArray();
+            }, $entity->coa_results ?? []),
+        ];
+
+        if ($this->request->is(['post', 'put', 'patch']) && $this->request->getData()) {
+            $data = $this->request->getData();
+            $coa = $this->Coas->get($id);
+            $coa->admin_id = $userId;
+            $coa->subject = $data['subject'] ?? '';
+            $coa->name = $data['name'] ?? '';
+            $coa->email = $data['email'] ?? '';
+            $coa->product = $data['product'] ?? '';
+            $coa->batch_no = $data['batch_no'] ?? '';
+            $coa->date_of_manu = $data['date_of_manu'] ?? null;
+            $coa->expiry_date = $data['expiry_date'] ?? null;
+            $coa->form_no = $data['form_no'] ?? '';
+            $coa->signature_date = $data['signature_date'] ?? null;
+
+            $pdfname = pathinfo($entity->pdfname ?? '', PATHINFO_FILENAME);
+            if (empty($pdfname)) {
+                $pdfname = 'COA-' . rand(111111, 999999);
+                $coa->pdfname = $pdfname . '.pdf';
+            }
+
+            if ($this->Coas->save($coa)) {
+                $this->CoaResults->deleteAll(['coa_id' => $id]);
+                $tests = $data['test'] ?? [];
+                $results = $data['result'] ?? [];
+                $specs = $data['specfication'] ?? [];
+                foreach ($tests as $key => $testVal) {
+                    $res = $this->CoaResults->newEntity([]);
+                    $res->coa_id = (int)$id;
+                    $res->test = $testVal;
+                    $res->result = $results[$key] ?? '';
+                    $res->specfication = $specs[$key] ?? '';
+                    $this->CoaResults->save($res);
+                }
+                $fields = [
+                    'pdfname' => urlencode($pdfname),
+                    'coa_id' => urlencode((string)$id),
+                    'name' => urlencode($coa->name),
+                    'email' => urlencode($coa->email),
+                    'product' => urlencode($coa->product),
+                    'batch_no' => urlencode($coa->batch_no),
+                    'form_no' => urlencode($coa->form_no),
+                    'date_of_manu' => urlencode(date('F Y', strtotime((string)($coa->date_of_manu ?? 'now')))),
+                    'date' => urlencode(date('F Y', strtotime((string)($coa->expiry_date ?? 'now')))),
+                    'signature_date' => urlencode(date('F Y', strtotime((string)($coa->signature_date ?? 'now')))),
+                ];
+                $fieldsString = http_build_query($fields);
+                $url = (defined('SITEURL') ? SITEURL : '') . 'dompdf/generatecoapdf.php?' . $fieldsString;
+                @file_get_contents($url);
+
+                $this->Flash->success('COA PDF file generated successfully.');
+                return $this->redirect(['action' => 'index']);
+            }
+        }
+
+        $this->set('CoaArr', $CoaArr);
+        return null;
     }
 
     /**
@@ -388,5 +577,47 @@ class CoasController extends AppController
     public function adminDownload($id = null): ?Response
     {
         return $this->admin_download($id);
+    }
+
+    /**
+     * Staff: download COA PDF. Generates on the fly if file is missing (fixes 404).
+     */
+    public function download($id = null): ?Response
+    {
+        $result = $this->checkSatffSession();
+        if ($result instanceof Response) {
+            return $result;
+        }
+        $userId = (int)$this->request->getSession()->read('Customer.id');
+        if (!$userId) {
+            $userId = (int)$this->request->getSession()->read('User.id');
+        }
+        $id = $id !== null ? (int)$id : null;
+        if (!$id || !$this->Coas->exists(['id' => $id, 'admin_id' => $userId])) {
+            $this->Flash->error('COA not found.');
+            return $this->redirect(['action' => 'index']);
+        }
+        $coa = $this->Coas->get($id);
+        $pdfname = $coa->pdfname ?? '';
+        $pdfnameBase = $pdfname !== '' ? pathinfo($pdfname, PATHINFO_FILENAME) : '';
+        if ($pdfnameBase === '') {
+            $pdfnameBase = 'COA-' . rand(111111, 999999);
+            $pdfname = $pdfnameBase . '.pdf';
+            $coa->pdfname = $pdfname;
+            $this->Coas->save($coa);
+        }
+        $path = WWW_ROOT . 'dompdf' . DS . $pdfname;
+        if (!is_file($path)) {
+            $this->generateCoaPdfFile($id, $coa, $pdfnameBase);
+            if (!is_file($path)) {
+                $this->Flash->error('PDF could not be generated.');
+                return $this->redirect(['action' => 'index']);
+            }
+        }
+        $this->response = $this->response->withFile($path, [
+            'download' => true,
+            'name' => $pdfname,
+        ]);
+        return $this->response;
     }
 }

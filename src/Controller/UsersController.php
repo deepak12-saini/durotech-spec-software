@@ -874,36 +874,34 @@ class UsersController extends AppController
 		$this->autoRender = false;
 		
 		isset($_REQUEST['customer_id']) ? $customer_id = $_REQUEST['customer_id'] : $customer_id = 0;
-		if(!empty($customer_id)){			
-			$this->LabAssign->bindModel(
-			array('belongsTo' => array('LabFile' => array(
-				'className' => 'LabFile',			 
-				'foreignKey' => 'lab_id',				
-				'conditions' => array(),
-				'fields' => '',
-				'order' => array(),
-			))));				
-			$LabAssign = $this->LabAssign->find('all',array('conditions'=>array('LabAssign.customer_id'=>$customer_id)));
-			if(!empty($LabAssign)){
-				$lablist = array();	
-				$i = 1;			
-				foreach($LabAssign as $LabAssigns){
-					$lab['id'] =  $i;
-					$lab['label'] =  $LabAssigns['LabFile']['label'];
-					$lab['password'] =  $LabAssigns['LabFile']['password'];
-					$lab['url'] =  SITEURL.$LabAssigns['LabFile']['dir'].'/'.$LabAssigns['LabFile']['filename'];
-					$lablist[]=$lab;
-					$i++;	
-				}	
+		if (!empty($customer_id)) {
+			$LabAssign = $this->LabAssign->find()
+				->where(['LabAssign.customer_id' => $customer_id])
+				->contain(['LabFile'])
+				->all();
+			if ($LabAssign->count() > 0) {
+				$lablist = [];
+				$i = 1;
+				foreach ($LabAssign as $entity) {
+					$lf = $entity->lab_file;
+					$lab = [
+						'id' => $i,
+						'label' => $lf ? ($lf->label ?? '') : '',
+						'password' => $lf ? ($lf->password ?? '') : '',
+						'url' => (defined('SITEURL') ? SITEURL : '') . ($lf ? ($lf->dir ?? '') . '/' . ($lf->filename ?? '') : ''),
+					];
+					$lablist[] = $lab;
+					$i++;
+				}
 				$data['status'] = true;
-				$data['data'] = $lablist;	
-			}else{
+				$data['data'] = $lablist;
+			} else {
 				$data['status'] = false;
-				$data['data'] = 'No File Access';	
-			}		
-		}else{
+				$data['data'] = 'No File Access';
+			}
+		} else {
 			$data['status'] = false;
-			$data['message'] = 'user id missing';			
+			$data['message'] = 'user id missing';
 		}	
 		echo json_encode($data);
 	}	
@@ -919,23 +917,20 @@ class UsersController extends AppController
 		#$this->checkCustomerSession();
 		$this->checkcommonSession();
 		
-		$this->set('title_for_layout',SITENAME.' Label File List');		
-		$customer_id=$this->request->getSession()->read('Customer.id');		
-		$this->LabAssign->bindModel(
-		array('belongsTo' => array('LabFile' => array(
-			'className' => 'LabFile',			 
-			'foreignKey' => 'lab_id',				
-			'conditions' => array(),
-			'fields' => '',
-			'order' => array(),
-		))));
-		
-	
-		$this->paginate = array('conditions'=>array('LabAssign.customer_id'=>$customer_id),'page' => 1, 'limit' => 10);
-		$LabAssignArr = $this->Paginator->paginate('LabAssign');	
-		
-		//echo '<pre>'; print_r($LabAssignArr); die;
-		$this->set('LabAssignArr',$LabAssignArr);	
+		$this->set('title_for_layout', SITENAME . ' Label File List');
+		$customer_id = $this->request->getSession()->read('Customer.id');
+		$query = $this->LabAssign->find()
+			->where(['LabAssign.customer_id' => $customer_id])
+			->contain(['LabFile']);
+		$paginated = $this->paginate($query, ['limit' => 10]);
+		$LabAssignArr = [];
+		foreach ($paginated as $entity) {
+			$LabAssignArr[] = [
+				'LabAssign' => $entity->toArray(),
+				'LabFile' => $entity->lab_file ? (is_object($entity->lab_file) ? $entity->lab_file->toArray() : (array)$entity->lab_file) : [],
+			];
+		}
+		$this->set('LabAssignArr', $LabAssignArr);	
 	}
 	
 	
@@ -1822,22 +1817,22 @@ class UsersController extends AppController
 		$customer_id = $this->request->getSession()->read('Customer.id');	
 		$user = $this->NappUser->find()->where(['NappUser.id' => $customer_id])->first();
 		if(!empty($user)){			
-			$custId = base64_encode(base64_encode($customer_id));
+			$custId = base64_encode(base64_encode((string)$customer_id));
 			$url = SITEURL.'admin/users/accesstouser/'.$custId;
-			$name =  $user['NappUser']['name'].' '.$user['NappUser']['lname'];
+			$name = ($user->get('name') ?? '') . ' ' . ($user->get('lname') ?? '');
 			$to = 'kal@durotechindustries.com.au';				
 			#$to = 'web@xoroglobal.com';				
 			$subject=SITENAME." :: Request For Price List by ".$name;				
 			$template_name = 'pricelist';
 			
-			$variables = array('name'=>$name,'email'=>$user['NappUser']['email'],'type'=>'pricelist','url'=>$url);		
+			$variables = array('name'=>$name,'email'=>$user->get('email') ?? '','type'=>'pricelist','url'=>$url);		
 			try{
 				$this->sendemail($to,$subject,$template_name,$variables);
 			}catch (Exception $e){
 				
 			}	
 			$this->Flash->success('Your request has been sent!.');
-			$this->redirect('labfile');
+			$this->redirect(['action' => 'labfile']);
 		}		
 	}	
 	function access($status=null){
@@ -2064,31 +2059,18 @@ class UsersController extends AppController
 	function contact()
 	{
 		$this->viewBuilder()->setLayout('staff_inner_layout');
-		$this->set('title_for_layout',SITENAME.' Staff List');
-		#$this->checkStaffSession();
-	
-		$this->Staff->bindModel(
-		array('belongsTo' => array('Department' => array(
-			'className' => 'Department',			 
-			'foreignKey' => 'dept_id',				
-			'conditions' => array(),
-			'fields' => '',
-			'order' => array(),
-		))));
-		
-		// if(!empty($this->request->getData())){
-			// $name = rtrim($this->request->getData()['name'],' ');
-			// $name = ltrim($name,' ');
-			// $this->paginate = array('conditions'=>array('NappUser.is_staff_id'=>1,'OR'=>array('NappUser.name LIKE'=>'%'.$name.'%','NappUser.lname LIKE'=>'%'.$name.'%','NappUser.email LIKE'=>'%'.$name.'%')),'page' => 1, 'limit' => 25,'order'=>array('NappUser.id'=>'desc'));
-		// }else{
-			// $this->paginate = array('conditions'=>array('NappUser.is_staff_id'=>1),'page' => 1, 'limit' => 25,'order'=>array('NappUser.id'=>'desc'));
-		// }	
-		$this->NappUser->recursive = 2;		
-		$staffArr = $this->Paginator->paginate('Staff');	
-		//echo '<pre>'; print_r($staffArr); die;
-		$this->set('staffArr',$staffArr);	
-		
-		
+		$this->set('title_for_layout', SITENAME . ' Staff List');
+		$query = $this->Staff->find()->contain(['Department'])->orderDesc('Staff.id');
+		$results = $this->paginate($query, ['limit' => 25]);
+		$staffArr = [];
+		foreach ($results as $entity) {
+			$row = ['Staff' => $entity->toArray()];
+			$row['Department'] = (isset($entity->department) && $entity->department)
+				? $entity->department->toArray()
+				: ['id' => null, 'department_title' => ''];
+			$staffArr[] = $row;
+		}
+		$this->set('staffArr', $staffArr);
 	}
 
 	/** CamelCase wrapper for routing */
@@ -2167,30 +2149,25 @@ class UsersController extends AppController
 
     function eoireport(){
 		$this->autoRender = false;
-		
-		$this->UserPermission->bindModel(
-		array('belongsTo' => array('NappUser' => array(
-			'className' => 'NappUser',			 
-			'foreignKey' => 'user_id',				
-			'conditions' => array(),
-			'fields' => array('id','name','lname','kpi'),
-			'order' => array(),
-		))));
-		
-		$this->UserPermission->recursive = 2;	
-		$UserPermission = $this->UserPermission->find('all',array('conditions'=>array('UserPermission.permssion_id'=>14)));
-		
-		$date = date('Y-m-d',strtotime(' -1 days'));
-		$showdate = date('d F Y',strtotime('-1 days'));
-		$report = array();
-		foreach($UserPermission as $UserPermissions){
-			$rep['name'] = $UserPermissions['NappUser']['name'].' '.$UserPermissions['NappUser']['lname'];
-			$user_id = $UserPermissions['NappUser']['id'];
-			$kpi = $UserPermissions['NappUser']['kpi'];
-			$EoiMailer = $this->EoiMailer->find('count',array('conditions'=>array('EoiMailer.user_id'=>$user_id,'DATE(EoiMailer.created)'=>$date)));			
-			$rep['total'] = $EoiMailer;
-			$rep['kpi'] = $kpi;
-			$report[] = $rep;
+		$UserPermission = $this->UserPermission->find()
+			->where(['UserPermission.permssion_id' => 14])
+			->contain(['NappUser' => ['fields' => ['id', 'name', 'lname', 'kpi']]])
+			->all();
+		$date = date('Y-m-d', strtotime(' -1 days'));
+		$showdate = date('d F Y', strtotime('-1 days'));
+		$report = [];
+		foreach ($UserPermission as $up) {
+			$napp = $up->napp_user;
+			$name = $napp ? trim(($napp->name ?? '') . ' ' . ($napp->lname ?? '')) : '';
+			$user_id = $napp ? $napp->id : null;
+			$kpi = $napp ? ($napp->kpi ?? null) : null;
+			$count = $this->EoiMailer->find()
+				->where(['EoiMailer.user_id' => $user_id])
+				->where(function ($exp, $q) use ($date) {
+					return $exp->eq($q->func('DATE', ['EoiMailer.created']), $date);
+				})
+				->count();
+			$report[] = ['name' => $name, 'total' => $count, 'kpi' => $kpi];
 		}	
 		
 		$to = 'kal@durotechindustries.com.au';								

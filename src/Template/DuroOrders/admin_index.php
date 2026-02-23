@@ -29,9 +29,12 @@
 					$k = 1;
 					foreach ($DuroOrderArr as $DuroOrderArrs): ?>
 					<tr>
-						<td><a data-toggle="modal" data-target="#myModal_<?php echo $k; ?>" href="#null"><?php echo h($DuroOrderArrs['DuroOrder']['customer_order_no']); ?></a>&nbsp;</td>						
-						<td><?php echo date('d-M-Y',strtotime($DuroOrderArrs['DuroOrder']['date_of_order'])); ?>&nbsp;</td>		
-						<td><?php echo $DuroOrderArrs['NappUser']['name'].' '.$DuroOrderArrs['NappUser']['lname']; ?></td>
+						<td><a data-toggle="modal" data-target="#myModal_<?php echo $k; ?>" href="#null"><?php echo h($DuroOrderArrs['DuroOrder']['customer_order_no'] ?? ''); ?></a>&nbsp;</td>						
+						<td><?php echo date('d-M-Y',strtotime($DuroOrderArrs['DuroOrder']['date_of_order'] ?? 'now')); ?>&nbsp;</td>		
+						<td><?php
+						$napp = $DuroOrderArrs['NappUser'] ?? null;
+						echo $napp ? h($napp['name'] ?? '') . ' ' . h($napp['lname'] ?? '') : '—';
+						?></td>
 						<td><?php echo $DuroOrderArrs['DuroOrder']['account_name']; ?>&nbsp;</td>						
 						<td><?php echo h($DuroOrderArrs['DuroOrder']['order_taken_by']); ?>&nbsp;</td>
 						<td><?php echo h($DuroOrderArrs['DuroOrder']['contact_name']); ?>&nbsp;</td>
@@ -103,7 +106,10 @@
 					<tbody>
 					<tr><th>Documentid: </th><td><span class="label label-inverse"><?php echo h($DuroOrderArrs['DuroOrder']['customer_order_no']); ?></span></td></tr>	
 					
-					<tr><th>Added By: </th><td><?php echo $DuroOrderArrs['NappUser']['name'].' '.$DuroOrderArrs['NappUser']['lname']; ?></td></tr>	
+					<tr><th>Added By: </th><td><?php
+					$napp = $DuroOrderArrs['NappUser'] ?? null;
+					echo $napp ? h($napp['name'] ?? '') . ' ' . h($napp['lname'] ?? '') : '—';
+					?></td></tr>	
 					
 					<tr><th>Date: </th><td><?php echo date('d-M-Y',strtotime($DuroOrderArrs['DuroOrder']['date_of_order'])); ?></td></tr>	
 					<tr><th>Account Name: </th><td><?php echo $DuroOrderArrs['DuroOrder']['account_name']; ?></td></tr>	

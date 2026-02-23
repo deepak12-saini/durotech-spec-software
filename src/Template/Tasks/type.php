@@ -17,7 +17,7 @@
 
 }
 	</style>
-	
+	<?php $userArr = isset($userArr) && is_array($userArr) ? $userArr : []; ?>
 	<div class="page-content">
 		<div class="page-header" >
 			<h1 style="text-align:center !important; font-weight:600;" >Welcome To DuroLab</h1>
@@ -35,7 +35,7 @@
 							
 							<div class="widget-body">
 								<div class="widget-main padding-6" >
-									<?php if(in_array(6,$userArr)){?>
+									<?php if (in_array(6, $userArr)) { ?>
 										<a href="<?php echo SITEURL.'tasks/type/product'; ?>"> <div class="alert alert-info" style="background:#438eb9; color:#fff; font-size:30px; padding:50px" >Product <br> Development</div></a>
 									<?php }else{ ?>
 											<div class="alert alert-danger" style=" font-size:30px; padding:26px">Sorry, you have no access product development</div>
@@ -53,11 +53,11 @@
 					
 						<div class="widget-body">
 							<div class="widget-main padding-6">
-								<?php if(in_array(7,$userArr)){?>
-									<a href="<?php echo  SITEURL.'tasks/type/technical' ?>"><div class="alert alert-danger" style=" font-size:30px; padding:50px; background:#438eb9; color:#fff; ">Technical <br> Service </div></a>
-								<?php }else{ ?>
+								<?php if (in_array(7, $userArr)) { ?>
+									<a href="<?php echo SITEURL.'tasks/type/technical'; ?>"><div class="alert alert-danger" style=" font-size:30px; padding:50px; background:#438eb9; color:#fff; ">Technical <br> Service </div></a>
+								<?php } else { ?>
 										<div class="alert alert-danger" style=" font-size:30px; padding:26px">Sorry, you have no access Technical Service</div>
-								<?php  }  ?>	
+								<?php } ?>
 							</div>
 						</div>
 					</div>
@@ -70,10 +70,11 @@
 					
 						<div class="widget-body">
 							<div class="widget-main padding-6">
-								<?php if(in_array(7,$userArr)){?>
-									<a href="<?php echo  SITEURL.'tasks/type/project_enquiry' ?>"><div class="alert alert-danger" style=" font-size:30px; padding:50px; background:#438eb9; color:#fff; ">Project <br> Enquiry </div></a>
-								<?php }else{ ?>  <div class="alert alert-danger" style=" font-size:30px; padding:26px">Sorry, you have no access Technical Service</div>
-								<?php  }  ?>
+								<?php if (in_array(7, $userArr)) { ?>
+									<a href="<?php echo SITEURL.'tasks/type/project_enquiry'; ?>"><div class="alert alert-danger" style=" font-size:30px; padding:50px; background:#438eb9; color:#fff; ">Project <br> Enquiry </div></a>
+								<?php } else { ?>
+									<div class="alert alert-danger" style=" font-size:30px; padding:26px">Sorry, you have no access Project Enquiry</div>
+								<?php } ?>
 							</div>
 						</div>
 					</div>

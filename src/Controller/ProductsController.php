@@ -38,7 +38,7 @@ class ProductsController extends AppController
 		$this->callConstants();
 		// Set getCategories for Products menu (categories + products) when using front layout
 		$action = $this->request->getParam('action');
-		$adminActions = ['adminIndex', 'adminVocVertificate', 'adminVocadd', 'adminVocedit', 'adminAddlabel', 'adminDeletelabel', 'adminEditlabel', 'adminLabel', 'adminAdd', 'adminEdit', 'adminDelete', 'adminProject', 'adminProjectadd', 'adminProjectdelete', 'adminEditLabel', 'adminAutologin'];
+		$adminActions = ['adminIndex', 'adminVocVertificate', 'adminVocadd', 'adminVocedit', 'adminAddlabel', 'adminDeletelabel', 'adminEditlabel', 'adminLabel', 'adminAdd', 'adminEdit', 'adminDelete', 'adminProject', 'adminProjectadd', 'adminProjectdelete', 'admin_edit_label', 'adminAutologin'];
 		if (!in_array($action, $adminActions, true)) {
 			$this->_setGetCategoriesForMenu();
 		}
@@ -1816,39 +1816,43 @@ class ProductsController extends AppController
 
 		$label = '';
 		$label_cate_id = '';
-		if(!empty($this->request->getData())){
-			$label =  $this->request->getData()['label'];
-			$label_cate_id =  $this->request->getData()['label_cate_id'];
-			
-			if(!empty($label_cate_id) && !empty($label) ){
-				$this->paginate = array('conditions'=>array('Label.label_cate_id'=>$label_cate_id,'Label.name LIKE'=>'%'.$label.'%'),'page' => 1, 'limit' => 150,'order'=>array('Label.name'=>'asc'));
-		}	else if(!empty($label_cate_id)){
-				$this->paginate = array('conditions'=>array('Label.label_cate_id'=>$label_cate_id),'page' => 1, 'limit' => 150,'order'=>array('Label.name'=>'asc'));
-		}	else if(!empty($label)){
-				$this->paginate = array('conditions'=>array('Label.name LIKE'=>'%'.$label.'%'),'page' => 1, 'limit' => 150,'order'=>array('Label.name'=>'asc'));
-		}	
-		}else{	
-			$this->paginate = array('conditions'=>array(),'page' => 1, 'limit' => 150,'order'=>array('Label.name'=>'asc'));
-		}	
-		$this->Label->bindModel(
-			array('belongsTo' => array('LabelCategory' => array(
-			'className' => 'LabelCategory',    
-			'foreignKey' => 'label_cate_id',    
-			'conditions' => array(),
-			'fields' => array(),
-			'order' => array(),
-		))));
-		$labelArr  = $this->Paginator->paginate('Label');	
-		$this->set('labelArr',$labelArr);
-		
-		$this->set('label',$label);
-		$this->set('label_cate_id',$label_cate_id);
-		
-		$UserPermission = $this->UserPermission->find('first',array('conditions'=>array('UserPermission.permssion_id'=>4,'UserPermission.user_id'=>$user_id)));
-		$this->set('UserPermission',$UserPermission);
-		
-		$LabelCategory = $this->LabelCategory->find('all');
-		$this->set('LabelCategory',$LabelCategory);	
+		$conditions = [];
+		if ($this->request->getData()) {
+			$label = (string)($this->request->getData('label') ?? '');
+			$label_cate_id = (string)($this->request->getData('label_cate_id') ?? '');
+			if ($label_cate_id !== '' && $label !== '') {
+				$conditions = ['Label.label_cate_id' => $label_cate_id, 'Label.name LIKE' => '%' . $label . '%'];
+			} elseif ($label_cate_id !== '') {
+				$conditions = ['Label.label_cate_id' => $label_cate_id];
+			} elseif ($label !== '') {
+				$conditions = ['Label.name LIKE' => '%' . $label . '%'];
+			}
+		}
+		$query = $this->Label->find()
+			->where($conditions)
+			->contain(['LabelCategory'])
+			->orderAsc('Label.name');
+		$paginated = $this->paginate($query, ['limit' => 150]);
+		$labelArr = [];
+		foreach ($paginated as $entity) {
+			$labelArr[] = [
+				'Label' => $entity->toArray(),
+				'LabelCategory' => $entity->label_category ? (is_object($entity->label_category) ? $entity->label_category->toArray() : (array)$entity->label_category) : [],
+			];
+		}
+		$this->set('labelArr', $labelArr);
+		$this->set('label', $label);
+		$this->set('label_cate_id', $label_cate_id);
+		$UserPermission = $this->UserPermission->find()
+			->where(['UserPermission.permssion_id' => 4, 'UserPermission.user_id' => $user_id])
+			->first();
+		$this->set('UserPermission', $UserPermission);
+		$LabelCategory = $this->LabelCategory->find()->all();
+		$labelCategoryList = [];
+		foreach ($LabelCategory as $lc) {
+			$labelCategoryList[] = ['LabelCategory' => $lc->toArray()];
+		}
+		$this->set('LabelCategory', $labelCategoryList);	
 		
 	}
 	
@@ -1896,49 +1900,49 @@ class ProductsController extends AppController
 		}	
 	}
 
-	function admin_edit_label(){
-		
+	/** Editable label list page (underscore name to avoid collision with adminEditlabel($id)). */
+	public function admin_edit_label(){
 		$this->viewBuilder()->setLayout('admin_layout');
 		$this->set('title_for_layout',SITENAME.' Product Label List');		
 		$this->checkAdminSession(); 
 		$label = '';
 		$label_cate_id = '';
-		if(!empty($this->request->getData())){
-			$label =  $this->request->getData()['label'];
-			$label_cate_id =  $this->request->getData()['label_cate_id'];
-			
-			if(!empty($label_cate_id) && !empty($label)){
-				$this->paginate = array('conditions'=>array('Label.is_edit'=>1,'Label.label_cate_id'=>$label_cate_id,'Label.name LIKE'=>'%'.$label.'%'),'page' => 1, 'limit' => 150,'order'=>array('Label.name'=>'asc'));
-		}	else if(!empty($label_cate_id)){
-				$this->paginate = array('conditions'=>array('Label.is_edit'=>1,'Label.label_cate_id'=>$label_cate_id),'page' => 1, 'limit' => 150,'order'=>array('Label.name'=>'asc'));
-		}	else if(!empty($label)){
-				$this->paginate = array('conditions'=>array('Label.is_edit'=>1,'Label.name LIKE'=>'%'.$label.'%'),'page' => 1, 'limit' => 150,'order'=>array('Label.name'=>'asc'));
-		}else{
-				$this->paginate = array('conditions'=>array('Label.is_edit'=>1),'page' => 1, 'limit' => 150,'order'=>array('Label.name'=>'asc'));
-		}	
-		}else{	
-			$this->paginate = array('conditions'=>array('Label.is_edit'=>1),'page' => 1, 'limit' => 150,'order'=>array('Label.name'=>'asc'));
-		}	
-		
-		$this->Label->bindModel(
-			array('belongsTo' => array('LabelCategory' => array(
-			'className' => 'LabelCategory',    
-			'foreignKey' => 'label_cate_id',    
-			'conditions' => array(),
-			'fields' => array(),
-			'order' => array(),
-		))));	
-		$labelArr  = $this->Paginator->paginate('Label');	
-		$this->set('labelArr',$labelArr);
-		
-		$this->set('label',$label);
-		$this->set('label_cate_id',$label_cate_id);
-		
-		$LabelCategory = $this->LabelCategory->find('all');
-		$this->set('LabelCategory',$LabelCategory);	
+		$conditions = ['Label.is_edit' => 1];
+		if ($this->request->getData()) {
+			$label = (string)($this->request->getData('label') ?? '');
+			$label_cate_id = (string)($this->request->getData('label_cate_id') ?? '');
+			if ($label_cate_id !== '' && $label !== '') {
+				$conditions = ['Label.is_edit' => 1, 'Label.label_cate_id' => $label_cate_id, 'Label.name LIKE' => '%' . $label . '%'];
+			} elseif ($label_cate_id !== '') {
+				$conditions = ['Label.is_edit' => 1, 'Label.label_cate_id' => $label_cate_id];
+			} elseif ($label !== '') {
+				$conditions = ['Label.is_edit' => 1, 'Label.name LIKE' => '%' . $label . '%'];
+			}
+		}
+		$query = $this->Label->find()
+			->where($conditions)
+			->contain(['LabelCategory'])
+			->orderAsc('Label.name');
+		$paginated = $this->paginate($query, ['limit' => 150]);
+		$labelArr = [];
+		foreach ($paginated as $entity) {
+			$labelArr[] = [
+				'Label' => $entity->toArray(),
+				'LabelCategory' => $entity->label_category ? (is_object($entity->label_category) ? $entity->label_category->toArray() : (array)$entity->label_category) : [],
+			];
+		}
+		$this->set('labelArr', $labelArr);
+		$this->set('label', $label);
+		$this->set('label_cate_id', $label_cate_id);
+		$LabelCategory = $this->LabelCategory->find()->all();
+		$labelCategoryList = [];
+		foreach ($LabelCategory as $lc) {
+			$labelCategoryList[] = ['LabelCategory' => $lc->toArray()];
+		}
+		$this->set('LabelCategory', $labelCategoryList);
 	}	
 	
-	function edit_label(){
+	public function editLabel(){
 		
 		$user_id=$this->request->getSession()->read('Customer.id');	
 		$is_staff_id=$this->request->getSession()->read('Customer.is_staff_id');	
@@ -1948,39 +1952,39 @@ class ProductsController extends AppController
 		
 		$label = '';
 		$label_cate_id = '';
-		if(!empty($this->request->getData())){
-			$label =  $this->request->getData()['label'];
-			$label_cate_id =  $this->request->getData()['label_cate_id'];
-			
-			if(!empty($label_cate_id) && !empty($label)){
-				$this->paginate = array('conditions'=>array('Label.is_edit'=>1,'Label.label_cate_id'=>$label_cate_id,'Label.name LIKE'=>'%'.$label.'%'),'page' => 1, 'limit' => 150,'order'=>array('Label.name'=>'asc'));
-		}	else if(!empty($label_cate_id)){
-				$this->paginate = array('conditions'=>array('Label.is_edit'=>1,'Label.label_cate_id'=>$label_cate_id),'page' => 1, 'limit' => 150,'order'=>array('Label.name'=>'asc'));
-		}	else if(!empty($label)){
-				$this->paginate = array('conditions'=>array('Label.is_edit'=>1,'Label.name LIKE'=>'%'.$label.'%'),'page' => 1, 'limit' => 150,'order'=>array('Label.name'=>'asc'));
-		}else{
-				$this->paginate = array('conditions'=>array('Label.is_edit'=>1),'page' => 1, 'limit' => 150,'order'=>array('Label.name'=>'asc'));
-		}	
-		}else{	
-			$this->paginate = array('conditions'=>array('Label.is_edit'=>1),'page' => 1, 'limit' => 150,'order'=>array('Label.name'=>'asc'));
-		}	
-		
-		$this->Label->bindModel(
-			array('belongsTo' => array('LabelCategory' => array(
-			'className' => 'LabelCategory',    
-			'foreignKey' => 'label_cate_id',    
-			'conditions' => array(),
-			'fields' => array(),
-			'order' => array(),
-		))));	
-		$labelArr  = $this->Paginator->paginate('Label');	
-		$this->set('labelArr',$labelArr);
-		
-		$this->set('label',$label);
-		$this->set('label_cate_id',$label_cate_id);
-		
-		$LabelCategory = $this->LabelCategory->find('all');
-		$this->set('LabelCategory',$LabelCategory);	
+		$conditions = ['Label.is_edit' => 1];
+		if ($this->request->getData()) {
+			$label = (string)($this->request->getData('label') ?? '');
+			$label_cate_id = (string)($this->request->getData('label_cate_id') ?? '');
+			if ($label_cate_id !== '' && $label !== '') {
+				$conditions = ['Label.is_edit' => 1, 'Label.label_cate_id' => $label_cate_id, 'Label.name LIKE' => '%' . $label . '%'];
+			} elseif ($label_cate_id !== '') {
+				$conditions = ['Label.is_edit' => 1, 'Label.label_cate_id' => $label_cate_id];
+			} elseif ($label !== '') {
+				$conditions = ['Label.is_edit' => 1, 'Label.name LIKE' => '%' . $label . '%'];
+			}
+		}
+		$query = $this->Label->find()
+			->where($conditions)
+			->contain(['LabelCategory'])
+			->orderAsc('Label.name');
+		$paginated = $this->paginate($query, ['limit' => 150]);
+		$labelArr = [];
+		foreach ($paginated as $entity) {
+			$labelArr[] = [
+				'Label' => $entity->toArray(),
+				'LabelCategory' => $entity->label_category ? (is_object($entity->label_category) ? $entity->label_category->toArray() : (array)$entity->label_category) : [],
+			];
+		}
+		$this->set('labelArr', $labelArr);
+		$this->set('label', $label);
+		$this->set('label_cate_id', $label_cate_id);
+		$LabelCategory = $this->LabelCategory->find()->all();
+		$labelCategoryList = [];
+		foreach ($LabelCategory as $lc) {
+			$labelCategoryList[] = ['LabelCategory' => $lc->toArray()];
+		}
+		$this->set('LabelCategory', $labelCategoryList);
 	}	
 	
 	public function demo($slug=null){

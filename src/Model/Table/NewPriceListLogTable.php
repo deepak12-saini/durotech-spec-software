@@ -11,7 +11,7 @@ class NewPriceListLogTable extends Table
     public function initialize(array $config): void
     {
         parent::initialize($config);
-        $this->setTable('new_price_list_log');
+        $this->setTable('new_price_list_logs');
         $this->setPrimaryKey('id');
     }
 }

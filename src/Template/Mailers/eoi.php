@@ -5,10 +5,10 @@
 			
 			
 			<p>
-			<i class="label label-danger arrowed-in arrowed-in-right">KPI Limit: <?php echo $NappUser['NappUser']['kpi']; ?> per day</i>
-			<i class="label label-danger arrowed-in arrowed-in-right">Today Sent: <?php echo $totaltoaysent; ?> per day</i>
-			
-			<i class="label label-danger arrowed-in arrowed-in-right">Total Sent: <?php echo $totalsent; ?></i>
+			<i class="label label-danger arrowed-in arrowed-in-right">KPI Limit: <?php echo $NappUser ? h($NappUser->get('kpi')) : '0'; ?> per day</i>
+			<i class="label label-danger arrowed-in arrowed-in-right">Today Sent: <?php echo (int)$totaltoaysent; ?> per day</i>
+
+			<i class="label label-danger arrowed-in arrowed-in-right">Total Sent: <?php echo (int)$totalsent; ?></i>
 			</p>
 			<?php //echo $this->Html->link('Download CSV',array('controller' => 'mailers','action' => 'exportcsv'),array('class'=>'btn btn-warning btn-xs top-button')); ?>
 			
@@ -46,20 +46,20 @@
 					
 					foreach ($mailers as $mailer): ?>
 					<tr>
-					<td>#<?php echo h($mailer['EoiMailer']['id']); ?>&nbsp;</td>
-					<td><?php echo h($mailer['EoiMailer']['mailer_id']); ?>&nbsp;</td>
-					<td><?php echo h($mailer['EoiMailer']['inserindivdualname']); ?>&nbsp;</td>
-					<td><?php echo h($mailer['EoiMailer']['insertcompanyname']); ?>&nbsp;</td>
-					<td><?php echo h($mailer['EoiMailer']['projectname']); ?>&nbsp;</td>
-					<!--td><?php echo h($mailer['EoiMailer']['insertbuilderemal']); ?>&nbsp;</td-->
-					<td><?php echo h($mailer['EoiMailer']['date']); ?>&nbsp;</td>
-					<td><?php echo h($mailer['EoiMailer']['insertname']); ?>&nbsp;</td>
-					<td><?php echo h($mailer['EoiMailer']['mobile']); ?>&nbsp;</td>
-					<td><?php echo h($mailer['EoiMailer']['landlineno']); ?>&nbsp;</td>
-					<td><?php echo h($mailer['EoiMailer']['sender_email']); ?>&nbsp;</td>
-					<td><?php echo h($mailer['EoiMailer']['subject']); ?>&nbsp;</td>
-					<td><?php echo h($mailer['EoiMailer']['client_requested']); ?>&nbsp;</td>
-				
+					<td>#<?php echo h($mailer->get('id')); ?>&nbsp;</td>
+					<td><?php echo h($mailer->get('mailer_id')); ?>&nbsp;</td>
+					<td><?php echo h($mailer->get('inserindivdualname')); ?>&nbsp;</td>
+					<td><?php echo h($mailer->get('insertcompanyname')); ?>&nbsp;</td>
+					<td><?php echo h($mailer->get('projectname')); ?>&nbsp;</td>
+					<!--td><?php echo h($mailer->get('insertbuilderemal')); ?>&nbsp;</td-->
+					<td><?php echo h($mailer->get('date')); ?>&nbsp;</td>
+					<td><?php echo h($mailer->get('insertname')); ?>&nbsp;</td>
+					<td><?php echo h($mailer->get('mobile')); ?>&nbsp;</td>
+					<td><?php echo h($mailer->get('landlineno')); ?>&nbsp;</td>
+					<td><?php echo h($mailer->get('sender_email')); ?>&nbsp;</td>
+					<td><?php echo h($mailer->get('subject')); ?>&nbsp;</td>
+					<td><?php echo h($mailer->get('client_requested')); ?>&nbsp;</td>
+
 					 <!--td>
 						<?php if($category['Category']['status']==1){?>
 							<span class="label label-success">Active</span>
@@ -67,8 +67,8 @@
 						<span class="label label-danger">Inactive</span>
 						<?php }?>&nbsp;
 						</td-->
-                    <td> <?php echo date('d-M-Y h:i a',strtotime($mailer['EoiMailer']['created'])); ?></td>
-					
+                    <td> <?php echo $mailer->get('created') ? date('d-M-Y h:i a', strtotime($mailer->get('created'))) : ''; ?></td>
+
 					</tr>
 					<?php endforeach; ?>
 

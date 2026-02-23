@@ -156,43 +156,47 @@ class StaffsController extends AppController {
 		}
 
 		$this->set('user', $user);
-		$department = $this->Department->find()->all();
-		$this->set('departmentArr', $department);
+		$departmentResult = $this->Department->find()->orderAsc('department_title')->all();
+		$departmentArr = [];
+		foreach ($departmentResult as $dept) {
+			$departmentArr[] = ['Department' => ['id' => $dept->id, 'department_title' => $dept->department_title ?? '']];
+		}
+		$this->set('departmentArr', $departmentArr);
 	}
 	
-	function change_password()
+	/**
+	 * Staff change password (URL: staffs/change_password → changePassword).
+	 * NappUser passwords are stored as md5 (legacy).
+	 */
+	public function changePassword()
 	{
-		$this->layout='staff_inner_layout';
-		$this->set('title_for_layout',SITENAME.' Change Password Page');
+		$this->viewBuilder()->setLayout('staff_inner_layout');
+		$this->set('title_for_layout', SITENAME . ' Change Password Page');
 		$this->checkSatffSession();
-		if($this->request->is('post')){
-			$customer_id=$this->Session->read('Customer.id');
-			$user = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$customer_id)));
-			if(!empty($user)){
-				$this->NappUser->id=$user['NappUser']['id'];
-				if($this->request->data['NappUser']['new_password']==$this->request->data['NappUser']['confirm_password'])
-				{
-						
-					if($user['NappUser']['password']==$this->request->data['NappUser']['current_password'])
-					{
-						
-						$this->NappUser->saveField("password",$this->request->data['NappUser']['new_password']);
-						
-						$this->Session->setFlash('Your password has been changed successfully.','default',array('class' => 'alert alert-success'));
-						$this->request->data='';
-					}else{
-						$this->Session->setFlash('Current password not correct.Please, try again.','default',array('class' => 'alert alert-danger'));
+		if ($this->request->is('post')) {
+			$customer_id = $this->request->getSession()->read('Customer.id');
+			$user = $customer_id ? $this->NappUser->find()->where(['NappUser.id' => $customer_id])->first() : null;
+			if (!empty($user)) {
+				$data = $this->request->getData('NappUser');
+				$new = $data['new_password'] ?? '';
+				$confirm = $data['confirm_password'] ?? '';
+				$current = $data['current_password'] ?? '';
+				if ($new !== '' && $new === $confirm) {
+					$storedPassword = $user->get('password') ?? '';
+					if (md5((string)$current) === $storedPassword) {
+						$user->password = md5($new);
+						$this->NappUser->save($user);
+						$this->Flash->success('Your password has been changed successfully.');
+						$this->request = $this->request->withData('NappUser', []);
+					} else {
+						$this->Flash->error('Current password not correct. Please, try again.');
 					}
-				}else{
-					
-					$this->Session->setFlash('New and confirm password not matched.Please, try again.','default',array('class' => 'alert alert-danger'));
+				} else {
+					$this->Flash->error('New and confirm password do not match. Please, try again.');
 				}
-				
-				
-			}else{
-				$this->Session->setFlash('User record not found.Please, try again.','default',array('class' => 'alert alert-danger'));
+			} else {
+				$this->Flash->error('User record not found. Please, try again.');
 			}
-			
 		}
 	}
 	

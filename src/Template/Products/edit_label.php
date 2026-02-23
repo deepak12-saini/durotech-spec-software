@@ -13,19 +13,27 @@
 		<div class="page-header">
 			<h1>			
 			Editable Product Label List	
-			<form action="" method="post" style="float:right;">
-				
-				<select  name="data[label_cate_id]" id="category_id">
-					<option value="">Please select category</option>
-					<?php foreach($LabelCategory as $LabelCategoryArr){?>
-						<option <?php if($label_cate_id == $LabelCategoryArr['LabelCategory']['id']){ echo 'selected'; }  ?>  value="<?php echo $LabelCategoryArr['LabelCategory']['id']?>" ><?php echo $LabelCategoryArr['LabelCategory']['category']?></option>
-					<?php }?>
-				</select>
-
-				<input type="text" name="label" value="<?php echo $label; ?>" placeholder="Search By Label" >
-				<input type="submit" name="search" value="search" class="btn btn-info btn-xs top-button" >	
-				<a href="<?php echo SITEURL.'admin/products/edit_label'?>" class="btn btn-warning btn-xs top-button">Clear All</a>
-			</form>				
+			<?php
+				$categoryOptions = ['' => 'Please select category'];
+				if (!empty($LabelCategory)) {
+					foreach ($LabelCategory as $c) {
+						$cat = $c['LabelCategory'] ?? $c;
+						$categoryOptions[$cat['id'] ?? ''] = $cat['category'] ?? '';
+					}
+				}
+				echo $this->Form->create(null, ['url' => ['action' => 'editLabel'], 'type' => 'post', 'style' => 'float:right;']);
+				echo $this->Form->control('label_cate_id', [
+					'type' => 'select',
+					'label' => false,
+					'options' => $categoryOptions,
+					'value' => $label_cate_id ?? '',
+					'id' => 'category_id',
+				]);
+				echo $this->Form->control('label', ['type' => 'text', 'label' => false, 'value' => $label ?? '', 'placeholder' => 'Search By Label']);
+				echo $this->Form->submit('search', ['class' => 'btn btn-info btn-xs top-button', 'name' => 'search']);
+				echo $this->Form->end();
+			?>
+				<a href="<?php echo $this->Url->build(['controller' => 'Products', 'action' => 'editLabel']); ?>" class="btn btn-warning btn-xs top-button">Clear All</a>				
 			</h1>
 		</div>
 	

@@ -41,8 +41,26 @@ class DuroOrdersController extends AppController
             'order' => ['DuroOrders.id' => 'DESC'],
             'contain' => ['NappUser' => ['fields' => ['name', 'lname']], 'OrderProducts'],
         ];
-        $DuroOrderArr = $this->paginate($this->DuroOrders);
+        $paginated = $this->paginate($this->DuroOrders);
+        $DuroOrderArr = $this->_duroOrderPaginatedToViewArray($paginated);
         $this->set(compact('DuroOrderArr'));
+    }
+
+    /**
+     * Convert paginated DuroOrder entities to view array format ['DuroOrder' => ..., 'NappUser' => ..., 'OrderProduct' => ...].
+     */
+    protected function _duroOrderPaginatedToViewArray($paginated): array
+    {
+        $out = [];
+        foreach ($paginated as $entity) {
+            $data = $entity->toArray();
+            unset($data['napp_user'], $data['order_products']);
+            $arr = ['DuroOrder' => $data];
+            $arr['NappUser'] = $entity->napp_user ? (is_object($entity->napp_user) ? $entity->napp_user->toArray() : (array)$entity->napp_user) : null;
+            $arr['OrderProduct'] = $entity->order_products ? (is_object($entity->order_products) ? array_map(function ($p) { return is_object($p) ? $p->toArray() : (array)$p; }, iterator_to_array($entity->order_products)) : (array)$entity->order_products) : [];
+            $out[] = $arr;
+        }
+        return $out;
     }
 
     /**
@@ -130,7 +148,8 @@ class DuroOrdersController extends AppController
             'order' => ['DuroOrders.id' => 'DESC'],
             'contain' => ['NappUser' => ['fields' => ['name', 'lname']], 'OrderProducts'],
         ];
-        $DuroOrderArr = $this->paginate($this->DuroOrders->find()->where(['DuroOrders.user_id' => $user_id]));
+        $paginated = $this->paginate($this->DuroOrders->find()->where(['DuroOrders.user_id' => $user_id]));
+        $DuroOrderArr = $this->_duroOrderPaginatedToViewArray($paginated);
         $this->set(compact('DuroOrderArr'));
     }
 

@@ -1,7 +1,7 @@
 <div class="page-content">
 		<div class="page-header">
 			<h1>New Price List Mailer Logs 
-			<?php echo $this->Html->link('Send Mail',array('controller' => 'mailers','action' => 'price_list_mailers'),array('class'=>'btn btn-info btn-xs top-button')); ?>
+			<?= $this->Html->link('Send Mail', ['controller' => 'Mailers', 'action' => 'priceListMailers'], ['class' => 'btn btn-info btn-xs top-button']) ?>
 			
 			</h1>
 		</div>

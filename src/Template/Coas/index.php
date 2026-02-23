@@ -39,9 +39,9 @@
 					<td><?php echo h($coas['Coa']['form_no']); ?>&nbsp;</td>					
                     <td> <?php echo date('d-M-Y h:i a',strtotime($coas['Coa']['created'])); ?></td>
 					<td>
-						<a class="btn btn-mini btn-primary" href="<?php echo SITEURL.'coas/edit/'.$coas['Coa']['id']; ?>" >Edit</a>
-						<a class="btn btn-mini btn-info" href="<?php echo SITEURL.'dompdf/'.$coas['Coa']['pdfname']; ?>" target="blank">Download</a>
-						<a onclick="retrun confirm('Are you sure send email?')" class="btn btn-mini btn-danger"  href="<?php echo SITEURL.'coas/sendemails/'.$coas['Coa']['id']; ?>" >Send Mail</a>
+						<?= $this->Html->link('Edit', ['action' => 'edit', $coas['Coa']['id'] ?? ''], ['class' => 'btn btn-mini btn-primary']) ?>
+						<?= $this->Html->link('Download', ['action' => 'download', $coas['Coa']['id'] ?? ''], ['class' => 'btn btn-mini btn-info', 'target' => '_blank']) ?>
+						<?= $this->Html->link('Send Mail', ['action' => 'sendemails', $coas['Coa']['id'] ?? ''], ['class' => 'btn btn-mini btn-danger', 'onclick' => "return confirm('Are you sure send email?');"]) ?>
 					</td>
 					</tr>
 					<?php endforeach; ?>
@@ -53,8 +53,7 @@
 	</div>		
 	<div class="row">
 		<div class="col-xs-6">
-			<div class="dataTables_info" id="dynamic-table_info" role="status" aria-live="polite"><?php	echo $this->Paginator->counter(array(
-'format' => __('showing {:current} records out of {:count} entries')));?>	</div>
+			<div class="dataTables_info" id="dynamic-table_info" role="status" aria-live="polite"><?= $this->Paginator->counter(__('showing {{current}} records out of {{count}} entries')) ?></div>
 		</div>
 		<div class="col-xs-6">
 			<div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">

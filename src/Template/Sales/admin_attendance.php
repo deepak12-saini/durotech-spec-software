@@ -50,7 +50,7 @@
 	<div class="row">
 		<div class="col-xs-6">
 			<div class="dataTables_info" id="dynamic-table_info" role="status" aria-live="polite"><?php	echo $this->Paginator->counter(array(
-'format' => __('showing {:current} records out of {:count} entries')));?>	</div>
+'format' => __('showing {{current}} records out of {{count}} entries')));?>	</div>
 		</div>
 		<div class="col-xs-6">
 			<div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">

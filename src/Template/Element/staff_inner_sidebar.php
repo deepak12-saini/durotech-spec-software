@@ -180,8 +180,8 @@
 					<?php						
 						if(in_array(32,$chkuserpermission) ){
 					?>
-					<li class="<?php if ($this->params['controller']=='site_visits') { echo 'active';}?>">
-						<a href="<?php echo SITEURL?>site_visits">
+					<li class="<?php if (strtolower($this->request->getParam('controller') ?? '') === 'sitevisits') { echo 'active';}?>">
+						<a href="<?= $this->Url->build('/site_visits') ?>">
 							<i class="menu-icon fa fa-user"></i>
 							<span class="menu-text">Site Visit </span>
 						</a>
@@ -191,8 +191,8 @@
 					<?php						
 						if(in_array(28,$chkuserpermission) ){
 					?>
-					<li class="<?php if ($this->params['controller']=='mailers' && $this->params['action']=='price_list_log'  ) { echo 'active';}?>">
-						<a href="<?php echo SITEURL?>mailers/price_list_log">
+					<li class="<?php if (strtolower($this->request->getParam('controller') ?? '') === 'mailers' && $this->request->getParam('action') === 'priceListLog') { echo 'active';}?>">
+						<a href="<?= $this->Url->build('/mailers/price_list_log') ?>">
 							<i class="menu-icon fa fa-file"></i>
 							<span class="menu-text">New Price List</span>
 						</a>
@@ -349,7 +349,7 @@
 								</a>
 								<b class="arrow"></b>
 							</li>
-							<li class="<?php if ($this->params['controller']=='products' && ($this->params['action']=='admin_edit_label' || $this->params['action']=='admin_addlabel' || $this->params['action']=='admin_editlabel')) {echo 'active';}?>">
+							<li class="<?php if ($this->request->getParam('controller')=='products' && in_array($this->request->getParam('action'), ['editLabel', 'admin_edit_label', 'admin_addlabel', 'admin_editlabel'], true)) {echo 'active';}?>">
 								<a href="<?php echo SITEURL?>products/edit_label">
 									<i class="menu-icon fa fa-file"></i>
 									Editable Product Label

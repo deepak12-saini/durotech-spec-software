@@ -35,6 +35,60 @@ class TasksController extends AppController
     }
 
     /**
+     * Staff: DuroLab type selection (product / technical / project_enquiry). Sets session and redirects to index.
+     * URL: /tasks/type or /tasks/type/<data>
+     */
+    public function type($data = null): ?Response
+    {
+        $this->viewBuilder()->setLayout('staff_inner_layout');
+        $this->set('title_for_layout', (defined('SITENAME') ? SITENAME : '') . ' :: DuroLab Access');
+        $result = $this->checkSatffSession();
+        if ($result instanceof Response) {
+            return $result;
+        }
+
+        if ($data === 'product') {
+            $this->request->getSession()->write('durolab_type', 'product');
+            return $this->redirect(['action' => 'index']);
+        }
+        if ($data === 'technical') {
+            $this->request->getSession()->write('durolab_type', 'technical');
+            return $this->redirect(['action' => 'index']);
+        }
+        if ($data === 'project_enquiry') {
+            $this->request->getSession()->write('durolab_type', 'project_enquiry');
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $customerId = (int) $this->request->getSession()->read('Customer.id');
+        $userArr = [];
+        if ($customerId) {
+            $perms = $this->UserPermission->find()
+                ->where(['UserPermission.user_id' => $customerId])
+                ->all();
+            foreach ($perms as $p) {
+                $pArr = $p->toArray();
+                if (isset($pArr['department_id']) && $pArr['department_id'] !== null && !in_array((int) $pArr['department_id'], $userArr, true)) {
+                    $userArr[] = (int) $pArr['department_id'];
+                }
+            }
+            if (empty($userArr)) {
+                $userArr = [6, 7];
+            }
+        }
+        $this->set('userArr', $userArr);
+        return null;
+    }
+
+    /**
+     * Staff: Task list. Redirect to admin task list.
+     */
+    public function index(): ?Response
+    {
+        return $this->redirect('/admin/tasks');
+    }
+
+    /**
      * Admin: DuroLab type selection (product / technical / project_enquiry). Sets session and redirects to index.
      */
     public function admin_type($data = null): ?Response

@@ -65,8 +65,8 @@ class StocksController extends AppController
 		$this->set('title_for_layout',SITENAME.' Admin Comments');		
 		$this->checkAdminSession(); 
 		
-		$user_id = $this->Session->read('User.id');
-		$username = $this->Session->read('User.name');
+		$user_id = $this->request->getSession()->read('User.id');
+		$username = $this->request->getSession()->read('User.name');
 		
 		if(!empty($this->request->data)){
 			
@@ -119,7 +119,7 @@ class StocksController extends AppController
 				}								
 			}
 		
-			$this->Session->setFlash('Comment posted successfully','default',array('class' => 'alert alert-success'));
+			$this->Flash->success('Comment posted successfully');
 			$this->redirect('comment/'.$stock_id);	 
 		}
 		
@@ -261,177 +261,188 @@ class StocksController extends AppController
 		$update['StockReturn']['qc_ftir'] = $status;
 		$this->StockReturn->save($update);
 		
-		$this->Session->setFlash('Status updated','default',array('class' => 'alert alert-success'));
+		$this->Flash->success('Status updated');
 		$this->redirect('index/'.$type);	 
 		
 	}
 
-	public function index($type=null){		
-		
-		$this->layout='staff_inner_layout';
-		$this->set('title_for_layout',SITENAME.' Stock Return List');		
-		$this->checkSatffSession(); 
-		$customer_id=$this->Session->read('Customer.id');
-		
-		if(isset($type) && !empty($type)){
-			$acctype= $type;
-		}else{
-			return $this->redirect(array('action' => 'index/customer'));			
-		}	
-		$this->StockReturn->bindModel(
-		array('belongsTo' => array('NappUser' => array(
-			'className' => 'NappUser',			 
-			'foreignKey' => 'user_id',				
-			'conditions' => array(),
-			'fields' => array('name','lname'),
-			'order' => array(),
-		))));
-		$this->StockReturn->bindModel(
-		array('hasMany' => array('StockReturnData' => array(
-			'className' => 'StockReturnData',			 
-			'foreignKey' => 'stock_id',				
-			'conditions' => array(),
-			'fields' => array(),
-			'order' => array(),
-		))));
-		$this->StockReturn->recursive = 2;
-		$stockreturn = $this->StockReturn->find('all',array('conditions'=>array('StockReturn.type'=>$acctype),'page' => 1, 'limit' => 25,'order'=>array('StockReturn.id'=>'desc')));
-		//$this->paginate = array('conditions'=>array('StockReturn.type'=>$acctype,'StockReturn.user_id'=>$customer_id),'page' => 1, 'limit' => 25,'order'=>array('StockReturn.id'=>'desc'));
-		//$stockreturn = $this->Paginator->paginate('StockReturn');
-		// echo '<pre>';
-		// print_r($stockreturn);
-		// die();
-		$this->set('stockreturn', $stockreturn);	
-		$this->set('acctype', $acctype);	
+	public function index($type = null){
+		$this->viewBuilder()->setLayout('staff_inner_layout');
+		$this->set('title_for_layout', SITENAME . ' Stock Return List');
+		$this->checkSatffSession();
+		$customer_id = $this->request->getSession()->read('Customer.id');
+
+		if (isset($type) && $type !== '') {
+			$acctype = $type;
+		} else {
+			return $this->redirect(['action' => 'index', 'customer']);
+		}
+
+		$results = $this->StockReturn->find()
+			->contain(['NappUser', 'StockReturnData'])
+			->where(['StockReturn.type' => $acctype])
+			->orderDesc('StockReturn.id')
+			->limit(25)
+			->all();
+
+		$stockreturn = [];
+		foreach ($results as $row) {
+			$nappUser = $row->napp_user ?? $row->nappUser ?? null;
+			$stockReturnData = $row->stock_return_data ?? $row->stockReturnData ?? [];
+			$stockReturnDataArray = [];
+			foreach ($stockReturnData as $dataRow) {
+				$stockReturnDataArray[] = is_object($dataRow) ? $dataRow->toArray() : $dataRow;
+			}
+			$rowArray = $row->toArray();
+			unset($rowArray['napp_user'], $rowArray['nappUser'], $rowArray['stock_return_data']);
+			$stockreturn[] = [
+				'StockReturn' => $rowArray,
+				'NappUser' => $nappUser ? (is_object($nappUser) ? $nappUser->toArray() : $nappUser) : [],
+				'StockReturnData' => $stockReturnDataArray,
+			];
+		}
+		$this->set('stockreturn', $stockreturn);
+		$this->set('acctype', $acctype);
 	}
 	public function create($acctype=null) {
 		
 		$this->layout='staff_inner_layout';
 		$this->set('title_for_layout',SITENAME.' Create Coa Durotech');
 		$this->checkSatffSession(); 
-		$customer_id=$this->Session->read('Customer.id');
+		$customer_id = $this->request->getSession()->read('Customer.id');
 		if(empty($acctype)){
 			return $this->redirect(array('action' => 'index'));
 		}	
 		if (!empty($this->request->data)) {
-					
-			$return_id = $this->request->data['return_id'];					
-			$inserty['StockReturn']['return_id'] = $return_id;
-			$inserty['StockReturn']['type'] = $acctype;
-			$inserty['StockReturn']['user_id'] = $customer_id;	
-			$inserty['StockReturn']['created'] = date('Y-m-d H:i:s');			
-			if($this->StockReturn->save($inserty)){
-				$lastinsertId = $this->StockReturn->id;
-			
-				foreach($this->request->data['date'] as $key=>$date){
-					$insert['StockReturnData']['id'] = '';
-					$insert['StockReturnData']['date'] = $date;
-					$insert['StockReturnData']['stock_id'] = $lastinsertId;
-					$insert['StockReturnData']['customer'] = $this->request->data['customer'][$key];		
-					$insert['StockReturnData']['items'] = $this->request->data['items'][$key];		
-					$insert['StockReturnData']['reason'] = $this->request->data['reason'][$key];		
-					$insert['StockReturnData']['conditions'] = $this->request->data['conditions'][$key];		
-					$insert['StockReturnData']['batch'] = $this->request->data['batch'][$key];				
-					$insert['StockReturnData']['received'] = $this->request->data['received'][$key];				
-					$this->StockReturnData->save($insert);
-				}		
-				// send email to customer	
-				$this->sendemails($lastinsertId);				
-				$this->Session->setFlash('Stock return added successfully.','default',array('class' => 'alert alert-success'));
-				return $this->redirect(array('action' => 'index/'.$acctype));
+
+			$return_id = $this->request->data['return_id'];
+			$stockEntity = $this->StockReturn->newEntity([
+				'return_id' => $return_id,
+				'type' => $acctype,
+				'user_id' => $customer_id,
+				'created' => date('Y-m-d H:i:s'),
+			]);
+			if ($this->StockReturn->save($stockEntity)) {
+				$lastinsertId = $stockEntity->id;
+
+				foreach ($this->request->data['date'] as $key => $date) {
+					$dataEntity = $this->StockReturnData->newEntity([
+						'date' => $date,
+						'stock_id' => $lastinsertId,
+						'customer' => $this->request->data['customer'][$key] ?? '',
+						'items' => $this->request->data['items'][$key] ?? '',
+						'reason' => $this->request->data['reason'][$key] ?? '',
+						'conditions' => $this->request->data['conditions'][$key] ?? '',
+						'batch' => $this->request->data['batch'][$key] ?? '',
+						'received' => $this->request->data['received'][$key] ?? '',
+					]);
+					$this->StockReturnData->save($dataEntity);
+				}
+				$this->sendemails($lastinsertId);
+				$this->Flash->success('Stock return added successfully.');
+				return $this->redirect(['action' => 'index', $acctype]);
 			}
 		}		
 		
 		$refrmon = array('01'=>'a','02'=>'b','03'=>'c','04'=>'d','05'=>'e','06'=>'f','07'=>'g','08'=>'h','09'=>'i','10'=>'j','11'=>'k','12'=>'l');
-		$mailerid = $this->StockReturn->find('count',array('conditions'=>array('type'=>3),'order'=>array('StockReturn.id'=>'desc')));
-			
-		//$id= $mailerid['Mailer']['id'] + 1;
-		$id= $mailerid + 1;
-		
+		$mailerid = $this->StockReturn->find()->where(['type' => 3])->orderDesc('StockReturn.id')->count();
+
+		$id = $mailerid + 1;
+
 		$yr = date('y');
 		$mm = date('m');
-		if(strlen($id) == 1){
-			$code = '00'.$id;
-		}else if(strlen($id) == 2){
-			$code = '0'.$id;
-		}else{
-			$code = $id;
-		}			
-		$refernce = 'DTSTR '.$yr.'-'.$mm.'-'.$code; 
+		$idStr = (string)$id;
+		if (strlen($idStr) == 1) {
+			$code = '00' . $idStr;
+		} elseif (strlen($idStr) == 2) {
+			$code = '0' . $idStr;
+		} else {
+			$code = $idStr;
+		}
+		$refernce = 'DTSTR ' . $yr . '-' . $mm . '-' . $code; 
 		$this->set('refernce',$refernce);
 		$this->set('acctype',$acctype);
 	}
-	public function edit($id=null,$acctype=null) {
-		
-		$this->layout='staff_inner_layout';
-		$this->set('title_for_layout',SITENAME.' Create Coa Durotech');
-		$this->checkSatffSession(); 
-		$user_id=$this->Session->read('Customer.id');
-		if(empty($acctype)){
-			return $this->redirect(array('action' => 'index/'.$acctype));
-		}	
-		if(empty($id)){
-			return $this->redirect(array('action' =>  'index/'.$acctype));
-		}	
-		$this->StockReturn->bindModel(
-		array('hasMany' => array('StockReturnData' => array(
-			'className' => 'StockReturnData',			 
-			'foreignKey' => 'stock_id',				
-			'conditions' => array(),
-			'fields' => array(),
-			'order' => array(),
-		))));
-		$StockReturnArr = $this->StockReturn->find('first',array('conditions'=>array('id'=>$id)));			
-		$this->set('StockReturnArr',$StockReturnArr);
-		$this->set('acctype',$acctype);
-		
-		if (!empty($this->request->data)) {
-									
-			$inserty['StockReturn']['id'] = $id;	
-			
-			$inserty['StockReturn']['created'] = date('Y-m-d H:i:s');			
-			if($this->StockReturn->save($inserty)){				
-				$lastinsertId = $id;
-				$this->StockReturnData->query('delete from stock_return_datas where stock_id='.$lastinsertId.'');
-				foreach($this->request->data['date'] as $key=>$date){
-					$insert['StockReturnData']['id'] = '';
-					$insert['StockReturnData']['date'] = $date;
-					$insert['StockReturnData']['stock_id'] = $lastinsertId;
-					$insert['StockReturnData']['customer'] = $this->request->data['customer'][$key];		
-					$insert['StockReturnData']['items'] = $this->request->data['items'][$key];		
-					$insert['StockReturnData']['reason'] = $this->request->data['reason'][$key];		
-					$insert['StockReturnData']['conditions'] = $this->request->data['conditions'][$key];		
-					$insert['StockReturnData']['batch'] = $this->request->data['batch'][$key];				
-					$insert['StockReturnData']['received'] = $this->request->data['received'][$key];				
-					$this->StockReturnData->save($insert);
-				}				
-								
-				$this->Session->setFlash('Stock return added successfully.','default',array('class' => 'alert alert-success'));
-				return $this->redirect(array('action' => 'index/'.$acctype));
+	public function edit($id = null, $acctype = null) {
+		$this->viewBuilder()->setLayout('staff_inner_layout');
+		$this->set('title_for_layout', SITENAME . ' Create Coa Durotech');
+		$this->checkSatffSession();
+		$user_id = $this->request->getSession()->read('Customer.id');
+		if (empty($acctype)) {
+			return $this->redirect(['action' => 'index', $acctype]);
+		}
+		if (empty($id)) {
+			return $this->redirect(['action' => 'index', $acctype]);
+		}
+
+		$stockReturn = $this->StockReturn->find()
+			->contain(['StockReturnData'])
+			->where(['StockReturn.id' => $id])
+			->first();
+		if (!$stockReturn) {
+			$this->Flash->error('Stock return not found.');
+			return $this->redirect(['action' => 'index', $acctype]);
+		}
+		$rowArray = $stockReturn->toArray();
+		unset($rowArray['stock_return_data']);
+		$stockReturnDataArray = [];
+		foreach ($stockReturn->stock_return_data ?? $stockReturn->stockReturnData ?? [] as $item) {
+			$stockReturnDataArray[] = is_object($item) ? $item->toArray() : $item;
+		}
+		$StockReturnArr = [
+			'StockReturn' => $rowArray,
+			'StockReturnData' => $stockReturnDataArray,
+		];
+		$this->set('StockReturnArr', $StockReturnArr);
+		$this->set('acctype', $acctype);
+
+		if (!empty($this->request->getData())) {
+			$entity = $this->StockReturn->get($id);
+			$entity->set('created', date('Y-m-d H:i:s'));
+			if ($this->StockReturn->save($entity)) {
+				$this->StockReturnData->deleteAll(['stock_id' => $id]);
+				$data = $this->request->getData();
+				if (!empty($data['date']) && is_array($data['date'])) {
+					foreach ($data['date'] as $key => $date) {
+						$dataEntity = $this->StockReturnData->newEntity([
+							'date' => $date,
+							'stock_id' => $id,
+							'customer' => $data['customer'][$key] ?? '',
+							'items' => $data['items'][$key] ?? '',
+							'reason' => $data['reason'][$key] ?? '',
+							'conditions' => $data['conditions'][$key] ?? '',
+							'batch' => $data['batch'][$key] ?? '',
+							'received' => $data['received'][$key] ?? '',
+						]);
+						$this->StockReturnData->save($dataEntity);
+					}
+				}
+				$this->Flash->success('Stock return added successfully.');
+				return $this->redirect(['action' => 'index', $acctype]);
 			}
 		}
-		
 	}
-	function delete($id=null,$acctype=null){
-		$this->autoRender = false;		
-		$this->checkSatffSession(); 
-		if(empty($acctype)){
-			return $this->redirect(array('action' =>  'index/'.$acctype));
-		}	
-		if(empty($id)){
-			return $this->redirect(array('action' =>  'index/'.$acctype));
-		}	
-		$user_id=$this->Session->read('Customer.id');
-		$StockReturnArr = $this->StockReturn->find('first',array('conditions'=>array('id'=>$id,'user_id'=>$user_id)));			
-		if(empty($StockReturnArr)){
-			$this->Session->setFlash('Sorry, you have no permission to delete this record..','default',array('class' => 'alert alert-success'));
-			return $this->redirect(array('action' =>  'index/'.$acctype));
+	function delete($id = null, $acctype = null) {
+		$this->autoRender = false;
+		$this->checkSatffSession();
+		if (empty($acctype)) {
+			return $this->redirect(['action' => 'index', $acctype]);
 		}
-		
-		if($this->StockReturn->delete($id)){
-			$this->Session->setFlash('Stock return record is deleted successfully.','default',array('class' => 'alert alert-success'));
-			return $this->redirect(array('action' => 'index/'.$acctype));
-		}	
+		if (empty($id)) {
+			return $this->redirect(['action' => 'index', $acctype]);
+		}
+		$user_id = $this->request->getSession()->read('Customer.id');
+		$entity = $this->StockReturn->find()
+			->where(['StockReturn.id' => $id, 'StockReturn.user_id' => $user_id])
+			->first();
+		if (!$entity) {
+			$this->Flash->error('Sorry, you have no permission to delete this record.');
+			return $this->redirect(['action' => 'index', $acctype]);
+		}
+		if ($this->StockReturn->delete($entity)) {
+			$this->Flash->success('Stock return record is deleted successfully.');
+			return $this->redirect(['action' => 'index', $acctype]);
+		}
 	}
 	function admin_autologin($userid=null,$type=null,$id=null){
 		$this->autoRender = false;
@@ -444,158 +455,152 @@ class StocksController extends AppController
 		}		
 			
 		if(!empty($userArr)){				
-			$this->Session->write('User', $userArr['User']);
-			$this->Session->write('is_admin', 1);			
+			$this->request->getSession()->write('User', $userArr['User']);
+			$this->request->getSession()->write('is_admin', 1);			
 			$this->redirect('/admin/stocks/index/'.$type);
 		}		
 		
 	}	
-	public function sendemails($id=null) {
-	
-		$this->StockReturn->bindModel(
-		array('hasMany' => array('StockReturnData' => array(
-			'className' => 'StockReturnData',			 
-			'foreignKey' => 'stock_id',				
-			'conditions' => array(),
-			'fields' => array(),
-			'order' => array(),
-		))));
-		$StockReturnArr = $this->StockReturn->find('first',array('conditions'=>array('id'=>$id)));			
-		if(!empty($StockReturnArr)){				
-			$returnId= $StockReturnArr['StockReturn']['return_id'];
-			$type= ucfirst($StockReturnArr['StockReturn']['type']);
+	public function sendemails($id = null) {
+		$stockReturn = $this->StockReturn->find()
+			->contain(['StockReturnData'])
+			->where(['StockReturn.id' => $id])
+			->first();
+
+		if ($stockReturn) {
+			$returnId = $stockReturn->get('return_id');
+			$type = ucfirst($stockReturn->get('type'));
 			$email = 'kal@durotechindustries.com.au';
-		
 			$to_name = 'Kal';
 			$userid = 2;
-			$url = SITEURL.'admin/stocks/autologin/'.base64_encode($userid).'/'.$type.'/'.base64_encode($id);
-			$subject = SITENAME.' :- Stock Retrun #'.$returnId.' ('.$type.')';				
-			$variables = array('url'=>$url,'to_name'=>$to_name,'returnId'=>$returnId,'type'=>$type,'StockReturnData'=>$StockReturnArr['StockReturnData']);			
-			if(!empty($email)){
-				$template_name = 'stock_return_temp';				
-				try{
-					$temp = $this->sendemail($email,$subject,$template_name,$variables);
-				}catch (Exception $e){
-					
+			$url = SITEURL . 'admin/stocks/autologin/' . base64_encode((string)$userid) . '/' . $type . '/' . base64_encode((string)$id);
+			$subject = SITENAME . ' :- Stock Retrun #' . $returnId . ' (' . $type . ')';
+			$stockReturnData = $stockReturn->stock_return_data ?? $stockReturn->stockReturnData ?? [];
+			$stockReturnDataArray = [];
+			foreach ($stockReturnData as $item) {
+				$stockReturnDataArray[] = is_object($item) ? $item->toArray() : $item;
+			}
+			$variables = ['url' => $url, 'to_name' => $to_name, 'returnId' => $returnId, 'type' => $type, 'StockReturnData' => $stockReturnDataArray];
+			if (!empty($email)) {
+				$template_name = 'stock_return_temp';
+				try {
+					$this->sendemail($email, $subject, $template_name, $variables);
+				} catch (\Exception $e) {
 				}
 			}
 			$userids = 3;
-			$urlv = SITEURL.'admin/stocks/autologin/'.base64_encode($userids).'/'.$type.'/'.base64_encode($id);
+			$urlv = SITEURL . 'admin/stocks/autologin/' . base64_encode((string)$userids) . '/' . $type . '/' . base64_encode((string)$id);
 			$email_1 = 'varan@durotechindustries.com.au';
-			$to_name_1 = 'Varan';					
-			$variables_1 = array('url'=>$urlv,'to_name'=>$to_name_1,'returnId'=>$returnId,'type'=>$type,'StockReturnData'=>$StockReturnArr['StockReturnData']);			
-			if(!empty($email_1)){
-				$template_name = 'stock_return_temp';				
-				try{
-					$temp = $this->sendemail($email_1,$subject,$template_name,$variables_1);
-				}catch (Exception $e){
-					
+			$to_name_1 = 'Varan';
+			$variables_1 = ['url' => $urlv, 'to_name' => $to_name_1, 'returnId' => $returnId, 'type' => $type, 'StockReturnData' => $stockReturnDataArray];
+			if (!empty($email_1)) {
+				$template_name = 'stock_return_temp';
+				try {
+					$this->sendemail($email_1, $subject, $template_name, $variables_1);
+				} catch (\Exception $e) {
 				}
-			}	
+			}
 		}
-		return true;	
+		return true;
 	}	
 	
-	function comment($argu=null){
-		
-		$this->checkSatffSession(); 	
-		$this->layout = 'admin_new_layout';
-		
-		$this->StockReturn->bindModel(
-			array('belongsTo' => array('NappUser' => array(
-			'className' => 'NappUser',    
-			'foreignKey' => 'user_id',    
-			'conditions' => array(),
-			'fields' => array('name','lname'),
-			'order' => array(),
-		))));
-				
-		$StockReturnkArr = $this->StockReturn->find('first',array('conditions'=>array('StockReturn.id'=>$argu)));
-		$this->set('StockReturnkArr',$StockReturnkArr);
-		$this->set('argu',$argu);
-		
-		$this->StockReturnComment->bindModel(
-			array('belongsTo' => array('NappUser' => array(
-			'className' => 'NappUser',    
-			'foreignKey' => 'user_id',    
-			'conditions' => array(),
-			'fields' => array('name','lname'),
-			'order' => array(),
-		))));
-		$this->StockReturnComment->bindModel(
-			array('belongsTo' => array('User' => array(
-			'className' => 'User',    
-			'foreignKey' => 'admin_id',    
-			'conditions' => array(),
-			'fields' => array(),
-			'order' => array(),
-		))));
-		$StockReturnComment = $this->StockReturnComment->find('all',array('conditions'=>array('StockReturnComment.stock_id'=>$StockReturnkArr['StockReturn']['id']),'order' => array('StockReturnComment.id'=>'DESC')));
-		$this->set('clientArr',$StockReturnComment);
+	function comment($argu = null) {
+		$this->checkSatffSession();
+		$this->viewBuilder()->setLayout('admin_new_layout');
+
+		$stockReturn = $this->StockReturn->find()
+			->contain(['NappUser'])
+			->where(['StockReturn.id' => $argu])
+			->first();
+		if (!$stockReturn) {
+			$this->Flash->error('Stock return not found.');
+			return $this->redirect(['action' => 'index', 'customer']);
+		}
+		$StockReturnkArr = [
+			'StockReturn' => $stockReturn->toArray(),
+			'NappUser' => $stockReturn->napp_user ? (is_object($stockReturn->napp_user) ? $stockReturn->napp_user->toArray() : $stockReturn->napp_user) : [],
+		];
+		unset($StockReturnkArr['StockReturn']['napp_user']);
+		$this->set('StockReturnkArr', $StockReturnkArr);
+		$this->set('argu', $argu);
+
+		$comments = $this->StockReturnComment->find()
+			->contain(['NappUser', 'User'])
+			->where(['StockReturnComment.stock_id' => $stockReturn->id])
+			->orderDesc('StockReturnComment.id')
+			->all();
+		$clientArr = [];
+		foreach ($comments as $row) {
+			$rowArr = $row->toArray();
+			unset($rowArr['napp_user'], $rowArr['user']);
+			$clientArr[] = [
+				'StockReturnComment' => $rowArr,
+				'NappUser' => $row->napp_user ? (is_object($row->napp_user) ? $row->napp_user->toArray() : $row->napp_user) : [],
+				'User' => $row->user ? (is_object($row->user) ? $row->user->toArray() : $row->user) : [],
+			];
+		}
+		$this->set('clientArr', $clientArr);
 	}		
-	function addcomment($stock_id=null){
-		
-		$this->layout='admin_new_layout';
-		$this->set('title_for_layout',SITENAME.' Admin Comments');		
-		$this->checkSatffSession(); 
-		$user_id = $this->Session->read('Customer.id');
-		$fname = $this->Session->read('Customer.name');
-		$lname = $this->Session->read('Customer.lname');
-		$email = $this->Session->read('Customer.email');
-		
-		if(!empty($this->request->data)){
-			
-			if(!empty($_FILES['documents']['name'])){
+	function addcomment($stock_id = null) {
+		$this->viewBuilder()->setLayout('admin_new_layout');
+		$this->set('title_for_layout', SITENAME . ' Admin Comments');
+		$this->checkSatffSession();
+		$user_id = $this->request->getSession()->read('Customer.id');
+		$fname = $this->request->getSession()->read('Customer.name');
+		$lname = $this->request->getSession()->read('Customer.lname');
+		$email = $this->request->getSession()->read('Customer.email');
+
+		$data = $this->request->getData();
+		if (!empty($data)) {
+			$documents = null;
+			if (!empty($_FILES['documents']['name'])) {
 				$name = $_FILES['documents']['name'];
 				$tempname = $_FILES['documents']['tmp_name'];
-				$path  = WWW_ROOT.'sheetdoc/';
-				$ext = pathinfo($name, PATHINFO_EXTENSION);
-				$filename =  time().'_'.$name;										
-				move_uploaded_file($tempname,$path.'/'.$filename);
-				$insert['StockReturnComment']['documents'] = $filename;
-			}	
-			$insert['StockReturnComment']['comment'] = $this->request->data['comment'];			
-			$insert['StockReturnComment']['stock_id'] = $stock_id;
-			$insert['StockReturnComment']['admin_id'] =0;
-			$insert['StockReturnComment']['user_id'] = $user_id;
-			$insert['StockReturnComment']['type'] =0; // employee
-			$insert['StockReturnComment']['created'] = date('Y-m-d H:i:s');
-			// echo '<pre>';
-			// print_r($insert);
-			// die();
-			$this->StockReturnComment->save($insert);
-			
-			$StockReturnkArr = $this->StockReturn->find('first',array('conditions'=>array('StockReturn.id'=>$stock_id)));
-			$return_id = $StockReturnkArr['StockReturn']['return_id'];		
-			$type = $StockReturnkArr['StockReturn']['type'];		
-			if($this->request->data['is_send'] == 'Yes'){				
-				$username = $fname.' '.$lname;						 					
-				$subject = SITENAME.':- '.ucfirst($username).' has commented on stock return(#'.$return_id.')';						
-				$template_name = 'stocktemp';					
-				$userArr = $this->User->find('all',array('conditions'=>array('User.is_receive_smartsheet'=>1)));
-				if(!empty($userArr)){
-					foreach($userArr as $userArrs){
-						$userid = $userArrs['User']['id'];
-						$url = SITEURL.'admin/stocks/index/'.$type.'/'.$userid.'/'.$return_id;		
-						$to_name = $userArrs['User']['name'];
-						$to_email = $userArrs['User']['email'];							
-						$variables = array('name'=>$username,'to_name'=>$to_name,'return_id'=>$return_id,'subject'=>$subject,'comment'=>$this->request->data['comment'],'url'=>$url);
-												
-						try{
-							$this->sendemail($to_email,$subject,$template_name,$variables);
-						}catch (Exception $e){
-							
-						}
-							
-					}
-				}				
+				$path = WWW_ROOT . 'sheetdoc' . DS;
+				$filename = time() . '_' . $name;
+				move_uploaded_file($tempname, $path . $filename);
+				$documents = $filename;
 			}
-		
-			$this->Session->setFlash('Comment posted successfully','default',array('class' => 'alert alert-success'));
-			$this->redirect('comment/'.$stock_id);	 
+			$entity = $this->StockReturnComment->newEntity([
+				'comment' => isset($data['comment']) ? $data['comment'] : '',
+				'stock_id' => $stock_id,
+				'admin_id' => 0,
+				'user_id' => $user_id,
+				'type' => 0,
+				'created' => date('Y-m-d H:i:s'),
+				'documents' => $documents !== null ? $documents : '',
+			]);
+			$this->StockReturnComment->save($entity);
+
+			$stockReturn = $this->StockReturn->find()->where(['StockReturn.id' => $stock_id])->first();
+			if ($stockReturn) {
+				$return_id = $stockReturn->get('return_id');
+				$type = $stockReturn->get('type');
+				$commentText = $data['comment'] ?? '';
+				if (isset($data['is_send']) && $data['is_send'] === 'Yes') {
+					$username = $fname . ' ' . $lname;
+					$subject = SITENAME . ':- ' . ucfirst($username) . ' has commented on stock return(#' . $return_id . ')';
+					$template_name = 'stocktemp';
+					$userList = $this->User->find()->where(['User.is_receive_smartsheet' => 1])->all();
+					foreach ($userList as $u) {
+						$userid = $u->get('id');
+						$url = SITEURL . 'admin/stocks/index/' . $type . '/' . $userid . '/' . $return_id;
+						$to_name = $u->get('name');
+						$to_email = $u->get('email');
+						$variables = ['name' => $username, 'to_name' => $to_name, 'return_id' => $return_id, 'subject' => $subject, 'comment' => $commentText, 'url' => $url];
+						try {
+							$this->sendemail($to_email, $subject, $template_name, $variables);
+						} catch (\Exception $e) {
+						}
+					}
+				}
+			}
+
+			$this->Flash->success('Comment posted successfully');
+			return $this->redirect(['action' => 'comment', $stock_id]);
 		}
-		
-		$this->set('stock_id',$stock_id);
+
+		$this->set('stock_id', $stock_id);
 	}
 	
 	/** CamelCase alias for routing */
@@ -727,25 +732,39 @@ class StocksController extends AppController
 		return $this->admin_approve_warranty();
 	}
 	
-	public function warrant_request($type=null){		
-		
-		$this->layout='staff_inner_layout';
-		$this->set('title_for_layout',SITENAME.' Warranty Request List');		
-		$this->checkSatffSession(); 
-		$customer_id=$this->Session->read('Customer.id');
-		$this->WarrantyRequests->bindModel(
-			array('hasMany' => array('WarrantyRequestLog' => array(
-			'className' => 'WarrantyRequestLog',    
-			'foreignKey' => 'warranty_request_id',    
-			'conditions' => array(),
-			'fields' => array(),
-			'order' => array(),
-		))));	
-		$WarrantyRequest = $this->WarrantyRequests->find('all',array('page' => 1, 'limit' => 25,'order'=>array('WarrantyRequest.id'=>'desc')));
-		// echo '<pre>';
-		// print_r($WarrantyRequest);
-		// die();
-		$this->set('WarrantyRequest', $WarrantyRequest);			
+	public function warrant_request($type=null){
+		$this->viewBuilder()->setLayout('staff_inner_layout');
+		$this->set('title_for_layout', SITENAME . ' Warranty Request List');
+		$this->checkSatffSession();
+		$customer_id = $this->request->getSession()->read('Customer.id');
+
+		$results = $this->WarrantyRequests->find()
+			->contain(['WarrantyRequestLogs'])
+			->orderDesc('WarrantyRequests.id')
+			->limit(25)
+			->all();
+
+		$WarrantyRequest = [];
+		foreach ($results as $row) {
+			$logs = $row->warranty_request_logs ?? $row->warrantyRequestLogs ?? [];
+			$logsArray = [];
+			foreach ($logs as $log) {
+				$logsArray[] = is_object($log) ? $log->toArray() : $log;
+			}
+			$rowArray = $row->toArray();
+			unset($rowArray['warranty_request_logs'], $rowArray['warrantyRequestLogs']);
+			$WarrantyRequest[] = [
+				'WarrantyRequest' => $rowArray,
+				'WarrantyRequestLog' => $logsArray,
+			];
+		}
+		$this->set('WarrantyRequest', $WarrantyRequest);
+	}
+
+	/** CamelCase alias for URL stocks/warrant_request -> warrantRequest() */
+	public function warrantRequest($type = null)
+	{
+		return $this->warrant_request($type);
 	}
 	
 	function warranty($id=null){
@@ -841,7 +860,7 @@ class StocksController extends AppController
 					}
 				}				
 				
-				$this->Session->setFlash('Thanks, we will contact you shortly.','default',array('class' => 'alert alert-success'));
+				$this->Flash->success('Thanks, we will contact you shortly.');
 				//$flag = 1;
 				$this->redirect('/warranty/'.$id);	 
 			}						
@@ -855,7 +874,7 @@ class StocksController extends AppController
 		$update['WarrantyRequest']['id'] = $id;
 		$update['WarrantyRequest']['status'] = 3;
 		$this->WarrantyRequests->save($update);
-		$this->Session->setFlash('This request has been completed.','default',array('class' => 'alert alert-success'));
+		$this->Flash->success('This request has been completed.');
 		$this->redirect('warrant_request');	
 		
 	}
@@ -876,8 +895,8 @@ class StocksController extends AppController
 		if(empty($cus_arr)){
 			$this->redirect('/');	
 		}else if($cus_arr['NappUser']['is_staff_id'] == 1){
-			$this->Session->write('Customer', $cus_arr['NappUser']);
-			$this->Session->write('is_staff', 1);	
+			$this->request->getSession()->write('Customer', $cus_arr['NappUser']);
+			$this->request->getSession()->write('is_staff', 1);	
 			$this->redirect('warrant_request');	
 		}else{
 			$this->redirect('/');	

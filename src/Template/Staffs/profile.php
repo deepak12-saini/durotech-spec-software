@@ -16,9 +16,18 @@
 					<div class="col-sm-9">
 						<select id="dept_id" name="data[NappUser][dept_id]" class="col-xs-10 col-sm-5" >
 							<option value="">Select Department</option>
-							<?php foreach($departmentArr as $departments){ ?>
-								<option <?php if($user['NappUser']['dept_id']  == $departments['Department']['id']){ echo 'selected'; } ?>  value="<?php echo $departments['Department']['id'];?>"><?php echo $departments['Department']['department_title'];?></option>
-							<?php  }  ?>
+							<?php
+							$currentDeptId = isset($user) && is_object($user) ? $user->get('dept_id') : ($user['NappUser']['dept_id'] ?? '');
+							if (!empty($departmentArr)) {
+								foreach ($departmentArr as $departments) {
+									$d = $departments['Department'] ?? $departments;
+									$did = $d['id'] ?? '';
+									$dtitle = $d['department_title'] ?? '';
+									$sel = ($currentDeptId != '' && $currentDeptId == $did) ? ' selected' : '';
+									echo '<option' . $sel . ' value="' . h($did) . '">' . h($dtitle) . '</option>';
+								}
+							}
+							?>
 						</select>
 					</div>
 				</div>
@@ -76,11 +85,12 @@
 				<div class="form-group">
 					<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Select Country: </label>
 					<div class="col-sm-9">
-						<select id="dept_id" name="data[NappUser][country]" class="col-xs-10 col-sm-5" >
-							
-								<option <?php if($user['NappUser']['country']  == 'australia'){ echo 'selected'; } ?>  value="australia">Australia</option>
-								<option <?php if($user['NappUser']['country']  == 'india'){ echo 'selected'; } ?>  value="india">India</option>
-							
+						<select id="country_id" name="data[NappUser][country]" class="col-xs-10 col-sm-5" >
+							<?php
+							$currentCountry = isset($user) && is_object($user) ? ($user->get('country') ?? '') : ($user['NappUser']['country'] ?? '');
+							?>
+							<option <?php echo ($currentCountry == 'australia') ? ' selected' : ''; ?> value="australia">Australia</option>
+							<option <?php echo ($currentCountry == 'india') ? ' selected' : ''; ?> value="india">India</option>
 						</select>
 					</div>
 				</div>

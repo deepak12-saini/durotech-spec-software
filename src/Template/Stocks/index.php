@@ -86,7 +86,11 @@ foreach ($stockreturn as $stockreturns):
 							<th>Batch Number</th>
 							<th>Received By</th>
 						</tr>	
-						<?php if(!empty($stockreturns)){ foreach($stockreturns['StockReturnData'] as $StockReturnDatas){ ?>
+						<?php
+						$stockReturnDataList = isset($stockreturns['StockReturnData']) && is_array($stockreturns['StockReturnData']) ? $stockreturns['StockReturnData'] : [];
+						if (!empty($stockreturns)) { foreach ($stockReturnDataList as $StockReturnDatas) {
+							$StockReturnDatas = is_array($StockReturnDatas) ? $StockReturnDatas : [];
+						?>
 							<tr>
 								<td><?php echo date('d-M-Y',strtotime($StockReturnDatas['date'])); ?></td>
 								<td><?php echo $StockReturnDatas['customer']; ?></td>
@@ -96,7 +100,7 @@ foreach ($stockreturn as $stockreturns):
 								<td><?php echo $StockReturnDatas['batch']; ?></td>
 								<td><?php echo $StockReturnDatas['received']; ?></td>
 								
-							</tr>	
+							</tr>
 						<?php } } ?>
 						</tbody>
 						
