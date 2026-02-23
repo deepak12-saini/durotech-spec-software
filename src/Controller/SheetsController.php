@@ -1009,21 +1009,26 @@ class SheetsController extends AppController
 
         $sheetShares = $this->SsSheetShare->find()
             ->where(['emp_id' => $user_id])
-            ->toArray();
+            ->all();
         $sheet_ids = [];
         foreach ($sheetShares as $share) {
-            $sheet_ids[] = $share->sheet_id;
+            $sheet_id = is_object($share) ? $share->get('sheet_id') : ($share['sheet_id'] ?? null);
+            if ($sheet_id !== null) {
+                $sheet_ids[] = $sheet_id;
+            }
         }
 
         if (empty($sheet_ids)) {
+            $query = $this->SsSheetCategory->find()->where(['SsSheetCategory.id' => 0]);
+            $this->paginate($query, ['limit' => 100]);
             $this->set('SsSheetCategory', []);
             return;
         }
 
         $query = $this->SsSheetCategory->find()
             ->contain(['NappUser', 'User'])
-            ->where(['id IN' => $sheet_ids, 'is_deleted' => 0])
-            ->order(['SsSheetCategory.id' => 'DESC']);
+            ->where(['SsSheetCategory.id IN' => $sheet_ids, 'SsSheetCategory.is_deleted' => 0])
+            ->orderDesc('SsSheetCategory.id');
 
         $SsSheetCategoryArr = $this->paginate($query, ['limit' => 100]);
 
@@ -1031,8 +1036,8 @@ class SheetsController extends AppController
         foreach ($SsSheetCategoryArr as $entity) {
             $categoryArr[] = [
                 'SsSheetCategory' => $entity->toArray(),
-                'NappUser' => $entity->napp_user ? $entity->napp_user->toArray() : [],
-                'User' => $entity->user ? $entity->user->toArray() : []
+                'NappUser' => $entity->napp_user ? (is_object($entity->napp_user) ? $entity->napp_user->toArray() : []) : [],
+                'User' => $entity->user ? (is_object($entity->user) ? $entity->user->toArray() : []) : []
             ];
         }
 
