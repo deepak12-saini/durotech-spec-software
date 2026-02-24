@@ -233,6 +233,16 @@
 
 
 
+	/* Instagram section – same grey as subtitle/body */
+	.instagram-reels .container > h3,
+	.instagram-reels .container > p:first-of-type {
+		color: #585A5A;
+		font-weight: 600;
+	}
+	.instagram-reels .container > p:first-of-type {
+		font-weight: normal;
+	}
+
 	/* new css for reels */
 
 	.instagram-slider .slide {
@@ -450,6 +460,11 @@
 			<div class="container">
 				<h3>Our Latest Instagram Posts</h3>
 				<p>Check out our latest activities and projects.</p>
+				<p class="instagram-profile-link" style="margin-bottom: 1rem;">
+					<a href="https://www.instagram.com/durotechindustries.com.au" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="display: inline-block; padding: 8px 20px; background: #2889c9; color: #fff; text-decoration: none; border-radius: 4px; font-weight: 600;">
+						<i class="fa fa-instagram" aria-hidden="true"></i> View profile on Instagram
+					</a>
+				</p>
 				<section class="instagram-slider">
 
 					<div class="slide">
@@ -577,7 +592,34 @@
 				</section>
 			</div>
         </div>
-        <script async src="//www.instagram.com/embed.js"></script>
+        <script>
+		(function() {
+			var instagramSection = document.querySelector('.instagram-reels');
+			if (!instagramSection) return;
+			var loaded = false;
+			function loadInstagramEmbeds() {
+				if (loaded) return;
+				loaded = true;
+				var s = document.createElement('script');
+				s.async = true;
+				s.src = '//www.instagram.com/embed.js';
+				document.body.appendChild(s);
+			}
+			if ('IntersectionObserver' in window) {
+				var io = new IntersectionObserver(function(entries) {
+					entries.forEach(function(entry) {
+						if (entry.isIntersecting) {
+							loadInstagramEmbeds();
+							io.disconnect();
+						}
+					});
+				}, { rootMargin: '200px', threshold: 0.01 });
+				io.observe(instagramSection);
+			} else {
+				loadInstagramEmbeds();
+			}
+		})();
+		</script>
 		<!-- <div class="client_logo col-lg-12 col-md-12 col-sm-12">		
 			<div class="container">
 				<h3>We Work With</h3>
