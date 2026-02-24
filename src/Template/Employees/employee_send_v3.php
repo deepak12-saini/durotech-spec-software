@@ -37,6 +37,9 @@
 		<div id="spec-draft-status" class="alert alert-info" style="margin-top:10px;margin-bottom:0;">
 			<strong>Status:</strong> <span id="spec-status-text"><?php echo !empty($draftId) ? 'Draft (restored)' : 'New'; ?></span>
 			<span id="spec-last-saved" style="margin-left:15px;"></span>
+			<?php if (!empty($draftId)): ?>
+				<span style="margin-left:15px;"><?php echo $this->Html->link('Start New Spec (discard this draft)', ['controller' => 'employees', 'action' => 'employee_send_v3'], ['class' => 'btn btn-default btn-xs']); ?></span>
+			<?php endif; ?>
 		</div>
 	</div>
 	

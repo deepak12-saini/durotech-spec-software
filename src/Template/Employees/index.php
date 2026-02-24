@@ -4,11 +4,18 @@
 </style>
 
 <div class="page-content">
-	<!-- Page header with title and "Create New Spec" button -->
+	<!-- Page header with title and spec actions -->
 	<div class="page-header">
 		<h1>DuroEzy Specification
-			<!-- Link to create a new spec (calls send action in MailersController) -->
-			<?php echo $this->Html->link('Create New Spec', array('controller' => 'employees','action' => 'employee_send_v3'), array('class'=>'btn btn-info btn-xs top-button')); ?>
+			<?php
+			// Create New Spec: always opens an empty form (no draft loaded)
+			echo $this->Html->link('Create New Spec', ['controller' => 'employees', 'action' => 'employee_send_v3'], ['class' => 'btn btn-info btn-xs top-button']);
+			// Resume Draft: only when a draft exists; loads the saved draft
+			if (!empty($hasDraft)) {
+				echo ' ';
+				echo $this->Html->link('Resume Draft', ['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['resume' => '1']], ['class' => 'btn btn-warning btn-xs top-button']);
+			}
+			?>
 		</h1>
 	</div>
 

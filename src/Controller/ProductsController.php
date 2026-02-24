@@ -159,7 +159,12 @@ class ProductsController extends AppController
 	public function index(?string $slug = null)
 	{
 		$this->viewBuilder()->setLayout('customduro_layout');
-		$slug = $slug ?? $this->request->getParam('pass.0') ?? $this->request->getParam('slug');
+		// Slug from query string (?slug=... from /category/* redirect), route pass, or param
+		$slug = $this->request->getQuery('slug') ?? $slug ?? $this->request->getParam('pass.0') ?? $this->request->getParam('slug');
+		$slug = is_string($slug) ? trim($slug) : '';
+		if ($slug !== '' && strpos($slug, '%2F') !== false) {
+			$slug = rawurldecode($slug);
+		}
 
 		$categoryResults = $this->Category->find('all')
 			->where(['Category.status' => 1])
@@ -183,6 +188,18 @@ class ProductsController extends AppController
 			$categoryArr = $this->Category->find()
 				->where(['Category.status' => 1, 'Category.slug' => $slug])
 				->first();
+			// If not found, try normalized slug (e.g. collapse // to /) to match DB variants
+			if (!$categoryArr && is_string($slug)) {
+				$normalized = preg_replace('#/+#', '/', trim($slug, '/'));
+				if ($normalized !== $slug) {
+					$categoryArr = $this->Category->find()
+						->where(['Category.status' => 1, 'Category.slug' => $normalized])
+						->first();
+					if ($categoryArr) {
+						$slug = $normalized;
+					}
+				}
+			}
 			if ($categoryArr) {
 				$categoryname = $categoryArr->get('category_name');
 				$catId = $categoryArr->get('id');

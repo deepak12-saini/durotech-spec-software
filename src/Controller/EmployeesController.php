@@ -350,7 +350,17 @@ public function index()
         'limit' => 20,
     ]);
 
-    $this->set('mailers', $mailers);
+    // Check if employee has a draft so we can show "Resume Draft" vs "Create New Spec"
+    $hasDraft = false;
+    if ($this->Mailer->getSchema()->getColumn('save_status')) {
+        $hasDraft = $this->Mailer->exists([
+            'Mailer.employee_id' => $employee_id,
+            'Mailer.save_status' => 'draft',
+            'Mailer.type' => 3,
+        ]);
+    }
+
+    $this->set(compact('mailers', 'hasDraft'));
 }
 
 
@@ -594,10 +604,11 @@ public function employee_send_v3() {
     $code = str_pad((string)$id, 3, '0', STR_PAD_LEFT);
     $refernce = 'DTSPEC ' . $yr . '-' . $mm . '-' . $code;
 
-    // Load latest draft for this employee so form can pre-fill and we pass draft_id for auto-save
+    // Load draft ONLY when user explicitly chose "Resume Draft" (?resume=1). "Create New Spec" must show empty form.
     $draft = null;
     $draftId = null;
-    if ($this->Mailer->getSchema()->getColumn('save_status')) {
+    $resumeDraft = $this->request->getQuery('resume') && $this->Mailer->getSchema()->getColumn('save_status');
+    if ($resumeDraft) {
         $draft = $this->Mailer->find()
             ->where(['Mailer.employee_id' => $employee_id, 'Mailer.save_status' => 'draft', 'Mailer.type' => 3])
             ->orderDesc('Mailer.id')
