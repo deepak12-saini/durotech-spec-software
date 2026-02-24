@@ -26,14 +26,15 @@
 					$k = 1;
 					foreach ($DocumentLibraryArr as $DocumentLibraryArrs): ?>
 					<tr>
-						<td><a data-toggle="modal" data-target="#myModal_<?php echo $k; ?>" href="#null"><?php echo h($DocumentLibraryArrs['DocumentLibrary']['documentid']); ?></a>&nbsp;</td>
-						<td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?>&nbsp;</td>
-						
-						<!-- <td><?php echo h($DocumentLibraryArrs['DocumentLibrary']['format']); ?>&nbsp;</td> -->
-						<td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentLibrary']['date'])); ?>&nbsp;</td>
-						<td><?php echo h($DocumentLibraryArrs['DocumentLibrary']['name_of_indentor']); ?>&nbsp;</td>
-						<td><?php echo h($DocumentLibraryArrs['DocumentLibrary']['desigaration']); ?>&nbsp;</td>
-						<td><?php echo h($DocumentLibraryArrs['DocumentLibrary']['department']); ?>&nbsp;</td>				
+						<td><a data-toggle="modal" data-target="#myModal_<?php echo $k; ?>" href="#null"><?php echo h($DocumentLibraryArrs['DocumentLibrary']['documentid'] ?? ''); ?></a>&nbsp;</td>
+						<td><?php echo h(($DocumentLibraryArrs['NappUser']['name'] ?? '').' '.($DocumentLibraryArrs['NappUser']['lname'] ?? '')); ?>&nbsp;</td>
+						<td><?php
+							$d = $DocumentLibraryArrs['DocumentLibrary']['date'] ?? null;
+							echo $d ? date('d-M-Y', strtotime($d)) : '';
+						?>&nbsp;</td>
+						<td><?php echo h($DocumentLibraryArrs['DocumentLibrary']['name_of_indentor'] ?? ''); ?>&nbsp;</td>
+						<td><?php echo h($DocumentLibraryArrs['DocumentLibrary']['desigaration'] ?? ''); ?>&nbsp;</td>
+						<td><?php echo h($DocumentLibraryArrs['DocumentLibrary']['department'] ?? ''); ?>&nbsp;</td>				
 						<td>
 						<?php
 							if($DocumentLibraryArrs['DocumentLibrary']['status'] == 1){
@@ -43,7 +44,10 @@
 							}	
 						?>&nbsp;
 						</td>					
-						<td> <?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentLibrary']['created'])); ?></td>
+						<td><?php
+							$c = $DocumentLibraryArrs['DocumentLibrary']['created'] ?? null;
+							echo $c ? date('d-M-Y', strtotime($c)) : '';
+						?></td>
 						<td>
 							<a href="<?php echo SITEURL.'documents/editdoc/'.$DocumentLibraryArrs['DocumentLibrary']['id']; ?>" class="btn btn-mini btn-info">Edit</a>							
 							<a href="<?php echo SITEURL.'documents/addtask/'.$DocumentLibraryArrs['DocumentLibrary']['id']; ?>" class="btn btn-mini btn-info">Add Records</a>							
@@ -87,7 +91,7 @@
 		<div class="modal-content">
 		  <div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal">&times;</button>
-			<h4 class="modal-title">Document Title Records of Library: <?php echo h($DocumentLibraryArrs['DocumentLibrary']['documentid']); ?></h4>
+			<h4 class="modal-title">Document Title Records of Library: <?php echo h($DocumentLibraryArrs['DocumentLibrary']['documentid'] ?? ''); ?></h4>
 		  </div>
 		  <div class="modal-body">
 			<div class="row">
@@ -95,14 +99,12 @@
 				<div class="table-responsive">
 				<table class="table table-striped table-bordered table-hover"  >
 					<tbody>
-					<tr><th>Documentid: </th><td><span class="label label-inverse"><?php echo h($DocumentLibraryArrs['DocumentLibrary']['documentid']); ?></span></td></tr>	
-					
-					<tr><th>Added By: </th><td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?></td></tr>	
-					
-					<tr><th>Date: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentLibrary']['date'])); ?></td></tr>	
-					<tr><th>Name of Indentor: </th><td><?php echo $DocumentLibraryArrs['DocumentLibrary']['name_of_indentor']; ?></td></tr>	
-					<tr><th>Designation: </th><td><?php echo $DocumentLibraryArrs['DocumentLibrary']['desigaration']; ?></td></tr>	
-					<tr><th>Department: </th><td><?php echo $DocumentLibraryArrs['DocumentLibrary']['department']; ?></td></tr>						
+					<tr><th>Documentid: </th><td><span class="label label-inverse"><?php echo h($DocumentLibraryArrs['DocumentLibrary']['documentid'] ?? ''); ?></span></td></tr>
+					<tr><th>Added By: </th><td><?php echo h(($DocumentLibraryArrs['NappUser']['name'] ?? '').' '.($DocumentLibraryArrs['NappUser']['lname'] ?? '')); ?></td></tr>
+					<tr><th>Date: </th><td><?php $d = $DocumentLibraryArrs['DocumentLibrary']['date'] ?? null; echo $d ? date('d-M-Y', strtotime($d)) : ''; ?></td></tr>
+					<tr><th>Name of Indentor: </th><td><?php echo h($DocumentLibraryArrs['DocumentLibrary']['name_of_indentor'] ?? ''); ?></td></tr>
+					<tr><th>Designation: </th><td><?php echo h($DocumentLibraryArrs['DocumentLibrary']['desigaration'] ?? ''); ?></td></tr>
+					<tr><th>Department: </th><td><?php echo h($DocumentLibraryArrs['DocumentLibrary']['department'] ?? ''); ?></td></tr>						
 					<tr><th>Status: </th><td>
 					<?php 
 					if($DocumentLibraryArrs['DocumentLibrary']['status'] == 1){
@@ -112,11 +114,10 @@
 					}	 ?>
 					</td></tr>	
 					
-					<tr><th>Sign of coordinator: </th><td><?php echo $DocumentLibraryArrs['NappUser_2']['name'].' '.$DocumentLibraryArrs['NappUser_2']['lname'] ; ?></td></tr>	
-					<tr><th>Sign of hod: </th><td><?php echo $DocumentLibraryArrs['NappUser_3']['name'].' '.$DocumentLibraryArrs['NappUser_3']['lname'] ; ?></td></tr>	
-					<tr><th>sign of library: </th><td><?php echo $DocumentLibraryArrs['NappUser_4']['name'].' '.$DocumentLibraryArrs['NappUser_4']['lname'] ; ?></td></tr>	
-					
-					<tr><th>Created: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentLibrary']['created'])); ?></td></tr>	
+					<tr><th>Sign of coordinator: </th><td><?php echo h(($DocumentLibraryArrs['NappUser_2']['name'] ?? '').' '.($DocumentLibraryArrs['NappUser_2']['lname'] ?? '')); ?></td></tr>
+					<tr><th>Sign of hod: </th><td><?php echo h(($DocumentLibraryArrs['NappUser_3']['name'] ?? '').' '.($DocumentLibraryArrs['NappUser_3']['lname'] ?? '')); ?></td></tr>
+					<tr><th>sign of library: </th><td><?php echo h(($DocumentLibraryArrs['NappUser_4']['name'] ?? '').' '.($DocumentLibraryArrs['NappUser_4']['lname'] ?? '')); ?></td></tr>
+					<tr><th>Created: </th><td><?php $c = $DocumentLibraryArrs['DocumentLibrary']['created'] ?? null; echo $c ? date('d-M-Y', strtotime($c)) : ''; ?></td></tr>	
 					</tbody>
 					
 				</table>

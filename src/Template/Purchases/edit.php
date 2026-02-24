@@ -13,34 +13,43 @@
 	
 	<div class="row">
 		<div class="col-xs-12">
-		<?php echo $this->Form->create('Purchase',array('class'=>'form-horizontal','enctype'=>'multipart/form-data')); ?>
-			
+		<?php
+			$purchase = $PurchaseArr['Purchase'] ?? [];
+			$editDate = !empty($purchase['date']) ? $purchase['date'] : date('Y-m-d');
+			$editItemDetails = isset($purchase['item_details']) ? h($purchase['item_details']) : '';
+			$editRequisitioner = isset($purchase['requisitioner_name']) ? h($purchase['requisitioner_name']) : '';
+			$editPermittedBy = isset($purchase['permitted_by']) ? (int)$purchase['permitted_by'] : '';
+		?>
+		<?php echo $this->Form->create('Purchase', array('class' => 'form-horizontal', 'enctype' => 'multipart/form-data', 'url' => ['action' => 'edit', $purchase['id'] ?? null])); ?>
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Date:</label>
 				<div class="col-sm-9">
-					<?php echo $this->Form->input('date',array('type'=>'text','div'=>false,'label'=>false, 'class' => 'datepicker col-xs-10 col-sm-5','id'=>'date','placeholder'=>'Date','value'=>date('Y-m-d')))?>
+					<?php echo $this->Form->input('date', array('type' => 'text', 'div' => false, 'label' => false, 'class' => 'datepicker col-xs-10 col-sm-5', 'id' => 'date', 'placeholder' => 'Date', 'value' => $editDate)); ?>
 				</div>
-			</div>	
+			</div>
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Item Detail:</label>
 				<div class="col-sm-9">
-					<?php echo $this->Form->input('item_details',array('type'=>'text','div'=>false,'label'=>false, 'class' => 'col-xs-10 col-sm-5','id'=>'item_details','placeholder'=>'Item Detail'))?>
+					<?php echo $this->Form->input('item_details', array('type' => 'text', 'div' => false, 'label' => false, 'class' => 'col-xs-10 col-sm-5', 'id' => 'item_details', 'placeholder' => 'Item Detail', 'value' => $editItemDetails)); ?>
 				</div>
-			</div>	
+			</div>
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Name of the Requisitioner:</label>
 				<div class="col-sm-9">
-					<?php echo $this->Form->input('requisitioner_name',array('type'=>'text','div'=>false,'label'=>false, 'class' => 'col-xs-10 col-sm-5','id'=>'requisitioner_name','placeholder'=>' Name of the Requisitioner'))?>
+					<?php echo $this->Form->input('requisitioner_name', array('type' => 'text', 'div' => false, 'label' => false, 'class' => 'col-xs-10 col-sm-5', 'id' => 'requisitioner_name', 'placeholder' => ' Name of the Requisitioner', 'value' => $editRequisitioner)); ?>
 				</div>
-			</div>  
+			</div>
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Permitted By:</label>
 				<div class="col-sm-9">
-					<select name="data[Purchase][permitted_by]" class="col-xs-10 col-sm-5">
+					<select name="data[Purchase][permitted_by]" class="col-xs-10 col-sm-5" id="PurchasePermittedBy">
 						<option value="">Select Employee</option>
-						<?php foreach($employeArr as $employeArrs){ ?>
-							<option <?php if($PurchaseArr['Purchase']['permitted_by'] == $employeArrs['NappUser']['id']){ echo 'selected'; } ?> value="<?php echo $employeArrs['NappUser']['id']; ?>"><?php echo $employeArrs['NappUser']['name'].' '.$employeArrs['NappUser']['lname']; ?></option>
-						<?php  }  ?>
+						<?php foreach ($employeArr as $employeArrs):
+							$uid = (int)($employeArrs['NappUser']['id'] ?? 0);
+							$selected = ($editPermittedBy !== '' && $uid === (int)$editPermittedBy) ? ' selected="selected"' : '';
+						?>
+							<option value="<?php echo $uid; ?>"<?php echo $selected; ?>><?php echo h($employeArrs['NappUser']['name'] . ' ' . $employeArrs['NappUser']['lname']); ?></option>
+						<?php endforeach; ?>
 					</select>
 				</div>
 			</div>	

@@ -30,6 +30,46 @@ class OrganisationsController extends AppController
 		return parent::beforeFilter($event);
 	}
 
+	/**
+	 * Normalize date for circular_management_reviews.date (NOT NULL).
+	 * Returns Y-m-d string; uses today if input is null, empty, or invalid.
+	 */
+	private function _normalizeReviewDate($value): string
+	{
+		$value = is_array($value) ? null : $value;
+		$value = trim((string)($value ?? ''));
+		if ($value === '') {
+			return date('Y-m-d');
+		}
+		$ts = strtotime($value);
+		return $ts !== false ? date('Y-m-d', $ts) : date('Y-m-d');
+	}
+
+	/** Get review date from request data (Organisation.date or date). */
+	private function _getReviewDateFromData(array $data): string
+	{
+		$raw = $data['Organisation']['date'] ?? $data['date'] ?? null;
+		return $this->_normalizeReviewDate($raw);
+	}
+
+	/** Normalize time field for NOT NULL columns; default '00:00' when null/empty. */
+	private function _normalizeReviewTime($value, string $default = '00:00'): string
+	{
+		$value = is_array($value) ? null : $value;
+		$value = trim((string)($value ?? ''));
+		return $value !== '' ? $value : $default;
+	}
+
+	/** Get start_time / end_time from request data; never null. */
+	private function _getReviewTimesFromData(array $data): array
+	{
+		$org = $data['Organisation'] ?? [];
+		return [
+			'start_time' => $this->_normalizeReviewTime($org['start_time'] ?? $data['start_time'] ?? null, '00:00'),
+			'end_time'   => $this->_normalizeReviewTime($org['end_time'] ?? $data['end_time'] ?? null, '23:59'),
+		];
+	}
+
 	// ========== CAMELCASE WRAPPERS FOR ADMIN METHODS ==========
 	
 	public function adminIndex()
@@ -267,36 +307,41 @@ class OrganisationsController extends AppController
 		$this->checkSatffSession();
 		$emp_id = $this->request->getSession()->read('Customer.id');
 
-		$CircularRelationList = $this->CircularRelation->find('list', [
-			'keyField' => 'circular_id',
-			'valueField' => 'circular_id'
-		])
-		->where(['CircularRelation.emp_id' => $emp_id])
-		->toArray();
-		$CircularRelation = array_values($CircularRelationList);
+		// CakePHP 3.10: find list then execute; avoid IN with empty list
+		$circularIdsResult = $this->CircularRelation->find()
+			->select(['circular_id'])
+			->where(['CircularRelation.emp_id' => $emp_id])
+			->all();
+		$CircularRelation = array_values($circularIdsResult->extract('circular_id')->toList());
 
 		$query = $this->CircularManagementReview->find()
 			->contain([
-				'NappUser' => function($q) {
+				'NappUser' => function ($q) {
 					return $q->select(['id', 'dept_id', 'name', 'lname'])
 						->contain(['Department']);
 				},
-				'CircularRelation' => function($q) {
+				'CircularRelation' => function ($q) {
 					return $q->contain([
-						'NappUser' => function($q2) {
+						'NappUser' => function ($q2) {
 							return $q2->select(['id', 'dept_id', 'name', 'lname'])
 								->contain(['Department']);
 						}
 					]);
 				}
-			])
-			->where(function($exp, $q) use ($emp_id, $CircularRelation) {
+			]);
+
+		// Only add "id IN" when list is non-empty (Cake throws if IN is empty)
+		if (!empty($CircularRelation)) {
+			$query->where(function ($exp, $q) use ($emp_id, $CircularRelation) {
 				return $exp->or_([
 					'CircularManagementReview.emp_id' => $emp_id,
 					'CircularManagementReview.id IN' => $CircularRelation
 				]);
-			})
-			->orderDesc('CircularManagementReview.id');
+			});
+		} else {
+			$query->where(['CircularManagementReview.emp_id' => $emp_id]);
+		}
+		$query->orderDesc('CircularManagementReview.id');
 
 		$circularArr = $this->paginate($query, ['limit' => 25]);
 
@@ -365,15 +410,21 @@ class OrganisationsController extends AppController
 
 		$circularData = $CircularManagementReviewEntity->toArray();
 		$CircularManagementReviewArr = ['CircularManagementReview' => $circularData];
+		$selectedMeetingEmpIds = [];
 		if ($CircularManagementReviewEntity->circular_relation) {
 			$CircularManagementReviewArr['CircularRelation'] = [];
 			foreach ($CircularManagementReviewEntity->circular_relation as $relation) {
-				$CircularManagementReviewArr['CircularRelation'][] = $relation->toArray();
+				$relArray = $relation->toArray();
+				$CircularManagementReviewArr['CircularRelation'][] = $relArray;
+				if (isset($relArray['emp_id'])) {
+					$selectedMeetingEmpIds[] = (int)$relArray['emp_id'];
+				}
 			}
 		} else {
 			$CircularManagementReviewArr['CircularRelation'] = [];
 		}
 		$this->set('CircularManagementReviewArr', $CircularManagementReviewArr);
+		$this->set('selectedMeetingEmpIds', $selectedMeetingEmpIds);
 
 		if ($this->request->is('post') && !empty($this->request->getData())) {
 			$data = $this->request->getData();
@@ -385,14 +436,15 @@ class OrganisationsController extends AppController
 				}
 			}
 
+			$times = $this->_getReviewTimesFromData($data);
 			$entity = $this->CircularManagementReview->get($id);
 			$entity = $this->CircularManagementReview->patchEntity($entity, [
 				'admin_id' => 2,
 				'emp_id' => $emp_id,
 				'agenda' => $agendId,
-				'date' => $data['Organisation']['date'] ?? null,
-				'start_time' => $data['Organisation']['start_time'] ?? null,
-				'end_time' => $data['Organisation']['end_time'] ?? null,
+				'date' => $this->_getReviewDateFromData($data),
+				'start_time' => $times['start_time'],
+				'end_time' => $times['end_time'],
 				'created' => date('Y-m-d H:i:s')
 			], ['validate' => false]);
 
@@ -572,11 +624,12 @@ class OrganisationsController extends AppController
 				}
 
 				// Update status
+				$times = $this->_getReviewTimesFromData($data);
 				$updateEntity = $this->CircularManagementReview->get($id);
 				$updateEntity = $this->CircularManagementReview->patchEntity($updateEntity, [
 					'status' => 1,
-					'start_time' => $data['Organisation']['start_time'] ?? null,
-					'end_time' => $data['Organisation']['end_time'] ?? null
+					'start_time' => $times['start_time'],
+					'end_time' => $times['end_time']
 				], ['validate' => false]);
 				$this->CircularManagementReview->save($updateEntity);
 
@@ -673,15 +726,16 @@ class OrganisationsController extends AppController
 				}
 			}
 
+			$times = $this->_getReviewTimesFromData($data);
 			$entity = $this->CircularManagementReview->newEntity([
 				'admin_id' => 2,
 				'meeting_id' => $meeting_id,
 				'emp_id' => $emp_id,
 				'agenda' => $agendId,
-				'date' => $data['Organisation']['date'] ?? null,
-				'start_time' => $data['Organisation']['start_time'] ?? null,
-				'end_time' => $data['Organisation']['end_time'] ?? null,
-				'extra' => $data['Organisation']['extra'] ?? null,
+				'date' => $this->_getReviewDateFromData($data),
+				'start_time' => $times['start_time'],
+				'end_time' => $times['end_time'],
+				'extra' => trim((string)($data['Organisation']['extra'] ?? $data['extra'] ?? '')),
 				'created' => date('Y-m-d H:i:s')
 			], ['validate' => false]);
 

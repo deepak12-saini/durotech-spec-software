@@ -41,6 +41,12 @@
 				</div>
 
 				<div class="form-group">
+					<label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Sequence: <br> <small>Display order on website (lower number = first).</small></label>
+					<div class="col-sm-9">
+						<input type="number" name="Category[sort]" id="category_sort" value="<?= (int)($Category['Category']['sort'] ?? 0) ?>" min="0" class="col-xs-10 col-sm-5" placeholder="0">
+					</div>
+				</div>
+				<div class="form-group">
 					<label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Category Image: </label>
 					<div class="col-sm-9">
 						<input type="file" name="image" id="image" >

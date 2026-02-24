@@ -30,9 +30,13 @@
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Name of the Requisitioner:</label>
 				<div class="col-sm-9">
-					<?php 
-					$name = $this->Session->read('Customer.name').' '.$this->Session->read('Customer.lname');		
-					echo $this->Form->input('requisitioner_name',array('type'=>'text','div'=>false,'label'=>false, 'class' => 'col-xs-10 col-sm-5','id'=>'requisitioner_name','placeholder'=>' Name of the Requisitioner','value'=>$name))
+					<?php
+					$reqName = $requisitionerName ?? '';
+					if ($reqName === '' && method_exists($this->request, 'getSession')) {
+						$s = $this->request->getSession();
+						$reqName = trim(($s->read('Customer.name') ?? '') . ' ' . ($s->read('Customer.lname') ?? ''));
+					}
+					echo $this->Form->input('requisitioner_name', array('type' => 'text', 'div' => false, 'label' => false, 'class' => 'col-xs-10 col-sm-5', 'id' => 'requisitioner_name', 'placeholder' => ' Name of the Requisitioner', 'value' => $reqName));
 					?>
 				</div>
 			</div>  
@@ -122,27 +126,10 @@
 		$("#div_"+id).remove();
 	}
 	
-jQuery(function(){ 
-
-	
-	$('.datepicker').datepicker({
-		format: 'yyyy-mm-dd',			
-	});
-	
-	$("#task_id").validate({
-		 expression: "if (VAL) return true; else return false;",
-		message: "Please enter task id"
-	}); $("#title").validate({
-		 expression: "if (VAL) return true; else return false;",
-		message: "Please enter  employe id"
-	}); $("#assignedto").validate({
-		 expression: "if (VAL) return true; else return false;",
-		message: "Please select employee"
-	}); $("#assignedby").validate({
-		 expression: "if (VAL) return true; else return false;",
-		message: "Please eneter assigned by user"
-	}); 
-	
-	
+jQuery(function(){
+	$('.ajax-loading-overlay').remove();
+	if (typeof jQuery.fn.datepicker !== 'undefined' && $('.datepicker').length) {
+		$('.datepicker').datepicker({ format: 'yyyy-mm-dd' });
+	}
 });
 </script>

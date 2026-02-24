@@ -13,68 +13,75 @@
 	<div class="row">
 		<div class="col-xs-12">
 		
-			<?php echo $this->Form->create('DocumentLibrary',array('class'=>'form-horizontal','role'=>'form','enctype'=>'multipart/form-data'));?>	
-				<?php echo $this->Form->input('id',array('type'=>'hidden'))?>
+			<?php
+				$dl = $docArr['DocumentLibrary'] ?? [];
+				$docIdVal = $dl['documentid'] ?? '';
+				$dateVal = $dl['date'] ?? date('Y-m-d');
+				$desigVal = $dl['desigaration'] ?? '';
+				$deptVal = $dl['department'] ?? '';
+				$indentorVal = $dl['name_of_indentor'] ?? '';
+				$reqDateVal = $dl['date_of_requisition'] ?? date('Y-m-d');
+				$coordVal = (int)($dl['sign_of_coordinator'] ?? 0);
+				$hodVal = (int)($dl['sign_of_hod'] ?? 0);
+			?>
+			<?php echo $this->Form->create('DocumentLibrary',array('class'=>'form-horizontal','role'=>'form','enctype'=>'multipart/form-data'));?>
+				<?php echo $this->Form->input('id', array('type' => 'hidden', 'value' => $dl['id'] ?? '')); ?>
 				<div class="form-group">
 					<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Document Id: </label>
 					<div class="col-sm-9">
-						<?php echo $this->Form->input('documentid',array('type'=>'text','div'=>false,'label'=>false, 'class' => 'col-xs-10 col-sm-5','id'=>'documentid','placeholder'=>'Document Id','readonly'=>true,'style'=>'background-color: #ddd !important;'))?>
+						<?php echo $this->Form->input('documentid', array('type'=>'text','div'=>false,'label'=>false, 'class' => 'col-xs-10 col-sm-5','id'=>'documentid','placeholder'=>'Document Id','value'=>$docIdVal,'readonly'=>true,'style'=>'background-color: #ddd !important;')); ?>
 					</div>
 				</div>
 				<div class="form-group">
 					<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Date: </label>
 					<div class="col-sm-9">
-						<?php echo $this->Form->input('date',array('type'=>'text','div'=>false,'label'=>false, 'class' => 'datepicker col-xs-10 col-sm-5','id'=>'actioned_by_date','placeholder'=>'Audit Date'))?>
+						<?php echo $this->Form->input('date', array('type'=>'text','div'=>false,'label'=>false, 'class' => 'datepicker col-xs-10 col-sm-5','id'=>'actioned_by_date','placeholder'=>'Audit Date','value'=>$dateVal)); ?>
 					</div>
 				</div>
-							
 				<div class="form-group">
 					<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Designation: </label>
 					<div class="col-sm-9">
-						<?php echo $this->Form->input('desigaration',array('type'=>'text','div'=>false,'label'=>false, 'class' => 'col-xs-10 col-sm-5','id'=>'desigaration','placeholder'=>'Designation'))?>
+						<?php echo $this->Form->input('desigaration', array('type'=>'text','div'=>false,'label'=>false, 'class' => 'col-xs-10 col-sm-5','id'=>'desigaration','placeholder'=>'Designation','value'=>$desigVal)); ?>
 					</div>
 				</div>
 				<div class="form-group">
 					<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Department: </label>
 					<div class="col-sm-9">
-						<?php echo $this->Form->input('department',array('type'=>'text','div'=>false,'label'=>false, 'class' => 'col-xs-10 col-sm-5','id'=>'department','placeholder'=>'Department'))?>
+						<?php echo $this->Form->input('department', array('type'=>'text','div'=>false,'label'=>false, 'class' => 'col-xs-10 col-sm-5','id'=>'department','placeholder'=>'Department','value'=>$deptVal)); ?>
 					</div>
 				</div>
-				
 				<div class="form-group">
 					<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Name of Indentor: </label>
 					<div class="col-sm-9">
-						<?php echo $this->Form->input('name_of_indentor',array('type'=>'text','div'=>false,'label'=>false, 'class' => 'col-xs-10 col-sm-5','id'=>'name_of_indentor','placeholder'=>'Name of Indentor'))?>
+						<?php echo $this->Form->input('name_of_indentor', array('type'=>'text','div'=>false,'label'=>false, 'class' => 'col-xs-10 col-sm-5','id'=>'name_of_indentor','placeholder'=>'Name of Indentor','value'=>$indentorVal)); ?>
 					</div>
 				</div>
 				<div class="form-group">
 					<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Date of Requisition: </label>
 					<div class="col-sm-9">
-						<?php echo $this->Form->input('date_of_requisition',array('type'=>'text','div'=>false,'label'=>false, 'class' => 'datepicker col-xs-10 col-sm-5','id'=>'date_of_requisition','placeholder'=>'Date of Requisition'))?>
+						<?php echo $this->Form->input('date_of_requisition', array('type'=>'text','div'=>false,'label'=>false, 'class' => 'datepicker col-xs-10 col-sm-5','id'=>'date_of_requisition','placeholder'=>'Date of Requisition','value'=>$reqDateVal)); ?>
 					</div>
 				</div>
-				
 				<div class="form-group">
 					<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Co-ordinator: </label>
 					<div class="col-sm-9">
 						<select class="col-xs-10 col-sm-5" name="data[DocumentLibrary][sign_of_coordinator]">
 							<option value="">Sign of Co-ordinator</option>
-							<?php foreach($cuser as $userArrs){ ?>
-								<option value="<?php echo $userArrs['NappUser']['id']; ?>" <?php if($userArrs['NappUser']['id'] == $docArr['DocumentLibrary']['sign_of_coordinator']){ echo 'selected'; }?> ><?php echo $userArrs['NappUser']['name'].' '.$userArrs['NappUser']['lname']; ?></option>
+							<?php foreach ($cuser as $userArrs) { ?>
+								<option value="<?php echo (int)$userArrs['NappUser']['id']; ?>" <?php if ((int)$userArrs['NappUser']['id'] === $coordVal) echo 'selected'; ?>><?php echo h($userArrs['NappUser']['name'].' '.$userArrs['NappUser']['lname']); ?></option>
 							<?php } ?>
 						</select>
-						
 					</div>
 				</div>
 				<div class="form-group">
 					<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Sign of Hod: </label>
 					<div class="col-sm-9">
-						<select class="col-xs-10 col-sm-5" name="data[DocumentLibrary][sign_of_hod]" >
+						<select class="col-xs-10 col-sm-5" name="data[DocumentLibrary][sign_of_hod]">
 							<option value="">Sign of Hod</option>
-							<?php foreach($cuser as $userArrs){ ?>
-								<option  <?php if($userArrs['NappUser']['id'] == $docArr['DocumentLibrary']['sign_of_hod']){ echo 'selected'; }?> value="<?php echo $userArrs['NappUser']['id']; ?>"><?php echo $userArrs['NappUser']['name'].' '.$userArrs['NappUser']['lname']; ?></option>
+							<?php foreach ($cuser as $userArrs) { ?>
+								<option value="<?php echo (int)$userArrs['NappUser']['id']; ?>" <?php if ((int)$userArrs['NappUser']['id'] === $hodVal) echo 'selected'; ?>><?php echo h($userArrs['NappUser']['name'].' '.$userArrs['NappUser']['lname']); ?></option>
 							<?php } ?>
-						</select>						
+						</select>
 					</div>
 				</div>				
 				<div class="form-group">

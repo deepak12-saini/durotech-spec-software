@@ -76,23 +76,32 @@ class PurchasesController extends AppController
                     }
                 }
                 $permittedBy = (int)($this->request->getData('Purchase.permitted_by') ?? 0);
-                $employe = $this->NappUser->get($permittedBy);
-                $receivername = $employe->get('name') . ' ' . $employe->get('lname');
-                $receiveremail = $employe->get('email');
-                $url = SITEURL . 'purchases/autologin/' . base64_encode((string)$employe->get('id'));
-                $subject = SITENAME . ':- ' . $sendername . ' has made request (' . $uniqueId . ')';
-                $templateName = 'sendrequest';
-                $variables = ['unique_id' => $uniqueId, 'sendername' => $sendername, 'receivername' => $receivername, 'url' => $url, 'item_details' => $itemDetails];
-                try {
-                    $this->sendemail($receiveremail, $subject, $templateName, $variables);
-                } catch (\Exception $e) {
+                if ($permittedBy > 0) {
+                    $employe = $this->NappUser->find()->where(['NappUser.id' => $permittedBy])->first();
+                    if ($employe) {
+                        $receivername = $employe->get('name') . ' ' . $employe->get('lname');
+                        $receiveremail = $employe->get('email');
+                        $url = SITEURL . 'purchases/autologin/' . base64_encode((string)$employe->get('id'));
+                        $subject = SITENAME . ':- ' . $sendername . ' has made request (' . $uniqueId . ')';
+                        $templateName = 'sendrequest';
+                        $variables = ['unique_id' => $uniqueId, 'sendername' => $sendername, 'receivername' => $receivername, 'url' => $url, 'item_details' => $itemDetails];
+                        try {
+                            $this->sendemail($receiveremail, $subject, $templateName, $variables);
+                        } catch (\Exception $e) {
+                        }
+                    }
                 }
                 $this->Flash->success('Request has been created successfully.');
                 return $this->redirect(['action' => 'index']);
             }
         }
-        $employeArr = $this->NappUser->find('all')->where(['NappUser.is_staff_id' => 1])->toArray();
-        $this->set(compact('employeArr'));
+        $employeEntities = $this->NappUser->find()->where(['NappUser.is_staff_id' => 1])->all();
+        $employeArr = [];
+        foreach ($employeEntities as $e) {
+            $employeArr[] = ['NappUser' => $e->toArray()];
+        }
+        $requisitionerName = $sendername ?? '';
+        $this->set(compact('employeArr', 'requisitionerName'));
     }
 
     public function delete($id = null)
@@ -200,10 +209,11 @@ class PurchasesController extends AppController
         $itemDetails = $PurchaseArr['Purchase']['item_details'];
 
         $data = $this->request->getData();
-        if (!empty($data)) {
-            $status = (int)($this->request->getData('Purchase.status') ?? 0);
-            $authorizedBy = (int)($this->request->getData('Purchase.authorized_by') ?? 0);
-            $entity = $this->Purchase->patchEntity($purchase, $this->request->getData('Purchase'));
+        $purchaseData = $this->request->getData('Purchase');
+        if (!empty($data) && is_array($purchaseData)) {
+            $status = (int)($purchaseData['status'] ?? $this->request->getData('Purchase.status') ?? 0);
+            $authorizedBy = (int)($purchaseData['authorized_by'] ?? $this->request->getData('Purchase.authorized_by') ?? 0);
+            $entity = $this->Purchase->patchEntity($purchase, $purchaseData);
             $entity->id = (int)$id;
             if ($this->Purchase->save($entity)) {
                 if (($authorizedBy > 0) && ($status < 2)) {
@@ -226,7 +236,11 @@ class PurchasesController extends AppController
             }
         }
         $this->request = $this->request->withData('Purchase', $PurchaseArr['Purchase']);
-        $employeArr = $this->NappUser->find('all')->where(['NappUser.is_staff_id' => 1])->toArray();
+        $employeEntities = $this->NappUser->find()->where(['NappUser.is_staff_id' => 1])->all();
+        $employeArr = [];
+        foreach ($employeEntities as $e) {
+            $employeArr[] = ['NappUser' => $e->toArray()];
+        }
         $this->set(compact('employeArr'));
     }
 
@@ -268,11 +282,14 @@ class PurchasesController extends AppController
                 return $this->redirect(['action' => 'index']);
             }
         }
-        $employeArr = $this->NappUser->find('all')->where(['NappUser.is_staff_id' => 1])->toArray();
-        $this->set(compact('employeArr'));
         $purchase = $this->Purchase->get($id, ['contain' => ['PurchaseRequirements']]);
         $PurchaseArr = $this->_purchaseToViewArray($purchase);
-        $this->set(compact('PurchaseArr'));
+        $employeEntities = $this->NappUser->find()->where(['NappUser.is_staff_id' => 1])->all();
+        $employeArr = [];
+        foreach ($employeEntities as $e) {
+            $employeArr[] = ['NappUser' => $e->toArray()];
+        }
+        $this->set(compact('employeArr', 'PurchaseArr'));
         $this->request = $this->request->withData('Purchase', $PurchaseArr['Purchase']);
     }
 
@@ -401,7 +418,11 @@ class PurchasesController extends AppController
             }
         }
         $this->request = $this->request->withData('Purchase', $PurchaseArr['Purchase']);
-        $employeArr = $this->NappUser->find('all')->where(['NappUser.is_staff_id' => 1])->toArray();
+        $employeEntities = $this->NappUser->find()->where(['NappUser.is_staff_id' => 1])->all();
+        $employeArr = [];
+        foreach ($employeEntities as $e) {
+            $employeArr[] = ['NappUser' => $e->toArray()];
+        }
         $this->set(compact('employeArr'));
     }
 
@@ -456,7 +477,11 @@ class PurchasesController extends AppController
                 return $this->redirect(['action' => 'resourceRequirement']);
             }
         }
-        $employeArr = $this->NappUser->find('all')->where(['NappUser.is_staff_id' => 1])->toArray();
+        $employeEntities = $this->NappUser->find()->where(['NappUser.is_staff_id' => 1])->all();
+        $employeArr = [];
+        foreach ($employeEntities as $e) {
+            $employeArr[] = ['NappUser' => $e->toArray()];
+        }
         $this->set(compact('employeArr'));
         $purchase = $this->Purchase->get($id, ['contain' => ['PurchaseRequirements']]);
         $PurchaseArr = $this->_purchaseToViewArray($purchase);
@@ -506,21 +531,29 @@ class PurchasesController extends AppController
                     }
                 }
                 $permittedBy = (int)($this->request->getData('Purchase.permitted_by') ?? 0);
-                $employe = $this->NappUser->get($permittedBy);
-                $receivername = $employe->get('name') . ' ' . $employe->get('lname');
-                $receiveremail = $employe->get('email');
-                $url = SITEURL . 'purchases/autologin/' . base64_encode((string)$employe->get('id'));
-                $subject = SITENAME . ':- ' . $sendername . ' has made request (' . $uniqueId . ') for resources';
-                $variables = ['unique_id' => $uniqueId, 'sendername' => $sendername, 'receivername' => $receivername, 'url' => $url, 'item_details' => $itemDetails];
-                try {
-                    $this->sendemail($receiveremail, $subject, 'sendrequest', $variables);
-                } catch (\Exception $e) {
+                if ($permittedBy > 0) {
+                    $employe = $this->NappUser->find()->where(['NappUser.id' => $permittedBy])->first();
+                    if ($employe) {
+                        $receivername = $employe->get('name') . ' ' . $employe->get('lname');
+                        $receiveremail = $employe->get('email');
+                        $url = SITEURL . 'purchases/autologin/' . base64_encode((string)$employe->get('id'));
+                        $subject = SITENAME . ':- ' . $sendername . ' has made request (' . $uniqueId . ') for resources';
+                        $variables = ['unique_id' => $uniqueId, 'sendername' => $sendername, 'receivername' => $receivername, 'url' => $url, 'item_details' => $itemDetails];
+                        try {
+                            $this->sendemail($receiveremail, $subject, 'sendrequest', $variables);
+                        } catch (\Exception $e) {
+                        }
+                    }
                 }
                 $this->Flash->success('Resource requirement request has been created successfully.');
                 return $this->redirect(['action' => 'resourceRequirement']);
             }
         }
-        $employeArr = $this->NappUser->find('all')->where(['NappUser.is_staff_id' => 1])->toArray();
+        $employeEntities = $this->NappUser->find()->where(['NappUser.is_staff_id' => 1])->all();
+        $employeArr = [];
+        foreach ($employeEntities as $e) {
+            $employeArr[] = ['NappUser' => $e->toArray()];
+        }
         $this->set(compact('employeArr'));
     }
 
@@ -553,7 +586,13 @@ class PurchasesController extends AppController
     protected function _purchaseToViewArray($entity): array
     {
         $p = $entity->toArray();
-        $out = ['Purchase' => $p];
+        $defaults = [
+            'item_details' => $p['item_details'] ?? '',
+            'requisitioner_name' => $p['requisitioner_name'] ?? '',
+            'date' => $p['date'] ?? null,
+            'name_of_receiver' => $p['name_of_receiver'] ?? '',
+        ];
+        $out = ['Purchase' => array_merge($defaults, $p)];
         $n1 = $entity->get('napp_user_1') ?? $entity->get('napp_user1') ?? null;
         $n2 = $entity->get('napp_user') ?? null;
         $n3 = $entity->get('napp_user_2') ?? $entity->get('napp_user2') ?? null;

@@ -11,14 +11,18 @@
 	</h1>
 	</div><!-- /.page-header -->
 	<?php
-		$emp_id = array();
-		$agendaArr = array();
-		if(!empty($CircularManagementReviewArr['CircularRelation'])){
-			foreach($CircularManagementReviewArr['CircularRelation'] as $CircularManagementReviewArrs){
-				$emp_id[] = $CircularManagementReviewArrs['emp_id'];
-			}	
+		// Selected meeting member IDs for checkboxes (from controller or fallback from CircularRelation)
+		$selectedMeetingEmpIds = isset($selectedMeetingEmpIds) && is_array($selectedMeetingEmpIds)
+			? array_map('intval', $selectedMeetingEmpIds) : [];
+		if (empty($selectedMeetingEmpIds) && !empty($CircularManagementReviewArr['CircularRelation'])) {
+			foreach ($CircularManagementReviewArr['CircularRelation'] as $rel) {
+				if (isset($rel['emp_id'])) {
+					$selectedMeetingEmpIds[] = (int)$rel['emp_id'];
+				}
+			}
 		}
-		
+
+		$agendaArr = array();
 		$agenda = explode('##',$CircularManagementReviewArr['CircularManagementReview']['agenda']);
 		if(!empty($agenda)){
 			foreach($agenda as $agendas){
@@ -38,9 +42,9 @@
 				<div class="form-group">
 					<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Meeting Group: </label>
 					<div class="col-sm-9">
-						<?php foreach($NappUser as $NappUsers){ ?>
-							<input type="checkbox" name="data[emp_id][]" <?php if(in_array($NappUsers['NappUser']['id'],$emp_id)){ echo 'checked'; } ?>  value="<?php echo $NappUsers['NappUser']['id'];?>" > <?php echo $NappUsers['NappUser']['name'].' '.$NappUsers['NappUser']['lname'].' ('.(isset($NappUsers['Department']['department_title']) ? h($NappUsers['Department']['department_title']) : '').')';?> <br>
-						<?php  }  ?>
+						<?php foreach($NappUser as $NappUsers): $userId = (int)($NappUsers['NappUser']['id'] ?? 0); ?>
+							<input type="checkbox" name="data[emp_id][]" <?php echo in_array($userId, $selectedMeetingEmpIds, true) ? ' checked="checked"' : ''; ?> value="<?php echo h((string)$userId); ?>"> <?php echo h($NappUsers['NappUser']['name'].' '.$NappUsers['NappUser']['lname'].' ('.(isset($NappUsers['Department']['department_title']) ? $NappUsers['Department']['department_title'] : '').')'); ?> <br>
+						<?php endforeach; ?>
 						
 					</div> 
 				</div>			

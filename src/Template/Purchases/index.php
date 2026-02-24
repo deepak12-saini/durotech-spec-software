@@ -30,17 +30,17 @@
 					<?php $j=1; foreach($purchaseArr as $purchaseArrs){ ?>
 					<tr>
 						<td><a data-toggle="modal" data-target="#myModal_<?php echo $j; ?>" href="#null"><?php echo $purchaseArrs['Purchase']['unique_id']; ?></a></td>
-						<td><?php echo $purchaseArrs['Purchase']['item_details']; ?></td>
-						<td><?php echo $purchaseArrs['Purchase']['requisitioner_name']; ?></td>
-						<td><?php echo $purchaseArrs['Purchase']['date']; ?></td>						
-						<td><?php echo $purchaseArrs['NappUser_1']['name'].' '.$purchaseArrs['NappUser_1']['name']; ?></td>
-						<td><?php echo $purchaseArrs['NappUser']['name'].' '.$purchaseArrs['NappUser']['name']; ?></td>		
-						<td><?php echo $purchaseArrs['NappUser_2']['name'].' '.$purchaseArrs['NappUser_2']['name']; ?></td>
-						<td><?php echo $purchaseArrs['Purchase']['name_of_receiver']; ?></td>
+						<td><?php echo h($purchaseArrs['Purchase']['item_details'] ?? ''); ?></td>
+						<td><?php echo h($purchaseArrs['Purchase']['requisitioner_name'] ?? ''); ?></td>
+						<td><?php echo h($purchaseArrs['Purchase']['date'] ?? ''); ?></td>						
+						<td><?php echo h(($purchaseArrs['NappUser_1']['name'] ?? '').' '.($purchaseArrs['NappUser_1']['lname'] ?? '')); ?></td>
+						<td><?php echo h(($purchaseArrs['NappUser']['name'] ?? '').' '.($purchaseArrs['NappUser']['lname'] ?? '')); ?></td>
+						<td><?php echo h(($purchaseArrs['NappUser_2']['name'] ?? '').' '.($purchaseArrs['NappUser_2']['lname'] ?? '')); ?></td>
+						<td><?php echo h($purchaseArrs['Purchase']['name_of_receiver'] ?? ''); ?></td>
 						<td>
 							
-							<?php 
-								$id = $this->Session->read('Customer.id');
+							<?php
+								$id = $this->request->getSession()->read('Customer.id');
 								if($purchaseArrs['Purchase']['prepared_by'] == $id){
 									echo '<span class="label label-info">Sender</span>';
 								}else{
@@ -64,17 +64,16 @@
 							<?php 
 							if($purchaseArrs['Purchase']['status'] < 2){
 							
-								$userid = $this->Session->read('Customer.id');	
+								$userid = $this->request->getSession()->read('Customer.id');
 								if($purchaseArrs['Purchase']['prepared_by'] == $userid){
 							?>
 								<a href="<?php echo SITEURL.'purchases/edit/'.$purchaseArrs['Purchase']['id']; ?>" class="btn btn-mini btn-info">Edit</a>
-								
-								<a onclick="return confirm('Are you sure delete?')" href="<?php echo SITEURL.'purchases/delete/'.$purchaseArrs['Purchase']['id']; ?>" class="btn btn-mini btn-danger">Delete</a>
+								<?php echo $this->Form->postLink('Delete', ['action' => 'delete', $purchaseArrs['Purchase']['id']], ['class' => 'btn btn-mini btn-danger', 'confirm' => 'Are you sure delete?']); ?>
 								
 								
 								<?php } ?>
 								<a class="btn btn-mini btn-primary" href="<?php echo SITEURL.'purchases/process/'.$purchaseArrs['Purchase']['id']; ?>">Process</a>
-								<?php $id = $this->Session->read('Customer.id');
+								<?php $id = $this->request->getSession()->read('Customer.id');
 								if($purchaseArrs['Purchase']['prepared_by'] == $id){ 
 								?>
 									<a onclick="return confirm('Are you sure you want to close?')" href="<?php echo SITEURL.'purchases/received/'.$purchaseArrs['Purchase']['id']; ?>" class="btn btn-mini btn-warning">Received</a>
@@ -120,11 +119,9 @@ foreach($purchaseArr as $purchaseArrs):
 							<tr><th>Item Details: </th><td><?php echo h($purchaseArrs['Purchase']['item_details']); ?></td></tr>	
 							<tr><th>Name of the Requisitioner: </th><td><?php echo h($purchaseArrs['Purchase']['requisitioner_name']); ?></td></tr>	
 							
-							<tr><th>Permitted By: </th><td><?php echo $purchaseArrs['NappUser']['name'].' '.$purchaseArrs['NappUser']['name']; ?></td></tr>	
-							 
-							<tr><th>Prepared By: </th><td><?php echo $purchaseArrs['NappUser_1']['name'].' '.$purchaseArrs['NappUser_1']['name']; ?></td></tr>	
-							
-							<tr><th>Authorized By: </th><td><?php echo h($purchaseArrs['NappUser_2']['name'].' '.$purchaseArrs['NappUser_2']['name']); ?></td></tr>	
+							<tr><th>Permitted By: </th><td><?php echo h(($purchaseArrs['NappUser']['name'] ?? '').' '.($purchaseArrs['NappUser']['lname'] ?? '')); ?></td></tr>
+							<tr><th>Prepared By: </th><td><?php echo h(($purchaseArrs['NappUser_1']['name'] ?? '').' '.($purchaseArrs['NappUser_1']['lname'] ?? '')); ?></td></tr>
+							<tr><th>Authorized By: </th><td><?php echo h(($purchaseArrs['NappUser_2']['name'] ?? '').' '.($purchaseArrs['NappUser_2']['lname'] ?? '')); ?></td></tr>	
 							<tr><th>Name of Receiver: </th><td><?php echo h($purchaseArrs['Purchase']['name_of_receiver']); ?></td></tr>	
 							<tr><th>status: </th>
 							<td>

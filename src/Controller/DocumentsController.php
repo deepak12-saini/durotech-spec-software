@@ -47,6 +47,11 @@ class DocumentsController extends AppController
 			$data['DocumentLibrary']['user_id'] = $user_id;
 			$data['DocumentLibrary']['status'] = 1;
 			$data['DocumentLibrary']['created'] = date('Y-m-d H:i:s');
+			// Ensure documentid is set from form or will be set after save
+			if (empty($data['DocumentLibrary']['documentid'])) {
+				$last = $this->DocumentLibrary->find()->orderDesc('DocumentLibrary.id')->select(['DocumentLibrary.id'])->first();
+				$data['DocumentLibrary']['documentid'] = 'DTRL-' . (1000 + ($last ? (int)$last->id + 1 : 1));
+			}
 
 			$entity = $this->DocumentLibrary->newEntity($data['DocumentLibrary'], ['validate' => false]);
 			if ($this->DocumentLibrary->save($entity)) {
@@ -116,9 +121,14 @@ class DocumentsController extends AppController
 			->first();
 
 		if ($docEntity) {
-			$docArr = ['DocumentLibrary' => $docEntity->toArray()];
+			$docData = $docEntity->toArray();
+			if (empty($docData['documentid'])) {
+				$docData['documentid'] = 'DTRL-' . (1000 + (int)$docData['id']);
+			}
+			$docArr = ['DocumentLibrary' => $docData];
 			$this->set('docArr', $docArr);
-			$this->setRequest($this->getRequest()->withParsedBody($docArr));
+			// Pre-fill form using request data (CakePHP Form helper reads from getData())
+			$this->setRequest($this->getRequest()->withData('DocumentLibrary', $docData));
 		}
 	}
 
@@ -203,6 +213,10 @@ class DocumentsController extends AppController
 		$DocumentLibraryArrArray = [];
 		foreach ($DocumentLibraryArr as $doc) {
 			$docData = $doc->toArray();
+			// Ensure documentid is present for listing (fallback if column missing or null)
+			if (empty($docData['documentid']) && !empty($docData['id'])) {
+				$docData['documentid'] = 'DTRL-' . (1000 + (int)$docData['id']);
+			}
 			$result = ['DocumentLibrary' => $docData];
 			// Extract NappUser association - always set even if empty
 			if (isset($docData['napp_user']) && is_array($docData['napp_user'])) {
@@ -214,15 +228,23 @@ class DocumentsController extends AppController
 			}
 			if ($doc->NappUser1) {
 				$result['NappUser1'] = $doc->NappUser1->toArray();
+			} else {
+				$result['NappUser1'] = ['id' => null, 'name' => '', 'lname' => ''];
 			}
 			if ($doc->NappUser2) {
 				$result['NappUser_2'] = $doc->NappUser2->toArray();
+			} else {
+				$result['NappUser_2'] = ['id' => null, 'name' => '', 'lname' => ''];
 			}
 			if ($doc->NappUser3) {
 				$result['NappUser_3'] = $doc->NappUser3->toArray();
+			} else {
+				$result['NappUser_3'] = ['id' => null, 'name' => '', 'lname' => ''];
 			}
 			if ($doc->NappUser4) {
 				$result['NappUser_4'] = $doc->NappUser4->toArray();
+			} else {
+				$result['NappUser_4'] = ['id' => null, 'name' => '', 'lname' => ''];
 			}
 			if ($doc->document_library_record) {
 				$result['DocumentLibraryRecord'] = [];
@@ -333,6 +355,9 @@ class DocumentsController extends AppController
 		$DocumentLibraryArrArray = [];
 		foreach ($DocumentLibraryArr as $doc) {
 			$docData = $doc->toArray();
+			if (empty($docData['documentid']) && !empty($docData['id'])) {
+				$docData['documentid'] = 'DTRL-' . (1000 + (int)$docData['id']);
+			}
 			$result = ['DocumentLibrary' => $docData];
 			// Extract NappUser association - always set even if empty
 			if (isset($docData['napp_user']) && is_array($docData['napp_user'])) {
@@ -344,15 +369,23 @@ class DocumentsController extends AppController
 			}
 			if ($doc->NappUser1) {
 				$result['NappUser1'] = $doc->NappUser1->toArray();
+			} else {
+				$result['NappUser1'] = ['id' => null, 'name' => '', 'lname' => ''];
 			}
 			if ($doc->NappUser2) {
 				$result['NappUser_2'] = $doc->NappUser2->toArray();
+			} else {
+				$result['NappUser_2'] = ['id' => null, 'name' => '', 'lname' => ''];
 			}
 			if ($doc->NappUser3) {
 				$result['NappUser_3'] = $doc->NappUser3->toArray();
+			} else {
+				$result['NappUser_3'] = ['id' => null, 'name' => '', 'lname' => ''];
 			}
 			if ($doc->NappUser4) {
 				$result['NappUser_4'] = $doc->NappUser4->toArray();
+			} else {
+				$result['NappUser_4'] = ['id' => null, 'name' => '', 'lname' => ''];
 			}
 			if ($doc->document_library_record) {
 				$result['DocumentLibraryRecord'] = [];

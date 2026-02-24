@@ -37,9 +37,9 @@ class CategoriesController extends AppController
 
         $this->paginate = [
             'limit' => 25,
-            'order' => ['Categories.id' => 'DESC'],
+            'order' => ['Categories.sort' => 'ASC', 'Categories.id' => 'DESC'],
         ];
-        $query = $this->Categories->find();
+        $query = $this->Categories->find()->orderAsc('Categories.sort')->orderDesc('Categories.id');
         $results = $this->paginate($query);
         $categories = [];
         foreach ($results as $row) {
@@ -63,6 +63,14 @@ class CategoriesController extends AppController
             $catSlug = str_replace(' ', '-', strtolower($categoryData['category_name'] ?? ''));
             $catSlug = str_replace('&', 'and', $catSlug);
             $categoryData['slug'] = $catSlug;
+            // Default sequence (sort) to next value if not provided
+            if (!isset($categoryData['sort']) || $categoryData['sort'] === '') {
+                $q = $this->Categories->find();
+                $maxRow = $q->select(['sort' => $q->func()->max('sort')])->first();
+                $categoryData['sort'] = $maxRow && $maxRow->get('sort') !== null ? (int)$maxRow->get('sort') + 1 : 0;
+            } else {
+                $categoryData['sort'] = (int)$categoryData['sort'];
+            }
 
             if (!empty($data['image']['name'])) {
                 $file = $data['image'];
@@ -123,12 +131,12 @@ class CategoriesController extends AppController
             if (empty($categoryData) && !empty($data)) {
                 $categoryData = array_intersect_key($data, array_flip([
                     'category_name', 'description', 'slug', 'image', 'meta_title', 'meta_keyword',
-                    'meta_description', 'status', 'is_brand', 'id'
+                    'meta_description', 'status', 'is_brand', 'id', 'sort'
                 ]));
             }
             if (!empty($data) && is_array($data)) {
                 $categoryData = array_merge($categoryData, array_intersect_key($data, array_flip([
-                    'category_name', 'description', 'meta_title', 'meta_keyword', 'meta_description', 'status', 'is_brand'
+                    'category_name', 'description', 'meta_title', 'meta_keyword', 'meta_description', 'status', 'is_brand', 'sort'
                 ])));
             }
 
@@ -166,11 +174,11 @@ class CategoriesController extends AppController
             }
 
             // Build SET clause for UPDATE - use table's connection for explicit UPDATE on 'categories'
-            $allowed = ['category_name', 'description', 'slug', 'image', 'meta_title', 'meta_keyword', 'meta_description', 'status', 'is_brand'];
+            $allowed = ['category_name', 'description', 'slug', 'image', 'meta_title', 'meta_keyword', 'meta_description', 'status', 'is_brand', 'sort'];
             $toUpdate = [];
             foreach ($allowed as $field) {
                 if (array_key_exists($field, $categoryData)) {
-                    $toUpdate[$field] = $categoryData[$field];
+                    $toUpdate[$field] = $field === 'sort' ? (int)$categoryData[$field] : $categoryData[$field];
                 }
             }
 

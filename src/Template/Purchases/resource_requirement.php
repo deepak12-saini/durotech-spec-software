@@ -65,7 +65,7 @@
 							?>
 								<a href="<?php echo SITEURL.'purchases/resource_edit/'.$purchaseArrs['Purchase']['id']; ?>" class="btn btn-mini btn-info">Edit</a>
 								
-								<a onclick="return confirm('Are you sure delete?')" href="<?php echo SITEURL.'purchases/resource_delete/'.$purchaseArrs['Purchase']['id']; ?>" class="btn btn-mini btn-danger">Delete</a>
+								<?php echo $this->Form->postLink('Delete', ['action' => 'resourceDelete', $purchaseArrs['Purchase']['id']], ['class' => 'btn btn-mini btn-danger', 'confirm' => 'Are you sure delete?']); ?>
 								
 								
 								<?php } ?>
