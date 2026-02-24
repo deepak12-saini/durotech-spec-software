@@ -22,7 +22,7 @@
 				<ul>
 					<li><a target="_blank" href="<?php echo SITEURL; ?>Case-Study.pdf">Case studies</a></li>
 					<li><a href="<?php echo SITEURL; ?>wp-content/uploads/Durotech_Credit_pplication_Term_and_condition.pdf">Terms & Conditions of Use</a></li>
-					<li><a href="<?php echo SITEURL; ?>">Privacy Policy</li>
+					<li><a href="<?php echo SITEURL; ?>">Privacy Policy</a></li>
 					<li><a href="<?php echo SITEURL; ?>specifiers">Specifications</a></li>
 					<li><a href="<?php echo SITEURL; ?>about">Our Mission</a></li>
 					<li><a href="<?php echo SITEURL; ?>video">Video Gallery</a></li>
@@ -160,15 +160,4 @@
 			message: "Please enter valid email"
 		});
 	});
-
-	var prevScrollpos = window.pageYOffset;
-	window.onscroll = function() {
-		var currentScrollPos = window.pageYOffset;
-		if (prevScrollpos > currentScrollPos) {
-			document.getElementById("header_top").style.top = "0";
-		} else {
-			document.getElementById("header_top").style.top = "-80px";
-		}
-		prevScrollpos = currentScrollPos;
-	}
 </script>

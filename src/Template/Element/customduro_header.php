@@ -130,12 +130,6 @@
 		.mobilemenu {
 			display: block !important;
 		}
-
-		.desktop {
-			display: none !important;
-		}
-	}
-
 	.header_top_address ul {
 		list-style: none;       /* remove bullets */
 		padding-left: 15px;
@@ -166,10 +160,181 @@
 		text-decoration: underline;  /* hover effect */
 	}
 
+
+		.desktop {
+			display: none !important;
+		}
+	#header_top,
+	.header_fixed {
+		overflow: visible !important;
+	}
+	}
+	#header_top.header_fixed {
+		padding-top: 24px;
+		background: #f4f4f4;
+		box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+	}
+	.container.example5,
+	.container.example5 .navbar,
+	.container.example5 .navbar-header,
+	.example5 .navbar-brand {
+		overflow: visible !important;
+	}
+	.example5 .navbar-brand {
+		align-items: center;
+		display: flex !important;
+	}
+	.example5 .navbar-brand > img {
+		object-fit: contain;
+		object-position: center;
+		width: auto;
+		height: auto;
+	}
+	/* When scrolled: hide entire top bar (address + search + social); only logo + menu stay visible at top */
 	.header_top.scrolled {
-		padding: 30px 0px; /* increased padding on scroll */
+		display: none !important;
+	}
+	/* When scrolled: solid background for logo section so banner doesn't show through */
+	.header_top.scrolled + .container.example5 {
+		overflow: visible !important;
+		background: #f4f4f4;
+	}
+	.header_top.scrolled + .container.example5 .navbar {
+		overflow: visible !important;
+		margin-bottom: 0;
+	}
+	.header_top.scrolled + .container.example5 .navbar-header,
+	.header_top.scrolled + .container.example5 .navbar-brand {
+		overflow: visible !important;
+	}
+	/* Unused when top bar hidden; kept for consistency */
+	.header_top.scrolled .header_top_social_search {
+		padding: 0 10px !important;
+		margin-left: 0;
+	}
+	.header_top.scrolled .header_top_social_search form {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+	.header_top.scrolled #searchPro {
+		max-height: 36px;
+		padding: 6px 10px;
+		font-size: 14px;
+		width: 100% !important;
+		max-width: 220px;
+	}
+	.header_top.scrolled .header_top_social_search a i {
+		font-size: 16px;
+	}
+	.navbar-collapse {
+		overflow: visible !important;
+	}
+	/* Remove gap between top bar and logo section (fixes space when scroll down then back up) */
+	#header_top.header_fixed .header_top {
+		margin-bottom: 0 !important;
+		padding-bottom: 6px !important;
+	}
+	#header_top.header_fixed .header_top .row {
+		margin-bottom: 0 !important;
+	}
+	#header_top.header_fixed .container.example5 {
+		margin-top: 0 !important;
+		background: #f4f4f4;
+		padding-top: 16px;
+		padding-bottom: 16px;
+	}
+	#header_top.header_fixed .container.example5 .navbar {
+		background: #f4f4f4 !important;
+		margin-bottom: 0;
+		padding-top: 0;
+		padding-bottom: 0;
+	}
+	/* Address section – same white as logo section so header looks consistent */
+	.header_top {
+		overflow: visible !important;
+		padding-left: 15px;
+		padding-right: 15px;
+		background: #f4f4f4;
+	}
+	.header_top .row {
+		overflow: visible !important;
+	}
+	.header_top_address {
+		padding: 0;
+		padding-left: 5px;
+		background: transparent;
+		margin: 0;
+		overflow: visible;
+	}
+	.header_top_address ul {
+		list-style: none;
+		padding: 0;
+		padding-left: 12px;
+		margin: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 10px 16px;
+		align-items: center;
+		overflow: visible;
+	}
+	.header_top_address li {
+		display: inline-flex;
+		align-items: center;
+		font-size: 13px;
+	}
+	/* Icons: black/dark like in reference */
+	.header_top_address li i.fa-map-marker,
+	.header_top_address li i.fa-envelope {
+		margin-right: 6px;
+		color: #1a1a1a;
+		font-size: 14px;
+	}
+	/* Links & text: vibrant blue like in reference */
+	.header_top_address a {
+		font-weight: 700;
+		text-decoration: none;
+		color: #2672EC;
+		transition: color 0.2s ease;
+	}
+	.header_top_address a:hover {
+		color: #1a5bc4;
+		text-decoration: none;
+	}
+	.header_top_address li Strong {
+		color: #2672EC;
+		font-weight: 700;
+		margin-right: 4px;
+	}
+	/* Prevent phone row from being cut off */
+	.header_top_address li.header_phone_item {
+		flex-shrink: 0;
+		white-space: nowrap;
+	}
+	.header_top_address li.header_phone_item Strong,
+	.header_top_address li.header_phone_item a {
+		white-space: nowrap;
+	}
+	@media (max-width: 767px) {
+		.header_top_address {
+			margin: 0;
+			padding: 0;
+			padding-left: 10px;
+			padding-right: 10px;
+		}
+		.header_top_address ul {
+			gap: 8px 12px;
+			justify-content: center;
+			padding-left: 0;
+		}
+		.header_top_address li {
+			font-size: 12px;
+		}
 	}
 
+	/* Prevent logo/nav from ever being clipped (fixed header) – keep original size */
+	/* Keep header content below viewport top so logo/nav don’t get cut off */
+	/* Compact search row when address is hidden (scrolled) */
 	/* new_code for UI */
 
 	/* ===== OPEN PRODUCTS MENU ON HOVER ===== */
@@ -327,7 +492,7 @@ $searchtitle = $this->request->getSession()->read('searchtitle');
 							</a>
 						</li>
 
-					<li><Strong>Phone:</strong><a href="tel:<?php echo PHONE; ?>"><?php echo PHONE; ?></a></li>
+					<li class="header_phone_item"><Strong>Phone:</Strong> <a href="tel:<?php echo PHONE; ?>"><?php echo PHONE; ?></a></li>
 
 					<li>
 						<i class="fa fa-envelope" aria-hidden="true"></i>
@@ -458,18 +623,19 @@ $searchtitle = $this->request->getSession()->read('searchtitle');
 		window.location.href = '<?= $this->Url->build('/category/') ?>' + slug;
 	}
 
-	window.addEventListener("scroll", function() {
+	(function() {
 		var headerTop = document.querySelector(".header_top");
-		var addressBar = document.querySelector(".header_top_address");
-
-		if (window.scrollY > 50) {
-			headerTop.classList.add("scrolled");  // padding 30px
-			addressBar.style.display = "none";   // hide address bar
-		} else {
-			headerTop.classList.remove("scrolled"); // padding back to 20px
-			addressBar.style.display = "block";     // show address bar
+		if (!headerTop) return;
+		function updateHeader() {
+			if (window.scrollY > 50) {
+				headerTop.classList.add("scrolled");
+			} else {
+				headerTop.classList.remove("scrolled");
+			}
 		}
-	});
+		window.addEventListener("scroll", updateHeader, { passive: true });
+		updateHeader();
+	})();
 
 	//new_code
 	$(".mega-dropdown").hover(

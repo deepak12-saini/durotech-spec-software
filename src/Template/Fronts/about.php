@@ -1,17 +1,45 @@
-
-
 <style>
-@media only screen and (max-width: 768px) {
-    .banner_about {
-        margin-top: 120px; /* adjust as needed */
+/* Push content below fixed header so banner image is fully visible */
+.page-about-wrap {
+    padding-top: 140px;
+}
+.content_about:first-child,
+.page-about-wrap > .content_about {
+    margin-top: 0;
+    padding-top: 0;
+}
+@media (max-width: 767px) {
+    .page-about-wrap {
+        padding-top: 120px;
     }
 }
+/* Ensure banner image displays fully and is not clipped */
+.banner_about {
+    overflow: visible;
+    display: block;
+    margin-top: 0;
+    padding-top: 0;
+}
+.banner_about img {
+    display: block;
+    width: 100%;
+    height: auto;
+    vertical-align: top;
+}
+/* Remove space below banner */
+.banner_about {
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+.content_about > h3:first-of-type {
+    margin-top: 0;
+}
+</style>
 
-	</style>
-		
+	<div class="page-about-wrap">
 	<div class="content_about col-lg-12 col-md-12 col-sm-12">
 	        <div class="banner_about col-lg-12 col-md-12 col-sm-12">
-				<img src="<?php echo SITEURL ;?>customdurotech/images/about_us_banner.jpg">
+				<img src="<?php echo SITEURL ;?>customdurotech/images/about_us_banner.jpg" alt="About Durotech">
 			</div>
 		     <h3>Who We Are</h3>
 		     <p>Durotech industries is a leading manufacturer and supplier of waterproofing and coating solutions. Durotech Systems have been widely
@@ -129,3 +157,4 @@ damage for over 48 years. State of the art technology combined with dedicated co
 			  </div>
 			  </div>
 		</div-->
+	</div><!-- .page-about-wrap -->

@@ -1,9 +1,33 @@
+<style>
+/* Push content below fixed header so banner sits under header with no overlap */
+.page-durolab-wrap {
+    padding-top: 200px;
+}
+@media (max-width: 767px) {
+    .page-durolab-wrap {
+        padding-top: 180px;
+    }
+}
+.banner_durolab {
+    overflow: visible;
+    display: block;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+}
+.banner_durolab img {
+    display: block;
+    width: 100%;
+    height: auto;
+    vertical-align: top;
+}
+body{background:url(<?php echo SITEURL.'img/'?>bg-4.png)}
+</style>
+<div class="page-durolab-wrap">
 		<div class="banner_durolab col-lg-12 col-md-12 col-sm-12">
-		     <img src="<?php echo SITEURL ;?>customdurotech/images/durolab_banner.jpg">
+		     <img src="<?php echo SITEURL ;?>customdurotech/images/durolab_banner.jpg" alt="DuroLab">
 		</div>
-		<style>
-		body{background:url(<?php echo SITEURL.'img/'?>bg-4.png)}	
-	</style>
 		<div class="durolab_page col-lg-12 col-md-12 col-sm-12">
 		<div class="content lab col-lg-12 col-md-12 col-sm-12">
 		     <div class="row">
@@ -136,3 +160,4 @@ At Durotech 45 years ago DuroLab was establishing for one main purpose to suppor
 	 </div>
 
 </div>
+</div><!-- .page-durolab-wrap -->

@@ -1,32 +1,62 @@
 <style>
+/* Clear fixed header so "Categories" heading is not cut off */
+.products-categories-page {
+    padding-top: 40px;
+}
+@media (max-width: 767px) {
+    .products-categories-page {
+        padding-top: 40px;
+    }
+}
+
 /* ===== CATEGORY GRID ===== */
 .category-grid {
-    margin-top: 40px;
+    margin-top: 20px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* PAGE HEADING - clearly visible, never clipped */
+.category-heading {
+    text-align: center;
+    margin: 30px 0 35px;
+    padding: 0 10px;
+    min-height: 1px;
+}
+.category-heading .page-title {
+    color: #2889c9;
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0;
+    padding: 0;
+    letter-spacing: 0.02em;
+    line-height: 1.3;
+    text-shadow: none;
+    display: block;
+    visibility: visible;
 }
 
 /* FLEX ROW FIX */
 .category-grid .row {
     display: flex;
     flex-wrap: wrap;
-     margin-left: -3px;
-    margin-right: -3px;
+    margin-left: -6px;
+    margin-right: -6px;
 }
 
 /* FLEX COLUMN */
 .category-grid .row > div[class*="col-"] {
-    /* display: flex; */
-      padding-left: 3px;
-    padding-right: 3px;
+    padding-left: 6px;
+    padding-right: 6px;
 }
 
 /* CATEGORY TILE */
 .category-box.image-tile {
     position: relative;
     width: 100%;
-    height: 300px;
-    /* height: 100%; */
+    height: 280px;
     overflow: hidden;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 }
 
 /* FULL IMAGE */
@@ -34,7 +64,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* display: block; */
+    transition: transform 0.3s ease;
 }
 
 /* OVERLAY */
@@ -50,43 +80,32 @@
     transition: background 0.3s ease;
 }
 
-/* CATEGORY NAME */
+/* CATEGORY NAME ON TILES */
 .category-overlay h2 {
     color: #ffffff;
     font-size: 22px;
     font-weight: 600;
     letter-spacing: 0.5px;
     margin: 0;
-    opacity: 0.9;
+    opacity: 0.95;
     transition: all 0.3s ease;
     text-shadow: 0 2px 6px rgba(0,0,0,0.6);
 }
 
-
-
-/* HOVER EFFECT */
-/* IMAGE ZOOM */
-.category-box.image-tile img {
-    transition: transform 0.3s ease;
-}
-
+/* HOVER - IMAGE ZOOM */
 .category-box.image-tile:hover img {
     transform: scale(1.05);
 }
 
 /* ODD boxes → BLUE hover */
-.category-grid .row > div:nth-child(odd) 
-.category-box.image-tile:hover .category-overlay {
-    background: rgba(40, 137, 201, 0.35); /* blue */
+.category-grid .row > div:nth-child(odd) .category-box.image-tile:hover .category-overlay {
+    background: rgba(40, 137, 201, 0.45);
 }
 
 /* EVEN boxes → YELLOW hover */
-.category-grid .row > div:nth-child(even) 
-.category-box.image-tile:hover .category-overlay {
-    background: rgba(255, 215, 0, 0.35); /* yellow */
+.category-grid .row > div:nth-child(even) .category-box.image-tile:hover .category-overlay {
+    background: rgba(255, 215, 0, 0.45);
 }
-
-
 
 /* LINK RESET */
 .category-link {
@@ -95,41 +114,76 @@
     display: block;
 }
 
-/* HEADING */
-.category-heading {
-    text-align: center;
-    margin: 130px 0 30px;
-}
-
-/* RESPONSIVE */
+/* ===== RESPONSIVE - TABLET ===== */
 @media (max-width: 991px) {
     .category-box.image-tile {
-        height: 350px;
+        height: 260px;
+    }
+    .category-heading .page-title {
+        font-size: 32px;
     }
 }
 
+/* ===== RESPONSIVE - MOBILE ===== */
 @media (max-width: 767px) {
-    .category-box.image-tile {
-        height: 350px;
+    .category-grid {
+        margin-top: 15px;
+        padding-left: 10px;
+        padding-right: 10px;
     }
-
+    .category-heading {
+        margin: 20px 0 25px;
+    }
+    .category-heading .page-title {
+        font-size: 28px;
+        font-weight: 700;
+    }
+    .category-grid .row {
+        margin-left: -5px;
+        margin-right: -5px;
+    }
+    .category-grid .row > div[class*="col-"] {
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    .category-box.image-tile {
+        height: 220px;
+        margin-bottom: 10px;
+    }
     .category-overlay h2 {
-        font-size: 18px;
+        font-size: 16px;
+    }
+    .category-overlay {
+        padding: 12px;
     }
 }
 
-
-
-
+/* ===== RESPONSIVE - SMALL MOBILE ===== */
+@media (max-width: 480px) {
+    .category-grid {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+    .category-heading .page-title {
+        font-size: 24px;
+    }
+    .category-box.image-tile {
+        height: 200px;
+    }
+    .category-overlay h2 {
+        font-size: 15px;
+    }
+}
 </style>
 
 
+<div class="products-categories-page">
 <div class="banner_durolab col-lg-12 col-md-12 col-sm-12"></div>
 
 <div class="container category-grid">
 
     <div class="category-heading product_text_section">
-        <h2>Categories</h2>
+        <h1 class="page-title">Categories</h1>
     </div>
 
     <div class="row">
@@ -162,5 +216,6 @@
 
     </div>
 </div>
+</div><!-- .products-categories-page -->
 
 
