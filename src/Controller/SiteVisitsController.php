@@ -1,4 +1,4 @@
-<?php
+ <?php
 declare(strict_types=1);
 
 namespace App\Controller;
@@ -21,7 +21,7 @@ class SiteVisitsController extends AppController
     public function beforeFilter(EventInterface $event): ?Response
     {
         parent::beforeFilter($event);
-        $this->callConstants();
+		$this->callConstants();
         return null;
     }
 
