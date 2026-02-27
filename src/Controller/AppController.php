@@ -378,16 +378,17 @@ class AppController extends Controller
         $this->autoRender = false;
         
         try {
-            $from = defined('EMAIL') ? EMAIL : 'noreply@example.com';
+            $from = defined('EMAIL') ? EMAIL : 'deepaksaini10036@gmail.com';
             $from_name = defined('SITENAME') ? SITENAME : 'Site';
             
             $email = new Email('default');
             // Use AppView so email templates use .php extension (e.g. Email/html/coapdf.php)
-            $email->viewBuilder()->setClassName('App\View\AppView');
+            $email->viewBuilder()
+                ->setClassName('App\View\AppView')
+                ->setTemplate($template_name);
             $email->setFrom([$from => $from_name])
                 ->setTo($to)
                 ->setSubject($subject)
-                ->setTemplate($template_name)
                 ->setEmailFormat('html')
                 ->setViewVars($variables)
                 ->send();

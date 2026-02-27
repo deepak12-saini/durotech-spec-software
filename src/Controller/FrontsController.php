@@ -254,16 +254,25 @@ class FrontsController extends AppController
         ]);
 
         $product = [];
+        // Only active categories and active products (same as Products menu)
         $categories = $this->Categories->find()
-            ->contain(['Products'])
-            ->orderAsc('Categories.category_name');
+            ->contain(['Products' => function ($q) {
+                return $q->where(['Products.status' => 1])->orderAsc('Products.sort');
+            }])
+            ->where(['Categories.status' => 1])
+            ->orderAsc('Categories.sort');
 
         foreach ($categories as $cat) {
+            $products = $cat->products ?? [];
+            // Skip categories with no active products
+            if (count($products) === 0) {
+                continue;
+            }
             $product[] = [
                 'Category' => $cat->toArray(),
                 'Product' => array_map(function ($p) {
                     return $p->toArray();
-                }, $cat->products ?? []),
+                }, $products),
             ];
         }
 

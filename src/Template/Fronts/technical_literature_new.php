@@ -246,35 +246,34 @@
 							<?php } ?>
 							<?php if($page == 'msds'){ ?>
 								<div>
-								
-									
-									<?php 
-										foreach($product as $pro)
-										{						
-										$title = $pro['Category']['category_name'];										
+									<?php
+									// MSDS URLs come from products table `msds` column (dynamic from DB)
+									foreach($product as $pro)
+									{						
+									$title = $pro['Category']['category_name'];										
+									?>
+									<div class="row">
+										<h2><?= $title; ?></h2>
+										<?php
+											foreach($pro['Product'] as $products)
+											{
+											$msds_parts = isset($products['msds']) ? explode("##", (string)$products['msds']) : [];
+											$msds_1 = isset($msds_parts[0]) ? trim($msds_parts[0]) : '';
+											$msds_2 = isset($msds_parts[1]) ? trim($msds_parts[1]) : '';
+											if (!empty($msds_1)) {
+												$msds_url = (strpos($msds_1, 'http') === 0) ? $msds_1 : (rtrim(SITEURL, '/') . '/' . ltrim($msds_1, '/'));
 										?>
-										<div class="row">
-											<h2><?= $title; ?></h2>
-											<?php
-												foreach($pro['Product'] as $products)
-												{
-											
-												$datasheet = explode("##",$products['msds']);
-												isset($datasheet[0])? $datasheet_1 = $datasheet[0] : $datasheet_1 = '';
-												isset($datasheet[1])? $datasheetdownload_2 = $datasheet[1] : $datasheetdownload_2 = '';
-												if(!empty($datasheet_1)){
-											?>
-												<a target="_blank" href="<?php echo $datasheet_1; ?>" class="btn effect5"><?php echo $products['title']; ?></a>
-											<?php } } ?>
-										</div>
-										<?php } ?>	
-									
+											<a target="_blank" href="<?php echo h($msds_url); ?>" class="btn effect5"><?php echo h($products['title']); ?></a>
+										<?php } } ?>
+									</div>
+									<?php } ?>	
 								</div>
 								<?php } ?>
 								<?php 							
 								if($page == 'datasheet'){ ?>
-									<div>										
-										<?php 
+									<div>
+										<?php
+										// Datasheet URLs come from products table `datasheet` column (dynamic from DB)
 										foreach($product as $pro)
 										{						
 										$title = $pro['Category']['category_name'];										
@@ -284,13 +283,14 @@
 											<?php
 												foreach($pro['Product'] as $products)
 												{
-											
-											$datasheet = explode("##",$products['datasheet']);
-											isset($datasheet[0])? $datasheet_1 = $datasheet[0] : $datasheet_1 = '';
-											isset($datasheet[1])? $datasheetdownload_2 = $datasheet[1] : $datasheetdownload_2 = '';
-											if(!empty($datasheet_1)){
+											$datasheet = isset($products['datasheet']) ? explode("##", (string)$products['datasheet']) : [];
+											$datasheet_1 = isset($datasheet[0]) ? trim($datasheet[0]) : '';
+											$datasheetdownload_2 = isset($datasheet[1]) ? trim($datasheet[1]) : '';
+											// Use dynamic URL from DB; if relative path, prepend SITEURL
+											if (!empty($datasheet_1)) {
+												$datasheet_url = (strpos($datasheet_1, 'http') === 0) ? $datasheet_1 : (rtrim(SITEURL, '/') . '/' . ltrim($datasheet_1, '/'));
 											?>
-												<a target="_blank" href="<?php echo $datasheet_1; ?>" class="btn effect5"><?php echo $products['title']; ?></a>
+												<a target="_blank" href="<?php echo h($datasheet_url); ?>" class="btn effect5"><?php echo h($products['title']); ?></a>
 											<?php } } ?>
 										</div>
 										<?php } ?>	
