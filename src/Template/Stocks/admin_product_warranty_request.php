@@ -50,9 +50,11 @@ if (!empty($csrfToken)) {
                             </td>
                             <td>
                                 <?php if (!empty($request['ProductWarrantyRequest']['certificate'])): ?>
-                                    <?php 
-                                        $fileName = $request['ProductWarrantyRequest']['certificate'];
-                                        $fileUrl = $this->Url->build('/' . rawurlencode($fileName), ['fullBase' => true]);
+                                    <?php
+                                        $cert = $request['ProductWarrantyRequest']['certificate'];
+                                        $pathDir = strpos($cert, '/') !== false ? dirname($cert) . '/' : 'pdf/FPDI/';
+                                        $pathName = strpos($cert, '/') !== false ? basename($cert) : $cert;
+                                        $fileUrl = $this->Url->build('/' . $pathDir . rawurlencode($pathName), ['fullBase' => true]);
                                     ?>
                                     <a href="<?= h($fileUrl); ?>" target="_blank" class="btn btn-xs btn-primary">
                                         View PDF

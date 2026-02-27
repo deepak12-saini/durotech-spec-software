@@ -713,9 +713,30 @@ class StocksController extends AppController
 		$entity->status = 'Approved';
 		if ($this->ProductWarrantyRequests->save($entity)) {
 			$_REQUEST['lastinsertId'] = $id;
+			// Pass app database config so certificate script updates the same DB and PDF link works
+			try {
+				$conn = \Cake\Datasource\ConnectionManager::get('default');
+				$dbConfig = $conn->config();
+				$GLOBALS['warranty_cert_db'] = [
+					'hostname' => $dbConfig['host'] ?? 'localhost',
+					'username' => $dbConfig['username'] ?? '',
+					'password' => $dbConfig['password'] ?? '',
+					'database' => $dbConfig['database'] ?? '',
+				];
+			} catch (\Throwable $e) {
+				$GLOBALS['warranty_cert_db'] = null;
+			}
 			$certPath = WWW_ROOT . 'pdf' . DS . 'FPDI' . DS . 'warrantyCertificate_new.php';
 			if (file_exists($certPath)) {
-				include $certPath;
+				try {
+					ob_start();
+					include $certPath;
+				} catch (\Throwable $e) {
+					\Cake\Log\Log::error('Product warranty certificate generation failed: ' . $e->getMessage());
+				}
+				if (ob_get_level()) {
+					ob_end_clean();
+				}
 			}
 			$this->response = $this->response->withStringBody('success');
 			return $this->response;
@@ -768,115 +789,133 @@ class StocksController extends AppController
 	}
 	
 	function warranty($id=null){
-		
-		$this->layout='warranty_layout';
-		$this->set('title_for_layout',SITENAME.' | Warranty Info Page');	
-		$uniqueId = base64_decode(base64_decode(base64_decode($id)));
+		$this->viewBuilder()->setLayout('warranty_layout');
+		$this->set('title_for_layout', (defined('SITENAME') ? SITENAME : '') . ' | Warranty Info Page');
+		$uniqueId = $id ? (int)base64_decode(base64_decode(base64_decode($id))) : null;
+		if (!$uniqueId) {
+			return $this->redirect('/');
+		}
 		$this->set('uniqueId', $uniqueId);
-		
-		$WarrantyRequest = $this->WarrantyRequests->find('first',array('conditions'=>array('id' => $uniqueId)));
-		if(empty($WarrantyRequest)){
-			$this->redirect('/');	
-		}	
+
+		$wrEntity = $this->WarrantyRequests->find()->where(['id' => $uniqueId])->first();
+		if (!$wrEntity) {
+			return $this->redirect('/');
+		}
+		$WarrantyRequest = ['WarrantyRequest' => $wrEntity->toArray()];
 		$this->set('WarrantyRequest', $WarrantyRequest);
-		
-		$WarrantyRequestLog = $this->WarrantyRequestLogs->find('first',array('conditions'=>array('WarrantyRequestLog.warranty_request_id'=>$uniqueId)));
+
+		$logEntity = $this->WarrantyRequestLogs->find()->where(['warranty_request_id' => $uniqueId])->first();
+		$WarrantyRequestLog = $logEntity ? ['WarrantyRequestLog' => $logEntity->toArray()] : null;
 		$this->set('WarrantyRequestLog', $WarrantyRequestLog);
 		
 		$flag = 0;
-		if(!empty($this->request->data)){
-			
-			$application = '';
-			if(!empty($this->request->data)){
-				$application = implode(',',$this->request->data['application']);
-			}	
-			
-			if(!empty($WarrantyRequestLog)){
-				$insert['WarrantyRequestLog']['id'] = $WarrantyRequestLog['WarrantyRequestLog']['id'];
-			}	
-			$insert['WarrantyRequestLog']['warranty_request_id'] = $uniqueId;
-			$insert['WarrantyRequestLog']['application'] = $application;
-			$insert['WarrantyRequestLog']['serialnumber'] = $this->request->data['serialnumber'];
-			$insert['WarrantyRequestLog']['dateofpurchase'] = date('Y-m-d',strtotime($this->request->data['dateofpurchase']));
-			$insert['WarrantyRequestLog']['product'] = $this->request->data['product'];
-			$insert['WarrantyRequestLog']['used_as'] = $this->request->data['used_as'];
-			$insert['WarrantyRequestLog']['area_warranted'] = $this->request->data['area_warranted'];
-			$insert['WarrantyRequestLog']['building_address'] = $this->request->data['building_address'];
-			$insert['WarrantyRequestLog']['building_name'] = $this->request->data['building_name'];
-			$insert['WarrantyRequestLog']['contract_company_name'] = $this->request->data['contract_company_name'];
-			$insert['WarrantyRequestLog']['start_requested_warranty'] = date('Y-m-d',strtotime($this->request->data['start_requested_warranty']));
-			$insert['WarrantyRequestLog']['end_requested_warranty'] = date('Y-m-d',strtotime($this->request->data['end_requested_warranty']));
-			$insert['WarrantyRequestLog']['sign_date'] = date('Y-m-d',strtotime($this->request->data['sign_date']));
-			$insert['WarrantyRequestLog']['contract_name'] = $this->request->data['contract_name'];
-			$insert['WarrantyRequestLog']['building_area_name'] = $this->request->data['building_area_name'];
-			$insert['WarrantyRequestLog']['applicator_active_abn'] = $this->request->data['applicator_active_abn'];
-			$insert['WarrantyRequestLog']['applicator_address'] = $this->request->data['applicator_address'];
-			$insert['WarrantyRequestLog']['applicator_contact'] = $this->request->data['applicator_contact'];
-			$insert['WarrantyRequestLog']['applicator'] = $this->request->data['applicator'];
-			
-			$this->UserPermission->bindModel(
-				array('belongsTo' => array('NappUser' => array(
-				'className' => 'NappUser',    
-				'foreignKey' => 'user_id',    
-				'conditions' => array(),
-				'fields' => array('id','name','lname','email'),
-				'order' => array(),
-			))));
-					
-			if($this->WarrantyRequestLogs->save($insert)){
-				
-				$url = SITEURL.'pdf/FPDI/warrantyCertificate.php?lastinsertId='.$uniqueId;			
-				$result = file_get_contents($url);
-				
-				$update['WarrantyRequest']['id'] = $uniqueId;
-				$update['WarrantyRequest']['status'] = 2;
-				$this->WarrantyRequests->save($update);
-				
-				$unique_id = $WarrantyRequest['WarrantyRequest']['unique_id'];
-				$name = $WarrantyRequest['WarrantyRequest']['name'];
-				$email = $WarrantyRequest['WarrantyRequest']['email'];
-				$phone = $WarrantyRequest['WarrantyRequest']['phone'];
-				$project_name = $WarrantyRequest['WarrantyRequest']['project_name'];
-				
-				
-				$subject = 'Durotech: Filled Warranty Form (#'.$unique_id.')';	
-				$template_name = 'notification_to_admin';	
-				
-				$StockReturnkArr = $this->UserPermission->find('all',array('conditions'=>array('UserPermission.meta_val'=>'Warrant Request')));
-				if(!empty($StockReturnkArr)){
-					foreach($StockReturnkArr as $StockReturnkArrs){
-						$to_name = $StockReturnkArrs['NappUser']['name'];
-						$email = $StockReturnkArrs['NappUser']['email'];
-						
-						
-						$url = SITEURL.'stocks/autologin/'.$id.'/'.$StockReturnkArrs['NappUser']['id'];								
-						$variables = array('unique_id'=>$unique_id,'name'=>$name,'url'=>$url,'project_name'=>$project_name,'WarrantyRequestLog'=>$insert['WarrantyRequestLog'],'to_name'=>$to_name,'email'=>$email);			
-						
-						try{
-							$this->sendemail($email,$subject,$template_name,$variables);
-						}catch (Exception $e){
-							
-						}
+		$data = $this->request->getData();
+		if (!empty($data)) {
+			$application = is_array($data['application'] ?? null) ? implode(',', $data['application']) : (string)($data['application'] ?? '');
+			$logData = [
+				'warranty_request_id' => $uniqueId,
+				'application' => $application,
+				'serialnumber' => $data['serialnumber'] ?? '',
+				'dateofpurchase' => !empty($data['dateofpurchase']) ? date('Y-m-d', strtotime($data['dateofpurchase'])) : null,
+				'product' => $data['product'] ?? '',
+				'used_as' => $data['used_as'] ?? '',
+				'area_warranted' => $data['area_warranted'] ?? '',
+				'building_address' => $data['building_address'] ?? '',
+				'building_name' => $data['building_name'] ?? '',
+				'contract_company_name' => $data['contract_company_name'] ?? '',
+				'start_requested_warranty' => !empty($data['start_requested_warranty']) ? date('Y-m-d', strtotime($data['start_requested_warranty'])) : null,
+				'end_requested_warranty' => !empty($data['end_requested_warranty']) ? date('Y-m-d', strtotime($data['end_requested_warranty'])) : null,
+				'sign_date' => !empty($data['sign_date']) ? date('Y-m-d', strtotime($data['sign_date'])) : null,
+				'contract_name' => $data['contract_name'] ?? '',
+				'building_area_name' => $data['building_area_name'] ?? '',
+				'applicator_active_abn' => $data['applicator_active_abn'] ?? '',
+				'applicator_address' => $data['applicator_address'] ?? '',
+				'applicator_contact' => $data['applicator_contact'] ?? '',
+				'applicator' => $data['applicator'] ?? '',
+			];
+			if (!empty($WarrantyRequestLog) && !empty($WarrantyRequestLog['WarrantyRequestLog']['id'])) {
+				$logEntity = $this->WarrantyRequestLogs->get($WarrantyRequestLog['WarrantyRequestLog']['id']);
+				$logEntity = $this->WarrantyRequestLogs->patchEntity($logEntity, $logData);
+			} else {
+				$logEntity = $this->WarrantyRequestLogs->newEntity($logData);
+			}
+			if ($this->WarrantyRequestLogs->save($logEntity)) {
+				$pdfUrl = (defined('SITEURL') ? SITEURL : '') . 'pdf/FPDI/warrantyCertificate.php?lastinsertId=' . $uniqueId;
+				@file_get_contents($pdfUrl);
+
+				$wrEntity = $this->WarrantyRequests->get($uniqueId);
+				$wrEntity->status = 2;
+				$this->WarrantyRequests->save($wrEntity);
+
+				$unique_id = $WarrantyRequest['WarrantyRequest']['unique_id'] ?? '';
+				$name = $WarrantyRequest['WarrantyRequest']['name'] ?? '';
+				$customerEmail = $WarrantyRequest['WarrantyRequest']['email'] ?? '';
+				$project_name = $WarrantyRequest['WarrantyRequest']['project_name'] ?? '';
+
+				$subject = 'Durotech: Filled Warranty Form (#' . $unique_id . ')';
+				$template_name = 'notification_to_admin';
+				$insertForEmail = $logEntity->toArray();
+
+				$permissionRows = $this->UserPermission->find()
+					->contain(['NappUser'])
+					->where(['UserPermission.meta_val' => 'Warrant Request']);
+				foreach ($permissionRows as $row) {
+					$nappUser = $row->napp_user ?? null;
+					if (!$nappUser) {
+						continue;
 					}
-				}				
-				
+					$toEmail = is_object($nappUser) ? ($nappUser->email ?? '') : ($nappUser['email'] ?? '');
+					$toName = is_object($nappUser) ? ($nappUser->name ?? '') : ($nappUser['name'] ?? '');
+					$nappId = is_object($nappUser) ? ($nappUser->id ?? null) : ($nappUser['id'] ?? null);
+					if (empty($toEmail)) {
+						continue;
+					}
+					$url = (defined('SITEURL') ? SITEURL : '') . 'stocks/autologin/' . $id . '/' . $nappId;
+					$variables = [
+						'unique_id' => $unique_id,
+						'name' => $name,
+						'url' => $url,
+						'project_name' => $project_name,
+						'WarrantyRequestLog' => $insertForEmail,
+						'to_name' => $toName,
+						'email' => $toEmail,
+					];
+					try {
+						$this->sendemail($toEmail, $subject, $template_name, $variables);
+					} catch (\Throwable $e) {
+						\Cake\Log\Log::error('Warranty notification email failed: ' . $e->getMessage());
+					}
+				}
+
 				$this->Flash->success('Thanks, we will contact you shortly.');
-				//$flag = 1;
-				$this->redirect('/warranty/'.$id);	 
-			}						
+				return $this->redirect('/warranty/' . $id);
+			}
 		}	
 		$this->set('flag',$flag);
 	}	
 	
-	function change_status($id){
+	/** CamelCase alias for URL stocks/change_status/:id */
+	public function changeStatus($id = null): ?Response
+	{
+		return $this->change_status($id);
+	}
+
+	function change_status($id = null): ?Response
+	{
 		$this->autoRender = false;
-		
-		$update['WarrantyRequest']['id'] = $id;
-		$update['WarrantyRequest']['status'] = 3;
-		$this->WarrantyRequests->save($update);
+		if (!$id) {
+			$this->Flash->error('Invalid request.');
+			return $this->redirect(['action' => 'warrant_request']);
+		}
+		$wr = $this->WarrantyRequests->get($id);
+		if (!$wr) {
+			$this->Flash->error('Request not found.');
+			return $this->redirect(['action' => 'warrant_request']);
+		}
+		$wr->status = 3;
+		$this->WarrantyRequests->save($wr);
 		$this->Flash->success('This request has been completed.');
-		$this->redirect('warrant_request');	
-		
+		return $this->redirect(['action' => 'warrant_request']);
 	}
 	
 	public function autologin($id=null,$user_id=null) {
@@ -917,6 +956,7 @@ class StocksController extends AppController
 			return $this->redirect('/');
 		}
 		$email = $wr->email ?? '';
+		
 		$unique_id = $wr->unique_id ?? '';
 		$name = $wr->name ?? '';
 		if (!empty($email)) {
@@ -926,12 +966,16 @@ class StocksController extends AppController
 			$template_name = 'sendformrequest';
 			try {
 				$this->sendemail($email, $subject, $template_name, $variables);
+				$wr->status = 1;
+				$this->WarrantyRequests->save($wr);
+				$this->Flash->success('Form sent to customer successfully.');
 			} catch (\Throwable $e) {
+				\Cake\Log\Log::error('Warranty form email failed: ' . $e->getMessage());
+				$this->Flash->error('Email could not be sent. Please check logs or email configuration. The request remains in Pending status.');
 			}
-			$wr->status = 1;
-			$this->WarrantyRequests->save($wr);
+		} else {
+			$this->Flash->error('No email address for this request.');
 		}
-		$this->Flash->success('Form sent to customer successfully.');
 		return $this->redirect(['action' => 'warrant_request']);
 	}
 
@@ -967,12 +1011,16 @@ class StocksController extends AppController
 			$template_name = 'sendformrequest';
 			try {
 				$this->sendemail($email, $subject, $template_name, $variables);
+				$wr->status = 1;
+				$this->WarrantyRequests->save($wr);
+				$this->Flash->success('Form sent to customer successfully.');
 			} catch (\Throwable $e) {
+				\Cake\Log\Log::error('Warranty form email failed: ' . $e->getMessage());
+				$this->Flash->error('Email could not be sent. Please check logs or email configuration. The request remains in Pending status.');
 			}
-			$wr->status = 1;
-			$this->WarrantyRequests->save($wr);
+		} else {
+			$this->Flash->error('No email address for this request.');
 		}
-		$this->Flash->success('Form sent to customer successfully.');
 		return $this->redirect(['action' => 'admin_warrant_request']);
 	}
 }

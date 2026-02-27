@@ -537,54 +537,54 @@ public function employee_send_v3() {
             }
 
 
-            // ===== SEND EMAIL WITH SPEC PDF ATTACHED =====
+            // ===== SEND EMAIL WITH SPEC PDF ATTACHED (non-blocking: spec/PDF already saved) =====
 
-            // Adjust this path if your PDF folder name differs
             $pdfFilePath = WWW_ROOT . 'dompdf' . DS . $generatedPdfFileName;
 
             if (file_exists($pdfFilePath)) {
+                try {
+                    $email = new Email('default');
 
-                $email = new Email('default');
-
-                $email->from([
-                    // 'no-reply@durotechindustries.com.au' => 'Durotech Industries'
+                    $email->setFrom([
+                        // 'no-reply@durotechindustries.com.au' => 'Durotech Industries'
                         'deepaksaini10036@gmail.com' => 'Durotech Industries'
+                    ]);
 
-                ]);
+                    // $email->setTo('Kal@durotechindustries.com.au');
+                    $email->setTo('deepaksaini10036@gmail.com');
 
-                // $email->to('Kal@durotechindustries.com.au');
-                $email->to('deepaksaini10036@gmail.com');
+                    $email->setSubject(
+                        'New Spec Created – ' . $inserty['Mailer']['tracknumber']
+                    );
 
+                    $email->setEmailFormat('html');
 
-                $email->subject(
-                    'New Spec Created – ' . $inserty['Mailer']['tracknumber']
-                );
+                    $email->setAttachments([
+                        $generatedPdfFileName => [
+                            'file' => $pdfFilePath,
+                            'mimetype' => 'application/pdf'
+                        ]
+                    ]);
 
-                $email->emailFormat('html');
+                    $email->send(
+                        '
+                        <p>A new specification has been created by <b>Josh</b>.</p>
 
-                // Attach generated PDF
-                $email->attachments([
-                    $generatedPdfFileName => [
-                        'file' => $pdfFilePath,
-                        'mimetype' => 'application/pdf'
-                    ]
-                ]);
+                        <p>
+                            <b>Track No:</b> ' . $inserty['Mailer']['tracknumber'] . '<br>
+                            <b>Company:</b> ' . $inserty['Mailer']['company'] . '<br>
+                            <b>Specification:</b> ' . $inserty['Mailer']['specification'] . '
+                        </p>
 
-                $email->send(
-                    '
-                    <p>A new specification has been created by <b>Josh</b>.</p>
+                        <p>Please find the specification PDF attached.</p>
 
-                    <p>
-                        <b>Track No:</b> ' . $inserty['Mailer']['tracknumber'] . '<br>
-                        <b>Company:</b> ' . $inserty['Mailer']['company'] . '<br>
-                        <b>Specification:</b> ' . $inserty['Mailer']['specification'] . '
-                    </p>
-
-                    <p>Please find the specification PDF attached.</p>
-
-                    <p>Regards,<br>
-                    Durotech System</p>'
-                );
+                        <p>Regards,<br>
+                        Durotech System</p>'
+                    );
+                } catch (\Exception $e) {
+                    // SMTP timeout/connection errors must not block submission; spec and PDF are already saved.
+                    CakeLog::error('Employee spec email failed (track: ' . ($inserty['Mailer']['tracknumber'] ?? '') . '): ' . $e->getMessage());
+                }
             }
 
 
@@ -729,11 +729,11 @@ protected function _saveEmployeeSpecAsSubmitted(int $mailerId, array $formData, 
     $pdfFilePath = WWW_ROOT . 'dompdf' . DS . $generatedPdfFileName;
     if (file_exists($pdfFilePath)) {
         $email = new Email('default');
-        $email->from(['deepaksaini10036@gmail.com' => 'Durotech Industries']);
-        $email->to('deepaksaini10036@gmail.com');
-        $email->subject('New Spec Created – ' . $tracknumber);
-        $email->emailFormat('html');
-        $email->attachments([
+        $email->setFrom(['deepaksaini10036@gmail.com' => 'Durotech Industries']);
+        $email->setTo('deepaksaini10036@gmail.com');
+        $email->setSubject('New Spec Created – ' . $tracknumber);
+        $email->setEmailFormat('html');
+        $email->setAttachments([
             $generatedPdfFileName => ['file' => $pdfFilePath, 'mimetype' => 'application/pdf'],
         ]);
         $email->send(
@@ -1079,18 +1079,18 @@ public function editsend_v3($id = null) {
             if (file_exists($pdfFilePath)) {
                 $email = new Email('default');
 
-                $email->from([
+                $email->setFrom([
                     'no-reply@durotechindustries.com.au' => 'Durotech Industries'
                 ]);
 
                 // Recipient: Kal or others if needed
-                $email->to('Kal@durotechindustries.com.au');
+                $email->setTo('Kal@durotechindustries.com.au');
 
-                $email->subject('Specification Edited – ' . $inserty['Mailer']['tracknumber']);
-                $email->emailFormat('html');
+                $email->setSubject('Specification Edited – ' . $inserty['Mailer']['tracknumber']);
+                $email->setEmailFormat('html');
 
                 // Attach the PDF
-                $email->attachments([
+                $email->setAttachments([
                     $pdfname . '.pdf' => [
                         'file' => $pdfFilePath,
                         'mimetype' => 'application/pdf'
@@ -1494,11 +1494,11 @@ protected function _sendApprovalNotification($caseData) {
         $email = new Email('default');
 
         // ✅ From Durotech info email
-        $email->from(['info@durotechindustries.com.au' => 'Durotech Employee Portal'])
-            //   ->to('kal@durotechindustries.com.au')
-              ->to('deepaksaini10036@gmail.com')
-              ->subject('New Case Study Submitted for Approval')
-              ->emailFormat('html');
+        $email->setFrom(['info@durotechindustries.com.au' => 'Durotech Employee Portal'])
+            //   ->setTo('kal@durotechindustries.com.au')
+              ->setTo('deepaksaini10036@gmail.com')
+              ->setSubject('New Case Study Submitted for Approval')
+              ->setEmailFormat('html');
 
         $case = $caseData['CaseStudy'];
 
@@ -1585,8 +1585,8 @@ protected function _sendApprovalNotification($caseData) {
 
 public function test_email() {
     $email = new Email('default');
-    $email->to('deepaksaini10036@gmail.com');
-    $email->subject('Test Email from Durotech');
+    $email->setTo('deepaksaini10036@gmail.com');
+    $email->setSubject('Test Email from Durotech');
     $email->send('This is a test email from Durotech server.');
     echo "Email sent!";
     die;

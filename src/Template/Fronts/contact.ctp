@@ -1,3 +1,21 @@
+<style>
+.contact-send-btn .contact-submit {
+	display: inline-block;
+	font-size: 16px;
+	color: #34495e;
+	text-decoration: none;
+	line-height: 50px;
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 0 15px;
+	z-index: 2;
+	position: relative;
+}
+.contact-send-btn:hover .contact-submit {
+	color: #fff !important;
+}
+</style>
 <div class="contact_banner col-lg-12 col-md-12 col-sm-12">
  <img src="<?= h(SITEURL) ?>customdurotech/images/contact_banner.jpg" alt="Contact">
 </div>
@@ -13,7 +31,7 @@
 
     	<div class="col-sm-6">
 			<?= $this->Flash->render() ?>
-    		<?= $this->Form->create(null, ['url' => ['action' => 'contact'], 'class' => 'contact-form', 'id' => 'formemailnews']) ?>
+    		<?= $this->Form->create(null, ['url' => ['controller' => 'Fronts', 'action' => 'contact'], 'type' => 'post', 'class' => 'contact-form', 'id' => 'formemailnews']) ?>
 
 		        <div class="form-group">
 		          <input type="text" class="form-control" id="name" name="name" placeholder="Name" required="" autofocus="">
@@ -38,10 +56,12 @@
 				   <img src="<?= $this->Url->build(['controller' => 'Fronts', 'action' => 'captch']) ?>" alt="Captcha" />
 		      </div>
 
-	      	   <div class="button-4">
+			  <div class="form-group">
+	      	   <div class="button-4 contact-send-btn">
 				<div class="eff-4"></div>
-					 <button type="submit" class="btn-link"> SEND </button>
+				<button type="submit" class="btn-link contact-submit"> SEND </button>
 				</div>
+			  </div>
 		      </div>
 
 

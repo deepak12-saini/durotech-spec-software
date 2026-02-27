@@ -259,7 +259,9 @@ class AppController extends Controller
             define('SITENAME', 'Durotech Industries');
         }
         if (!defined('EMAIL')) {
-            define('EMAIL', 'info@durotechindustries.com.au');
+            // define('EMAIL', 'info@durotechindustries.com.au');
+            define('EMAIL', 'deepaksaini10036@gmail.com');
+
         }
         if (!defined('PHONE')) {
             define('PHONE', '');

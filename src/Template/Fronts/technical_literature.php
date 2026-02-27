@@ -97,25 +97,20 @@
 								<h3>Coming Soon</h3>								
 							</div>
 							<div role="tabpanel" class="tab-pane fade" id="Section7" style="width:500px">
-								<h3>Project Warranty Request</h3>	
-
+								<h3>Project Warranty Request</h3>
 								<div>
-									
-									<form action="<?php echo SITEURL.'fronts/submitform'?>" class="contact-form" method="post" id="formbankreg">
-							
+									<?= $this->Form->create(null, ['url' => ['controller' => 'Fronts', 'action' => 'submitform'], 'class' => 'contact-form', 'id' => 'formbankreg']) ?>
 										<div class="form-group">
 										  <input type="text" class="form-control" id="name" name="name" placeholder="Name" required="" autofocus="">
-										</div>								
-									
+										</div>
 										<div class="form-group form_left">
 										  <input type="email" class="form-control" id="email" name="email" placeholder="Email" required="">
 										</div>
-									
 										<div class="form-group">
-										   <input type="text" class="form-control" id="phone" name="phone"  maxlength="10" placeholder="Mobile No." required="">
+										   <input type="text" class="form-control" id="phone" name="phone" maxlength="10" placeholder="Mobile No." required="">
 										</div>
 										<div class="form-group">
-										   <input type="text" class="form-control" id="project_name" name="project_name"  placeholder="Project Name" required="">
+										   <input type="text" class="form-control" id="project_name" name="project_name" placeholder="Project Name" required="">
 										</div>
 										<div class="form-group">
 										   <select name="year" id="year" class="form-control">
@@ -128,7 +123,7 @@
 										<div class="form-group">
 											<button href="#null" type="submit" class="btn btn-xs btn-info" style="padding:0px 30px !important;width: 112px;height: 71px;"> SEND </button>
 										</div>
-									</form>
+									<?= $this->Form->end() ?>
 								</div>
 							</div>
 							

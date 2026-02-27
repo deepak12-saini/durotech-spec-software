@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Controller\AppController;
 use Cake\Event\EventInterface;
 use Cake\Http\Response;
+use Cake\Log\Log;
 use Cake\Mailer\MailerAwareTrait;
 
 /**
@@ -517,6 +518,7 @@ class FrontsController extends AppController
             $this->Flash->success(__('Your message has been sent successfully.'));
             return $this->redirect(['action' => 'contact']);
         } catch (\Throwable $e) {
+            Log::error('Contact form email failed: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
             $this->Flash->error(__('Sorry, we could not send your message. Please try again later.'));
         }
         return null;
@@ -575,6 +577,9 @@ class FrontsController extends AppController
         $this->loadModel('ProductWarrantyRequests');
         if ($this->request->is('post')) {
             $data = $this->request->getData('ProductWarrantyRequest') ?? $this->request->getData();
+            if (isset($data['application']) && is_array($data['application'])) {
+                $data['application'] = implode(', ', array_filter($data['application']));
+            }
             $entity = $this->ProductWarrantyRequests->newEntity($data);
             if ($this->ProductWarrantyRequests->save($entity)) {
                 $this->Flash->success(__('Thank you for your application a Durotech representative will be in touch shortly.'));
@@ -586,6 +591,33 @@ class FrontsController extends AppController
 
         $this->set(compact('warrantyLog'));
         return null;
+    }
+
+    /**
+     * Submit project warranty request form (technical literature / warranty page).
+     * Saves to warranty_requests and redirects back with flash.
+     */
+    public function submitform(): ?Response
+    {
+        $this->request->allowMethod(['post']);
+
+        $this->loadModel('WarrantyRequests');
+        $data = [
+            'name' => $this->request->getData('name'),
+            'email' => $this->request->getData('email'),
+            'phone' => $this->request->getData('phone'),
+            'project_name' => $this->request->getData('project_name'),
+            'year' => $this->request->getData('year'),
+            'unique_id' => 'WR-' . strtoupper(substr(bin2hex(random_bytes(4)), 0, 8)),
+            'status' => 0,
+        ];
+        $entity = $this->WarrantyRequests->newEntity($data);
+        if ($this->WarrantyRequests->save($entity)) {
+            $this->Flash->success(__('Thank you for your warranty request. A representative will be in touch shortly.'));
+            return $this->redirect(['controller' => 'Fronts', 'action' => 'technicalLiteratureNew', 'warranty']);
+        }
+        $this->Flash->error(__('Unable to submit your request. Please try again.'));
+        return $this->redirect(['controller' => 'Fronts', 'action' => 'technicalLiteratureNew', 'warranty']);
     }
 
     // -------------------------------------------------------------------------
