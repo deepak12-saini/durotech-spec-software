@@ -8,9 +8,9 @@
 
 <div class="content_projects col-12">
     <div class="container mt-5 mb-5">
-        <h2 class="text-uppercase text-primary fw-bold mb-4 text-center">
-            Case Studies / Projects
-        </h2>
+        <h1 class="text-uppercase text-primary fw-bold mb-4 text-center" style="font-size:28px;">
+            Our Projects &amp; Case Studies
+        </h1>
 
         <div class="row justify-content-center">
             <?php if (!empty($projects)) : ?>

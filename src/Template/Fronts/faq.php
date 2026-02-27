@@ -8,13 +8,44 @@
 	</script>	
 	<style>
 		body{background:url(http://bootstraptema.ru/images/bg/bg-4.png)}
-	
 	</style>
+	<script type="application/ld+json">
+	{
+	  "@context": "https://schema.org",
+	  "@type": "FAQPage",
+	  "mainEntity": [
+	    {
+	      "@type": "Question",
+	      "name": "What is a Water Based waterproofing membrane?",
+	      "acceptedAnswer": {
+	        "@type": "Answer",
+	        "text": "Water based waterproofing membranes are generally acrylic in nature and rely on evaporation to cure. They are easy to use and are made specifically for the purpose of water proofing and protecting surfaces whilst providing non-toxic and non-flammable properties. This product is ideal for use in confined spaces where air flow is restricted."
+	      }
+	    },
+	    {
+	      "@type": "Question",
+	      "name": "What is a Solvent Based waterproofing membrane?",
+	      "acceptedAnswer": {
+	        "@type": "Answer",
+	        "text": "Solvent-based membranes sometimes referred to as oil-based contain organic solvents compared to water-based paints. They produce almost immediate waterproofing protection after application and are not damaged by freezing temperatures. Always ensure the area of application is well ventilated."
+	      }
+	    },
+	    {
+	      "@type": "Question",
+	      "name": "Why do you recommend waterproofing?",
+	      "acceptedAnswer": {
+	        "@type": "Answer",
+	        "text": "The main function of waterproofing is to stop any leaks from occurring. Waterproofing also prevents damp and mould from occurring by adding a waterproof barrier between surfaces and your top layer (e.g. tiles)."
+	      }
+	    }
+	  ]
+	}
+	</script>
 	<div class="banner_durolab col-lg-12 col-md-12 col-sm-12">
 		<img src="<?php echo SITEURL ;?>img/faq.jpg">
 	</div>
 	
-	<h3 style="text-align:center; margin-top:500px;"> Frequently Asked Questions</h3>
+	<h1 style="text-align:center; margin-top:24px; font-size:28px;">Waterproofing Solutions FAQs</h1>
 
 <div class="container faq">
 <div class="row">
@@ -347,6 +378,8 @@ Where do I buy ?
 		 </div>
 	</div>
  </div><!-- /.panel-group -->
+
+ <p style="margin-top:24px; font-size:15px;">Browse our <a href="<?= h($this->Url->build('/product')) ?>">waterproofing products</a> and <a href="<?= h($this->Url->build('/terrace-waterproofing')) ?>">terrace waterproofing</a> solutions. For specifications and support, <a href="<?= h($this->Url->build('/contact')) ?>">contact us</a>.</p>
 
  </div><!-- /.col-md-offset-3 col-md-6 -->
 </div><!-- /.row -->

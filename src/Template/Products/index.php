@@ -91,6 +91,20 @@ a:focus, a:hover {
 	</div>
 
 	<div class="container">
+		<?php if (!empty($isProductListingHome)): ?>
+		<div class="row" style="margin-bottom:24px;">
+			<div class="col-lg-12 col-md-12 col-sm-12">
+				<h1 class="ptitle" style="margin-top:24px; margin-bottom:12px;">Waterproofing Products &amp; Membranes</h1>
+				<p style="font-size:15px; line-height:1.6; color:#333;">Browse our range of Australian-made waterproofing membranes, sealants and construction coatings. We supply builders, contractors and specifiers across Sydney, Melbourne, Brisbane and Australia. Choose a category below or use the filter to find the right product for your project. For specifications and technical support, <a href="<?= h($this->Url->build('/contact')) ?>">contact us</a> or view our <a href="<?= h($this->Url->build('/terrace-waterproofing')) ?>">terrace waterproofing</a> and <a href="<?= h($this->Url->build('/retaining-walls')) ?>">retaining wall</a> solutions.</p>
+			</div>
+		</div>
+		<?php else: ?>
+		<div class="row" style="margin-bottom:12px;">
+			<div class="col-lg-12 col-md-12 col-sm-12">
+				<h1 class="ptitle" style="margin-top:24px; margin-bottom:8px;"><?= h($category_name ?? 'Products') ?></h1>
+			</div>
+		</div>
+		<?php endif; ?>
 		<div class="durotech_product col-lg-12 col-md-12 col-sm-12">     
 			<div class="row">
 			

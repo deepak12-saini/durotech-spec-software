@@ -201,7 +201,7 @@
 
 <div class="container mt-5 mb-5">
    <div class="case-info text-md-start text-center mb-4">
-        <h2 class="case-title"><?php echo h($case['CaseStudy']['title']); ?></h2>
+        <h1 class="case-title" style="font-size:28px;"><?php echo h($case['CaseStudy']['title']); ?></h1>
 
         <?php if (!empty($case['CaseStudy']['location'])): ?>
             <p class="case-location mb-1">
@@ -278,6 +278,11 @@
         </div>
     <?php endif; ?>
 
+
+    <div class="case-section mt-4">
+        <h4>Products &amp; support</h4>
+        <p class="product_text_section">View our <a href="<?php echo h($this->Url->build('/product')); ?>">waterproofing products</a> and <a href="<?php echo h($this->Url->build('/projects')); ?>">more case studies</a>. For specifications and technical support, <a href="<?php echo h($this->Url->build('/contact')); ?>">contact us</a>.</p>
+    </div>
 
     <div class="back_btn mt-4">
         <a href="<?php echo SITEURL . 'projects'; ?>" class="btn btn-secondary">

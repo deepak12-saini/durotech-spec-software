@@ -11,7 +11,8 @@
 	        <div class="banner_about col-lg-12 col-md-12 col-sm-12">
 				<img src="<?= h(SITEURL) ?>customdurotech/images/about_us_banner.jpg" alt="About Us">
 			</div>
-		     <h3>Who We Are</h3>
+		     <h1 style="font-size:28px; margin-bottom:12px;">About Durotech Industries</h1>
+		     <h2 style="font-size:20px; margin-top:20px;">Who We Are</h2>
 		     <p>Durotech industries is a leading manufacturer and supplier of waterproofing and coating solutions. Durotech Systems have been widely
 used in the construction industry for the sealing of wet areas, decks, roofs and other substrates providing protection against moisture and weather
 damage for over 48 years. State of the art technology combined with dedicated commitment to research and development has made Durotech Industries an authoritative and dominant leader in the waterproofing and coatings arena.</p>

@@ -412,6 +412,7 @@ return [
      */
     'Session' => [
         'defaults' => 'php',
+        'timeout' => 120, // minutes (increase as needed)
     ],
 
     /*

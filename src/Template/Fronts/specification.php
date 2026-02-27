@@ -141,8 +141,8 @@ body{background:url(<?php echo SITEURL.'img/'?>bg-4.png)}
 <div class="specifiers_page col-lg-1 col-md-12 col-sm-12" >
      <div class="container" style="margin-top:30px;">
 	      <div class="specification_tab_1 col-lg-12 col-md-12 col-sm-12">
-			  <p>Durotech Industries is proud to announce affiliate partnership with Natspec and architects australia. Providing national level specifications and approved CPD points.</p>
-			  <h1>Making Specifications Easy</h1>
+			  <h1>For Specifiers</h1>
+			  <p>Durotech Industries is proud to announce affiliate partnership with Natspec and Architects Australia, providing national-level specifications and approved CPD points. For architects and specifiers: browse our <a href="<?php echo h($this->Url->build('/product')); ?>">waterproofing products</a>, <a href="<?php echo h($this->Url->build('/technical-literature')); ?>">technical literature</a> and <a href="<?php echo h($this->Url->build('/contact')); ?>">contact us</a> for support.</p>
 			  <div class="netspec_logo col-lg-12 col-md-12 col-sm-12">
 			  <img src="<?php echo SITEURL ?>img/NATSPEC-Construction_logo.png" class="natspc"></div>
 			  <div class="durotech_specifiers_btn">

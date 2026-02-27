@@ -74,9 +74,9 @@ class FrontsController extends AppController
 
         $this->set('title_for_layout', (defined('SITENAME') ? SITENAME : 'Durotech') . ' | Home Page');
         $this->set([
-            'meta_title' => 'Waterproofing Products Manufacturers and Suppliers in Sydney',
-            'meta_description' => 'Australian Made and Owned solutions since 1977 who specializes in the supply and manufacture of market leading innovative construction chemical technologies for the last 45 years.',
-            'meta_keyword' => 'waterproof, membrane, durotech waterproofing, waterproofing supplies, roof waterproofing ,Terrace Waterproofing , Leakages repairs , Balcony leaks , Bathrooms renovations , Basements , Roof water,Roof leaks,Roof restoration,Terrace waterproofing , Roof protection , Terrace protection , Remedial Waterproofing for Roofs , Colourbond protection  , Metal roof waterproofing',
+            'meta_title' => 'Waterproofing Products & Membranes Australia | Durotech Industries',
+            'meta_description' => 'Australian-made waterproofing membranes, coatings & sealants since 1977. For builders, contractors & specifiers. Sydney, Melbourne, Brisbane. Call 02 9603 1177.',
+            'meta_keyword' => 'waterproofing membrane, liquid waterproofing, roof waterproofing, terrace waterproofing, sealants, construction chemicals, Australia, Sydney, Melbourne, Durotech',
         ]);
 
         $categoriesQuery = $this->Categories->find()
@@ -129,9 +129,9 @@ class FrontsController extends AppController
 
         $this->set('title_for_layout', (defined('SITENAME') ? SITENAME : 'Durotech') . ' | Home Page');
         $this->set([
-            'meta_title' => 'Waterproofing Products Manufacturers and Suppliers in Sydney',
-            'meta_description' => 'Australian Made and Owned solutions since 1977 who specializes in the supply and manufacture of market leading innovative construction chemical technologies for the last 45 years.',
-            'meta_keyword' => 'waterproof, membrane, durotech waterproofing, waterproofing supplies, roof waterproofing ,Terrace Waterproofing , Leakages repairs , Balcony leaks , Bathrooms renovations , Basements , Roof water,Roof leaks,Roof restoration,Terrace waterproofing , Roof protection , Terrace protection , Remedial Waterproofing for Roofs , Colourbond protection  , Metal roof waterproofing',
+            'meta_title' => 'Waterproofing Products & Membranes Australia | Durotech Industries',
+            'meta_description' => 'Australian-made waterproofing membranes, coatings & sealants since 1977. For builders, contractors & specifiers. Sydney, Melbourne, Brisbane. Call 02 9603 1177.',
+            'meta_keyword' => 'waterproofing membrane, liquid waterproofing, roof waterproofing, terrace waterproofing, sealants, construction chemicals, Australia, Sydney, Melbourne, Durotech',
         ]);
         return null;
     }
@@ -143,9 +143,9 @@ class FrontsController extends AppController
     {
         $this->viewBuilder()->setLayout('customduro_layout');
         $this->set([
-            'meta_title' => 'Outdoor Liquid Waterproofing Membrane | Roof and Wall Waterproofing ',
-            'meta_description' => 'Looking for waterproofing membrane in Australia? Durotech provide best quality waterproofing solutions for outdoor, wall and for basement. For more information call 0296031177',
-            'meta_keyword' => 'basement, waterproofing, membrane, outdoor waterproofing, roof membrane',
+            'meta_title' => 'About Durotech | Australian Waterproofing & Construction Chemicals Manufacturer',
+            'meta_description' => 'Durotech Industries — Australian-made waterproofing membranes, coatings & sealants since 1977. For builders, contractors & specifiers.',
+            'meta_keyword' => 'Durotech, Australian manufacturer, waterproofing, construction chemicals, membranes, sealants',
         ]);
         return null;
     }
@@ -158,9 +158,9 @@ class FrontsController extends AppController
         $this->viewBuilder()->setLayout('customduro_layout');
 
         $this->set([
-            'meta_title' => 'Outdoor Liquid Waterproofing Membrane | Roof and Wall Waterproofing ',
-            'meta_description' => 'Looking for waterproofing membrane in Australia? Durotech provide best quality waterproofing solutions for outdoor, wall and for basement. For more information call 0296031177',
-            'meta_keyword' => 'basement, waterproofing, membrane, outdoor waterproofing, roof membrane',
+            'meta_title' => 'Waterproofing Projects & Case Studies | Durotech Australia',
+            'meta_description' => 'See how Durotech waterproofing membranes and coatings are used in real projects across Australia. Case studies for specifiers and contractors.',
+            'meta_keyword' => 'waterproofing projects, case studies, Durotech, membranes, coatings, Australia',
         ]);
 
         $query = $this->CaseStudies->find()
@@ -219,9 +219,9 @@ class FrontsController extends AppController
     public function terraceWaterproofing(): ?Response
     {
         $this->set([
-            'meta_title' => 'Terrace Waterproofing',
-            'meta_description' => 'For the waterproofing of terraces and balconies Durotech Industries Australia has a solvent based polyurethane and an acrylic modified system.Durotech Industries specializes in roof and terrace waterproofing for new construction and remedial projects.',
-            'meta_keyword' => 'Terrace Waterproofing',
+            'meta_title' => 'Terrace & Balcony Waterproofing | Roof Waterproofing Australia | Durotech',
+            'meta_description' => 'Terrace and balcony waterproofing with solvent-based PU and acrylic systems. New build and remedial. Australia. Products & specs. 02 9603 1177.',
+            'meta_keyword' => 'terrace waterproofing, balcony waterproofing, roof waterproofing, polyurethane, acrylic, remedial, Australia',
         ]);
         return null;
     }
@@ -232,9 +232,9 @@ class FrontsController extends AppController
     public function retainingWalls(): ?Response
     {
         $this->set([
-            'meta_title' => 'Retaining Walls',
-            'meta_description' => 'One of the most essential components of waterproofing is for below ground structures.It is very expensive to rectify water damage in retaining walls.',
-            'meta_keyword' => 'Retaining Walls',
+            'meta_title' => 'Retaining Wall Waterproofing | Below Ground Waterproofing Australia | Durotech',
+            'meta_description' => 'Waterproofing for retaining walls and below-ground structures. Avoid costly water damage. Australian solutions. Products & technical support. 02 9603 1177.',
+            'meta_keyword' => 'retaining wall waterproofing, below ground waterproofing, basement, tanking, Australia',
         ]);
         return null;
     }
@@ -278,9 +278,9 @@ class FrontsController extends AppController
     {
         $this->set([
             'title_for_layout' => (defined('SITENAME') ? SITENAME : 'Durotech') . ' | DuroOEM',
-            'meta_title' => 'DuroOEM',
-            'meta_description' => '',
-            'meta_keyword' => '',
+            'meta_title' => 'DuroOEM | Custom Manufacturing | Durotech',
+            'meta_description' => 'Custom and OEM construction chemicals and waterproofing. Australian manufacturer. Enquire for formulations.',
+            'meta_keyword' => 'DuroOEM, custom manufacturing, OEM waterproofing, construction chemicals',
         ]);
         return null;
     }
@@ -306,9 +306,9 @@ class FrontsController extends AppController
     {
         $this->set([
             'title_for_layout' => (defined('SITENAME') ? SITENAME : 'Durotech') . ' | Duro Flake',
-            'meta_title' => 'Duro Flake',
-            'meta_description' => 'Duro Flake',
-            'meta_keyword' => '',
+            'meta_title' => 'Duro Flake | Decorative Flake Flooring | Durotech',
+            'meta_description' => 'Decorative flake flooring systems for commercial and industrial floors. Australian-made.',
+            'meta_keyword' => 'Duro Flake, flake flooring, decorative flooring, industrial floor',
         ]);
         return null;
     }
@@ -320,9 +320,9 @@ class FrontsController extends AppController
     {
         $this->set([
             'title_for_layout' => (defined('SITENAME') ? SITENAME : 'Durotech') . ' | Specification',
-            'meta_title' => 'Specifiers',
-            'meta_description' => 'Durotech Industries is proud to announce affiliate partnership with Natspec and architects australia. Providing national level specifications and approved CPD points.',
-            'meta_keyword' => 'Durotech Specifiers',
+            'meta_title' => 'Specifiers | Waterproofing Specification & CPD | Durotech',
+            'meta_description' => 'Natspec & Architects Australia partner. National specifications and CPD for waterproofing. For architects and specifiers.',
+            'meta_keyword' => 'specifiers, waterproofing specification, Natspec, CPD, architects, Durotech',
         ]);
         return null;
     }
@@ -334,9 +334,9 @@ class FrontsController extends AppController
     {
         $this->set([
             'title_for_layout' => (defined('SITENAME') ? SITENAME : 'Durotech') . ' | Durotech Institute Waterproofing',
-            'meta_title' => 'Institute Waterproofing',
-            'meta_description' => '.',
-            'meta_keyword' => 'Durotech Institute Waterproofing',
+            'meta_title' => 'Durotech Institute of Waterproofing | Training | Durotech',
+            'meta_description' => 'Training and education in waterproofing for contractors and specifiers.',
+            'meta_keyword' => 'Durotech Institute Waterproofing, waterproofing training, contractor training',
         ]);
         return null;
     }
@@ -347,10 +347,10 @@ class FrontsController extends AppController
     public function video(): ?Response
     {
         $this->set([
-            'title_for_layout' => (defined('SITENAME') ? SITENAME : 'Durotech') . ' | Durotech Institute Waterproofing',
-            'meta_title' => 'Our Project Video',
-            'meta_description' => 'Durotech project video',
-            'meta_keyword' => 'Durotech video',
+            'title_for_layout' => (defined('SITENAME') ? SITENAME : 'Durotech') . ' | Project Videos',
+            'meta_title' => 'Project Videos | Durotech Waterproofing Projects',
+            'meta_description' => 'Watch Durotech waterproofing and coating projects across Australia.',
+            'meta_keyword' => 'Durotech video, waterproofing projects, case study video',
         ]);
         return null;
     }
@@ -362,9 +362,9 @@ class FrontsController extends AppController
     {
         $this->set([
             'title_for_layout' => (defined('SITENAME') ? SITENAME : 'Durotech') . ' | Durotech Faq',
-            'meta_title' => 'Waterproofing Solutions FAQs',
-            'meta_description' => 'Get detailed information about queries related to waterproofing solutions and waterproofing products in our FAQs section.',
-            'meta_keyword' => 'Waterproofing Solutions Faq',
+            'meta_title' => 'Waterproofing Solutions FAQs | Durotech Australia',
+            'meta_description' => 'Common questions about waterproofing membranes, products and applications. For builders, contractors and specifiers.',
+            'meta_keyword' => 'waterproofing FAQ, waterproofing solutions, membranes, products, Australia',
         ]);
         return null;
     }
@@ -390,9 +390,9 @@ class FrontsController extends AppController
     {
         $this->set([
             'title_for_layout' => (defined('SITENAME') ? SITENAME : 'Durotech') . ' | Durotech Faq',
-            'meta_title' => 'Waterproofing Solutions FAQs',
-            'meta_description' => 'Get detailed information about queries related to waterproofing solutions and waterproofing products in our FAQs section.',
-            'meta_keyword' => 'Waterproofing Solutions Faq',
+            'meta_title' => 'Waterproofing Solutions FAQs | Durotech Australia',
+            'meta_description' => 'Common questions about waterproofing membranes, products and applications. For builders, contractors and specifiers.',
+            'meta_keyword' => 'waterproofing FAQ, waterproofing solutions, membranes, products, Australia',
         ]);
         return null;
     }
@@ -480,9 +480,9 @@ class FrontsController extends AppController
     public function contact(): ?Response
     {
         $this->set([
-            'meta_title' => 'Email us | Contact',
-            'meta_description' => 'If you have any query with regards to waterproofing solutions and tips, get in touch with us on mail.',
-            'meta_keyword' => 'Durotech Support',
+            'meta_title' => 'Contact Durotech | Waterproofing Products & Specification Enquiries',
+            'meta_description' => 'Contact Durotech for waterproofing products, specifications and technical support. Sydney-based, Australia-wide. Enquire online or call 02 9603 1177.',
+            'meta_keyword' => 'contact Durotech, waterproofing enquiry, specification, technical support, Sydney, Australia',
         ]);
 
         if (!$this->request->is('post')) {

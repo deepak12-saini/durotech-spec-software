@@ -236,6 +236,7 @@ class ProductsController extends AppController
 				$category_name = $categoryname;
 			}
 		} else {
+			$isProductListingHome = true;
 			$first = $category[0]['Category'] ?? null;
 			$slug = $first['slug'] ?? '';
 			$categoryname = $first['category_name'] ?? '';
@@ -247,10 +248,14 @@ class ProductsController extends AppController
 			foreach ($productsQuery as $row) {
 				$products[] = ['Product' => $row->toArray()];
 			}
-			$meta_keyword = 'roof, waterproofing, membrane products, waterproofing products,waterproofing supplies';
-			$meta_title = 'Roof Waterproofing Membrane Products, Liquid Waterproofing Sydney';
-			$meta_description = 'Waterproofing products Melbourne, Brisbane and Sydney. Call 0296031177 for waterproofing products and offers, best quality Membranes at lowest price delivered Australia wide';
+			$meta_keyword = 'waterproofing products, membrane products, roof waterproofing, liquid waterproofing, Sydney, Melbourne, Brisbane, Australia';
+			$meta_title = 'Roof Waterproofing Membrane Products | Liquid Waterproofing Sydney | Durotech';
+			$meta_description = 'Waterproofing products for Melbourne, Brisbane & Sydney. Membranes, sealants & coatings. Quality Australian-made. Call 02 9603 1177 or browse categories.';
 			$category_name = $categoryname;
+		}
+
+		if (empty($isProductListingHome)) {
+			$isProductListingHome = false;
 		}
 
 		$isBrandResults = $this->Category->find('all')
@@ -261,7 +266,7 @@ class ProductsController extends AppController
 			$isBrand[] = ['Category' => $row->toArray()];
 		}
 
-		$this->set(compact('products', 'category', 'slug', 'categoryname', 'isBrand', 'category_name'));
+		$this->set(compact('products', 'category', 'slug', 'categoryname', 'isBrand', 'category_name', 'isProductListingHome'));
 		if (!empty($meta_title)) {
 			$this->set('meta_title', $meta_title);
 		}
