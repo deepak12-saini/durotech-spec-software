@@ -65,8 +65,8 @@
 .banner {
     position: relative;
     overflow: hidden;
-    height: 60vh;
-    min-height: 400px;
+    height: 55vh;
+    min-height: 360px;
     border-radius: 12px;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
     margin-bottom: 40px;
@@ -79,8 +79,9 @@
 .banner img {
     width: 100%;
     height: 100%;
-    /* object-fit: cover;
-    transition: transform 0.5s ease; */
+    object-fit: cover;
+    object-position: center center;
+    transition: transform 0.5s ease;
 }
 
 .back_btn{
@@ -90,8 +91,8 @@
 /* ---- Responsive ---- */
 @media (max-width: 768px) {
     .banner {
-        height: 45vh;
-        min-height: 250px;
+        height: 40vh;
+        min-height: 220px;
     }
 
     .container h2 {
