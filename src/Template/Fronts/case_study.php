@@ -79,9 +79,8 @@
 .banner img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    object-position: center center;
-    transition: transform 0.5s ease;
+    /* object-fit: cover;
+    transition: transform 0.5s ease; */
 }
 
 .back_btn{
@@ -91,8 +90,8 @@
 /* ---- Responsive ---- */
 @media (max-width: 768px) {
     .banner {
-        height: 40vh;
-        min-height: 220px;
+        height: 45vh;
+        min-height: 250px;
     }
 
     .container h2 {
