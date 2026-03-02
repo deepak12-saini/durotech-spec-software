@@ -21,7 +21,7 @@
 	<div class="page-content">
 		<div class="page-header">
 			<h1>Employees DuroEzy Specification
-			<?php echo $this->Html->link('Create New Spec',['controller' => 'Mailers','action' => 'admin_create_dwps'],['class'=>'btn btn-info btn-xs top-button']); ?>
+			<?php echo $this->Html->link('Create New Spec', '/admin/mailers/send_v3', ['class' => 'btn btn-info btn-xs top-button']); ?>
 			</h1>
 		</div>
 	
@@ -80,7 +80,10 @@
 					?>
 					<tr>
 					<td>#<?php echo h($mailer->tracknumber ?? ''); ?>&nbsp;</td>
-					<td><?php echo h($mailer->employee_name ?? ('#'.$id)); ?>&nbsp;</td>
+					<td><?php
+						$empName = (!empty($mailer->employee) && isset($mailer->employee->name)) ? $mailer->employee->name : ($mailer->employee_name ?? null);
+						echo h($empName !== null && $empName !== '' ? $empName : ('#' . ($mailer->employee_id ?? $id)));
+					?>&nbsp;</td>
 					<td><?php echo h($mailer->name ?? ''); ?>&nbsp;</td>
 					<td><?php echo h($mailer->email ?? ''); ?>&nbsp;</td>					
 					<td><?php echo h($mailer->company ?? ''); ?>&nbsp;</td>

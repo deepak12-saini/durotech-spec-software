@@ -231,9 +231,10 @@ class MailersController extends AppController
 		$this->checkAdminSession();
 		$user_id = $this->request->getSession()->read('User.id');
 
+		// DuroEzy Spec v3: show specs created by admin with spec_v = 1 (from send_v3)
 		$results = $this->Mailer->find()
 			->contain(['User' => function ($q) { return $q->select(['name', 'username']); }, 'NappUser' => function ($q) { return $q->select(['name', 'lname']); }])
-			->where(['spec_v' => 0, 'admin_id' => $user_id])
+			->where(['Mailer.spec_v' => 1, 'Mailer.admin_id' => $user_id])
 			->orderDesc('Mailer.id')
 			->all();
 
@@ -381,16 +382,14 @@ class MailersController extends AppController
 			if (!file_exists($uploadPath)) {
 				mkdir($uploadPath, 0777, true);
 			}
-
+			$pdfAttachment = '';
 			if (!empty($this->request->getData('datasheet_pdf')['tmp_name'])) {
 				$file = $this->request->getData('datasheet_pdf');
 				$ext = pathinfo($file['name'], PATHINFO_EXTENSION);
 				$filename = time() . '_' . preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', $file['name']);
 				$fullPath = $uploadPath . $filename;
 				move_uploaded_file($file['tmp_name'], $fullPath);
-
-				// Store relative path or full URL in database
-				$inserty['Mailer']['pdf_attachment'] = 'uploads/datasheets/' . $filename;
+				$pdfAttachment = 'uploads/datasheets/' . $filename;
 			}
 			
 			$tracknumber = $this->request->getData()['tracknumber'];
@@ -409,24 +408,27 @@ class MailersController extends AppController
 			//$warranty_period = $this->request->getData()['warranty_period'];
 			isset($this->request->getData()['use_area'])? $use_area = $this->request->getData()['use_area'] : $use_area =1;
 			
-			$inserty = [];
-			$inserty['admin_id'] = $user_id;
-			$inserty['name'] = $name;
-			$inserty['tracknumber'] = $tracknumber;
-			$inserty['address'] = $address;
-			$inserty['specification'] = $specification;
-			$inserty['date'] = $date;
-			$inserty['email'] = $email;
-			$inserty['company'] = $company;
-			$inserty['type'] = $type;
-			$inserty['subject'] = $subject;
-			$inserty['use_area'] = $use_area;
-			//$inserty['Mailer']['mft'] = $mft;
-			//$inserty['Mailer']['warranty_period'] = $warranty_period;
-			$inserty['Mailer']['created'] = date('Y-m-d H:i:s');
+			// Build full Mailer entity data (all fields in one array for newEntity)
+			$mailerData = [
+				'admin_id' => $user_id,
+				'name' => $name,
+				'tracknumber' => $tracknumber,
+				'address' => $address,
+				'specification' => $specification,
+				'date' => $date,
+				'email' => $email,
+				'company' => $company,
+				'type' => (int)$type,
+				'subject' => $subject,
+				'use_area' => (int)$use_area,
+				'spec_v' => 1,
+				'created' => date('Y-m-d H:i:s'),
+			];
+			if ($pdfAttachment !== '') {
+				$mailerData['pdf_attachment'] = $pdfAttachment;
+			}
 			
-			// CakePHP 3: save() requires an Entity, not an array
-			$mailerEntity = $this->Mailer->newEntity($inserty['Mailer']);
+			$mailerEntity = $this->Mailer->newEntity($mailerData);
 			if ($this->Mailer->save($mailerEntity)) {
 				$lastinsertId = $mailerEntity->id;
 				
@@ -510,25 +512,12 @@ class MailersController extends AppController
 				}
 				$this->Mailer->save($mailerEntity);
 				
-				$this->Flash->success('PDF file generated successfully.');
-				return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index_v3'], true));
+				$this->Flash->success('Spec saved successfully.');
+				return $this->redirect(\Cake\Routing\Router::url('/admin/mailers/emp_spec_index'));
 			}
 		}
-		$refrmon = array('01'=>'a','02'=>'b','03'=>'c','04'=>'d','05'=>'e','06'=>'f','07'=>'g','08'=>'h','09'=>'i','10'=>'j','11'=>'k','12'=>'l');
-		$mailerid = (int) $this->Mailer->find()->where(['type' => 3])->count();
-		$id = $mailerid + 1;
-		
-		$yr = date('y');
-		$mm = date('m');
-		if(strlen((string)$id) == 1){
-			$code = '00'.$id;
-		}else if(strlen((string)$id) == 2){
-			$code = '0'.$id;
-		}else{
-			$code = (string)$id;
-		}			
-		$refernce = 'DTSPEC '.$yr.'-'.$mm.'-'.$code; 
-		$this->set('refernce',$refernce);
+		$refernce = $this->Mailer->getNextSpecTrackNumber();
+		$this->set('refernce', $refernce);
 	}
 
 	/** CamelCase alias for route /admin/mailers/send (dispatcher may expect adminSend) */
@@ -2345,22 +2334,33 @@ class MailersController extends AppController
 		$this->viewBuilder()->setLayout('admin_layout');
 		$this->set('title_for_layout', SITENAME . ' DuroEzy Specification Mailer');
 		$filter = (string)$this->request->getQuery('status', 'all');
+		// DuroEzy specs (type=3): employee-submitted OR admin-created, exclude drafts
+		$conditions = [
+			'Mailer.type' => 3,
+			'OR' => [
+				['Mailer.employee_id IS NOT' => null],
+				['Mailer.admin_id >' => 0],
+			],
+		];
+		$schema = $this->Mailer->getSchema();
+		if ($schema && $schema->getColumn('save_status')) {
+			$conditions[] = ['OR' => [
+				['Mailer.save_status IS' => null],
+				['Mailer.save_status !=' => 'draft'],
+			]];
+		}
 		$query = $this->Mailer->find()
-			->where([
-				'Mailer.spec_v' => 0,
-				'Mailer.employee_id IS NOT' => null,
-			])
+			->where($conditions)
+			->contain(['Employee'])
 			->orderDesc('Mailer.id');
 
 		if ($filter === 'approved') {
-			$query->where(['Mailer.status' => 1, 'Mailer.is_review' => 1]);
+			$query->andWhere(['Mailer.status' => 1, 'Mailer.is_review' => 1]);
 		} elseif ($filter === 'pending') {
-			$query->where(function ($exp) {
-				return $exp->or_([
-					'Mailer.status' => 0,
-					'Mailer.is_review' => 0,
-				]);
-			});
+			$query->andWhere(['OR' => [
+				['Mailer.status' => 0],
+				['Mailer.is_review' => 0],
+			]]);
 		}
 
 		$mailers = $this->paginate($query, ['limit' => 25]);

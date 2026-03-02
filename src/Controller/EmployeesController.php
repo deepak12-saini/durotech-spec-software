@@ -443,10 +443,11 @@ public function employee_send_v3() {
             $formattedDate = "$year-$month-$day";
 
 
-        // Collect form fields (new spec)
+        // Collect form fields (new spec) – assign next track at submit (drafts excluded)
         $inserty['Mailer'] = array(
             'employee_id'   => $employee_id,
-            'tracknumber'   => $formData['tracknumber'] ?? '',
+            'spec_v'        => 0,
+            'tracknumber'   => $this->Mailer->getNextSpecTrackNumber(),
             'name'          => $formData['name'] ?? '',
             'email'         => $formData['email'] ?? '',
             'company'       => $formData['company'] ?? '',
@@ -593,18 +594,10 @@ public function employee_send_v3() {
         }
     }
 
-    // Generate tracknumber reference code (for new spec or display)
-    $refrmon = array('01'=>'a','02'=>'b','03'=>'c','04'=>'d','05'=>'e','06'=>'f','07'=>'g','08'=>'h','09'=>'i','10'=>'j','11'=>'k','12'=>'l');
-    $mailerid = $this->Mailer->find()
-        ->where(['type' => 3])
-        ->count();
-    $id = $mailerid + 1;
-    $yr = date('y');
-    $mm = date('m');
-    $code = str_pad((string)$id, 3, '0', STR_PAD_LEFT);
-    $refernce = 'DTSPEC ' . $yr . '-' . $mm . '-' . $code;
+    // Next track number (only submitted specs – drafts excluded; autosave/resume don't break sequence)
+    $refernce = $this->Mailer->getNextSpecTrackNumber();
 
-    // Load draft ONLY when user explicitly chose "Resume Draft" (?resume=1). "Create New Spec" must show empty form.
+    // Load draft when user chose "Resume Draft" (?resume=1)
     $draft = null;
     $draftId = null;
     $resumeDraft = $this->request->getQuery('resume') && $this->Mailer->getSchema()->getColumn('save_status');
@@ -628,12 +621,7 @@ public function employee_send_v3() {
 protected function _saveEmployeeSpecAsSubmitted(int $mailerId, array $formData, $employee_id): void
 {
     $mailer = $this->Mailer->get($mailerId);
-    $mailerid = $this->Mailer->find()->where(['type' => 3])->count();
-    $id = $mailerid;
-    $yr = date('y');
-    $mm = date('m');
-    $code = str_pad((string)$id, 3, '0', STR_PAD_LEFT);
-    $tracknumber = 'DTSPEC ' . $yr . '-' . $mm . '-' . $code;
+    $tracknumber = $this->Mailer->getNextSpecTrackNumber();
 
     $dateInput = (string)($formData['date'] ?? date('d/m/Y'));
     $dateParts = explode('/', $dateInput);
@@ -642,6 +630,7 @@ protected function _saveEmployeeSpecAsSubmitted(int $mailerId, array $formData, 
         : date('Y-m-d');
 
     $mailer->tracknumber = $tracknumber;
+    $mailer->spec_v = 0;
     $mailer->name = $formData['name'] ?? '';
     $mailer->email = $formData['email'] ?? '';
     $mailer->company = $formData['company'] ?? '';
@@ -808,6 +797,7 @@ public function specDraftAutosave()
     } else {
         $entity = $this->Mailer->newEntity([
             'employee_id' => $employee_id,
+            'spec_v' => 0,
             'tracknumber' => '',
             'name' => $name,
             'email' => $email,
