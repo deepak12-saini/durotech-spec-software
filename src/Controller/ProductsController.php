@@ -408,7 +408,7 @@ class ProductsController extends AppController
 			if ($categoryArr) {
 				return $this->redirect(rtrim(SITEURL, '/') . '/category/' . $categoryArr->get('slug'));
 			}
-			$this->Flash->error("Your search <b>" . h($searchtitle) . "</b> did not match any products.");
+			$this->Flash->error('Your search <b>' . h($searchtitle) . '</b> did not match any products.', ['params' => ['escape' => false]]);
 			return $this->redirect(rtrim(SITEURL, '/') . '/product');
 		}
 		return $this->redirect(rtrim(SITEURL, '/') . '/product');
@@ -470,7 +470,10 @@ class ProductsController extends AppController
 		}
 		$this->set(compact('products', 'random', 'category', 'isBrand'));
 
-		if (!empty($products['Product']['meta_title'])) {
+		// Use product title for tab so it matches page content; fallback to meta_title/category for SEO
+		if (!empty($products['Product']['title'])) {
+			$this->set('meta_title', $products['Product']['title']);
+		} elseif (!empty($products['Product']['meta_title'])) {
 			$this->set('meta_title', $products['Product']['meta_title']);
 		} elseif (!empty($products['Category']['meta_title'])) {
 			$this->set('meta_title', $products['Category']['meta_title']);
