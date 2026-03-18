@@ -4,7 +4,9 @@
  * Expects $getCategories (array of ['Category' => [...], 'Product' => [...]]) from controller.
  */
 $getCategories = $getCategories ?? [];
-$searchtitle = $this->request->getSession()->read('searchtitle') ?? '';
+// Only show last search term on the search results page; keep box empty on product/category/etc.
+$isSearchPage = ($this->request->getParam('controller') === 'Products' && $this->request->getParam('action') === 'search');
+$searchtitle = $isSearchPage ? ($this->request->getSession()->read('searchtitle') ?? '') : '';
 ?>
 <script>
 	function search() {

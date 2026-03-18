@@ -90,6 +90,10 @@
 	a[title]:hover::after {
 	opacity: 1;
 	}
+
+	h3.h2cl {
+    text-transform: uppercase;
+}
 	</style>
 	
 

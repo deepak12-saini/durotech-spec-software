@@ -457,7 +457,8 @@
 if (!isset($getCategories)) {
     $getCategories = [];
 }
-$searchtitle = $this->request->getSession()->read('searchtitle');
+$isSearchPage = ($this->request->getParam('controller') === 'Products' && $this->request->getParam('action') === 'search');
+$searchtitle = $isSearchPage ? ($this->request->getSession()->read('searchtitle') ?? '') : '';
 
 ?>
 <div class="header_fixed col-lg-12 col-md-12 col-sm-12" id="header_top">

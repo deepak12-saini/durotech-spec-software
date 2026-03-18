@@ -41,7 +41,7 @@
 					<li><a target="_blank" href="<?php echo SITEURL; ?>category/sealer">Sealer</a></li>
 					<li><a target="_blank" href="<?php echo SITEURL; ?>category/water-based-waterproofing-membranes">Water based Waterproofing Membranes</a></li>
 					<li><a target="_blank" href="<?php echo SITEURL; ?>category/polyurethane-waterproofing-membrane">Polyurethane Waterproofing Membranes</a></li>
-					<li><a target="_blank" href="<?php echo SITEURL; ?>category/duroseal-sealants">Sealants & Silicone</a></li>
+					<li><a target="_blank" href="<?php echo SITEURL; ?>category/sealants-and-silicone">Sealants & Silicone</a></li>
 					<li><a target="_blank" href="<?php echo SITEURL; ?>category/duropoxy-epoxy-flooring">Epoxy Flooring Sheet Membranes</a></li>
 					<li><a target="_blank" href="<?php echo SITEURL; ?>category/sheet-membranes-1">Sheet Membranes</a></li>
 

@@ -332,6 +332,8 @@ public function index()
         ->where([
             'Mailer.spec_v' => 0,
             'Mailer.employee_id' => $employee_id,
+            // Specs only
+            'Mailer.type' => 3,
         ])
         ->contain(['Employee'])
         ->orderDesc('Mailer.id');
@@ -1926,7 +1928,7 @@ public function monthlySpecs() {
 
     $this->loadModel('Mailer');
 
-    $employeeId = $this->Session->read('Employee.id');
+    $employeeId = (int)$this->Session->read('Employee.id');
     $selectedYear = date('Y');
 
     // Get filter from URL or default to 'month'
@@ -1941,34 +1943,55 @@ public function monthlySpecs() {
     ];
 
     $monthlySpecs = [];
+    $hasSaveStatusColumn = (bool)$this->Mailer->getSchema()->getColumn('save_status');
+
+    // IMPORTANT: Keep conditions aligned with EmployeesController::index() listing.
+    $baseQuery = $this->Mailer->find()
+        ->distinct(['Mailer.id'])
+        ->where([
+            'Mailer.employee_id' => $employeeId,
+            'Mailer.spec_v' => 0,
+            'Mailer.type' => 3,
+        ]);
+    if ($hasSaveStatusColumn) {
+        $baseQuery->andWhere([
+            'OR' => [
+                ['Mailer.save_status' => 'submitted'],
+                ['Mailer.save_status IS' => null],
+            ],
+        ]);
+    }
 
     if ($filter === 'today') {
         // Count specs created today
-        $count = $this->Mailer->find()->where([
-                'Mailer.employee_id' => $employeeId,
-                'DATE(Mailer.created)' => date('Y-m-d')
-            ])->count();
+        $count = (clone $baseQuery)
+            ->andWhere(['DATE(Mailer.created)' => date('Y-m-d')])
+            ->count();
         $monthlySpecs[date('d M')] = $count;
 
     } elseif ($filter === 'month') {
         // Count specs for each month of the current year
         foreach ($months as $monthNum => $monthName) {
-            $count = $this->Mailer->find()->where([
-                    'Mailer.employee_id' => $employeeId,
-                    'MONTH(Mailer.created)' => $monthNum,
-                    'YEAR(Mailer.created)' => $selectedYear
-                ])->count();
+            $count = (clone $baseQuery)
+                ->andWhere([
+                    'MONTH(Mailer.created)' => (int)$monthNum,
+                    'YEAR(Mailer.created)' => (int)$selectedYear,
+                ])
+                ->count();
+
+               
             $monthlySpecs[$monthName] = $count;
         }
 
     } elseif ($filter === 'year') {
         // Count specs per year (could just sum for this year)
-        $count = $this->Mailer->find()->where([
-                'Mailer.employee_id' => $employeeId,
-                'YEAR(Mailer.created)' => $selectedYear
-            ])->count();
+        $count = (clone $baseQuery)
+            ->andWhere(['YEAR(Mailer.created)' => (int)$selectedYear])
+            ->count();
         $monthlySpecs[$selectedYear] = $count;
     }
+
+   
 
     $this->set(compact('monthlySpecs', 'selectedYear', 'filter'));
 }

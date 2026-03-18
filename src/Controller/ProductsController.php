@@ -165,6 +165,14 @@ class ProductsController extends AppController
 		if ($slug !== '' && strpos($slug, '%2F') !== false) {
 			$slug = rawurldecode($slug);
 		}
+		// Footer/links use duroseal-sealants; DB slug is sealants-and-silicone
+		if ($slug === 'duroseal-sealants') {
+			$slug = 'sealants-and-silicone';
+		}
+		// Footer uses sheet-membranes-1; DB slug may be sheet-membranes
+		if ($slug === 'sheet-membranes-1') {
+			$slug = 'sheet-membranes';
+		}
 
 		$categoryResults = $this->Category->find('all')
 			->where(['Category.status' => 1])
@@ -198,6 +206,19 @@ class ProductsController extends AppController
 					if ($categoryArr) {
 						$slug = $normalized;
 					}
+				}
+			}
+			// Fallback: footer slugs that may not match DB slug – find by category name
+			$slugToCategoryName = [
+				'sheet-membranes-1' => 'Sheet Membranes',
+				'sheet-membranes'   => 'Sheet Membranes',
+			];
+			if (!$categoryArr && isset($slugToCategoryName[$slug])) {
+				$categoryArr = $this->Category->find()
+					->where(['Category.status' => 1, 'Category.category_name' => $slugToCategoryName[$slug]])
+					->first();
+				if ($categoryArr) {
+					$slug = $categoryArr->get('slug') ?: $slug;
 				}
 			}
 			if ($categoryArr) {

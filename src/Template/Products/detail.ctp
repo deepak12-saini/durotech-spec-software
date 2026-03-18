@@ -501,10 +501,12 @@
 							  <h5 class="text-purple">Description</h5>
 							<p><?= strip_tags($products['Product']['description']); ?></p>
 						</div>
+						<?php if (!empty(trim($products['Product']['brief_description'] ?? ''))) { ?>
 						<div class="col-md-6 product_text_section">
 							<h5 class="text-purple">Brief Description</h5>
 							<p><?= strip_tags($products['Product']['brief_description']); ?></p>
 						</div>
+						<?php } ?>
 					</div>
 
 					<div class="row">

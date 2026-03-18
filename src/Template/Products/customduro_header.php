@@ -4,7 +4,8 @@
  * Use $getCategories set by controller; no requestAction (deprecated in CakePHP 3).
  */
 $getCategories = $getCategories ?? [];
-$searchtitle = $this->request->getSession()->read('searchtitle') ?? '';
+$isSearchPage = ($this->request->getParam('controller') === 'Products' && $this->request->getParam('action') === 'search');
+$searchtitle = $isSearchPage ? ($this->request->getSession()->read('searchtitle') ?? '') : '';
 ?>
 <script>
 	function search() {

@@ -267,11 +267,9 @@
 	 
 		<div id="slider">
 			<figure>
+				<img src="<?php echo SITEURL ;?>customdurotech/images/slider/banner 1.jpg"  onclick="openlink(1)">
 				<img src="<?php echo SITEURL ;?>customdurotech/images/slider/banner 2.jpg"  onclick="openlink(2)">
-				<img src="<?php echo SITEURL ;?>customdurotech/images/slider/banner 1.jpg"  onclick="openlink(1)">		
 				<img src="<?php echo SITEURL ;?>customdurotech/images/slider/banner 3.jpg"  onclick="openlink(3)">
-				<img src="<?php echo SITEURL ;?>customdurotech/images/slider/banner 4.jpg"  onclick="openlink(4)">	
-				<img src="<?php echo SITEURL ;?>customdurotech/images/slider/banner 5.jpg"  onclick="openlink(5)">	
 			</figure>
 			</div>
 		</div>

@@ -430,8 +430,14 @@ class UsersController extends AppController
 
 /***
 	/*Author  :Ranjit,
-	/*Comment : Admin change password
-****/	
+	/*Comment : Admin change password (CamelCase alias for routing)
+****/
+	public function adminChangePassword(): ?Response
+	{
+		$this->viewBuilder()->setTemplate('admin_change_password');
+		return $this->admin_change_password();
+	}
+
 	public function admin_change_password(): ?Response
 	{
 		$this->viewBuilder()->setLayout('admin_layout');
