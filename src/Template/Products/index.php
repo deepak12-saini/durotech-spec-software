@@ -70,7 +70,7 @@ a:focus, a:hover {
 	  <div class="modal-dialog modal-dialog-centered" role="document">
 		<div class="modal-content">
 		  <div class="modal-header mobilemodal">
-			<h5 class="modal-title" id="exampleModalLongTitle1">Filter by Categoriess <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			<h5 class="modal-title" id="exampleModalLongTitle1">Filter by Categories <button type="button" class="close" data-dismiss="modal" aria-label="Close">
 			  <span aria-hidden="true">&times;</span>
 			</button></h5>
 			
@@ -81,7 +81,7 @@ a:focus, a:hover {
 				
 				?>
 					<div class="col-lg-6 col-md-6 col-sm-6">
-						<p><a href="<?= h($this->Url->build('/category/' . ($categorys['Category']['slug'] ?? ''))) ?>"><?= h($categorys['Category']['category_name'] ?? '') ?> <span>(<?= count($categorys['Product'] ?? []); ?>)</span></a></p>
+						<p><a href="<?= h($this->Url->build('/category/' . ($categorys['Category']['slug'] ?? ''))) ?>"><?= h($categorys['Category']['category_name'] ?? '') ?></a></p>
 					</div>		       
 				<?php $i++;  } ?>
 			   </div>
