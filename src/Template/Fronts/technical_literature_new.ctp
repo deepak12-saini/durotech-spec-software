@@ -28,13 +28,22 @@
 .cardimg {
 	position: relative;
 	width: 300px;
-	height: 189px;	
+	max-width: 100%;
+	height: 189px;
 	overflow: hidden;
 	box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
 	float: left;
 	margin-left: 67px;
 	margin-bottom: 1px;
 	background: #f2f2f2 !important;
+}
+.cardimg img {
+	display: block;
+	width: 100%;
+	height: auto;
+	max-height: 189px;
+	object-fit: contain;
+	object-position: center center;
 }
 .card h3 {
     font-size: 18px;
@@ -50,9 +59,121 @@
 	padding: 7px 16px;
 	background: #1b4762;
 	border-radius: 7px;
+	display: inline-block;
+	max-width: 100%;
+	box-sizing: border-box;
 }
-.technical_literature .btn {	
-	width: 384px;
+.technical_literature .btn {
+	max-width: 384px;
+	width: 100%;
+	box-sizing: border-box;
+}
+.technical_literature .container_service {
+	overflow-x: hidden;
+}
+.tech-literature-tile {
+	background: #fff;
+	border: 1px solid #e4e4e4;
+	border-radius: 10px;
+	overflow: hidden;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+	margin-bottom: 24px;
+}
+.tech-literature-tile .cardimg {
+	float: none;
+	margin-left: 0;
+	margin: 0;
+	box-shadow: none;
+	border-radius: 0;
+	background: #f2f2f2 !important;
+}
+.tech-literature-tile .card {
+	height: auto;
+	min-height: 0;
+	margin: 0;
+	padding: 0;
+	background: #fff;
+	border: none;
+	border-top: 1px solid #eee;
+}
+.tech-literature-tile .card .image {
+	padding: 16px 14px 20px;
+}
+@media (max-width: 767px) {
+	.technical_literature {
+		overflow-x: hidden;
+	}
+	.technical_literature .container,
+	.technical_literature .container .row {
+		margin-left: auto;
+		margin-right: auto;
+		padding-left: 10px;
+		padding-right: 10px;
+	}
+	.cardimg {
+		float: none;
+		width: 100%;
+		max-width: 100%;
+		height: auto;
+		min-height: 0;
+		margin-left: auto;
+		margin-right: auto;
+		margin-bottom: 12px;
+		overflow: visible;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 12px;
+		box-sizing: border-box;
+	}
+	.cardimg img {
+		max-height: none;
+		width: auto;
+		max-width: 100%;
+		height: auto;
+		object-fit: contain;
+		object-position: center center;
+	}
+	.tech-literature-tile .card {
+		margin-bottom: 0;
+	}
+	.card {
+		clear: both;
+		float: none;
+		width: 100%;
+		height: auto;
+		min-height: 0;
+		padding-bottom: 16px;
+		margin-bottom: 24px;
+		text-align: center;
+	}
+	.card .image {
+		padding-bottom: 16px;
+		text-align: center;
+	}
+	.card h3 {
+		font-size: 16px;
+		padding-bottom: 12px;
+		word-wrap: break-word;
+		text-align: center;
+	}
+	.card .image a {
+		margin-left: auto;
+		margin-right: auto;
+	}
+	.technical_literature .btn {
+		width: 100%;
+		max-width: 100%;
+	}
+	.banner_durolab img {
+		max-width: 100%;
+		height: auto;
+	}
+	.tech-lit-form-wrap {
+		width: 100% !important;
+		max-width: 100% !important;
+		box-sizing: border-box;
+	}
 }
 </style>		
 		<div class="banner_durolab col-lg-12 col-md-12 col-sm-12">
@@ -89,100 +210,116 @@
 			 <div class="container">
 				<div class="row" style="margin:30px 0px;">
 					<div class="container_service">	
-					    <div class="col-lg-4 col-md-4 col-sm-4" >
+					    <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+							<div class="tech-literature-tile">
 							<div class="cardimg">
-								<img src="<?= h(SITEURL).'tech/1.jpg'; ?>">	
+								<img src="<?= h(SITEURL).'tech/1.jpg'; ?>" alt="Product Data Sheets">	
 							 </div>
 							<div class="card">								
 							  <div class='image'>							  
 								  <h3>Product Data Sheets</h3>
 								  <a href="<?= h(SITEURL).'technical-literature/datasheet'; ?>">View More</a>
 							  </div>						 
-							</div>						 
+							</div>
+							</div>
 						</div>
 						
-						<div class="col-lg-4 col-md-4 col-sm-4" >
+						<div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+							<div class="tech-literature-tile">
 							<div class="cardimg">
-								<img src="<?= h(SITEURL).'tech/2.jpg'; ?>">	
+								<img src="<?= h(SITEURL).'tech/2.jpg'; ?>" alt="Product MSDS">	
 							 </div>
 							<div class="card">								
 							  <div class='image'>							  
 								  <h3>Product MSDS</h3>
 								  <a href="<?= h(SITEURL).'technical-literature/msds'; ?>">View More</a>
 							  </div>						 
-							</div>						 
+							</div>
+							</div>
 						</div>
 						
-						<div class="col-lg-4 col-md-4 col-sm-4" >
+						<div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+							<div class="tech-literature-tile">
 							<div class="cardimg">
-								<img src="<?= h(SITEURL).'tech/3.jpg'; ?>">	
+								<img src="<?= h(SITEURL).'tech/3.jpg'; ?>" alt="Product Brochure">	
 							 </div>
 							<div class="card">								
 							  <div class='image'>							  
 								  <h3>Product Brochure</h3>
 								  <a href="<?= h(SITEURL).'technical-literature/brochure'; ?>">View More</a>
 							  </div>						 
-							</div>						 
+							</div>
+							</div>
 						</div>
 						
-						<div class="col-lg-4 col-md-4 col-sm-4" >
+						<div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+							<div class="tech-literature-tile">
 							<div class="cardimg">
-								<img src="<?= h(SITEURL).'tech/4.jpg'; ?>">	
+								<img src="<?= h(SITEURL).'tech/4.jpg'; ?>" alt="Project Reference">	
 							 </div>
 							<div class="card">								
 							  <div class='image'>							  
 								  <h3>Project Reference</h3>
 								  <a href="<?= h(SITEURL).'technical-literature/project'; ?>">View More</a>
 							  </div>						 
-							</div>						 
+							</div>
+							</div>
 						</div>
 						
-						<div class="col-lg-4 col-md-4 col-sm-4" >
+						<div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+							<div class="tech-literature-tile">
 							<div class="cardimg">
-								<img src="<?= h(SITEURL).'tech/5.jpg'; ?>">	
+								<img src="<?= h(SITEURL).'tech/5.jpg'; ?>" alt="Project Specification">	
 							 </div>
 							<div class="card">								
 							  <div class='image'>							  
 								  <h3>Project Specification</h3>
 								  <a href="<?= h(SITEURL).'technical-literature'; ?>">Coming Soon</a>
 							  </div>						 
-							</div>						 
+							</div>
+							</div>
 						</div>
 						
-						<div class="col-lg-4 col-md-4 col-sm-4" >
+						<div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+							<div class="tech-literature-tile">
 							<div class="cardimg">
-								<img src="<?= h(SITEURL).'tech/6.jpg'; ?>">	
+								<img src="<?= h(SITEURL).'tech/6.jpg'; ?>" alt="Project Warranty Request">	
 							 </div>
 							<div class="card">								
 							  <div class='image'>							  
 								  <h3>Project Warranty Request</h3>
 								  <a href="<?= h(SITEURL).'technical-literature/warranty'; ?>">View More</a>
 							  </div>						 
-							</div>						 
+							</div>
+							</div>
 						</div>
 						
-						<div class="col-lg-4 col-md-4 col-sm-4" >
+						<div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+							<div class="tech-literature-tile">
 							<div class="cardimg">
-								<img src="<?= h(SITEURL).'tech/7.jpg'; ?>">	
+								<img src="<?= h(SITEURL).'tech/7.jpg'; ?>" alt="Quick Spec">	
 							 </div>
 							<div class="card">								
 							  <div class='image'>							  
 								  <h3>Quick Spec</h3>
 								  <a href="<?= h(SITEURL).'technical-literature'; ?>">Coming Soon</a>
 							  </div>						 
-							</div>						 
+							</div>
+							</div>
 						</div>
 						
-						<div class="col-lg-4 col-md-4 col-sm-4" >
+						<div class="col-lg-4 col-md-4 col-sm-4 col-xs-12" >
+							<div class="tech-literature-tile">
 							<div class="cardimg">
-								<img src="<?= h(SITEURL).'tech/8.jpg'; ?>">	
+								<img src="<?= h(SITEURL).'tech/8.jpg'; ?>" alt="Method Statement">	
 							 </div>
 							<div class="card">								
 							  <div class='image'>							  
 								  <h3>Method Statement</h3>
 								  <a href="<?= h(SITEURL).'technical-literature'; ?>">Coming Soon</a>
 							  </div>						 
-							</div>						 
+							</div>
+							</div>
 						</div>
 						
 					</div>
@@ -214,7 +351,7 @@
 								</div>
 							<?php } ?>
 							<?php if($page == 'warranty'){ ?>
-								<div  style="width:500px">
+								<div class="tech-lit-form-wrap" style="max-width:500px">
 									<div>
 										
 										<?= $this->Form->create(null, ['url' => ['controller' => 'Fronts', 'action' => 'submitform'], 'class' => 'contact-form', 'id' => 'formbankreg']) ?>
