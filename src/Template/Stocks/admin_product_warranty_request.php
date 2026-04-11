@@ -14,6 +14,44 @@ if (!empty($csrfToken)) {
         <h1>Product Warranty Request List</h1>
     </div>
 
+    <?php
+    $filterQ = (string)$this->request->getQuery('q', '');
+    $filterStatus = (string)$this->request->getQuery('status', '');
+    $pagerQuery = array_filter(
+        $this->request->getQueryParams(),
+        static function ($v) {
+            return $v !== '' && $v !== null;
+        }
+    );
+    unset($pagerQuery['page']);
+    ?>
+    <div class="row" style="margin-bottom: 15px;">
+        <div class="col-xs-12">
+            <?= $this->Form->create(null, ['type' => 'get', 'class' => 'form-inline', 'url' => ['action' => 'admin_product_warranty_request']]); ?>
+            <div class="form-group" style="margin-right: 10px;">
+                <?= $this->Form->text('q', [
+                    'class' => 'form-control',
+                    'placeholder' => 'Search serial, product, building, applicator…',
+                    'value' => $filterQ,
+                    'style' => 'min-width: 280px;',
+                ]); ?>
+            </div>
+            <div class="form-group" style="margin-right: 10px;">
+                <?= $this->Form->select('status', [
+                    '' => 'All statuses',
+                    'Pending' => 'Pending',
+                    'Approved' => 'Approved',
+                ], [
+                    'class' => 'form-control',
+                    'value' => $filterStatus,
+                ]); ?>
+            </div>
+            <?= $this->Form->button('Search', ['class' => 'btn btn-primary', 'type' => 'submit']); ?>
+            <?= $this->Html->link('Reset', ['action' => 'admin_product_warranty_request'], ['class' => 'btn btn-default']); ?>
+            <?= $this->Form->end(); ?>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-xs-12">
             <div class="table-responsive">
@@ -32,11 +70,12 @@ if (!empty($csrfToken)) {
                         </tr>
                     </thead>
                     <tbody>
-                        <?php 
-                        $i = 1;
-                        if (!empty($productWarrantyRequests)) {
+                        <?php
+                        if (empty($productWarrantyRequests)) {
+                            echo '<tr><td colspan="9" class="text-center text-muted">No records found.</td></tr>';
+                        } else {
                             foreach ($productWarrantyRequests as $request) {
-                                
+                                $rowId = (int)($request['ProductWarrantyRequest']['id'] ?? 0);
                         ?>
                         <tr>
                             <td><?= h($request['ProductWarrantyRequest']['id']); ?></td>
@@ -69,12 +108,13 @@ if (!empty($csrfToken)) {
 
                             <td><?= !empty($request['ProductWarrantyRequest']['created_at']) ? date('d/m/Y', strtotime($request['ProductWarrantyRequest']['created_at'])) : ''; ?></td>
                             <td>
-                                <button type="button" class="btn btn-xs btn-info autoModal" data-target="#detailModal_<?= $i; ?>">
+                                <button type="button" class="btn btn-xs btn-info autoModal" data-target="#detailModal_<?= $rowId; ?>">
                                     View Details
                                 </button>
 
                                 <?php
-                                $isPending = ($request['ProductWarrantyRequest']['status'] ?? '') === 'Pending';
+                                $statusVal = (string)($request['ProductWarrantyRequest']['status'] ?? '');
+                                $isPending = ($statusVal === '' || $statusVal === 'Pending');
                                 $draftPreviewUrl = $this->Url->build(
                                     '/admin/stocks/preview_product_warranty_certificate/' . (int)($request['ProductWarrantyRequest']['id'] ?? 0)
                                 );
@@ -100,21 +140,37 @@ if (!empty($csrfToken)) {
 
                             </td>
                         </tr>
-                        <?php $i++; } } ?>
+                        <?php }
+                        } ?>
                     </tbody>
                 </table>
             </div>
+            <?php if (!empty($productWarrantyRequests)) : ?>
+                <?php $this->Paginator->options(['url' => ['?' => $pagerQuery]]); ?>
+                <div class="clearfix" style="margin-top: 12px;">
+                    <ul class="pagination pagination-sm pull-left" style="margin: 0;">
+                        <?= $this->Paginator->first('&laquo;', ['escape' => false]); ?>
+                        <?= $this->Paginator->prev('< ' . __('previous')); ?>
+                        <?= $this->Paginator->numbers(['modulus' => 4]); ?>
+                        <?= $this->Paginator->next(__('next') . ' >'); ?>
+                        <?= $this->Paginator->last('&raquo;', ['escape' => false]); ?>
+                    </ul>
+                    <p class="text-muted pull-right" style="margin: 8px 0 0;">
+                        <?= $this->Paginator->counter(__('Page {{page}} of {{pages}}, showing {{current}} record(s) out of {{count}} total')); ?>
+                    </p>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>
 
     <!-- Modals (outside table) -->
-    <?php 
-    $i = 1;
+    <?php
     if (!empty($productWarrantyRequests)) {
         foreach ($productWarrantyRequests as $request) {
+            $rowId = (int)($request['ProductWarrantyRequest']['id'] ?? 0);
     ?>
-    <div id="detailModal_<?= $i; ?>" class="modal fade" tabindex="-1" role="dialog">
+    <div id="detailModal_<?= $rowId; ?>" class="modal fade" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -144,7 +200,7 @@ if (!empty($csrfToken)) {
             </div>
         </div>
     </div>
-    <?php $i++; } } ?>
+    <?php } } ?>
 
 <!-- jQuery + Bootstrap JS -->
 <!-- <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>

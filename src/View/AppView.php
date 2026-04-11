@@ -49,6 +49,7 @@ class AppView extends View
     public function initialize()
     {
         parent::initialize();
+        $this->loadHelper('Paginator');
         $controller = (string)$this->getRequest()->getParam('controller', '');
         $action = (string)$this->getRequest()->getParam('action', '');
         // Old templates compare lowercase values like 'staffs' and 'dashboard'.

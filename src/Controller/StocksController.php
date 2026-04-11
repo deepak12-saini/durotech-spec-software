@@ -649,14 +649,53 @@ class StocksController extends AppController
 
 	public function admin_product_warranty_request(): ?Response
 	{
+		$auth = $this->checkAdminSession();
+		if ($auth instanceof Response) {
+			return $auth;
+		}
 		$this->viewBuilder()->setLayout('admin_layout');
 		$this->set('title_for_layout', SITENAME . ' | Product Warranty Request List');
 
-		$results = $this->ProductWarrantyRequests->find()
-			->orderDesc('ProductWarrantyRequests.id')
-			->all();
+		$query = $this->ProductWarrantyRequests->find();
 
-		// Convert to array format expected by view
+		$q = trim((string)$this->request->getQuery('q', ''));
+		if ($q !== '') {
+			$like = '%' . $q . '%';
+			$or = [
+				['ProductWarrantyRequests.serialnumber LIKE' => $like],
+				['ProductWarrantyRequests.building_name LIKE' => $like],
+				['ProductWarrantyRequests.product LIKE' => $like],
+				['ProductWarrantyRequests.used_as LIKE' => $like],
+				['ProductWarrantyRequests.applicator LIKE' => $like],
+				['ProductWarrantyRequests.contract_name LIKE' => $like],
+			];
+			if (ctype_digit($q)) {
+				$or[] = ['ProductWarrantyRequests.id' => (int)$q];
+			}
+			$query->where(['OR' => $or]);
+		}
+
+		$status = trim((string)$this->request->getQuery('status', ''));
+		if ($status !== '') {
+			if ($status === 'Pending') {
+				$query->where([
+					'OR' => [
+						['ProductWarrantyRequests.status' => ''],
+						['ProductWarrantyRequests.status' => 'Pending'],
+						['ProductWarrantyRequests.status IS' => null],
+					],
+				]);
+			} else {
+				$query->where(['ProductWarrantyRequests.status' => $status]);
+			}
+		}
+
+		$this->paginate = [
+			'limit' => 20,
+			'order' => ['ProductWarrantyRequests.id' => 'DESC'],
+		];
+		$results = $this->paginate($query);
+
 		$productWarrantyRequests = [];
 		foreach ($results as $entity) {
 			$productWarrantyRequests[] = ['ProductWarrantyRequest' => $entity->toArray()];

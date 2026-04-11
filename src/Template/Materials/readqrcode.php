@@ -29,11 +29,18 @@
 											$mqty = $mat['quantity'] ?? (is_object($mat) ? $mat->quantity : '');
 											$mdesc = $mat['description'] ?? (is_object($mat) ? $mat->description : '');
 											?>
-											<form action="" method="post">
-											<input type="hidden" name="id" value="<?php echo h($mid); ?>">
-											<input type="hidden" name="material_type" value="<?php echo h($mtype); ?>">
-											<input type="hidden" name="weight" value="<?php echo h($mweight); ?>">
-											<?php echo $this->Flash->render(); ?>
+											<?php
+											$qrcodeParam = $this->request->getParam('pass.0');
+											$formOpts = [];
+											if ($qrcodeParam !== null) {
+												$formOpts['url'] = ['action' => 'readqrcode', $qrcodeParam];
+											}
+											echo $this->Form->create(null, $formOpts);
+											echo $this->Form->hidden('id', ['value' => $mid]);
+											echo $this->Form->hidden('material_type', ['value' => $mtype]);
+											echo $this->Form->hidden('weight', ['value' => $mweight]);
+											echo $this->Flash->render();
+											?>
 												<fieldset>
 													<label class="block clearfix">
 														<span class="block input-icon input-icon-right">
