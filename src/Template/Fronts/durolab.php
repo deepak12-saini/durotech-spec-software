@@ -22,6 +22,101 @@
     height: auto;
     vertical-align: top;
 }
+/* DuroLab project gallery: CSS Grid (equal thirds, centred — avoids Bootstrap row float / margin drift) */
+.durolab-project-gallery {
+    display: block;
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 28px 16px 48px;
+    box-sizing: border-box;
+    float: none;
+    clear: both;
+}
+.durolab-project-gallery .durolab-project-heading {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 600;
+    color: #1a3d52;
+    margin: 0 0 24px 0;
+    letter-spacing: 0.02em;
+}
+.durolab-project-gallery .durolab-project-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+@media (max-width: 991px) {
+    .durolab-project-gallery .durolab-project-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+@media (max-width: 575px) {
+    .durolab-project-gallery .durolab-project-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+.durolab-project-gallery .durolab-project-tile {
+    padding: 0;
+    margin: 0;
+    min-width: 0;
+    width: auto;
+    float: none;
+}
+/* 3D flip (scoped — same idea as legacy .project .card) */
+.durolab-project-gallery .durolab-flip {
+    perspective: 700px;
+    height: 280px;
+}
+@media (min-width: 992px) {
+    .durolab-project-gallery .durolab-flip {
+        height: 300px;
+    }
+}
+.durolab-project-gallery .durolab-flip-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.55s ease;
+    transform-style: preserve-3d;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+.durolab-project-gallery .durolab-flip:hover .durolab-flip-inner {
+    transform: rotateY(180deg);
+}
+.durolab-project-gallery .durolab-flip-face {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #ffffff;
+}
+.durolab-project-gallery .durolab-flip-face a {
+    display: block;
+    width: 100%;
+    height: 100%;
+    text-decoration: none;
+}
+.durolab-project-gallery .durolab-flip-face img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.durolab-project-gallery .durolab-flip-back {
+    transform: rotateY(180deg);
+    background: #03446a;
+}
 body{background:url(<?php echo SITEURL.'img/'?>bg-4.png)}
 </style>
 <div class="page-durolab-wrap">
@@ -95,69 +190,34 @@ At Durotech 45 years ago DuroLab was establishing for one main purpose to suppor
 		</div>
 		
         </div>
-			<div class="project col-lg-12 col-md-12 col-sm-12">
-     <div class="row">
-     <div class="card  col-md-2">
-		  <div class="content">
-			<div class="front">
-			<a href="<?php echo SITEURL ;?>technical-literature/project"> <img src="<?php echo SITEURL ;?>customdurotech/images/project_1.jpg"></a>
+		<section class="durolab-project-gallery">
+			<h3 class="durolab-project-heading">DuroProject Gallery</h3>
+			<div class="durolab-project-grid">
+				<?php
+				$projectBase = rtrim(SITEURL, '/') . '/technical-literature/project';
+				$imgBase = rtrim(SITEURL, '/') . '/customdurotech/images/';
+				for ($pi = 1; $pi <= 6; $pi++) :
+					$imgSrc = $imgBase . 'project_' . $pi . '.jpg';
+					?>
+				<div class="durolab-project-tile">
+					<div class="durolab-flip">
+						<div class="durolab-flip-inner">
+							<div class="durolab-flip-face durolab-flip-front">
+								<a href="<?php echo h($projectBase); ?>">
+									<img src="<?php echo h($imgSrc); ?>" alt="Durotech project <?php echo (int)$pi; ?>">
+								</a>
+							</div>
+							<div class="durolab-flip-face durolab-flip-back">
+								<a href="<?php echo h($projectBase); ?>">
+									<img src="<?php echo h($imgSrc); ?>" alt="Durotech project <?php echo (int)$pi; ?>">
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+				<?php endfor; ?>
 			</div>
-			<div class="back">
-			<a href="<?php echo SITEURL ;?>technical-literature/project">  <img src="<?php echo SITEURL ;?>customdurotech/images/project_1.jpg"></a>
-			</div>
-		  </div>
-     </div>
-	 <div class="card  col-md-2">
-		  <div class="content">
-			<div class="front">
-			<a href="<?php echo SITEURL ;?>technical-literature/project">  <img src="<?php echo SITEURL ;?>customdurotech/images/project_2.jpg"></a>
-			</div>
-			<div class="back">
-			<a href="<?php echo SITEURL ;?>technical-literature/project">  <img src="<?php echo SITEURL ;?>customdurotech/images/project_2.jpg"></a>
-			</div>
-		  </div>
-     </div>
-	 <div class="card  col-md-2">
-		  <div class="content">
-			<div class="front">
-			<a href="<?php echo SITEURL ;?>technical-literature/project">  <img src="<?php echo SITEURL ;?>customdurotech/images/project_3.jpg"></a>
-			</div>
-			<div class="back">
-			<a href="<?php echo SITEURL ;?>technical-literature/project">  <img src="<?php echo SITEURL ;?>customdurotech/images/project_3.jpg"></a>
-			</div>
-		  </div>
-     </div>
-	 <div class="card  col-md-2">
-		  <div class="content">
-			<div class="front">
-			<a href="<?php echo SITEURL ;?>technical-literature/project">  <img src="<?php echo SITEURL ;?>customdurotech/images/project_4.jpg"></a>
-			</div>
-			<div class="back">
-			<a href="<?php echo SITEURL ;?>technical-literature/project">  <img src="<?php echo SITEURL ;?>customdurotech/images/project_4.jpg"></a>
-			</div>
-		  </div>
-     </div>
-	 <div class="card  col-md-2">
-		  <div class="content">
-			<div class="front">
-			<a href="<?php echo SITEURL ;?>technical-literature/project">  <img src="<?php echo SITEURL ;?>customdurotech/images/project_5.jpg"></a>
-			</div>
-			<div class="back">
-			<a href="<?php echo SITEURL ;?>technical-literature/project">  <img src="<?php echo SITEURL ;?>customdurotech/images/project_5.jpg"></a>
-			</div>
-		  </div>
-     </div>
-	 <div class="card col-md-2">
-		  <div class="content">
-			<div class="front">
-			 <a href="<?php echo SITEURL ;?>technical-literature/project"> <img src="<?php echo SITEURL ;?>customdurotech/images/project_6.jpg"></a>
-			</div>
-			<div class="back">
-			  <a href="<?php echo SITEURL ;?>technical-literature/project"><img src="<?php echo SITEURL ;?>customdurotech/images/project_6.jpg"></a>
-			</div>
-		  </div>
-     </div>
-	 </div>
+		</section>
 
 </div>
 </div><!-- .page-durolab-wrap -->
