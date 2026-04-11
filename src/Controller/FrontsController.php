@@ -597,8 +597,8 @@ class FrontsController extends AppController
                 $baseUrl = defined('SITEURL') ? (string)SITEURL : (string)(Configure::read('App.fullBaseUrl') ?? '');
                 $adminListUrl = rtrim($baseUrl, '/') . '/admin/stocks/product_warranty_request';
                 $recipients = array_values(array_unique(array_filter([
-                    // 'info@durotechindustries.com.au',
-                    // 'kal@durotechindustries.com.au',
+                    'info@durotechindustries.com.au',
+                    'kal@durotechindustries.com.au',
                     'deepaksaini10036@gmail.com',
                 ], function ($email) {
                     return is_string($email) && filter_var(trim($email), FILTER_VALIDATE_EMAIL);
