@@ -1019,7 +1019,7 @@ class HrsController extends AppController
 		if ($this->request->is('post') && !empty($this->request->getData())) {
 			$data = $this->request->getData();
 			$data['HrNewJoiningDetail']['user_id'] = $user_id;
-			$data['HrNewJoiningDetail']['created'] = date('Y-m-d H:i:s');
+			// created / modified are set by Timestamp behavior on the table
 
 			$entity = $this->HrNewJoiningDetail->newEntity($data['HrNewJoiningDetail'], ['validate' => false]);
 			if ($this->HrNewJoiningDetail->save($entity)) {

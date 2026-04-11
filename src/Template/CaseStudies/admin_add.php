@@ -21,7 +21,7 @@
 
     <?php if ($this->Session->check('Message.flash')): ?>
         <div class="alert alert-danger">
-            <?php echo $this->Session->flash(); ?>
+            <?php echo $this->Flash->render(); ?>
         </div>
     <?php endif; ?>
 

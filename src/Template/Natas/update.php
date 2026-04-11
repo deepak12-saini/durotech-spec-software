@@ -19,7 +19,7 @@ table {
 </style>
 <div class="page-content" style="height:370px;">
 		
-		<?php echo $this->Session->flash(); ?>
+		<?php echo $this->Flash->render(); ?>
 		<div class="row">
 		<div class="col-xs-12">
 		<?php echo $this->Form->create('Nata',array('class'=>'form-horizontal','enctype'=>'multipart/form-data')); ?>

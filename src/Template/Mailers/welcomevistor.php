@@ -12,7 +12,7 @@
 					<h1>
 						<a href="<?php echo SITEURL; ?>"><img src="<?php echo SITEURL; ?>customdurotech/images/durotech_logo.png"/></a>
 					</h1>
-					<?php echo $this->Session->flash(); ?>
+					<?php echo $this->Flash->render(); ?>
 				</div>
 				<h4 class="blue" id="id-company-text">Visitor Entery Register (<?php echo date('d/m/Y'); ?>)			
 					<a class="btn btn-mini btn-primary" href="javascript:void();"  style="float:right;"  data-toggle="modal" data-target="#myModal">Visitor In</a>

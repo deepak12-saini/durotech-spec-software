@@ -43,8 +43,18 @@
 						?>
 						
 						&nbsp;</td>
-								
-						<td> <?php echo date('d-M-Y',strtotime($HrNewJoiningDetailArrs['HrNewJoiningDetail']['created'])); ?></td>
+						<?php
+						$_created = $HrNewJoiningDetailArrs['HrNewJoiningDetail']['created'] ?? null;
+						if ($_created instanceof \DateTimeInterface) {
+							$_createdFmt = $_created->format('d-M-Y');
+						} elseif ($_created !== null && $_created !== '' && $_created !== '0000-00-00 00:00:00') {
+							$ts = is_numeric($_created) ? (int)$_created : strtotime((string)$_created);
+							$_createdFmt = ($ts !== false && $ts > 0) ? date('d-M-Y', $ts) : '—';
+						} else {
+							$_createdFmt = '—';
+						}
+						?>
+						<td><?php echo h($_createdFmt); ?></td>
 									
 					</tr>
 					<?php $k++; endforeach; ?>

@@ -39,7 +39,7 @@ footer {
 
 		<?php if(!empty($products)){  ?>	
 			<div class="product_list col-lg-9 col-md-9 col-sm-9">	
-			<p> <?php echo $this->Session->flash(); ?><p>
+			<p> <?php echo $this->Flash->render(); ?><p>
 			<div class="product_image_section col-lg-12 col-md-12 col-sm-12">
 				<?php 
 				foreach($products as $product){ 

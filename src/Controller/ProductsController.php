@@ -1902,36 +1902,45 @@ class ProductsController extends AppController
 		
 	}
 	
-	function permissionrequest(){
-		
+	public function permissionrequest(): ?Response
+	{
 		$this->autoRender = false;
-		
-		$customer_id=$this->request->getSession()->read('Customer.id');	
-		$user = $this->NappUser->find('first',array('conditions'=>array('NappUser.id'=>$customer_id)));
-		
-		$to = 'kal@durotechindustries.com.au';				
-		#$to = 'web@xoroglobal.com';				
-		$subject=SITENAME." :: Product label access request.";				
+
+		$customer_id = $this->request->getSession()->read('Customer.id');
+		$user = $this->NappUser->find()
+			->where(['NappUser.id' => $customer_id])
+			->first();
+
+		if (!$user) {
+			$this->Flash->error('Please log in to request access.');
+			return $this->redirect(['action' => 'label']);
+		}
+
+		$to = 'kal@durotechindustries.com.au';
+		$subject = SITENAME . ' :: Product label access request.';
 		$template_name = 'labelrequest';
-		$name =  $user['NappUser']['name'].' '.$user['NappUser']['lname'];
-		$variables = array('name'=>$name,'email'=>$user['NappUser']['email'],'is_staff'=>$user['NappUser']['is_staff_id'],'userid'=>$user['NappUser']['id']);		
-		
-		try{
-			$this->sendemail($to,$subject,$template_name,$variables);
-		}catch (Exception $e){
-			
-		}	
-		$this->Flash->success('Request has been sent for ','default',array('class' => 'alert alert-success'));
-		$this->redirect('label');
-		
+		$name = trim(($user->name ?? '') . ' ' . ($user->lname ?? ''));
+		$variables = [
+			'name' => $name,
+			'email' => $user->email ?? '',
+			'is_staff' => $user->is_staff_id ?? '',
+			'userid' => $user->id ?? '',
+		];
+
+		try {
+			$this->sendemail($to, $subject, $template_name, $variables);
+		} catch (\Exception $e) {
+		}
+		$this->Flash->success('Your request has been sent.');
+		return $this->redirect(['action' => 'label']);
 	}	
 	
 	public function admin_autologin($status=null,$user_id=null) {
 		$this->autoRender = false;
 		
-		$admin_arr = $this->User->find('first');						
-		if(!empty($admin_arr)){	
-			$this->request->getSession()->write('User', $admin_arr['User']);
+		$admin_arr = $this->User->find()->orderAsc('User.id')->first();
+		if (!empty($admin_arr)) {
+			$this->request->getSession()->write('User', $admin_arr->toArray());
 			$this->request->getSession()->write('is_admin', 1);
 							
 			if(isset($status) && ($status == 1)){

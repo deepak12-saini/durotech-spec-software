@@ -1928,65 +1928,61 @@ class UsersController extends AppController
 		$user_id=$this->request->getSession()->read('Customer.id');
 		$cpdaceess=$this->request->getSession()->read('cpdaceess');
 		
-		if(!empty($this->request->getData())){
-			$uotp = $this->request->getData()['otp'];
-			$userArr = $this->NappUser->find()->where(['NappUser.otp' => $uotp, 'NappUser.id' => $user_id])->first();
-			
-			if(!empty($userArr)){
-				$update['NappUser']['id'] = $user_id;
-				$update['NappUser']['otp'] = '';
-				$this->NappUser->save($update);	
-				$this->request->getSession()->write('cpdaceess',2);
+		if ($this->request->is('post') && $this->request->getData('otp') !== null && $this->request->getData('otp') !== '') {
+			$uotp = (string)$this->request->getData('otp');
+			$userEntity = $this->NappUser->find()->where(['NappUser.otp' => $uotp, 'NappUser.id' => $user_id])->first();
+
+			if ($userEntity) {
+				$userEntity = $this->NappUser->patchEntity($userEntity, ['otp' => '']);
+				$this->NappUser->save($userEntity);
+				$this->request->getSession()->write('cpdaceess', 2);
 				$this->request->getSession()->delete('opt');
 				$this->Flash->success('Thank for verifying your account.');
-				$this->redirect('cpdpresentation');
-				
-			}else{
-				$this->Flash->error('Wrong otp password. Please try again.');
-				$this->redirect('cpdpresentation');
-			}	
-		}else if(!empty($cpdaceess)){
-			$this->set('is_access',$cpdaceess);
-		}else if(empty($cpdaceess) && !empty($type)){			
-			$rand = rand(000000,999999);			
-			$update['NappUser']['id'] = $user_id;
-			$update['NappUser']['otp'] = $rand;
-			$this->NappUser->save($update);	
-			
-			$userArr = $this->NappUser->find()->where(['NappUser.id' => $user_id])->first();				
-			$name = $userArr['NappUser']['name'].' '.$userArr['NappUser']['lname'];			
-			$to = $userArr['NappUser']['email'];								
-			$subject= SITENAME." :: Secure One-Time-Password (OTP) for CPD Presentation. OTP is ".$rand;				
-			$template_name = 'durolabotp';										
-			$variables = array('email'=>$to,'name'=>$name,'otp'=>$rand);			
-			try{
-				$this->sendemail($to,$subject,$template_name,$variables);
-			}catch (Exception $e){
-				
+				return $this->redirect(['action' => 'cpdpresentation']);
 			}
-			if(!empty($userArr['NappUser']['mobile_number']) && ($userArr['NappUser']['is_active_otp'] == 1)){
-				if($userArr['NappUser']['country']  != 'india'){
-					$phones = str_replace(' ','',$userArr['NappUser']['mobile_number']);
-					$phone = ltrim($phones,'+');
-					$to = '+'.$phone;
-					$sid = TSID;	
-					$token = TOKEN;							
-					$from = FROM_NUMBER;	
-					$body = "Hi, Secure OTP for CPD Presentation Access. OTP is ".$rand;						
-					$this->Twilio->AccountSid = TSID;   
-					$this->Twilio->AccountToken = TOKEN;						
-					$response = $this->Twilio->sendsms($to,$from,$body);
+			$this->Flash->error('Wrong otp password. Please try again.');
+			return $this->redirect(['action' => 'cpdpresentation']);
+		}
+		if (!empty($cpdaceess)) {
+			$this->set('is_access', $cpdaceess);
+		} elseif (empty($cpdaceess) && !empty($type) && $user_id) {
+			$rand = random_int(0, 999999);
+			$userEntity = $this->NappUser->get($user_id);
+			$userEntity = $this->NappUser->patchEntity($userEntity, ['otp' => (string)$rand]);
+			$this->NappUser->save($userEntity);
+
+			$name = trim(($userEntity->name ?? '') . ' ' . ($userEntity->lname ?? ''));
+			$to = $userEntity->email ?? '';
+			$subject = SITENAME . ' :: Secure One-Time-Password (OTP) for CPD Presentation. OTP is ' . $rand;
+			$template_name = 'durolabotp';
+			$variables = ['email' => $to, 'name' => $name, 'otp' => $rand];
+			try {
+				$this->sendemail($to, $subject, $template_name, $variables);
+			} catch (\Exception $e) {
+			}
+			if (!empty($userEntity->mobile_number) && ((int)($userEntity->is_active_otp ?? 0) === 1)) {
+				if (strtolower((string)($userEntity->country ?? '')) !== 'india') {
+					$phones = str_replace(' ', '', (string)$userEntity->mobile_number);
+					$phone = ltrim($phones, '+');
+					$smsTo = '+' . $phone;
+					$from = defined('FROM_NUMBER') ? FROM_NUMBER : '';
+					$body = 'Hi, Secure OTP for CPD Presentation Access. OTP is ' . $rand;
+					if (isset($this->Twilio) && is_object($this->Twilio) && method_exists($this->Twilio, 'sendsms')) {
+						$this->Twilio->AccountSid = defined('TSID') ? TSID : '';
+						$this->Twilio->AccountToken = defined('TOKEN') ? TOKEN : '';
+						$this->Twilio->sendsms($smsTo, $from, $body);
+					}
 				}
 			}
-			$this->request->getSession()->write('cpdaceess',1);
-			$this->redirect('cpdpresentation');			
-		}else{
-			$this->set('is_access',0);
-		}	
-		
-		$customer_id=$this->request->getSession()->read('Customer.id');
-		$user = $this->NappUser->find()->where(['NappUser.id' => $customer_id])->first();
-		$this->set('user',$user);
+			$this->request->getSession()->write('cpdaceess', 1);
+			return $this->redirect(['action' => 'cpdpresentation']);
+		} else {
+			$this->set('is_access', 0);
+		}
+
+		$customer_id = $this->request->getSession()->read('Customer.id');
+		$user = $customer_id ? $this->NappUser->find()->where(['NappUser.id' => $customer_id])->first() : null;
+		$this->set('user', $user);
 	}
 	public function presentation($type=null){
 		$is_staff_id = $this->request->getSession()->read('Customer.is_staff_id');
@@ -2001,66 +1997,61 @@ class UsersController extends AppController
 		$user_id=$this->request->getSession()->read('Customer.id');
 		$cpdaceess=$this->request->getSession()->read('cpdaceess');
 		
-		if(!empty($this->request->getData())){
-			$uotp = $this->request->getData()['otp'];
-			$userArr = $this->NappUser->find()->where(['NappUser.otp' => $uotp, 'NappUser.id' => $user_id])->first();
-			
-			if(!empty($userArr)){
-				$update['NappUser']['id'] = $user_id;
-				$update['NappUser']['otp'] = '';
-				$this->NappUser->save($update);	
-				$this->request->getSession()->write('cpdaceess',2);
+		if ($this->request->is('post') && $this->request->getData('otp') !== null && $this->request->getData('otp') !== '') {
+			$uotp = (string)$this->request->getData('otp');
+			$userEntity = $this->NappUser->find()->where(['NappUser.otp' => $uotp, 'NappUser.id' => $user_id])->first();
+
+			if ($userEntity) {
+				$userEntity = $this->NappUser->patchEntity($userEntity, ['otp' => '']);
+				$this->NappUser->save($userEntity);
+				$this->request->getSession()->write('cpdaceess', 2);
 				$this->request->getSession()->delete('opt');
 				$this->Flash->success('Thank for verifying your account.');
-				$this->redirect('presentation');
-				
-			}else{
-				$this->Flash->error('Wrong otp password. Please try again.');
-				$this->redirect('presentation');
-			}	
-		}else if(!empty($cpdaceess)){
-			$this->set('is_access',$cpdaceess);
-		}else if(empty($cpdaceess) && !empty($type)){			
-			$rand = rand(000000,999999);			
-			$update['NappUser']['id'] = $user_id;
-			$update['NappUser']['otp'] = $rand;
-			$this->NappUser->save($update);	
-			
-			$userArr = $this->NappUser->find()->where(['NappUser.id' => $user_id])->first();				
-			$name = $userArr['NappUser']['name'].' '.$userArr['NappUser']['lname'];			
-			$to = $userArr['NappUser']['email'];								
-			$subject= SITENAME." :: Secure One-Time-Password (OTP) for Architect Presentation. OTP is ".$rand;				
-			$template_name = 'durolabotp';										
-			$variables = array('email'=>$to,'name'=>$name,'otp'=>$rand);			
-			try{
-				$this->sendemail($to,$subject,$template_name,$variables);
-			}catch (Exception $e){
-				
+				return $this->redirect(['action' => 'presentation']);
 			}
-			if(!empty($userArr['NappUser']['mobile_number']) && ($userArr['NappUser']['is_active_otp'] == 1)){
-				if($userArr['NappUser']['country']  != 'india'){
-					$phones = str_replace(' ','',$userArr['NappUser']['mobile_number']);
-					$phone = ltrim($phones,'+');
-					$to = '+'.$phone;
-					$sid = TSID;	
-					$token = TOKEN;							
-					$from = FROM_NUMBER;	
-					$body = "Hi, Secure OTP for Architect Presentation Access. OTP is ".$rand;						
-					$this->Twilio->AccountSid = TSID;   
-					$this->Twilio->AccountToken = TOKEN;						
-					$response = $this->Twilio->sendsms($to,$from,$body);
+			$this->Flash->error('Wrong otp password. Please try again.');
+			return $this->redirect(['action' => 'presentation']);
+		}
+		if (!empty($cpdaceess)) {
+			$this->set('is_access', $cpdaceess);
+		} elseif (empty($cpdaceess) && !empty($type) && $user_id) {
+			$rand = random_int(0, 999999);
+			$userEntity = $this->NappUser->get($user_id);
+			$userEntity = $this->NappUser->patchEntity($userEntity, ['otp' => (string)$rand]);
+			$this->NappUser->save($userEntity);
+
+			$name = trim(($userEntity->name ?? '') . ' ' . ($userEntity->lname ?? ''));
+			$to = $userEntity->email ?? '';
+			$subject = SITENAME . ' :: Secure One-Time-Password (OTP) for Architect Presentation. OTP is ' . $rand;
+			$template_name = 'durolabotp';
+			$variables = ['email' => $to, 'name' => $name, 'otp' => $rand];
+			try {
+				$this->sendemail($to, $subject, $template_name, $variables);
+			} catch (\Exception $e) {
+			}
+			if (!empty($userEntity->mobile_number) && ((int)($userEntity->is_active_otp ?? 0) === 1)) {
+				if (strtolower((string)($userEntity->country ?? '')) !== 'india') {
+					$phones = str_replace(' ', '', (string)$userEntity->mobile_number);
+					$phone = ltrim($phones, '+');
+					$smsTo = '+' . $phone;
+					$from = defined('FROM_NUMBER') ? FROM_NUMBER : '';
+					$body = 'Hi, Secure OTP for Architect Presentation Access. OTP is ' . $rand;
+					if (isset($this->Twilio) && is_object($this->Twilio) && method_exists($this->Twilio, 'sendsms')) {
+						$this->Twilio->AccountSid = defined('TSID') ? TSID : '';
+						$this->Twilio->AccountToken = defined('TOKEN') ? TOKEN : '';
+						$this->Twilio->sendsms($smsTo, $from, $body);
+					}
 				}
 			}
-			$this->request->getSession()->write('cpdaceess',1);
-			$this->redirect('presentation');			
-		}else{
-			$this->set('is_access',0);
-		}	
-		
+			$this->request->getSession()->write('cpdaceess', 1);
+			return $this->redirect(['action' => 'presentation']);
+		} else {
+			$this->set('is_access', 0);
+		}
+
 		$customer_id = $this->request->getSession()->read('Customer.id');
 		$user = $customer_id ? $this->NappUser->find()->where(['NappUser.id' => $customer_id])->first() : null;
 		$this->set('user', $user);
-		
 	}
 	function contact()
 	{

@@ -341,13 +341,14 @@ class MeetsController extends AppController
             ]);
             if ($this->StaffTimes->save($staff)) {
                 $email = 'kal@durotechindustries.com.au';
-                $this->sendemail($email, (defined('SITENAME') ? SITENAME : '') . ' Staff Job #' . $staff->referid . ' ' . ($data['work_status'] ?? ''), 'staff_in_out', [
+                $this->sendemail($email, (defined('SITENAME') ? SITENAME : '') . ' Staff Job #' . $staff->referid . ' Finished', 'staff_in_out', [
                     'to_name' => 'Kal',
                     'referid' => $staff->referid,
                     'name' => $data['name'] ?? '',
-                    'work_status' => $data['work_status'] ?? '',
+                    'work_status' => 'Finished',
                     'phone' => $data['phone'] ?? '',
                     'email' => $staff->email,
+                    'summary' => $data['summary'] ?? '',
                 ]);
                 $this->Flash->success(($data['work_status'] ?? '') === 'Started' ? 'Job Started successfully.' : 'Job Finished successfully.');
                 return $this->redirect(['action' => 'staffinout', $referid]);

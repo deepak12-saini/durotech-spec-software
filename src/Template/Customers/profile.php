@@ -1,7 +1,7 @@
 	<section>
 		<div class="container">
 			<div class="row">
-			<?php echo $this->Session->flash();?>
+			<?php echo $this->Flash->render(); ?>
 				<div class="col-sm-12">
 					<div class="blog-post-area">
 						<h3>My Account</h3>

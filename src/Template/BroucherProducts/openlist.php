@@ -72,7 +72,7 @@ footer {
 
 		<?php if(!empty($BroucherProductListArr)){  ?>	
 			<div class="product_list col-lg-9 col-md-9 col-sm-9">	
-			<p> <?php echo $this->Session->flash(); ?><p>
+			<p> <?php echo $this->Flash->render(); ?><p>
 			<?php 
 				foreach($BroucherProductListArr as $product){ 
 					

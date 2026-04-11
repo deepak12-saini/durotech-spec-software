@@ -1,7 +1,7 @@
 <section id="form"><!--form-->
 		<div class="container">
 			<div class="row">
-				<?php echo $this->Session->flash();?>
+				<?php echo $this->Flash->render(); ?>
 				<div class="col-sm-4 col-sm-offset-1">
 					<div class="login-form"><!--login form-->
 						<h2>Forgot Password</h2>

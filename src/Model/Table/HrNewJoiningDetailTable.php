@@ -15,7 +15,10 @@ class HrNewJoiningDetailTable extends Table
         parent::initialize($config);
         $this->setTable('hr_new_joining_details');
         $this->setPrimaryKey('id');
-        
+        $this->addBehavior('Timestamp', [
+            'events' => ['Model.beforeSave' => ['created' => 'new']],
+        ]);
+
         $this->belongsTo('NappUser', [
             'className' => 'NappUser',
             'foreignKey' => 'user_id'

@@ -39,14 +39,24 @@
 		<div class="right_btn pull-right" ></div>
 		<h1>Staff In/Out</h1>
 	</div>
-	<?php echo $this->Session->flash(); ?>
+	<?php echo $this->Flash->render(); ?>
 	<div class="row">
 		<div class="col-xs-12">
-			<form action="" method="post" id="formid">	
-			<input type="hidden" name="id" value="<?php echo $StaffTime['StaffTime']['id']; ?>">
-			<input type="hidden" name="referid" value="<?php echo $StaffTime['StaffTime']['referid']; ?>">
-			<input type="hidden" name="date" value="<?php echo date('Y-m-d'); ?>">
-			<input type="hidden" name="time" value="<?php echo date('h:i A'); ?>">
+			<?php
+			$referParam = $this->request->getParam('pass.0');
+			if ($referParam === null && !empty($referid)) {
+				$referParam = $referid;
+			}
+			$formOpts = ['id' => 'formid', 'type' => 'post'];
+			if ($referParam !== null && $referParam !== '') {
+				$formOpts['url'] = ['action' => 'staffinout', $referParam];
+			}
+			echo $this->Form->create(null, $formOpts);
+			echo $this->Form->hidden('id', ['value' => $StaffTime['StaffTime']['id'] ?? '']);
+			echo $this->Form->hidden('referid', ['value' => $StaffTime['StaffTime']['referid'] ?? '']);
+			echo $this->Form->hidden('date', ['value' => date('Y-m-d')]);
+			echo $this->Form->hidden('time', ['value' => date('h:i A')]);
+			?>
 			<div class="outerbody" style="width:100%;border:1px solid #000; border-radius:5px; margin:10px 0%;">
 				<div class="col-xs-12" style="margin-top:0px;">
 					<div class="col-lg-9 col-xs-12">
@@ -125,7 +135,7 @@
 					</div>
 				</div>
 			</div>
-		</form>
+		<?php echo $this->Form->end(); ?>
 		</div>
 	</div>	
 	</div>	
