@@ -54,7 +54,9 @@ if (!empty($csrfToken)) {
                                         $cert = $request['ProductWarrantyRequest']['certificate'];
                                         $pathDir = strpos($cert, '/') !== false ? dirname($cert) . '/' : 'pdf/FPDI/';
                                         $pathName = strpos($cert, '/') !== false ? basename($cert) : $cert;
-                                        $fileUrl = $this->Url->build('/' . $pathDir . rawurlencode($pathName), ['fullBase' => true]);
+                                        // Webroot file: prefix webroot so /cake3app/pdf/... is used (avoids Cake routing /pdf as controller).
+                                        $webroot = (string)$this->getRequest()->getAttribute('webroot');
+                                        $fileUrl = rtrim($webroot, '/') . '/' . trim($pathDir, '/') . '/' . rawurlencode($pathName);
                                     ?>
                                     <a href="<?= h($fileUrl); ?>" target="_blank" class="btn btn-xs btn-primary">
                                         View PDF
@@ -71,7 +73,17 @@ if (!empty($csrfToken)) {
                                     View Details
                                 </button>
 
-                                <?php if ($request['ProductWarrantyRequest']['status'] === 'Pending'): ?>
+                                <?php
+                                $isPending = ($request['ProductWarrantyRequest']['status'] ?? '') === 'Pending';
+                                $draftPreviewUrl = $this->Url->build(
+                                    '/admin/stocks/preview_product_warranty_certificate/' . (int)($request['ProductWarrantyRequest']['id'] ?? 0)
+                                );
+                                ?>
+                                <a href="<?= h($draftPreviewUrl); ?>" target="_blank" class="btn btn-xs btn-warning" title="Opens a temporary PDF built from current form data in the database. Does not overwrite the saved certificate. Use with View PDF to compare draft vs saved file.">
+                                    Preview PDF
+                                </a>
+
+                                <?php if ($isPending): ?>
                                     <button type="button" class="btn btn-xs btn-success approveBtn" data-id="<?= $request['ProductWarrantyRequest']['id']; ?>">
                                         Approve
                                     </button>

@@ -76,8 +76,18 @@
 								<?php endif; ?>
 							</td>
 
-							<!-- Created Date -->
-							<td><?php echo date('d-M-Y h:i a', strtotime($mailer['Mailer']['created'])); ?></td>
+							<!-- Created: entity toArray() keeps FrozenTime as object; strtotime(object) fails → epoch -->
+							<td><?php
+								$created = $mailer['Mailer']['created'] ?? null;
+								if ($created instanceof \DateTimeInterface) {
+									echo h($created->format('d-M-Y h:i a'));
+								} elseif (!empty($created)) {
+									$ts = strtotime((string) $created);
+									echo $ts ? h(date('d-M-Y h:i a', $ts)) : '—';
+								} else {
+									echo '—';
+								}
+							?></td>
 
 							<!-- Action buttons -->
 							<td>

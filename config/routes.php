@@ -580,7 +580,10 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/stocks/delete/:id/:type', ['controller' => 'Stocks', 'action' => 'admin_delete'], ['pass' => ['id', 'type']]);
     $routes->connect('/admin/stocks/comment/:id', ['controller' => 'Stocks', 'action' => 'admin_comment'], ['pass' => ['id']]);
     $routes->connect('/admin/stocks/warrant_request', ['controller' => 'Stocks', 'action' => 'admin_warrant_request']);
+    $routes->connect('/admin/stocks/preview_warranty_certificate/:id', ['controller' => 'Stocks', 'action' => 'admin_preview_warranty_certificate'], ['pass' => ['id']]);
+    $routes->connect('/admin/stocks/approve_warranty_request/:id', ['controller' => 'Stocks', 'action' => 'admin_approve_warranty_request'], ['pass' => ['id']]);
     $routes->connect('/admin/stocks/product_warranty_request', ['controller' => 'Stocks', 'action' => 'admin_product_warranty_request']);
+    $routes->connect('/admin/stocks/preview_product_warranty_certificate/:id', ['controller' => 'Stocks', 'action' => 'admin_preview_product_warranty_certificate'], ['pass' => ['id']]);
     $routes->connect('/admin/stocks/delete_product_warranty/:id', ['controller' => 'Stocks', 'action' => 'admin_delete_product_warranty'], ['pass' => ['id']]);
     $routes->connect('/admin/stocks/approveWarranty', ['controller' => 'Stocks', 'action' => 'admin_approve_warranty']);
     $routes->connect('/admin/stocks/admin-approve-warranty', ['controller' => 'Stocks', 'action' => 'admin_approve_warranty']);

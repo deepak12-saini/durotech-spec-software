@@ -79,26 +79,70 @@
 	overflow: hidden;
 	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 	margin-bottom: 24px;
+	width: 100%;
+	box-sizing: border-box;
 }
+/* Full width inside column — .cardimg was 300px fixed, which left empty space on the right */
 .tech-literature-tile .cardimg {
 	float: none;
-	margin-left: 0;
-	margin: 0;
+	margin: 0 !important;
+	margin-left: 0 !important;
+	margin-right: 0 !important;
+	width: 100%;
+	max-width: 100%;
+	min-height: 0;
+	height: auto;
 	box-shadow: none;
 	border-radius: 0;
 	background: #f2f2f2 !important;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 12px;
+	box-sizing: border-box;
+}
+.tech-literature-tile .cardimg img {
+	width: 100%;
+	max-width: 100%;
+	height: auto;
+	max-height: 200px;
+	object-fit: contain;
 }
 .tech-literature-tile .card {
+	/* Override global .card in style.css (300px + float:left + margin-left:67px) on desktop */
+	width: 100% !important;
+	max-width: 100% !important;
+	float: none !important;
+	clear: both !important;
+	margin: 0 !important;
 	height: auto;
 	min-height: 0;
-	margin: 0;
 	padding: 0;
-	background: #fff;
+	/* Same light grey as image area above (unified “previous” look) */
+	background: #f2f2f2 !important;
 	border: none;
-	border-top: 1px solid #eee;
+	border-top: 1px solid #e5e5e5;
+	box-shadow: none !important;
+	overflow: visible !important;
 }
 .tech-literature-tile .card .image {
-	padding: 16px 14px 20px;
+	/* Override global .image (height:100%, padding, grey bg) from style.css */
+	padding: 16px 14px 20px !important;
+	text-align: center !important;
+	height: auto !important;
+	min-height: 0 !important;
+	background: #f2f2f2 !important;
+	background-image: none !important;
+	padding-top: 16px !important;
+	padding-bottom: 20px !important;
+}
+.tech-literature-tile .card h3 {
+	text-align: center !important;
+}
+.tech-literature-tile .card .image a {
+	margin-left: auto;
+	margin-right: auto;
+	display: inline-block;
 }
 @media (max-width: 767px) {
 	.technical_literature {
@@ -110,6 +154,13 @@
 		margin-right: auto;
 		padding-left: 10px;
 		padding-right: 10px;
+	}
+	.technical_literature .container > .row {
+		margin-left: 0;
+		margin-right: 0;
+	}
+	.technical_literature .container_service .col-sm-4 {
+		text-align: center !important;
 	}
 	.cardimg {
 		float: none;
@@ -134,6 +185,14 @@
 		height: auto;
 		object-fit: contain;
 		object-position: center center;
+	}
+	/* Stronger than .cardimg img above — fill tile width on small screens */
+	.technical_literature .tech-literature-tile .cardimg img {
+		width: 100%;
+		max-width: 100%;
+		display: block;
+		margin-left: auto;
+		margin-right: auto;
 	}
 	.tech-literature-tile .card {
 		margin-bottom: 0;
@@ -174,6 +233,46 @@
 		width: 100% !important;
 		max-width: 100% !important;
 		box-sizing: border-box;
+	}
+	/* Real Android / WebKit: global .cardimg { margin-left:67px } can still win — hard reset */
+	.technical_literature .tech-literature-tile {
+		width: 100% !important;
+		max-width: 100% !important;
+		margin-left: 0 !important;
+		margin-right: 0 !important;
+		box-sizing: border-box !important;
+	}
+	.technical_literature .tech-literature-tile .cardimg {
+		float: none !important;
+		position: relative !important;
+		left: 0 !important;
+		right: auto !important;
+		margin: 0 !important;
+		margin-left: 0 !important;
+		margin-right: 0 !important;
+		-webkit-margin-start: 0 !important;
+		-webkit-margin-end: 0 !important;
+		padding: 12px !important;
+		width: 100% !important;
+		max-width: 100% !important;
+		min-width: 0 !important;
+		box-sizing: border-box !important;
+		align-self: stretch !important;
+	}
+	.technical_literature .container_service {
+		padding-left: 0 !important;
+		padding-right: 0 !important;
+	}
+	.technical_literature .container_service .col-sm-4 {
+		padding-left: 8px !important;
+		padding-right: 8px !important;
+	}
+	.technical_literature .container {
+		padding-left: 8px !important;
+		padding-right: 8px !important;
+		width: 100% !important;
+		max-width: 100% !important;
+		box-sizing: border-box !important;
 	}
 }
 </style>		

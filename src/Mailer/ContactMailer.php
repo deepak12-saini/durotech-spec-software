@@ -21,27 +21,36 @@ class ContactMailer extends Mailer
     public function contactForm(array $data)
     {
         $this->setProfile('default');
-        $to = defined('EMAIL') ? EMAIL : Configure::read('Site.email');
-        if (!is_string($to)) {
-            $to = '';
+        $primaryTo = defined('EMAIL') ? EMAIL : Configure::read('Site.email');
+        if (!is_string($primaryTo)) {
+            $primaryTo = '';
         }
-        $to = trim($to);
-        if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
+        $primaryTo = trim($primaryTo);
+        if ($primaryTo === '' || !filter_var($primaryTo, FILTER_VALIDATE_EMAIL)) {
             $from = Configure::read('Email.default.from');
             if (is_array($from)) {
-                $to = (string)key($from);
+                $primaryTo = (string)key($from);
             } elseif (is_string($from)) {
-                $to = $from;
+                $primaryTo = $from;
             } else {
-                $to = 'info@durotechindustries.com.au';
+                $primaryTo = 'info@durotechindustries.com.au';
             }
         }
+        $recipients = [
+            $primaryTo,
+            'info@durotechindustries.com.au',
+            'kal@durotechindustries.com.au',
+        ];
+        $recipients = array_values(array_unique(array_filter($recipients, function ($recipient) {
+            return is_string($recipient) && filter_var(trim($recipient), FILTER_VALIDATE_EMAIL);
+        })));
+
         $name = trim($data['name'] ?? '');
         $email = trim($data['email'] ?? '');
         if ($email !== '') {
             $this->setReplyTo([$email => $name ?: $email]);
         }
-        $this->setTo($to)
+        $this->setTo($recipients)
             ->setSubject('Contact form: ' . ($name ?: 'No name'))
             ->setEmailFormat('html')
             ->setViewVars($data)

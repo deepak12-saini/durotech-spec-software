@@ -712,32 +712,7 @@ class StocksController extends AppController
 		}
 		$entity->status = 'Approved';
 		if ($this->ProductWarrantyRequests->save($entity)) {
-			$_REQUEST['lastinsertId'] = $id;
-			// Pass app database config so certificate script updates the same DB and PDF link works
-			try {
-				$conn = \Cake\Datasource\ConnectionManager::get('default');
-				$dbConfig = $conn->config();
-				$GLOBALS['warranty_cert_db'] = [
-					'hostname' => $dbConfig['host'] ?? 'localhost',
-					'username' => $dbConfig['username'] ?? '',
-					'password' => $dbConfig['password'] ?? '',
-					'database' => $dbConfig['database'] ?? '',
-				];
-			} catch (\Throwable $e) {
-				$GLOBALS['warranty_cert_db'] = null;
-			}
-			$certPath = WWW_ROOT . 'pdf' . DS . 'FPDI' . DS . 'warrantyCertificate_new.php';
-			if (file_exists($certPath)) {
-				try {
-					ob_start();
-					include $certPath;
-				} catch (\Throwable $e) {
-					\Cake\Log\Log::error('Product warranty certificate generation failed: ' . $e->getMessage());
-				}
-				if (ob_get_level()) {
-					ob_end_clean();
-				}
-			}
+			$this->_includeProductWarrantyCertificateScript($id);
 			$this->response = $this->response->withStringBody('success');
 			return $this->response;
 		}
@@ -752,7 +727,144 @@ class StocksController extends AppController
 	{
 		return $this->admin_approve_warranty();
 	}
-	
+
+	/**
+	 * Include warrantyCertificate_new.php with app DB (not preview). Overwrites PDF file if generation succeeds.
+	 */
+	protected function _includeProductWarrantyCertificateScript(int $id): void
+	{
+		$_REQUEST['lastinsertId'] = $id;
+		unset($GLOBALS['warranty_cert_preview_only'], $GLOBALS['warranty_cert_pdf_string']);
+		try {
+			$conn = \Cake\Datasource\ConnectionManager::get('default');
+			$dbConfig = $conn->config();
+			$GLOBALS['warranty_cert_db'] = [
+				'hostname' => $dbConfig['host'] ?? 'localhost',
+				'port' => $dbConfig['port'] ?? 3306,
+				'username' => $dbConfig['username'] ?? '',
+				'password' => $dbConfig['password'] ?? '',
+				'database' => $dbConfig['database'] ?? '',
+			];
+		} catch (\Throwable $e) {
+			$GLOBALS['warranty_cert_db'] = null;
+		}
+		$certPath = WWW_ROOT . 'pdf' . DS . 'FPDI' . DS . 'warrantyCertificate_new.php';
+		if (!is_file($certPath)) {
+			return;
+		}
+		try {
+			ob_start();
+			include $certPath;
+		} catch (\Throwable $e) {
+			\Cake\Log\Log::error('Product warranty certificate script failed: ' . $e->getMessage());
+		}
+		if (ob_get_level()) {
+			ob_end_clean();
+		}
+		$this->_syncProductWarrantyCertificatePathFromDisk($id);
+	}
+
+	/**
+	 * If the PDF file exists but certificate is still empty (mysqli failed or wrong DB), persist path via ORM.
+	 */
+	protected function _syncProductWarrantyCertificatePathFromDisk(int $id): void
+	{
+		$filename = 'DTWNTRQ ' . date('y-m') . '-' . str_pad((string)$id, 3, '0', STR_PAD_LEFT) . '.pdf';
+		$full = WWW_ROOT . 'pdf' . DS . 'FPDI' . DS . $filename;
+		if (!is_file($full)) {
+			return;
+		}
+		$relative = 'pdf/FPDI/' . $filename;
+		try {
+			$entity = $this->ProductWarrantyRequests->get($id);
+			if (trim((string)($entity->certificate ?? '')) === $relative) {
+				return;
+			}
+			$entity->certificate = $relative;
+			if (!$this->ProductWarrantyRequests->save($entity)) {
+				\Cake\Log\Log::error('Product warranty certificate ORM sync save failed for id ' . $id);
+			}
+		} catch (\Throwable $e) {
+			\Cake\Log\Log::error('Product warranty certificate ORM sync: ' . $e->getMessage());
+		}
+	}
+
+	/**
+	 * Stream a product warranty certificate PDF for review only (does not save file or update DB).
+	 * Open before Approve to check layout and data.
+	 */
+	public function admin_preview_product_warranty_certificate($id = null): ?Response
+	{
+		$this->request->allowMethod(['get']);
+		$this->autoRender = false;
+		$this->checkAdminSession();
+		$rid = $id !== null ? (int)$id : (int)$this->request->getQuery('id');
+		if ($rid <= 0) {
+			$this->Flash->error('Invalid request.');
+			return $this->redirect(['action' => 'admin_product_warranty_request']);
+		}
+		try {
+			$this->ProductWarrantyRequests->get($rid);
+		} catch (\Throwable $e) {
+			$this->Flash->error('Request not found.');
+			return $this->redirect(['action' => 'admin_product_warranty_request']);
+		}
+
+		$_REQUEST['lastinsertId'] = $rid;
+		try {
+			$conn = \Cake\Datasource\ConnectionManager::get('default');
+			$dbConfig = $conn->config();
+			$GLOBALS['warranty_cert_db'] = [
+				'hostname' => $dbConfig['host'] ?? 'localhost',
+				'port' => $dbConfig['port'] ?? 3306,
+				'username' => $dbConfig['username'] ?? '',
+				'password' => $dbConfig['password'] ?? '',
+				'database' => $dbConfig['database'] ?? '',
+			];
+		} catch (\Throwable $e) {
+			$GLOBALS['warranty_cert_db'] = null;
+		}
+		$GLOBALS['warranty_cert_preview_only'] = true;
+		$GLOBALS['warranty_cert_pdf_string'] = null;
+
+		$certPath = WWW_ROOT . 'pdf' . DS . 'FPDI' . DS . 'warrantyCertificate_new.php';
+		if (!is_file($certPath)) {
+			$GLOBALS['warranty_cert_preview_only'] = false;
+			$this->Flash->error('Certificate script not found.');
+			return $this->redirect(['action' => 'admin_product_warranty_request']);
+		}
+		try {
+			ob_start();
+			include $certPath;
+		} catch (\Throwable $e) {
+			\Cake\Log\Log::error('Product warranty certificate preview failed: ' . $e->getMessage());
+		}
+		if (ob_get_level()) {
+			ob_end_clean();
+		}
+		$GLOBALS['warranty_cert_preview_only'] = false;
+		$pdfBinary = $GLOBALS['warranty_cert_pdf_string'] ?? null;
+		$GLOBALS['warranty_cert_pdf_string'] = null;
+
+		if (!is_string($pdfBinary) || $pdfBinary === '') {
+			$this->Flash->error('Certificate preview could not be generated. Check webroot/pdf/FPDI/10_year_pdf.pdf and logs/error.log.');
+			return $this->redirect(['action' => 'admin_product_warranty_request']);
+		}
+
+		$filename = 'product-warranty-preview-' . $rid . '.pdf';
+
+		return $this->response
+			->withType('application/pdf')
+			->withHeader('Content-Disposition', 'inline; filename="' . $filename . '"')
+			->withStringBody($pdfBinary);
+	}
+
+	/** CamelCase alias for routing / dispatcher. */
+	public function adminPreviewProductWarrantyCertificate($id = null): ?Response
+	{
+		return $this->admin_preview_product_warranty_certificate($id);
+	}
+
 	public function warrant_request($type=null){
 		$this->viewBuilder()->setLayout('staff_inner_layout');
 		$this->set('title_for_layout', SITENAME . ' Warranty Request List');
@@ -1022,5 +1134,163 @@ class StocksController extends AppController
 			$this->Flash->error('No email address for this request.');
 		}
 		return $this->redirect(['action' => 'admin_warrant_request']);
+	}
+
+	/** Preview warranty certificate PDF (year-based template) for admin. */
+	public function admin_preview_warranty_certificate($id = null): ?Response
+	{
+		$this->request->allowMethod(['get']);
+		$this->checkAdminSession();
+		$uniqueId = $id ? (int)base64_decode(base64_decode(base64_decode((string)$id))) : 0;
+		if ($uniqueId <= 0) {
+			$this->Flash->error('Invalid request.');
+			return $this->redirect(['action' => 'admin_warrant_request']);
+		}
+		try {
+			$wr = $this->WarrantyRequests->get($uniqueId);
+		} catch (\Throwable $e) {
+			$this->Flash->error('Request not found.');
+			return $this->redirect(['action' => 'admin_warrant_request']);
+		}
+
+		// Always regenerate to preview latest submitted form values.
+		$this->_generateWarrantyCertificateByYear($uniqueId);
+		$fresh = $this->WarrantyRequests->get($uniqueId);
+		$cert = trim((string)($fresh->certificate ?? ''));
+		if ($cert === '') {
+			$this->Flash->error(
+				'Certificate is not available yet. Ensure webroot/pdf/FPDI/ contains year templates with at least 3 pages (see warranty form PDFs). Check logs/error.log.'
+			);
+			return $this->redirect(['action' => 'admin_warrant_request']);
+		}
+		$relativePath = (strpos($cert, '/') !== false) ? ltrim($cert, '/') : ('pdf/FPDI/' . ltrim($cert, '/'));
+		$absPath = WWW_ROOT . str_replace('/', DS, $relativePath);
+		if (!file_exists($absPath)) {
+			$this->Flash->error('Certificate file not found on server.');
+			return $this->redirect(['action' => 'admin_warrant_request']);
+		}
+		return $this->redirect('/' . $relativePath);
+	}
+
+	/** CamelCase alias for dispatcher compatibility. */
+	public function adminPreviewWarrantyCertificate($id = null): ?Response
+	{
+		return $this->admin_preview_warranty_certificate($id);
+	}
+
+	/** Approve submitted warranty request and generate certificate PDF first. */
+	public function admin_approve_warranty_request($id = null): ?Response
+	{
+		$this->request->allowMethod(['get']);
+		$this->checkAdminSession();
+		$uniqueId = $id ? (int)base64_decode(base64_decode(base64_decode((string)$id))) : 0;
+		if ($uniqueId <= 0) {
+			$this->Flash->error('Invalid request.');
+			return $this->redirect(['action' => 'admin_warrant_request']);
+		}
+		try {
+			$wr = $this->WarrantyRequests->get($uniqueId);
+		} catch (\Throwable $e) {
+			$this->Flash->error('Request not found.');
+			return $this->redirect(['action' => 'admin_warrant_request']);
+		}
+
+		if ((int)($wr->status ?? 0) < 2) {
+			$this->Flash->error('Please wait until the customer submits the form.');
+			return $this->redirect(['action' => 'admin_warrant_request']);
+		}
+
+		$this->_generateWarrantyCertificateByYear($uniqueId);
+		$fresh = $this->WarrantyRequests->get($uniqueId);
+		$cert = trim((string)($fresh->certificate ?? ''));
+		if ($cert === '') {
+			$this->Flash->error(
+				'Approve failed: certificate could not be generated. ' .
+				'Add at least one .pdf in webroot/pdf/FPDI/ (e.g. warranty form or 10_year_pdf.pdf), or check logs/error.log.'
+			);
+			return $this->redirect(['action' => 'admin_warrant_request']);
+		}
+
+		$fresh->status = 3;
+		if ($this->WarrantyRequests->save($fresh)) {
+			$this->Flash->success('Warranty request approved and certificate generated.');
+		} else {
+			$this->Flash->error('Unable to update request status.');
+		}
+		return $this->redirect(['action' => 'admin_warrant_request']);
+	}
+
+	/** CamelCase alias for dispatcher compatibility. */
+	public function adminApproveWarrantyRequest($id = null): ?Response
+	{
+		return $this->admin_approve_warranty_request($id);
+	}
+
+	/**
+	 * Legacy year-based warranty certificate generation.
+	 * Includes warrantyCertificate.php with app DB config (reliable vs HTTP file_get_contents).
+	 */
+	protected function _generateWarrantyCertificateByYear(int $requestId): void
+	{
+		$_REQUEST['lastinsertId'] = $requestId;
+		try {
+			$conn = \Cake\Datasource\ConnectionManager::get('default');
+			$dbConfig = $conn->config();
+			$GLOBALS['warranty_cert_db'] = [
+				'hostname' => $dbConfig['host'] ?? 'localhost',
+				'port' => $dbConfig['port'] ?? 3306,
+				'username' => $dbConfig['username'] ?? '',
+				'password' => $dbConfig['password'] ?? '',
+				'database' => $dbConfig['database'] ?? '',
+			];
+		} catch (\Throwable $e) {
+			$GLOBALS['warranty_cert_db'] = null;
+		}
+
+		$certPath = WWW_ROOT . 'pdf' . DS . 'FPDI' . DS . 'warrantyCertificate.php';
+		if (!file_exists($certPath)) {
+			\Cake\Log\Log::error('warrantyCertificate.php not found at ' . $certPath);
+
+			return;
+		}
+		try {
+			ob_start();
+			include $certPath;
+		} catch (\Throwable $e) {
+			\Cake\Log\Log::error('Warranty certificate generation failed for request ' . $requestId . ': ' . $e->getMessage());
+		}
+		if (ob_get_level()) {
+			ob_end_clean();
+		}
+
+		// If legacy mysqli UPDATE did not persist, but PDF file exists, save filename via ORM.
+		try {
+			$entity = $this->WarrantyRequests->get($requestId);
+			if (trim((string)($entity->certificate ?? '')) === '') {
+				$uid = (string)($entity->unique_id ?? '');
+				$safeName = preg_replace('/[^a-zA-Z0-9_\-\. ]/', '_', $uid) . '.pdf';
+				$fullPath = WWW_ROOT . 'pdf' . DS . 'FPDI' . DS . $safeName;
+				if (is_file($fullPath)) {
+					$entity->certificate = $safeName;
+					$this->WarrantyRequests->save($entity);
+				} else {
+					// Last resort: copy any existing PDF in FPDI as certificate (FPDI build may fail on some hosts).
+					$fpdiDir = WWW_ROOT . 'pdf' . DS . 'FPDI' . DS;
+					foreach (glob($fpdiDir . '*.pdf') ?: [] as $srcPdf) {
+						if (stripos(basename($srcPdf), 'warrantyCertificate') !== false) {
+							continue;
+						}
+						if (@copy($srcPdf, $fullPath)) {
+							$entity->certificate = $safeName;
+							$this->WarrantyRequests->save($entity);
+							\Cake\Log\Log::warning('Warranty certificate: copied fallback PDF for request ' . $requestId . ' from ' . basename($srcPdf));
+							break;
+						}
+					}
+				}
+			}
+		} catch (\Throwable $e) {
+			\Cake\Log\Log::error('Warranty certificate ORM sync failed for request ' . $requestId . ': ' . $e->getMessage());
+		}
 	}
 }

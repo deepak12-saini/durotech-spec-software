@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\Core\Configure;
 use Cake\Event\EventInterface;
 use Cake\Http\Response;
 use Cake\Log\Log;
+use Cake\Mailer\Email;
 use Cake\Mailer\MailerAwareTrait;
 
 /**
@@ -591,6 +593,50 @@ class FrontsController extends AppController
             }
             $entity = $this->ProductWarrantyRequests->newEntity($data);
             if ($this->ProductWarrantyRequests->save($entity)) {
+                // Notify internal team for new Product Warranty Request submissions.
+                $baseUrl = defined('SITEURL') ? (string)SITEURL : (string)(Configure::read('App.fullBaseUrl') ?? '');
+                $adminListUrl = rtrim($baseUrl, '/') . '/admin/stocks/product_warranty_request';
+                $recipients = array_values(array_unique(array_filter([
+                    // 'info@durotechindustries.com.au',
+                    // 'kal@durotechindustries.com.au',
+                    'deepaksaini10036@gmail.com',
+                ], function ($email) {
+                    return is_string($email) && filter_var(trim($email), FILTER_VALIDATE_EMAIL);
+                })));
+
+                if (!empty($recipients)) {
+                    try {
+                        // Map product warranty fields to meaningful email labels with safe fallbacks.
+                        $contactName = trim((string)($data['contract_name'] ?? $data['applicator'] ?? ''));
+                        $contactEmail = trim((string)($data['email'] ?? ''));
+                        $contactPhone = trim((string)($data['applicator_contact'] ?? $data['phone'] ?? ''));
+                        $siteAddress = trim((string)($data['building_address'] ?? $data['applicator_address'] ?? ''));
+
+                        $email = new Email('default');
+                        $email->setTo($recipients)
+                            ->setSubject('New Product Warranty Request Submitted')
+                            ->setEmailFormat('html')
+                            ->send(
+                                '<p>A new product warranty request was submitted from website.</p>' .
+                                '<p>' .
+                                '<b>Contact Name:</b> ' . h($contactName !== '' ? $contactName : '-') . '<br>' .
+                                '<b>Email:</b> ' . h($contactEmail !== '' ? $contactEmail : '-') . '<br>' .
+                                '<b>Phone:</b> ' . h($contactPhone !== '' ? $contactPhone : '-') . '<br>' .
+                                '<b>Address:</b> ' . h($siteAddress !== '' ? $siteAddress : '-') . '<br>' .
+                                '<b>Building Name:</b> ' . h((string)($data['building_name'] ?? '')) . '<br>' .
+                                '<b>Building Area Name:</b> ' . h((string)($data['building_area_name'] ?? '')) . '<br>' .
+                                '<b>Area Warranted:</b> ' . h((string)($data['area_warranted'] ?? '')) . '<br>' .
+                                '<b>Application:</b> ' . h((string)($data['application'] ?? '')) . '<br>' .
+                                '<b>Requested Warranty:</b> ' . h((string)($data['start_requested_warranty'] ?? '')) . ' to ' . h((string)($data['end_requested_warranty'] ?? '')) .
+                                '</p>' .
+                                '<p>Open admin product warranty list:</p>' .
+                                '<p><a href="' . h($adminListUrl) . '">' . h($adminListUrl) . '</a></p>'
+                            );
+                    } catch (\Throwable $e) {
+                        Log::error('Product warranty request notification email failed: ' . $e->getMessage());
+                    }
+                }
+
                 $this->Flash->success(__('Thank you for your application a Durotech representative will be in touch shortly.'));
                 return $this->redirect(['controller' => 'Fronts', 'action' => 'productWarranty']);
             }
@@ -622,6 +668,41 @@ class FrontsController extends AppController
         ];
         $entity = $this->WarrantyRequests->newEntity($data);
         if ($this->WarrantyRequests->save($entity)) {
+            // Notify internal team with direct admin link to process/send warranty form.
+            $baseUrl = defined('SITEURL') ? (string)SITEURL : (string)(Configure::read('App.fullBaseUrl') ?? '');
+            $adminListUrl = rtrim($baseUrl, '/') . '/admin/stocks/warrant_request';
+            $recipients = array_values(array_unique(array_filter([
+                // 'info@durotechindustries.com.au',
+                // 'kal@durotechindustries.com.au',
+                'deepaksaini10036@gmail.com',
+            ], function ($email) {
+                return is_string($email) && filter_var(trim($email), FILTER_VALIDATE_EMAIL);
+            })));
+
+            if (!empty($recipients)) {
+                try {
+                    $email = new Email('default');
+                    $email->setTo($recipients)
+                        ->setSubject('New Warranty Request Submitted - ' . ($data['unique_id'] ?? ''))
+                        ->setEmailFormat('html')
+                        ->send(
+                            '<p>A new warranty request was submitted from the website.</p>' .
+                            '<p>' .
+                            '<b>Request ID:</b> ' . h((string)($data['unique_id'] ?? '')) . '<br>' .
+                            '<b>Name:</b> ' . h((string)($data['name'] ?? '')) . '<br>' .
+                            '<b>Email:</b> ' . h((string)($data['email'] ?? '')) . '<br>' .
+                            '<b>Phone:</b> ' . h((string)($data['phone'] ?? '')) . '<br>' .
+                            '<b>Project Name:</b> ' . h((string)($data['project_name'] ?? '')) . '<br>' .
+                            '<b>Year:</b> ' . h((string)($data['year'] ?? '')) .
+                            '</p>' .
+                            '<p>Open admin panel and send the warranty form to customer:</p>' .
+                            '<p><a href="' . h($adminListUrl) . '">' . h($adminListUrl) . '</a></p>'
+                        );
+                } catch (\Throwable $e) {
+                    Log::error('Warranty request notification email failed: ' . $e->getMessage());
+                }
+            }
+
             $this->Flash->success(__('Thank you for your warranty request. A representative will be in touch shortly.'));
             return $this->redirect(['controller' => 'Fronts', 'action' => 'technicalLiteratureNew', 'warranty']);
         }

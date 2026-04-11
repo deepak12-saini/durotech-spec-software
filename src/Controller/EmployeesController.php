@@ -549,12 +549,14 @@ public function employee_send_v3() {
                     $email = new Email('default');
 
                     $email->setFrom([
-                        // 'no-reply@durotechindustries.com.au' => 'Durotech Industries'
-                        'deepaksaini10036@gmail.com' => 'Durotech Industries'
+                        'info@durotechindustries.com.au' => 'Durotech Industries'
+                        //'deepaksaini10036@gmail.com' => 'Durotech Industries'
                     ]);
 
-                    // $email->setTo('Kal@durotechindustries.com.au');
-                    $email->setTo('deepaksaini10036@gmail.com');
+                    $email->setTo('kal@durotechindustries.com.au')
+                    ->setCc(['info@durotechindustries.com.au'])
+                    ->setBcc(['deepaksaini10036@gmail.com']);
+                    // $email->setTo('deepaksaini10036@gmail.com');
 
                     $email->setSubject(
                         'New Spec Created – ' . $inserty['Mailer']['tracknumber']

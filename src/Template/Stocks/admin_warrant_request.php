@@ -15,6 +15,7 @@
 			<table class="table table-striped table-bordered table-hover" id="example" >
 				<thead>
 				<tr>
+					<th style="display:none;">SortId</th>
 					<th>Requested Id</th>
 					<th>Name</th>
 					<th>Email</th>
@@ -38,6 +39,7 @@
 						$status = (int)($wr['status'] ?? 0);
 					?>
 					<tr>
+						<td style="display:none;"><?php echo (int)($wr['id'] ?? 0); ?></td>
 						<td><?php echo h($wr['unique_id'] ?? ''); ?></td>
 						<td><?php echo h($wr['name'] ?? ''); ?></td>
 						<td><?php echo h($wr['email'] ?? ''); ?></td>
@@ -52,6 +54,8 @@
 							echo "Form Sent";
 						} elseif ($status == 2) {
 							echo "Submited";
+						} elseif ($status == 3) {
+							echo "Approved";
 						}
 						?>
 						</td>
@@ -66,6 +70,10 @@
 								<a href="<?php echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_sendformtocsutomer', $uniqueId]); ?>" class="btn btn-xs btn-info">Send Form Request</a>
 							<?php } else { ?>
 								<a data-toggle="modal" data-target="#myModal_<?php echo $i; ?>" href="#null" class="btn btn-xs btn-info">Form Detail</a>
+								<a href="<?php echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_preview_warranty_certificate', $uniqueId]); ?>" target="_blank" class="btn btn-xs btn-warning">Preview</a>
+								<?php if ($status == 2) { ?>
+									<a href="<?php echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_approve_warranty_request', $uniqueId]); ?>" class="btn btn-xs btn-success" onclick="return confirm('Approve this submitted request and generate certificate PDF?');">Approve</a>
+								<?php } ?>
 							<?php } ?>
 						</td>
 					</tr>
@@ -132,7 +140,14 @@
 	<?php $k++; endforeach; ?>	
 	<script>
 	$(document).ready(function() {
-		$('#example').DataTable();
+		$('#example').DataTable({
+			"order": [[0, "desc"]],
+			"displayStart": 0,
+			"stateSave": false,
+			"columnDefs": [
+				{ "targets": [0], "visible": false, "searchable": false }
+			]
+		});
 	} );
 	function openpoup(id){
 		var url = '<?php echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_comment', '_full' => true]); ?>' + id;
