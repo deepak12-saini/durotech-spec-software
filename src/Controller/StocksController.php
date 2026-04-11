@@ -691,6 +691,12 @@ class StocksController extends AppController
 		return $this->redirect($this->referer());
 	}
 
+	/** CamelCase alias so dispatcher finds delete (InflectedRoute uses adminDeleteProductWarranty). */
+	public function adminDeleteProductWarranty($id = null): ?Response
+	{
+		return $this->admin_delete_product_warranty($id);
+	}
+
 	/**
 	 * Approve product warranty request (AJAX POST). Alias for URL compatibility.
 	 */
