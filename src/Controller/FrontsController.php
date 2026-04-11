@@ -606,32 +606,55 @@ class FrontsController extends AppController
 
                 if (!empty($recipients)) {
                     try {
-                        // Map product warranty fields to meaningful email labels with safe fallbacks.
                         $contactName = trim((string)($data['contract_name'] ?? $data['applicator'] ?? ''));
                         $contactEmail = trim((string)($data['email'] ?? ''));
                         $contactPhone = trim((string)($data['applicator_contact'] ?? $data['phone'] ?? ''));
-                        $siteAddress = trim((string)($data['building_address'] ?? $data['applicator_address'] ?? ''));
+                        $warrantyPeriod = trim((string)($data['start_requested_warranty'] ?? ''))
+                            . ' to '
+                            . trim((string)($data['end_requested_warranty'] ?? ''));
+
+                        $logoUrl = $baseUrl !== ''
+                            ? (rtrim($baseUrl, '/') . '/customdurotech/images/durotech_logo.png')
+                            : '';
+                        $siteName = defined('SITENAME') ? (string)SITENAME : 'Durotech Industries';
+
+                        $detailRows = [
+                            'Request ID' => (string)$entity->id,
+                            'Serial number' => trim((string)($data['serialnumber'] ?? '')),
+                            'Product' => trim((string)($data['product'] ?? '')),
+                            'Date of purchase' => trim((string)($data['dateofpurchase'] ?? '')),
+                            'Used as' => trim((string)($data['used_as'] ?? '')),
+                            'Application' => trim((string)($data['application'] ?? '')),
+                            'Primary contact' => $contactName,
+                            'Contractor company' => trim((string)($data['contract_company_name'] ?? '')),
+                            'Contractor name' => trim((string)($data['contract_name'] ?? '')),
+                            'Applicator' => trim((string)($data['applicator'] ?? '')),
+                            'Email' => $contactEmail,
+                            'Phone' => $contactPhone,
+                            'Building address' => trim((string)($data['building_address'] ?? '')),
+                            'Applicator address' => trim((string)($data['applicator_address'] ?? '')),
+                            'Applicator ABN' => trim((string)($data['applicator_active_abn'] ?? '')),
+                            'Building name' => trim((string)($data['building_name'] ?? '')),
+                            'Building / area name' => trim((string)($data['building_area_name'] ?? '')),
+                            'Area warranted' => trim((string)($data['area_warranted'] ?? '')),
+                            'Requested warranty' => $warrantyPeriod,
+                            'Certificate sign date' => trim((string)($data['sign_date'] ?? '')),
+                        ];
 
                         $email = new Email('default');
                         $email->setTo($recipients)
                             ->setSubject('New Product Warranty Request Submitted')
                             ->setEmailFormat('html')
-                            ->send(
-                                '<p>A new product warranty request was submitted from website.</p>' .
-                                '<p>' .
-                                '<b>Contact Name:</b> ' . h($contactName !== '' ? $contactName : '-') . '<br>' .
-                                '<b>Email:</b> ' . h($contactEmail !== '' ? $contactEmail : '-') . '<br>' .
-                                '<b>Phone:</b> ' . h($contactPhone !== '' ? $contactPhone : '-') . '<br>' .
-                                '<b>Address:</b> ' . h($siteAddress !== '' ? $siteAddress : '-') . '<br>' .
-                                '<b>Building Name:</b> ' . h((string)($data['building_name'] ?? '')) . '<br>' .
-                                '<b>Building Area Name:</b> ' . h((string)($data['building_area_name'] ?? '')) . '<br>' .
-                                '<b>Area Warranted:</b> ' . h((string)($data['area_warranted'] ?? '')) . '<br>' .
-                                '<b>Application:</b> ' . h((string)($data['application'] ?? '')) . '<br>' .
-                                '<b>Requested Warranty:</b> ' . h((string)($data['start_requested_warranty'] ?? '')) . ' to ' . h((string)($data['end_requested_warranty'] ?? '')) .
-                                '</p>' .
-                                '<p>Open admin product warranty list:</p>' .
-                                '<p><a href="' . h($adminListUrl) . '">' . h($adminListUrl) . '</a></p>'
-                            );
+                            ->setTemplate('product_warranty_admin_notify')
+                            ->setLayout('default')
+                            ->setViewVars([
+                                'siteName' => $siteName,
+                                'logoUrl' => $logoUrl,
+                                'introLine' => 'A new product warranty request was submitted from the website.',
+                                'detailRows' => $detailRows,
+                                'adminListUrl' => $adminListUrl,
+                            ])
+                            ->send();
                     } catch (\Throwable $e) {
                         Log::error('Product warranty request notification email failed: ' . $e->getMessage());
                     }
