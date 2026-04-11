@@ -2128,17 +2128,28 @@ class UsersController extends AppController
 		);
 		$this->set('LoginHistoryArr', $LoginHistoryArr);
 	}
-	
-	function admin_logintostaff(){
+
+	/**
+	 * CakePHP 3 dispatches admin_logintostaff as adminLogintostaff(); keep wrapper + legacy method.
+	 */
+	public function adminLogintostaff(): ?Response
+	{
+		return $this->admin_logintostaff();
+	}
+
+	public function admin_logintostaff(): ?Response
+	{
 		$this->checkAdminSession();
 		$this->autoRender = false;
-		
+
 		$cus_arr = $this->NappUser->find()->where(['email' => 'kal@durotechindustries.com.au'])->first();
-		if(!empty($cus_arr)){
-			$this->request->getSession()->write('Customer', $cus_arr['NappUser']);
-			$this->request->getSession()->write('is_staff', 1);			
-			$this->redirect('/staffs/dashboard');
-		}	
+		if (!empty($cus_arr)) {
+			$this->request->getSession()->write('Customer', $cus_arr->toArray());
+			$this->request->getSession()->write('is_staff', 1);
+			return $this->redirect('/staffs/dashboard');
+		}
+		$this->Flash->error('Staff profile for this switch was not found.');
+		return $this->redirect('/admin/users/dashboard');
 	}	
 	
 	function logintostaff(){
