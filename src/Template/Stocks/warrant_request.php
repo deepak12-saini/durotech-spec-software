@@ -59,7 +59,10 @@
 								<a target="_blank" href="<?php echo SITEURL.'pdf/FPDI/'.$WarrantyRequests['WarrantyRequest']['certificate']; ?>" class="btn btn-xs btn-info">Download</a>
 							<?php } ?>
 						</td>
-						<td><?php echo date('d F Y',strtotime($WarrantyRequests['WarrantyRequest']['created'])); ?></td>
+						<td><?php
+							$wrRow = $WarrantyRequests['WarrantyRequest'] ?? [];
+							echo h($this->DateDisplay->mysqlDate($wrRow['created'] ?? null, 'd F Y', [$wrRow['modified'] ?? null]));
+						?></td>
 						<td>
 						
 							<?php if($WarrantyRequests['WarrantyRequest']['status'] < 2){ ?>

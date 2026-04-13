@@ -50,6 +50,7 @@ class AppView extends View
     {
         parent::initialize();
         $this->loadHelper('Paginator');
+        $this->loadHelper('DateDisplay');
         $controller = (string)$this->getRequest()->getParam('controller', '');
         $action = (string)$this->getRequest()->getParam('action', '');
         // Old templates compare lowercase values like 'staffs' and 'dashboard'.

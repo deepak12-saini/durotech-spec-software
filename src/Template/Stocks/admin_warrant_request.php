@@ -64,7 +64,7 @@
 								<a target="_blank" href="<?php echo $this->Url->build('/pdf/FPDI/' . $wr['certificate']); ?>" class="btn btn-xs btn-info">Download</a>
 							<?php } ?>
 						</td>
-						<td><?php echo !empty($wr['created']) ? date('d F Y', strtotime($wr['created'])) : ''; ?></td>
+						<td><?php echo h($this->DateDisplay->mysqlDate($wr['created'] ?? null, 'd F Y', [$wr['modified'] ?? null])); ?></td>
 						<td>
 							<?php if ($status < 2) { ?>
 								<a href="<?php echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_sendformtocsutomer', $uniqueId]); ?>" class="btn btn-xs btn-info">Send Form Request</a>
