@@ -44,6 +44,7 @@ class StaffsController extends AppController {
 		$this->loadModel('Mailer');
 		$this->loadModel('MailerComment');
 		$this->loadModel('SpecUsearea');
+		$this->loadComponent('Paginator');
 	}
 
 	public function beforeFilter(EventInterface $event): ?Response
@@ -200,73 +201,138 @@ class StaffsController extends AppController {
 		}
 	}
 	
-	function datasheet(){
-		
-		$this->layout='staff_inner_layout';
-		$this->set('title_for_layout',SITENAME.' Product Datasheet');
+	public function datasheet(): void
+	{
+		$this->viewBuilder()->setLayout('staff_inner_layout');
+		$this->set('title_for_layout', SITENAME . ' Product Datasheet');
 		$this->checkSatffSession();
-		$user_id=$this->Session->read('Customer.id');
-		
-		$this->Product->bindModel(
-		array('belongsTo' => array('Category' => array(
-			'className' => 'Category',			 
-			'foreignKey' => 'category_id',				
-			'conditions' => array(),
-			'fields' => '',
-			'order' => array(),
-		))));
+		$user_id = $this->Session->read('Customer.id');
+
 		$name = '';
 		$category_id = '';
-		if(!empty($this->request->data)){
-			$name = $this->request->data['productname'];
-			$category_id = $this->request->data['category_id'];
-			if(!empty($category_id) && !empty($name)){
-				$this->paginate = array('conditions'=>array('Product.category_id'=>$category_id,'Product.status'=>1,'Product.is_deleted'=>0,'Product.datasheet !='=>'','Product.title LIKE'=>'%'.$name.'%'),'page' => 1,'page' => 1, 'limit' => 20);
-			}else if(!empty($category_id)){
-				$this->paginate = array('conditions'=>array('Product.category_id'=>$category_id,'Product.status'=>1,'Product.is_deleted'=>0),'page' => 1,'page' => 1, 'limit' => 20);
-			}else if(!empty($name)){
-				$this->paginate = array('conditions'=>array('Product.status'=>1,'Product.is_deleted'=>0,'Product.datasheet !='=>'','Product.title LIKE'=>'%'.$name.'%'),'page' => 1,'page' => 1, 'limit' => 20);
-			}		
-			
-		}else{
-			$this->paginate = array('conditions'=>array('Product.status'=>1,'Product.is_deleted'=>0,'Product.datasheet !='=>''),'page' => 1, 'limit' => 25,'order'=>array('Product.title'=>'asc'));
+
+		$query = $this->Product->find()
+			->contain(['Category'])
+			->where([
+				'Product.status' => 1,
+				'Product.is_deleted' => 0,
+			]);
+
+		$data = $this->request->getData();
+		$isPost = $this->request->is('post');
+		if ($isPost) {
+			$name = trim((string)($data['productname'] ?? ''));
+			$category_id = $data['category_id'] ?? '';
+
+			if ($category_id !== '' && $category_id !== null && $name !== '') {
+				$query->where([
+					'Product.category_id' => $category_id,
+					'Product.title LIKE' => '%' . $name . '%',
+				]);
+				$query->where(function ($exp) {
+					return $exp->and_([
+						$exp->isNotNull('Product.datasheet'),
+						$exp->notEq('Product.datasheet', ''),
+					]);
+				});
+				$this->paginate = ['limit' => 20];
+			} elseif ($category_id !== '' && $category_id !== null) {
+				$query->where(['Product.category_id' => $category_id]);
+				$this->paginate = ['limit' => 20];
+			} elseif ($name !== '') {
+				$query->where(['Product.title LIKE' => '%' . $name . '%']);
+				$query->where(function ($exp) {
+					return $exp->and_([
+						$exp->isNotNull('Product.datasheet'),
+						$exp->notEq('Product.datasheet', ''),
+					]);
+				});
+				$this->paginate = ['limit' => 20];
+			} else {
+				$query->where(function ($exp) {
+					return $exp->and_([
+						$exp->isNotNull('Product.datasheet'),
+						$exp->notEq('Product.datasheet', ''),
+					]);
+				});
+				$this->paginate = [
+					'limit' => 25,
+					'order' => ['Product.title' => 'ASC'],
+				];
+			}
+		} else {
+			$query->where(function ($exp) {
+				return $exp->and_([
+					$exp->isNotNull('Product.datasheet'),
+					$exp->notEq('Product.datasheet', ''),
+				]);
+			});
+			$this->paginate = [
+				'limit' => 25,
+				'order' => ['Product.title' => 'ASC'],
+			];
 		}
-		
-		$productArr = $this->Paginator->paginate('Product');		
-		$this->set('productArr',$productArr);
-		$this->set('category_id',$category_id);
-		$this->set('name',$name);
-		
-		$categoryArr = $this->Category->find('all',array('conditions'=>array('Category.is_deteled'=>0,'Category.status'=>1)));
-		$this->set('categoryArr',$categoryArr);
-		
-		
-		$upermission = $this->UserPermission->find('all',array('conditions'=>array('UserPermission.user_id'=>$user_id)));
-		$this->set('upermission',$upermission);			
-	
+
+		$results = $this->paginate($query);
+
+		$productArr = [];
+		foreach ($results as $entity) {
+			$row = $entity->toArray();
+			$cat = $row['category'] ?? [];
+			unset($row['category']);
+			$productArr[] = ['Product' => $row, 'Category' => $cat];
+		}
+
+		$this->set('productArr', $productArr);
+		$this->set('category_id', $category_id);
+		$this->set('name', $name);
+
+		$categoryArr = [];
+		foreach (
+			$this->Category->find()
+				->where(['Category.is_deteled' => 0, 'Category.status' => 1])
+				as $catEntity
+		) {
+			$categoryArr[] = ['Category' => $catEntity->toArray()];
+		}
+		$this->set('categoryArr', $categoryArr);
+
+		$upermission = [];
+		foreach (
+			$this->UserPermission->find()
+				->where(['UserPermission.user_id' => $user_id])
+				as $up
+		) {
+			$upermission[] = ['UserPermission' => $up->toArray()];
+		}
+		$this->set('upermission', $upermission);
 	}	
 	
-	function document($product_code=null,$type=null,$num=null){
-		
-		$this->layout='staff_inner_layout';
-		$this->set('title_for_layout',SITENAME.' Product Datasheet');
+	public function document($product_code = null, $type = null, $num = null): ?Response
+	{
+		$this->viewBuilder()->setLayout('staff_inner_layout');
+		$this->set('title_for_layout', SITENAME . ' Product Datasheet');
 		$this->checkSatffSession();
-		$user_id=$this->Session->read('Customer.id');
-		if(!empty($product_code) && !empty($type)){
-			$product_code = base64_decode($product_code);
-			$data = $this->Product->find('first',array('conditions'=>array('Product.product_code'=>$product_code)));
-					
-			if(empty($data)){
-				$this->Session->setFlash('Something missing','default',array('class' => 'alert alert-success'));
-				$this->redirect('datasheet');
-			}	
-			$this->set('data',$data);			
-			$this->set('type',$type);			
-			$this->set('num',$num);			
-		}else{
-			$this->Session->setFlash('Something missing','default',array('class' => 'alert alert-success'));
-			$this->redirect('datasheet');
-		}	
+
+		if (!empty($product_code) && !empty($type)) {
+			$decoded = base64_decode((string)$product_code, true);
+			$code = $decoded !== false ? $decoded : (string)$product_code;
+			$entity = $this->Product->find()
+				->where(['Product.product_code' => $code])
+				->first();
+
+			if (empty($entity)) {
+				$this->Flash->error('Something missing.');
+				return $this->redirect(['action' => 'datasheet']);
+			}
+			$this->set('data', ['Product' => $entity->toArray()]);
+			$this->set('type', $type);
+			$this->set('num', $num);
+
+			return null;
+		}
+		$this->Flash->error('Something missing.');
+		return $this->redirect(['action' => 'datasheet']);
 	}
 	
 	function autologin($conformance_id=null){

@@ -15,7 +15,8 @@ class ProductsTable extends Table
 
         $this->addBehavior('Timestamp');
 
-        $this->belongsTo('Categories', [
+        $this->belongsTo('Category', [
+            'className' => 'Categories',
             'foreignKey' => 'category_id',
         ]);
     }

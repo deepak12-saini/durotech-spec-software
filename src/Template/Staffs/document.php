@@ -1,25 +1,28 @@
 <?php
-	
+	$url = '';
+	$name = '';
+
 	if($type == 'datasheet'){
-		$datasheet = explode("##",$data['Product']['datasheet']);
-		
-		$url = $datasheet[$num];
+		$datasheet = explode("##", (string)($data['Product']['datasheet'] ?? ''));
+		$url = $datasheet[$num] ?? '';
 		$name = 'Datasheet';
 	
 	}
 	if($type == 'msds'){
-		$msds = explode("##",$data['Product']['msds']);
-		$url = $msds[$num];
+		$msds = explode("##", (string)($data['Product']['msds'] ?? ''));
+		$url = $msds[$num] ?? '';
 		$name = 'MSDS';
 	}
 	if($type == 'voc'){
-		$voc = explode("##",$data['Product']['voc']);
-		$url = $voc[$num];
+		$vocRaw = $data['Product']['voc_pdf'] ?? $data['Product']['voc'] ?? '';
+		$voc = explode("##", (string)$vocRaw);
+		$url = $voc[$num] ?? '';
 		$name = 'VOC';
 	}
 	if($type == 'label'){
-		$label = explode("##",$data['Product']['label']);
-		$url = $label[$num];
+		$labelRaw = $data['Product']['label'] ?? $data['Product']['product_label'] ?? '';
+		$label = explode("##", (string)$labelRaw);
+		$url = $label[$num] ?? '';
 		$name = 'Label';
 	}
 	//$url  = str_replace(' ','%20',$url);
@@ -29,7 +32,7 @@
 <div class="page-content">
 	<div class="page-header">
 	<h1>
-	 Product Documents >> <small> <?php echo $data['Product']['title'].' '.$name; ?>	</small> <a href="<?php echo SITEURL.'staffs/datasheet'?>" class="btn btn-xs btn-inverse" style="float:right;">Back</a>
+	 Product Documents >> <small> <?php echo h(($data['Product']['title'] ?? '') . ' ' . $name); ?>	</small> <a href="<?php echo SITEURL.'staffs/datasheet'?>" class="btn btn-xs btn-inverse" style="float:right;">Back</a>
 	</h1>
 	</div><!-- /.page-header -->
 	

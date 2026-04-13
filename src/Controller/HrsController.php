@@ -46,6 +46,12 @@ class HrsController extends AppController
 		return $this->admin_hr_appraisal_form();
 	}
 
+	/** CakePHP 3 dispatches hr_appraisal_form as hrAppraisalForm(). */
+	public function hrAppraisalForm(): ?Response
+	{
+		return $this->hr_appraisal_form();
+	}
+
 	public function adminFormatEvaluationEmploye()
 	{
 		return $this->admin_format_evaluation_employe();

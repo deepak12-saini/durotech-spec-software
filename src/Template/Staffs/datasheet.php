@@ -17,19 +17,27 @@ input {
 	<div class="page-header">
 		<h1>Product Documents
 		
-			<form action="" method="post" style="float:right;">
-				<select name="category_id" >
+			<?php echo $this->Form->create(null, [
+				'url' => ['action' => 'datasheet'],
+				'style' => 'float:right;',
+			]); ?>
+				<select name="category_id" id="datasheet-category-id">
 					<option value="">Select Category</option>
 					<?php
 						foreach($categoryArr as $categoryArrs){
 					?>	
-						<option <?php if($category_id == $categoryArrs['Category']['id']){ echo 'selected'; }?> value="<?php echo $categoryArrs['Category']['id']?>"><?php echo $categoryArrs['Category']['category_name']?></option>
+						<option <?php if($category_id == $categoryArrs['Category']['id']){ echo 'selected'; }?> value="<?php echo h($categoryArrs['Category']['id'])?>"><?php echo h($categoryArrs['Category']['category_name'])?></option>
 					<?php  } ?>
 				</select>
-				<input type="text" name="productname" style="padding:7px 11px !important;" value="<?php echo $name; ?>" placeholder="Search By Product Name" >
-				<input type="submit" name="search" value="search" class="btn btn-info btn-xs top-button" style="margin-left:4px;">	
+				<input type="text" name="productname" style="padding:7px 11px !important;" value="<?php echo h($name); ?>" placeholder="Search By Product Name" >
+				<?php echo $this->Form->submit('search', [
+					'name' => 'search',
+					'class' => 'btn btn-info btn-xs top-button',
+					'style' => 'margin-left:4px;',
+					'div' => false,
+				]); ?>
 				<a href="<?php echo SITEURL.'staffs/datasheet'; ?>"  class="btn btn-warning btn-xs top-button" >Clear All</a>	
-			</form>		
+			<?php echo $this->Form->end(); ?>
 		</h1>
 	</div>
 	<?php
