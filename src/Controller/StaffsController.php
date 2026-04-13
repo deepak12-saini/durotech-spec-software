@@ -1738,15 +1738,9 @@ class StaffsController extends AppController {
 		$data = $this->request->getData();
 		if (!empty($data)) {
 
-			$mailerid = $this->Mailer->find()->where(['Mailer.type' => 3])->orderDesc('Mailer.id')->count();
-			$id = $mailerid + 1;
-
-			$yr = date('y');
-			$mm = date('m');
-			$code = str_pad((string)$id, 3, '0', STR_PAD_LEFT);
-			$refernce = 'DTSPEC ' . $yr . '-' . $mm . '-' . $code;
-
-			$tracknumber = $refernce;
+			$tracknumber = method_exists($this->Mailer, 'getNextSpecTrackNumber')
+				? $this->Mailer->getNextSpecTrackNumber()
+				: ('DTSPEC ' . date('d-m') . '-' . str_pad((string)($this->Mailer->find()->where(['Mailer.type' => 3])->count() + 1), 3, '0', STR_PAD_LEFT));
 			$name = $data['name'] ?? '';
 			$email = $data['email'] ?? '';
 			$company = $data['company'] ?? '';
@@ -1759,14 +1753,15 @@ class StaffsController extends AppController {
 
 			$entity = $this->Mailer->newEntity([
 				'user_id' => $user_id,
+				'spec_v' => 0,
 				'name' => $name,
-				'tracknumber' => '',
+				'tracknumber' => $tracknumber,
 				'address' => $address,
 				'specification' => $specification,
 				'date' => $date,
 				'email' => $email,
 				'company' => $company,
-				'type' => $type,
+				'type' => 3,
 				'subject' => $subject,
 				'use_area' => $use_area,
 				'created' => date('Y-m-d H:i:s'),
@@ -1833,7 +1828,67 @@ class StaffsController extends AppController {
 						'verify_peer_name' => false,
 					],
 				];
-				@file_get_contents($url, false, stream_context_create($arrContextOptions));
+				$pdfResponseRaw = @file_get_contents($url, false, stream_context_create($arrContextOptions));
+				$pdfResponse = is_string($pdfResponseRaw) ? @json_decode($pdfResponseRaw, true) : null;
+
+				// generatepdf.php sanitizes filenames (spaces -> underscores), so always resolve to actual saved filename.
+				$resolvedPdfFileName = $pdfname . '.pdf';
+				if (is_array($pdfResponse) && !empty($pdfResponse['filename'])) {
+					$resolvedPdfFileName = (string)$pdfResponse['filename'];
+				} else {
+					$safePdfname = preg_replace('/[^a-zA-Z0-9_\-]/', '_', (string)$pdfname);
+					$safePdfname = preg_replace('/_+/', '_', (string)$safePdfname);
+					$safePdfname = trim((string)$safePdfname, '_');
+					if ($safePdfname !== '') {
+						$resolvedPdfFileName = $safePdfname . '.pdf';
+					}
+				}
+
+				// Send staff spec email to internal recipients (same routing as employee flow).
+				$template_name = 'new_sendeasyspec';
+				$pdfFileName = $resolvedPdfFileName;
+				$pdfFilePath = WWW_ROOT . 'dompdf' . DS . $pdfFileName;
+				$toEmail = 'kal@durotechindustries.com.au';
+				$ccEmails = ['info@durotechindustries.com.au'];
+				$bccEmails = ['deepaksaini10036@gmail.com'];
+				$variables = [
+					'subject' => $subject,
+					'pdfname' => base64_encode(base64_encode($pdfFileName)),
+					'name' => $name,
+					'address' => $address,
+					'company' => $company,
+					'specification' => $specification,
+					'email' => (string)$email,
+					'date' => $data['date'] ?? '',
+				];
+				try {
+					if (is_file($pdfFilePath)) {
+						$from = defined('EMAIL') ? EMAIL : 'deepaksaini10036@gmail.com';
+						$fromName = defined('SITENAME') ? SITENAME : 'Durotech';
+						$emailObj = new \Cake\Mailer\Email('default');
+						$emailObj->viewBuilder()
+							->setClassName('App\\View\\AppView')
+							->setTemplate($template_name);
+						$emailObj->setFrom([$from => $fromName])
+							->setTo($toEmail)
+							->setCc($ccEmails)
+							->setBcc($bccEmails)
+							->setSubject($subject)
+							->setEmailFormat('html')
+							->setViewVars($variables)
+							->setAttachments([
+								$pdfFileName => [
+									'file' => $pdfFilePath,
+									'mimetype' => 'application/pdf',
+								],
+							])
+							->send();
+					} else {
+						$this->sendemail($toEmail, $subject, $template_name, $variables);
+					}
+				} catch (\Throwable $e) {
+					\Cake\Log\Log::error('Staff spec request email failed: ' . $e->getMessage());
+				}
 
 				$this->Flash->success('PDF file generated successfully.');
 				return $this->redirect(['action' => 'staff_specRequest_form']);

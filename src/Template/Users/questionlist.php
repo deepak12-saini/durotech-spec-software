@@ -229,16 +229,20 @@ if (!empty($user)) {
 			<div class="row">	
 				<div class="col-xs-12">
 				
-					<form action="" class="form-horizontal" id="" method="post" accept-charset="utf-8">
-						<?php if(!empty($usernewArr['NappUser']['email']) && !empty($usernewArr['NappUser']['mobile_number']) && ($usernewArr['NappUser']['is_active_otp'] > 0) ){ ?>
-							<p><b>Form enhaced security of your account, we have sent One-Time Password (OTP) to your mobile number <?php echo $usernewArr['NappUser']['mobile_number'] ?> and email Id <?php echo $usernewArr['NappUser']['email'] ?></b></p>	
-						<?php }else { ?>
-							<p><b>Form enhaced security of your account, we have sent One-Time Password (OTP) to you email Id <?php echo $usernewArr['NappUser']['email'] ?></b></p>	
+					<?= $this->Form->create(null, ['class' => 'form-horizontal']) ?>
+						<?php
+						$nuEmail = !empty($usernewArr) ? (is_object($usernewArr) ? ($usernewArr->email ?? '') : ($usernewArr['NappUser']['email'] ?? '')) : '';
+						$nuMobile = !empty($usernewArr) ? (is_object($usernewArr) ? ($usernewArr->mobile_number ?? '') : ($usernewArr['NappUser']['mobile_number'] ?? '')) : '';
+						$nuActiveOtp = !empty($usernewArr) ? (int)(is_object($usernewArr) ? ($usernewArr->is_active_otp ?? 0) : ($usernewArr['NappUser']['is_active_otp'] ?? 0)) : 0;
+						if (!empty($nuEmail) && !empty($nuMobile) && $nuActiveOtp > 0) { ?>
+							<p><b>Form enhaced security of your account, we have sent One-Time Password (OTP) to your mobile number <?php echo h($nuMobile); ?> and email Id <?php echo h($nuEmail); ?></b></p>	
+						<?php } else { ?>
+							<p><b>Form enhaced security of your account, we have sent One-Time Password (OTP) to you email Id <?php echo h($nuEmail); ?></b></p>	
 						<?php  } ?>
 						<div class="form-group">
 							<label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Please enter One Time Password (OTP): </label>
 							<div class="col-sm-9">
-								<input name="data[otp]" class="col-xs-10 col-sm-5 ErrorField" id="otp" placeholder="Fill OTP received on mobile / email" type="password">						
+								<input name="otp" class="col-xs-10 col-sm-5 ErrorField" id="otp" placeholder="Fill OTP received on mobile / email" type="password">						
 							</div>
 						</div>				
 						<div class="form-group">
@@ -246,7 +250,7 @@ if (!empty($user)) {
 								<input class="btn btn-success" id="add_ser_prd_btn" value="Verify" type="submit">&nbsp;							
 							</div>
 						</div>
-					</form>
+					<?= $this->Form->end() ?>
 					<p class="alert alert-warning"><b>Please check your mail. Enter one time pssword received on your registered email address.</b> </p>
 				</div>		
 			</div>

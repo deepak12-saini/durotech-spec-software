@@ -59,18 +59,36 @@ class WelcomesController extends AppController
 
         $mailer = $this->Welcomes->find()->where(['Welcomes.id' => $id])->first();
         if ($mailer) {
-            $subject = $mailer->subject;
-            $tracknumber = $mailer->tracknumber;
-            $fields = [
-                'tracknumber' => urlencode($tracknumber),
-                'mailer_id' => urlencode((string)$id),
-                'subject' => urlencode($subject),
-            ];
-            $fields_string = http_build_query($fields);
-            $url = rtrim(SITEURL, '/') . '/cws/welcomegeneratepdf.php?' . $fields_string;
-            @file_get_contents($url);
+            $to = trim((string)($mailer->email ?? ''));
+            if ($to === '') {
+                $this->Flash->error('Recipient email is missing for this record.');
+                return $this->redirect(['action' => 'index']);
+            }
 
-            $this->Flash->success('Mailer sent successfully.');
+            $subject = (string)($mailer->subject ?? 'Durotech: Welcome Mailer');
+            $priceUrl = (string)($mailer->price_url ?? '');
+            if ($priceUrl === '' || stripos($priceUrl, '.pdf') === false) {
+                $priceId = (int)($mailer->price_id ?? 0);
+                if ($priceId > 0) {
+                    $labFile = $this->LabFiles->find()->where(['LabFiles.id' => $priceId])->first();
+                    if ($labFile && !empty($labFile->dir) && !empty($labFile->filename)) {
+                        $priceUrl = rtrim(SITEURL, '/') . '/webroot/' . trim((string)$labFile->dir, '/') . '/' . rawurlencode((string)$labFile->filename);
+                    }
+                }
+            }
+            $variables = [
+                'name' => (string)($mailer->name ?? ''),
+                'message' => (string)($mailer->message ?? ''),
+                'tracknumber' => (string)($mailer->tracknumber ?? ''),
+                'price_url' => $priceUrl,
+                'label' => (string)($mailer->label ?? ''),
+            ];
+            try {
+                $this->sendemail($to, $subject, 'welcome_mailer', $variables);
+                $this->Flash->success('Mailer sent successfully.');
+            } catch (\Throwable $e) {
+                $this->Flash->error('Failed to send mail. Please check email config/logs.');
+            }
             return $this->redirect(['action' => 'index']);
         }
 
@@ -120,7 +138,7 @@ class WelcomesController extends AppController
             ];
             if ($labFile) {
                 $insert['label'] = $labFile->label;
-                $insert['price_url'] = rtrim(SITEURL, '/') . '/' . $labFile->dir . '/' . $labFile->filename;
+                $insert['price_url'] = rtrim(SITEURL, '/') . '/webroot/' . trim((string)$labFile->dir, '/') . '/' . rawurlencode((string)$labFile->filename);
                 $insert['price_id'] = $labFile->id;
                 $insert['price_password'] = $labFile->password;
             }
@@ -198,7 +216,7 @@ class WelcomesController extends AppController
             ];
             if ($labFile) {
                 $insert['label'] = $labFile->label;
-                $insert['price_url'] = rtrim(SITEURL, '/') . '/' . $labFile->dir . '/' . $labFile->filename;
+                $insert['price_url'] = rtrim(SITEURL, '/') . '/webroot/' . trim((string)$labFile->dir, '/') . '/' . rawurlencode((string)$labFile->filename);
                 $insert['price_id'] = $labFile->id;
                 $insert['price_password'] = $labFile->password;
             }

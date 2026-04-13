@@ -125,7 +125,7 @@ if (!empty($user)) {
 			<div class="row">	
 				<div class="col-xs-12">
 				
-					<form action="" class="form-horizontal" id="" method="post" accept-charset="utf-8">
+					<?= $this->Form->create(null, ['class' => 'form-horizontal']) ?>
 						<?php
 						$nuEmail = !empty($usernewArr) ? (is_object($usernewArr) ? ($usernewArr->email ?? '') : ($usernewArr['NappUser']['email'] ?? '')) : '';
 						$nuMobile = !empty($usernewArr) ? (is_object($usernewArr) ? ($usernewArr->mobile_number ?? '') : ($usernewArr['NappUser']['mobile_number'] ?? '')) : '';
@@ -138,7 +138,7 @@ if (!empty($user)) {
 						<div class="form-group">
 							<label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Please enter One Time Password (OTP): </label>
 							<div class="col-sm-9">
-								<input name="data[otp]" class="col-xs-10 col-sm-5 ErrorField" id="otp" placeholder="Fill OTP received on mobile / email" type="password">						
+								<input name="otp" class="col-xs-10 col-sm-5 ErrorField" id="otp" placeholder="Fill OTP received on mobile / email" type="password">						
 							</div>
 						</div>				
 						<div class="form-group">
@@ -146,7 +146,7 @@ if (!empty($user)) {
 								<input class="btn btn-success" id="add_ser_prd_btn" value="Verify" type="submit">&nbsp;							
 							</div>
 						</div>
-					</form>
+					<?= $this->Form->end() ?>
 					<p class="alert alert-warning"><b>Please check your mail. Enter one time pssword received on your registered email address.</b> </p>
 				</div>		
 			</div>

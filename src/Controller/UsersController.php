@@ -1322,67 +1322,71 @@ class UsersController extends AppController
 	function activateaccount($code=null){
 
 		$this->autoRender = false;
-		if(!empty($code)){
-			$code = base64_decode($code);
-			$cus_arr = $this->NappUser->find()->where(['email' => $code])->first();
-		
-			if(!empty($cus_arr)){		
-				if($cus_arr['NappUser']['is_active'] == 0){	
-					$password = $cus_arr['NappUser']['address_5'];					
-					$this->request->getData()['NappUser']['id'] = $cus_arr['NappUser']['id'];
-					$this->request->getData()['NappUser']['is_active'] = 1;
-					$this->request->getData()['NappUser']['address_5'] = '';
-					$this->NappUser->save($this->request->getData());
-					
-					
-					$to = $cus_arr['NappUser']['email'];				
-					$subject = SITENAME." :: Your account is activated.";				
-					$template_name = 'message';
-					$variables = array('password'=>$password ,'name'=>$cus_arr['NappUser']['name'],'email'=>$cus_arr['NappUser']['email'],'type'=>'signup');
-					try{
-						$this->sendemail($to , $subject ,$template_name,$variables);								
-					}catch (Exception $e){				
-						$this->Flash->success('Register successfully.');
-						$this->redirect('/login');
-					}
-					
-					if($cus_arr['NappUser']['is_staff_id'] == 0){	
-						$this->Flash->success('You account has been activated successfully.');	
-						$this->request->getSession()->write('Customer', $cus_arr['NappUser']);
-						$this->request->getSession()->write('is_customer', 1);			
-						return $this->redirect(['action' => 'admin_dashboard']);
-					}else{
-						$semployeeid =  base64_encode(base64_encode(base64_encode($cus_arr['NappUser']['email'])));
-						$staff_to = 'kal@durotechindustries.com.au';				
-						#$staff_to = 'web@xoroglobal.com';				
-						$staff_subject = SITENAME." :: New Employee Registered.";				
-						$staff_template_name = 'staffmessage';
-						$staff_variables = array('emp_id'=>$semployeeid,'name'=>$cus_arr['NappUser']['name'].' '.$cus_arr['NappUser']['lname'],'email'=>$cus_arr['NappUser']['email'],'type'=>'register');
-						try{
-							$this->sendemail($staff_to , $staff_subject ,$staff_template_name,$staff_variables);
-						}catch (Exception $e){	
-						
-						}	
-						$this->Flash->success('You account has been activated successfully.');		
-						$this->request->getSession()->write('Customer', $cus_arr['NappUser']);
-						$this->request->getSession()->write('is_staff', 1);			
-						$this->redirect('/staffs/dashboard');
-					}	
-					
-					
-				}else{
-					$this->Flash->error('your account is already activated.');
-					 $this->redirect('/login');		
-				} 
-			}else{
-				$this->Flash->success('wrong activation code.');
-				$this->redirect('/login');		
-			}		
-		}else{
+		if (empty($code)) {
 			$this->Flash->error('activateion code is wrong.');
-			$this->redirect('/login');
-		}	
-	}	
+			return $this->redirect('/login');
+		}
+
+		$decodedEmail = base64_decode((string)$code, true);
+		if ($decodedEmail === false || $decodedEmail === '') {
+			$this->Flash->error('activateion code is wrong.');
+			return $this->redirect('/login');
+		}
+
+		$cus_arr = $this->NappUser->find()->where(['email' => $decodedEmail])->first();
+		if (!$cus_arr) {
+			$this->Flash->success('wrong activation code.');
+			return $this->redirect('/login');
+		}
+
+		if ((int)($cus_arr->is_active ?? 0) !== 0) {
+			$this->Flash->error('your account is already activated.');
+			return $this->redirect('/login');
+		}
+
+		$password = (string)($cus_arr->address_5 ?? '');
+		$cus_arr->is_active = 1;
+		$cus_arr->address_5 = '';
+		$this->NappUser->save($cus_arr);
+
+		$to = (string)($cus_arr->email ?? '');
+		$subject = SITENAME." :: Your account is activated.";
+		$template_name = 'message';
+		$variables = array('password'=>$password ,'name'=>(string)($cus_arr->name ?? ''),'email'=>$to,'type'=>'signup');
+		try{
+			$this->sendemail($to , $subject ,$template_name,$variables);
+		}catch (\Exception $e){
+			$this->Flash->success('Register successfully.');
+			return $this->redirect('/login');
+		}
+
+		if ((int)($cus_arr->is_staff_id ?? 0) == 0){
+			$this->Flash->success('You account has been activated successfully.');
+			$this->request->getSession()->write('Customer', $cus_arr->toArray());
+			$this->request->getSession()->write('is_customer', 1);
+			return $this->redirect(['action' => 'dashboard']);
+		}
+
+		$semployeeid =  base64_encode(base64_encode(base64_encode((string)($cus_arr->email ?? ''))));
+		$staff_to = 'kal@durotechindustries.com.au';
+		$staff_subject = SITENAME." :: New Employee Registered.";
+		$staff_template_name = 'staffmessage';
+		$staff_variables = array(
+			'emp_id'=>$semployeeid,
+			'name'=>trim((string)($cus_arr->name ?? '') . ' ' . (string)($cus_arr->lname ?? '')),
+			'email'=>(string)($cus_arr->email ?? ''),
+			'type'=>'register'
+		);
+		try{
+			$this->sendemail($staff_to , $staff_subject ,$staff_template_name,$staff_variables);
+		}catch (\Exception $e){
+			// non-blocking
+		}
+		$this->Flash->success('You account has been activated successfully.');
+		$this->request->getSession()->write('Customer', $cus_arr->toArray());
+		$this->request->getSession()->write('is_staff', 1);
+		return $this->redirect('/staffs/dashboard');
+	}
 	
 	public function autologin($email=null) {
 		
@@ -1392,7 +1396,7 @@ class UsersController extends AppController
 		$is_staff=$this->request->getSession()->read('is_staff');
 		
 		if(!empty($is_customer)){
-			return $this->redirect(['action' => 'admin_dashboard']);
+			return $this->redirect(['action' => 'dashboard']);
 		}else if(!empty($is_staff)){
 			$this->redirect('/staffs/dashboard');
 		}		
@@ -1415,7 +1419,7 @@ class UsersController extends AppController
 				if($cus_arr['NappUser']['is_staff_id'] == 0){					
 					$this->request->getSession()->write('Customer', $cus_arr['NappUser']);
 					$this->request->getSession()->write('is_customer', 1);			
-					return $this->redirect(['action' => 'admin_dashboard']);
+					return $this->redirect(['action' => 'dashboard']);
 				}else{
 					$this->request->getSession()->write('Customer', $cus_arr['NappUser']);
 					$this->request->getSession()->write('is_staff', 1);			
@@ -1438,7 +1442,7 @@ class UsersController extends AppController
 		$is_staff=$this->request->getSession()->read('is_staff');
 		
 		if(!empty($is_customer)){
-			return $this->redirect(['action' => 'admin_dashboard']);
+			return $this->redirect(['action' => 'dashboard']);
 		}else if(!empty($is_staff)){
 			$this->redirect('/staffs/dashboard');
 		}		
@@ -1461,7 +1465,7 @@ class UsersController extends AppController
 					$this->request->getSession()->write('Customer', $cus_arr->toArray());
 					if($cus_arr->is_staff_id == 0){
 						$this->request->getSession()->write('is_customer', 1);
-						return $this->redirect(['action' => 'admin_dashboard']);
+						return $this->redirect(['action' => 'dashboard']);
 					}else{
 						$this->request->getSession()->write('is_staff', 1);
 						return $this->redirect('/staffs/dashboard');
@@ -1820,6 +1824,12 @@ class UsersController extends AppController
 			
 		}
 	}
+
+	/** CamelCase alias for CakePHP 3 dispatcher compatibility. */
+	public function changePassword()
+	{
+		return $this->change_password();
+	}
 	
 	function admin_accesstouser($custId=null){
 		
@@ -1886,8 +1896,8 @@ class UsersController extends AppController
 				$to = 'kal@durotechindustries.com.au';				
 				$subject=SITENAME." :: Refuel CPD Access";				
 				$template_name = 'refuel';
-				$name =  $user['NappUser']['name'].' '.$user['NappUser']['lname'];
-				$variables = array('name'=>$name,'email'=>$user['NappUser']['email'],'type'=>'Refuel');		
+				$name =  (string)($user->name ?? '') . ' ' . (string)($user->lname ?? '');
+				$variables = array('name'=>trim($name),'email'=>(string)($user->email ?? ''),'type'=>'Refuel');		
 				try{
 					$this->sendemail($to,$subject,$template_name,$variables);
 				}catch (Exception $e){
@@ -1899,15 +1909,15 @@ class UsersController extends AppController
 				$to = 'kal@durotechindustries.com.au';				
 				$subject=SITENAME." :: Natspec Presentation Access";				
 				$template_name = 'refuel';
-				$name =  $user['NappUser']['name'].' '.$user['NappUser']['lname'];
-				$variables = array('name'=>$name,'email'=>$user['NappUser']['email'],'type'=>'Presentation');		
+				$name =  (string)($user->name ?? '') . ' ' . (string)($user->lname ?? '');
+				$variables = array('name'=>trim($name),'email'=>(string)($user->email ?? ''),'type'=>'Presentation');		
 				try{
 					$this->sendemail($to,$subject,$template_name,$variables);
 				}catch (Exception $e){
 					
 				}
 				$this->Flash->success('Your request has been sent!');
-				$this->redirect('presentation');	
+				return $this->redirect(['action' => 'presentation']);	
 			}	
 				
 		}	
