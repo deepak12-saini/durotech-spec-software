@@ -44,7 +44,7 @@
 										<div class="time">
 											<i class="icon-time bigger-110"></i>
 											<?php  
-												echo date('d M Y h:i a',strtotime($TaskAssigns['StockReturnComment']['created']));
+												echo format_db_date('d M Y h:i a', $TaskAssigns['StockReturnComment']['created']);
 											?>
 										</div>
 									</div>

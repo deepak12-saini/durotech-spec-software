@@ -5,7 +5,7 @@
 	<div class="page-content">
 		<div class="page-header">
 			<h1>
-				Duro Sales Report (<?php echo date('d M Y',strtotime($currentdate)); ?>)				
+				Duro Sales Report (<?php echo format_db_date('d M Y', $currentdate); ?>)				
 			</h1>
 		</div>
 	

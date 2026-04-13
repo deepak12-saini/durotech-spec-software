@@ -26,9 +26,9 @@
 						<td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?>&nbsp;</td>
 						
 						<!-- <td><?php echo h($DocumentLibraryArrs['DocumentCalibration']['format']); ?>&nbsp;</td> -->
-						<td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentCalibration']['date'])); ?>&nbsp;</td>
+						<td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['DocumentCalibration']['date']); ?>&nbsp;</td>
 						
-						<td> <?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentCalibration']['created'])); ?></td>
+						<td> <?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['DocumentCalibration']['created']); ?></td>
 						<td>
 							<a href="<?php echo SITEURL.'documents/edit_calibration_equipment/'.$DocumentLibraryArrs['DocumentCalibration']['id']; ?>" class="btn btn-mini btn-info">Edit</a>							
 											
@@ -84,7 +84,7 @@
 					
 					<tr><th>Added By: </th><td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?></td></tr>	
 					
-					<tr><th>Date: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentCalibration']['date'])); ?></td></tr>	
+					<tr><th>Date: </th><td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['DocumentCalibration']['date']); ?></td></tr>	
 				</tbody>
 				</table>	
 				<h5 class="label label-inverse">Records</h5>

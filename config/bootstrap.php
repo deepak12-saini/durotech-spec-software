@@ -159,6 +159,20 @@ Log::setConfig(Configure::consume('Log'));
 Security::setSalt(Configure::consume('Security.salt'));
 
 /*
+ * Safe date display in legacy templates: avoids 01-Jan-1970 when strtotime() fails (NULL / 0000-00-00).
+ */
+if (!function_exists('format_db_date')) {
+    /**
+     * @param mixed $value
+     * @param array<int, mixed> $fallbacks
+     */
+    function format_db_date(string $format, $value, array $fallbacks = []): string
+    {
+        return \App\Utility\SafeDate::format($format, $value, $fallbacks);
+    }
+}
+
+/*
  * Site constants for Fronts layouts/views (CakePHP 2 compatibility).
  */
 if (!defined('SITEURL')) {

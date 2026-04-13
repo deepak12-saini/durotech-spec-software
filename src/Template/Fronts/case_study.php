@@ -211,7 +211,7 @@
 
         <?php if (!empty($case['CaseStudy']['project_date'])): ?>
             <p class="case-date mb-0">
-                <strong>📅 Date:</strong> <?php echo date('d M Y', strtotime($case['CaseStudy']['project_date'])); ?>
+                <strong>📅 Date:</strong> <?php echo format_db_date('d M Y', $case['CaseStudy']['project_date']); ?>
             </p>
         <?php endif; ?>
     </div>

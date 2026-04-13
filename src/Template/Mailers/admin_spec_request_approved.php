@@ -61,7 +61,7 @@
 								<?php endif; ?>
 							</td>
 
-							<td><?php echo $mailer->created ? date('d-M-Y h:i a', strtotime($mailer->created)) : ''; ?></td>
+							<td><?php echo $mailer->created ? format_db_date('d-M-Y h:i a', $mailer->created) : ''; ?></td>
 
 							<td>
 								<?php if (!empty($mailer->is_approved) && (int)$mailer->is_approved === 1): ?>

@@ -60,7 +60,7 @@
 							?>&nbsp;
 							</td>
 						
-							<td> <?php echo date('d-M-Y h:i a',strtotime($SsSheetCategorys['SsSheetCategory']['created'])); ?></td>
+							<td> <?php echo format_db_date('d-M-Y h:i a', $SsSheetCategorys['SsSheetCategory']['created']); ?></td>
 							<td> 
 								<a href="javascript:void" class="btn btn-xs btn-defult" onclick="openmodal(<?php echo $SsSheetCategorys['SsSheetCategory']['id']; ?>)"><i class="menu-icon fa fa-user "></i> Share</a>
 								

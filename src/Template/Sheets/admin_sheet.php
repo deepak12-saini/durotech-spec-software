@@ -176,9 +176,9 @@
 								}
 							}
 							if(isset($createddate)){
-								echo date('d-m-Y',strtotime($createddate));
+								echo format_db_date('d-m-Y', $createddate);
 							}else if(isset($rowval[0]['created'])){
-								echo date('d-m-Y',strtotime($rowval[0]['created']));
+								echo format_db_date('d-m-Y', $rowval[0]['created']);
 							}
 							?></td>
 							</form>	

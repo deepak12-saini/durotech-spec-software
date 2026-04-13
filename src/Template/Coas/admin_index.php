@@ -39,7 +39,7 @@
 								<td><?= h($item->date_of_manu); ?>&nbsp;</td>
 								<td><?= h($item->expiry_date); ?>&nbsp;</td>
 								<td><?= h($item->form_no); ?>&nbsp;</td>
-								<td><?= $item->created ? date('d-M-Y h:i a', strtotime($item->created)) : ''; ?></td>
+								<td><?= $item->created ? format_db_date('d-M-Y h:i a', $item->created) : ''; ?></td>
 								<td>
 									<a class="btn btn-mini btn-primary" href="<?= $this->Url->build(['controller' => 'Coas', 'action' => 'admin_edit', $item->id]); ?>">Edit</a>
 									<a class="btn btn-mini btn-info" href="<?= $this->Url->build(['controller' => 'Coas', 'action' => 'admin_download', $item->id]); ?>" target="_blank">Download</a>

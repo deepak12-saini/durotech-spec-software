@@ -41,7 +41,7 @@
 						<td> <?php echo $HrPerformanceFeedbackArrs['HrAppraisalForm']['continue_with_notice']; ?></td>
 						<td> <?php echo $HrPerformanceFeedbackArrs['HrAppraisalForm']['terminate']; ?></td>
 						<td> <?php echo $HrPerformanceFeedbackArrs['HrAppraisalForm']['signature']; ?></td>
-						<td> <?php echo date('d-M-Y',strtotime($HrPerformanceFeedbackArrs['HrAppraisalForm']['created'])); ?></td>
+						<td> <?php echo format_db_date('d-M-Y', $HrPerformanceFeedbackArrs['HrAppraisalForm']['created']); ?></td>
 									
 					</tr>
 					<?php $k++; endforeach; ?>
@@ -95,7 +95,7 @@
 					
 					<tr><th>Added By: </th><td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?></td></tr>	
 					<tr><th>Employee Name: </th><td> <?php echo $HrPerformanceFeedbackArrs['HrAppraisalForm']['employee_name']; ?></td></tr>
-					<tr><th>Date: </th><td><?php echo date('d-M-Y',strtotime($HrPerformanceFeedbackArrs['HrAppraisalForm']['date'])); ?></td></tr>	
+					<tr><th>Date: </th><td><?php echo format_db_date('d-M-Y', $HrPerformanceFeedbackArrs['HrAppraisalForm']['date']); ?></td></tr>	
 					<tr><th>Evaluation Period: </th><td> <?php echo $HrPerformanceFeedbackArrs['HrAppraisalForm']['evaluation_period']; ?></td></tr>
 					<tr><th>Designation: </th><td> <?php echo $HrPerformanceFeedbackArrs['HrAppraisalForm']['designation']; ?></td></tr>
 					<tr><th>Name Appraiser: </th><td> <?php echo $HrPerformanceFeedbackArrs['HrAppraisalForm']['name_appraiser']; ?></td></tr>
@@ -105,7 +105,7 @@
 					<tr><th>Terminate: </th><td> <?php echo $HrPerformanceFeedbackArrs['HrAppraisalForm']['terminate']; ?></td></tr>
 					<tr><th>Signature: </th><td> <?php echo $HrPerformanceFeedbackArrs['HrAppraisalForm']['signature']; ?></td></tr>
 					
-					<tr><th>Created: </th><td><?php echo date('d-M-Y',strtotime($HrPerformanceFeedbackArrs['HrAppraisalForm']['created'])); ?></td></tr>	
+					<tr><th>Created: </th><td><?php echo format_db_date('d-M-Y', $HrPerformanceFeedbackArrs['HrAppraisalForm']['created']); ?></td></tr>	
 					</tbody>
 					
 				</table>

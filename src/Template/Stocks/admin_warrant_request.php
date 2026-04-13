@@ -110,7 +110,7 @@
 								$log = is_array($WarrantyRequestLogs) ? $WarrantyRequestLogs : (is_object($WarrantyRequestLogs) ? $WarrantyRequestLogs->toArray() : []);
 							?>
 								<tr><th>Serial Number: </th><td><span class="label label-inverse"><?php echo h($log['serialnumber'] ?? ''); ?></span></td></tr>
-								<tr><th>Date Of Purchase of Products: </th><td><?php echo !empty($log['dateofpurchase']) ? date('d/m/Y', strtotime($log['dateofpurchase'])) : ''; ?></td></tr>
+								<tr><th>Date Of Purchase of Products: </th><td><?php echo !empty($log['dateofpurchase']) ? format_db_date('d/m/Y', $log['dateofpurchase']) : ''; ?></td></tr>
 								<tr><th>Product: </th><td><?php echo h($log['product'] ?? ''); ?></td></tr>
 								<tr><th>Used As: </th><td><?php echo h($log['used_as'] ?? ''); ?></td></tr>
 								<tr><th>Application: </th><td><?php echo h($log['application'] ?? ''); ?></td></tr>
@@ -123,10 +123,10 @@
 								<tr><th>Applicator contact Detail: </th><td><?php echo h($log['applicator_contact'] ?? ''); ?></td></tr>
 								<tr><th>Applicator: </th><td><?php echo h($log['applicator'] ?? ''); ?></td></tr>
 								<tr><th>Requested Warranty Period: </th>
-								<td><?php echo (!empty($log['start_requested_warranty']) ? date('d/m/Y', strtotime($log['start_requested_warranty'])) : '') . ' To ' . (!empty($log['end_requested_warranty']) ? date('d/m/Y', strtotime($log['end_requested_warranty'])) : ''); ?></td></tr>
+								<td><?php echo (!empty($log['start_requested_warranty']) ? format_db_date('d/m/Y', $log['start_requested_warranty']) : '') . ' To ' . (!empty($log['end_requested_warranty']) ? format_db_date('d/m/Y', $log['end_requested_warranty']) : ''); ?></td></tr>
 								<tr><th>Contractors Company Name: </th><td><?php echo h($log['contract_company_name'] ?? ''); ?></td></tr>
 								<tr><th>Contractors Full Name: </th><td><?php echo h($log['contract_name'] ?? ''); ?></td></tr>
-								<tr><th>Sign_date: </th><td><?php echo !empty($log['sign_date']) ? date('d/m/Y', strtotime($log['sign_date'])) : ''; ?></td></tr>
+								<tr><th>Sign_date: </th><td><?php echo !empty($log['sign_date']) ? format_db_date('d/m/Y', $log['sign_date']) : ''; ?></td></tr>
 							<?php endforeach; ?>
 							</tbody>						
 							</table>			

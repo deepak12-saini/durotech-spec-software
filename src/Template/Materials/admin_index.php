@@ -36,7 +36,7 @@
 					<td><?php echo h($mweight); ?>&nbsp;</td>
 					<td><?php echo h($mqty); ?>&nbsp;</td>
 					<td><?php echo h($mdesc); ?>&nbsp;</td>
-					<td><?php echo $mcreated ? date('d-M-Y h:i a', strtotime($mcreated)) : ''; ?></td>
+					<td><?php echo $mcreated ? format_db_date('d-M-Y h:i a', $mcreated) : ''; ?></td>
 					<td>
 					<?php echo $this->Html->link(__('Edit'), $this->Url->build(['controller' => 'Materials', 'action' => 'admin_edit', $mid]), ['class' => 'btn btn-xs btn-info']); ?>
 					<a href="javascript:void(0)" onclick="qrcode('<?php echo h($mid); ?>')" class="btn btn-xs btn-danger">QR Code</a>

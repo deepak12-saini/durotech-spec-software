@@ -227,7 +227,7 @@ Highcharts.chart('piechart', {
         type: 'pie'
     },
     title: {
-        text: 'Top Prospects Met (<?php echo !empty($startdate) ? date('d,M',strtotime($startdate)) : ''; ?> To <?php echo !empty($enddate) ? date('d,M',strtotime($enddate)) : ''; ?>)'
+        text: 'Top Prospects Met (<?php echo !empty($startdate) ? format_db_date('d,M', $startdate) : ''; ?> To <?php echo !empty($enddate) ? format_db_date('d,M', $enddate) : ''; ?>)'
     },
     tooltip: {
         pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
@@ -261,7 +261,7 @@ Highcharts.chart('piechart_called', {
         type: 'pie'
     },
     title: {
-        text: 'Top Prospects Called (<?php echo !empty($startdate) ? date('d,M',strtotime($startdate)) : ''; ?> To <?php echo !empty($enddate) ? date('d,M',strtotime($enddate)) : ''; ?>)'
+        text: 'Top Prospects Called (<?php echo !empty($startdate) ? format_db_date('d,M', $startdate) : ''; ?> To <?php echo !empty($enddate) ? format_db_date('d,M', $enddate) : ''; ?>)'
     },
     tooltip: {
         pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
@@ -298,7 +298,7 @@ Highcharts.chart('container', {
     yAxis: {
         min: 0,
         title: {
-          text: 'Report:  <?php echo !empty($startdate) ? date('d, M Y',strtotime($startdate)) : ''; ?> To <?php echo !empty($enddate) ? date('d, M Y',strtotime($enddate)) : ''; ?>'
+          text: 'Report:  <?php echo !empty($startdate) ? format_db_date('d, M Y', $startdate) : ''; ?> To <?php echo !empty($enddate) ? format_db_date('d, M Y', $enddate) : ''; ?>'
         }
     },
   legend: {

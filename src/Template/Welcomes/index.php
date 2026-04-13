@@ -43,7 +43,7 @@
 					<td><?php echo h(is_object($mailer) ? $mailer->email : ($w['email'] ?? '')); ?>&nbsp;</td>
 					<td><?php echo h(is_object($mailer) ? $mailer->subject : ($w['subject'] ?? '')); ?>&nbsp;</td>
 					<td><?php echo h(is_object($mailer) ? ($mailer->label ?? '') : ($w['label'] ?? '')); ?>&nbsp;</td>
-					<td><?php echo date('d-M-Y h:i a', strtotime(is_object($mailer) ? $mailer->created : ($w['created'] ?? 'now'))); ?></td>
+					<td><?php echo h(format_db_date('d-M-Y h:i a', is_object($mailer) ? $mailer->created : ($w['created'] ?? 'now'))); ?></td>
 					<td>
 						<?php echo $this->Html->link('Edit', ['controller' => 'Welcomes', 'action' => 'edit', $mid], ['class' => 'btn btn-mini btn-primary']); ?>
 						<?php if ($pdffile): ?><a class="btn btn-mini btn-info" href="<?php echo SITEURL . 'welcomes/download/' . h($pdffile); ?>" target="_blank">Download</a><?php endif; ?>

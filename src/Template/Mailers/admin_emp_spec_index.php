@@ -92,7 +92,7 @@
 					<td><?php echo h($mailer->date ?? ''); ?>&nbsp;</td>
 					<!-- <td><?php if($mailer['Mailer']['type'] == 3){ echo 'External Liquid WPM'; } ?></td>					
 					<td><?php echo h($mailer['Mailer']['subject']); ?></td>			 -->		
-                    <td> <?php echo !empty($mailer->created) ? date('d-M-Y h:i a',strtotime((string)$mailer->created)) : ''; ?></td>
+                    <td> <?php echo h(!empty($mailer->created) ? format_db_date('d-M-Y h:i a', $mailer->created) : ''); ?></td>
 				   <td>
 						<?php
 							$status = (int)($mailer->status ?? 0);

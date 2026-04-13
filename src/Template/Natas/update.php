@@ -36,7 +36,7 @@ table {
 			</div>	
 			<div class="form-group">				
 				<div class="col-sm-12 no-padding-right">
-					Date: <b><?php echo date('d F, Y',strtotime($natacateArr['NataEvent']['date'])); ?></b>			
+					Date: <b><?php echo format_db_date('d F, Y', $natacateArr['NataEvent']['date']); ?></b>			
 				</div>
 			</div>		
 			<div class="form-group">				

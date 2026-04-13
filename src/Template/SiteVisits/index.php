@@ -36,8 +36,8 @@
 						$sv = $mailer['SiteVisit'] ?? $mailer;
 						$dateVal = $sv['date'] ?? null;
 						$createdVal = $sv['created'] ?? null;
-						$dateStr = is_object($dateVal) && method_exists($dateVal, 'format') ? $dateVal->format('d-M-Y') : ($dateVal ? date('d-M-Y', strtotime((string)$dateVal)) : '');
-						$createdStr = is_object($createdVal) && method_exists($createdVal, 'format') ? $createdVal->format('d-M-Y') : ($createdVal ? date('d-M-Y', strtotime((string)$createdVal)) : '');
+						$dateStr = is_object($dateVal) && method_exists($dateVal, 'format') ? $dateVal->format('d-M-Y') : format_db_date('d-M-Y', $dateVal);
+						$createdStr = is_object($createdVal) && method_exists($createdVal, 'format') ? $createdVal->format('d-M-Y') : format_db_date('d-M-Y', $createdVal);
 					?>
 					<tr>
 					<td>#<?= $i ?>&nbsp;</td>

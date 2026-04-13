@@ -60,7 +60,7 @@
 						<?php 
 						if($conformance['Conformance']['status'] == 3){
 						
-							$assigndatetime = date('M d, Y h:i:s',strtotime($conformance['Conformance']['created']));
+							$assigndatetime = format_db_date('M d, Y h:i:s', $conformance['Conformance']['created']);
 						
 							$then = new DateTime($assigndatetime);
 							$now = new DateTime(); 
@@ -80,10 +80,10 @@
 							<script>
 							<?php
 							if($conformance['Conformance']['complete_date'] != '0000-00-00'){  
-							$assigndatetime = date('M d, Y h:i:s',strtotime($conformance['Conformance']['created'].' +24 hours'));
+							$assigndatetime = format_db_date('M d, Y h:i:s', $conformance['Conformance']['created'].' +24 hours');
 							?>
 							// Set the date we're counting down to
-							var countDownDate_<?php echo $i; ?> = new Date("<?php echo date('M d, Y 10:00:00',strtotime($assigndatetime))?>").getTime();
+							var countDownDate_<?php echo $i; ?> = new Date("<?php echo format_db_date('M d, Y 10:00:00', $assigndatetime)?>").getTime();
 
 							// Update the count down every 1 second
 							var x = setInterval(function() {
@@ -113,8 +113,8 @@
 						<?php 
 						if($conformance['Conformance']['status'] == 3){
 						
-							$assigndatetime = date('M d, Y H:i:s',strtotime($conformance['Conformance']['created']));
-							$complete_date = date('M d, Y H:i:s',strtotime($conformance['Conformance']['complete_date']));
+							$assigndatetime = format_db_date('M d, Y H:i:s', $conformance['Conformance']['created']);
+							$complete_date = format_db_date('M d, Y H:i:s', $conformance['Conformance']['complete_date']);
 
 							$then = new DateTime($assigndatetime);
 							$now = new DateTime($complete_date); 
@@ -129,7 +129,7 @@
 							$date = $d.'d '.$h.'h '.$i.'m '.$s.'s';
 							echo '<span class="label label-success">'.$date.'</span>';	
 						}else{ 
-							$complete_date  = date('M d, Y H:i:s',strtotime($conformance['Conformance']['created'].' +24 hours'));
+							$complete_date  = format_db_date('M d, Y H:i:s', $conformance['Conformance']['created'].' +24 hours');
 							$assigndatetime = date('M d, Y H:i:s');
 							if(strtotime($complete_date) > strtotime($assigndatetime)){	
 							$then = new DateTime($assigndatetime);
@@ -156,7 +156,7 @@
 							<?php
 							//Apr 27, 2018 13:26:08
 							if($conformance['Conformance']['complete_date'] != '0000-00-00'){  
-							$assigndatetime = date('M d, Y H:i:s',strtotime($conformance['Conformance']['created'].' +24 hours'));
+							$assigndatetime = format_db_date('M d, Y H:i:s', $conformance['Conformance']['created'].' +24 hours');
 							
 							?>
 							// Set the date we're counting down to
@@ -192,8 +192,8 @@
 							
 							if($conformance['Conformance']['status'] == 3){
 
-								$assigndatetime = date('M d, Y H:i:s',strtotime($conformance['Conformance']['created']));
-								$complete_date = date('M d, Y H:i:s',strtotime($conformance['Conformance']['complete_date']));
+								$assigndatetime = format_db_date('M d, Y H:i:s', $conformance['Conformance']['created']);
+								$complete_date = format_db_date('M d, Y H:i:s', $conformance['Conformance']['complete_date']);
 
 								$then = new DateTime($assigndatetime);
 								$now = new DateTime($complete_date); 
@@ -208,7 +208,7 @@
 								$date = $d.'d '.$h.'h '.$i.'m '.$s.'s';
 								echo '<span class="label label-success">'.$date.'</span>';	
 							}else{ 
-								$assigndatetime = date('M d, Y H:i:s',strtotime($conformance['Conformance']['created']));
+								$assigndatetime = format_db_date('M d, Y H:i:s', $conformance['Conformance']['created']);
 								$complete_date = date('M d, Y H:i:s');
 
 								$then = new DateTime($assigndatetime);
@@ -233,7 +233,7 @@
 							
 								window.onload=function() {
 								  // Month,Day,Year,Hour,Minute,Second
-								  upTime_<?php echo $i; ?>('<?php echo date('M,d,Y,H:i:s',strtotime($conformance['Conformance']['created']))?>'); // ****** Change this line!
+								  upTime_<?php echo $i; ?>('<?php echo format_db_date('M,d,Y,H:i:s', $conformance['Conformance']['created'])?>'); // ****** Change this line!
 								}
 								function upTime_<?php echo $i; ?>(countTo) {
 								  nownow_<?php echo $i; ?> = new Date();
@@ -251,7 +251,7 @@
 								   clearTimeout(upTime.to);
 								  upTime.to=setTimeout(function(){ upTime(countTo); },1000);
 								}
-								var countDownDatenew_<?php echo $i; ?> = '<?php echo date('M d, Y H:i:s',strtotime($conformance['Conformance']['created']))?>';
+								var countDownDatenew_<?php echo $i; ?> = '<?php echo format_db_date('M d, Y H:i:s', $conformance['Conformance']['created'])?>';
 								countDownDatenew_<?php echo $i; ?> = new Date(countDownDatenew_<?php echo $i; ?>);
 								
 								// Update the count down every 1 second

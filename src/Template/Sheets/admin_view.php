@@ -41,7 +41,7 @@
 				</tr>
 					<tr>
 						
-				<tr><th>Created </th><td><?php echo date('m-d-Y',strtotime($Service['Service']['created'])); ?></td></tr>
+				<tr><th>Created </th><td><?php echo format_db_date('m-d-Y', $Service['Service']['created']); ?></td></tr>
 				
 				<tr><th> </th><td><?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $Service['Service']['id']),array('class'=>'btn btn-mini btn-warning')); ?>
 						</td></tr>			

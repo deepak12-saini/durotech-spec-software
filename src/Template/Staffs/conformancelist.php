@@ -63,40 +63,50 @@
 						<?php 
 						if($conformance['Conformance']['status'] == 3){
 						
-							$assigndatetime = date('M d, Y H:i:s',strtotime($conformance['Conformance']['created']));
-							$complete_date = date('M d, Y H:i:s',strtotime($conformance['Conformance']['complete_date']));
+							$assigndatetime = format_db_date('M d, Y H:i:s', $conformance['Conformance']['created']);
+							$complete_date = format_db_date('M d, Y H:i:s', $conformance['Conformance']['complete_date']);
 
-							$then = new DateTime($assigndatetime);
-							$now = new DateTime($complete_date); 
-							$sinceThen = $then->diff($now);
-							
-							$d = $sinceThen->d;
-							$m = $sinceThen->m;
-							$h = $sinceThen->h;
-							$i = $sinceThen->i;
-							$s = $sinceThen->s;
-							
-							$date = $d.'d '.$h.'h '.$i.'m '.$s.'s';
-							echo '<span class="label label-success">'.$date.'</span>';	
-						}else{ 
-							$complete_date  = date('M d, Y H:i:s',strtotime($conformance['Conformance']['created'].' +24 hours'));
-							$assigndatetime = date('M d, Y H:i:s');
-							if(strtotime($complete_date) > strtotime($assigndatetime)){	
-							$then = new DateTime($assigndatetime);
-							$now = new DateTime($complete_date); 
-							$sinceThen = $then->diff($now);
-							
-							$d = $sinceThen->d;
-							$m = $sinceThen->m;
-							$h = $sinceThen->h;
-							$i = $sinceThen->i;
-							$s = $sinceThen->s;
-							
-							$date = $d.'d '.$h.'h '.$i.'m '.$s.'s';
-							echo '<span class="label label-success">'.$date.'</span>';	
-							}else{
-								echo '<span class="label label-danger">EXPIRED</span>';	
+							if ($assigndatetime !== '' && $complete_date !== '') {
+								try {
+									$then = new \DateTime($assigndatetime);
+									$now = new \DateTime($complete_date);
+									$sinceThen = $then->diff($now);
+									$d = $sinceThen->d;
+									$m = $sinceThen->m;
+									$h = $sinceThen->h;
+									$i = $sinceThen->i;
+									$s = $sinceThen->s;
+									$date = $d . 'd ' . $h . 'h ' . $i . 'm ' . $s . 's';
+									echo '<span class="label label-success">' . $date . '</span>';
+								} catch (\Exception $e) {
+									echo '<span class="label label-default">—</span>';
+								}
+							} else {
+								echo '<span class="label label-default">—</span>';
 							}	
+						} else {
+							$complete_date = format_db_date('M d, Y H:i:s', $conformance['Conformance']['created'] . ' +24 hours');
+							$assigndatetime = date('M d, Y H:i:s');
+							$cTs = strtotime($complete_date);
+							$aTs = strtotime($assigndatetime);
+							if ($complete_date !== '' && $cTs !== false && $aTs !== false && $cTs > $aTs) {
+								try {
+									$then = new \DateTime($assigndatetime);
+									$now = new \DateTime($complete_date);
+									$sinceThen = $then->diff($now);
+									$d = $sinceThen->d;
+									$m = $sinceThen->m;
+									$h = $sinceThen->h;
+									$i = $sinceThen->i;
+									$s = $sinceThen->s;
+									$date = $d . 'd ' . $h . 'h ' . $i . 'm ' . $s . 's';
+									echo '<span class="label label-success">' . $date . '</span>';
+								} catch (\Exception $e) {
+									echo '<span class="label label-danger">EXPIRED</span>';
+								}
+							} else {
+								echo '<span class="label label-danger">EXPIRED</span>';
+							}
 						}
 						
 						/*
@@ -106,7 +116,7 @@
 							<?php
 							//Apr 27, 2018 13:26:08
 							if($conformance['Conformance']['complete_date'] != '0000-00-00'){  
-							$assigndatetime = date('M d, Y H:i:s',strtotime($conformance['Conformance']['created'].' +24 hours'));
+							$assigndatetime = format_db_date('M d, Y H:i:s', $conformance['Conformance']['created'].' +24 hours');
 							
 							?>
 							// Set the date we're counting down to
@@ -140,39 +150,48 @@
 						<td>
 							<?php 
 							
-							if($conformance['Conformance']['status'] == 3){
-
-								$assigndatetime = date('M d, Y H:i:s',strtotime($conformance['Conformance']['created']));
-								$complete_date = date('M d, Y H:i:s',strtotime($conformance['Conformance']['complete_date']));
-
-								$then = new DateTime($assigndatetime);
-								$now = new DateTime($complete_date); 
-								$sinceThen = $then->diff($now);
-								
-								$d = $sinceThen->d;
-								$m = $sinceThen->m;
-								$h = $sinceThen->h;
-								$i = $sinceThen->i;
-								$s = $sinceThen->s;
-								
-								$date = $d.'d '.$h.'h '.$i.'m '.$s.'s';
-								echo '<span class="label label-success">'.$date.'</span>';	
-							}else{ 
-								$assigndatetime = date('M d, Y H:i:s',strtotime($conformance['Conformance']['created']));
+							if ($conformance['Conformance']['status'] == 3) {
+								$assigndatetime = format_db_date('M d, Y H:i:s', $conformance['Conformance']['created']);
+								$complete_date = format_db_date('M d, Y H:i:s', $conformance['Conformance']['complete_date']);
+								if ($assigndatetime !== '' && $complete_date !== '') {
+									try {
+										$then = new \DateTime($assigndatetime);
+										$now = new \DateTime($complete_date);
+										$sinceThen = $then->diff($now);
+										$d = $sinceThen->d;
+										$m = $sinceThen->m;
+										$h = $sinceThen->h;
+										$i = $sinceThen->i;
+										$s = $sinceThen->s;
+										$date = $d . 'd ' . $h . 'h ' . $i . 'm ' . $s . 's';
+										echo '<span class="label label-success">' . $date . '</span>';
+									} catch (\Exception $e) {
+										echo '<span class="label label-default">—</span>';
+									}
+								} else {
+									echo '<span class="label label-default">—</span>';
+								}
+							} else {
+								$assigndatetime = format_db_date('M d, Y H:i:s', $conformance['Conformance']['created']);
 								$complete_date = date('M d, Y H:i:s');
-
-								$then = new DateTime($assigndatetime);
-								$now = new DateTime($complete_date); 
-								$sinceThen = $then->diff($now);
-								
-								$d = $sinceThen->d;
-								$m = $sinceThen->m;
-								$h = $sinceThen->h;
-								$i = $sinceThen->i;
-								$s = $sinceThen->s;
-								
-								$date = $d.'d '.$h.'h '.$i.'m '.$s.'s';
-								echo '<span class="label label-warning">'.$date.'</span>';	
+								if ($assigndatetime !== '') {
+									try {
+										$then = new \DateTime($assigndatetime);
+										$now = new \DateTime($complete_date);
+										$sinceThen = $then->diff($now);
+										$d = $sinceThen->d;
+										$m = $sinceThen->m;
+										$h = $sinceThen->h;
+										$i = $sinceThen->i;
+										$s = $sinceThen->s;
+										$date = $d . 'd ' . $h . 'h ' . $i . 'm ' . $s . 's';
+										echo '<span class="label label-warning">' . $date . '</span>';
+									} catch (\Exception $e) {
+										echo '<span class="label label-default">—</span>';
+									}
+								} else {
+									echo '<span class="label label-default">—</span>';
+								}
 							}
 							/*
 							?>
@@ -183,7 +202,7 @@
 							
 								window.onload=function() {
 								  // Month,Day,Year,Hour,Minute,Second
-								  upTime_<?php echo $i; ?>('<?php echo date('M,d,Y,H:i:s',strtotime($conformance['Conformance']['created']))?>'); // ****** Change this line!
+								  upTime_<?php echo $i; ?>('<?php echo format_db_date('M,d,Y,H:i:s', $conformance['Conformance']['created'])?>'); // ****** Change this line!
 								}
 								function upTime_<?php echo $i; ?>(countTo) {
 								  nownow_<?php echo $i; ?> = new Date();
@@ -201,7 +220,7 @@
 								   clearTimeout(upTime.to);
 								  upTime.to=setTimeout(function(){ upTime(countTo); },1000);
 								}
-								var countDownDatenew_<?php echo $i; ?> = '<?php echo date('M d, Y H:i:s',strtotime($conformance['Conformance']['created']))?>';
+								var countDownDatenew_<?php echo $i; ?> = '<?php echo format_db_date('M d, Y H:i:s', $conformance['Conformance']['created'])?>';
 								countDownDatenew_<?php echo $i; ?> = new Date(countDownDatenew_<?php echo $i; ?>);
 								
 								// Update the count down every 1 second

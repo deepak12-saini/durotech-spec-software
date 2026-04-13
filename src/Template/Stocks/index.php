@@ -42,7 +42,7 @@
 					<?php }else{ ?>
 						<a class="label label-danger" href="<?php echo SITEURL.'stocks/status/1/'.$coas['StockReturn']['id'].'/'.$coas['StockReturn']['type']; ?>">No</a>		
 					<?php } ?></td>	
-                    <td> <?php echo date('d-M-Y h:i a',strtotime($coas['StockReturn']['created'])); ?></td>
+                    <td> <?php echo format_db_date('d-M-Y h:i a', $coas['StockReturn']['created']); ?></td>
 					<td>
 						<a class="btn btn-mini btn-primary" href="<?php echo SITEURL.'stocks/edit/'.$coas['StockReturn']['id'].'/'.$acctype; ?>" >Edit</a>
 						<!--a class="btn btn-mini btn-info" href="<?php echo SITEURL.'dompdf/'.$coas['StockReturn']['pdfname']; ?>" target="blank">Download</a--->
@@ -92,7 +92,7 @@ foreach ($stockreturn as $stockreturns):
 							$StockReturnDatas = is_array($StockReturnDatas) ? $StockReturnDatas : [];
 						?>
 							<tr>
-								<td><?php echo date('d-M-Y',strtotime($StockReturnDatas['date'])); ?></td>
+								<td><?php echo format_db_date('d-M-Y', $StockReturnDatas['date']); ?></td>
 								<td><?php echo $StockReturnDatas['customer']; ?></td>
 								<td><?php echo $StockReturnDatas['items']; ?></td>
 								<td><?php echo $StockReturnDatas['reason']; ?></td>

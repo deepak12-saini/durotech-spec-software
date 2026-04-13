@@ -33,8 +33,8 @@
 						<td><?php echo $delivers['DuroDelivery']['docket_number']; ?>&nbsp;</td>	
 						<td><?php echo $delivers['NappUser']['name'].' '.$delivers['NappUser']['lname']; ?></td>
 						<td><?php echo h($delivers['DuroDelivery']['pickup_name']); ?>&nbsp;</td>
-						<td><?php echo date('d-M-Y',strtotime($delivers['DuroDelivery']['pickup_date'])).'<br>'.$delivers['DuroDelivery']['pickup_time']; ?>&nbsp;</td>			
-						<td><?php echo date('d-M-Y',strtotime($delivers['DuroDelivery']['deliver_date'])).'<br>'.$delivers['DuroDelivery']['deliver_time']; ?>&nbsp;</td>						
+						<td><?php echo format_db_date('d-M-Y', $delivers['DuroDelivery']['pickup_date']).'<br>'.$delivers['DuroDelivery']['pickup_time']; ?>&nbsp;</td>			
+						<td><?php echo format_db_date('d-M-Y', $delivers['DuroDelivery']['deliver_date']).'<br>'.$delivers['DuroDelivery']['deliver_time']; ?>&nbsp;</td>						
 						<td><a href="<?php echo SITEURL.'docket_file/'.$delivers['DuroDelivery']['docket_file'];?>" target="_blank">Download Docket</a></td>						
 						<td>
 						<?php 
@@ -50,7 +50,7 @@
 		
 						?>&nbsp;
 						</td>					
-						<td> <?php echo date('d-M-Y',strtotime($delivers['DuroDelivery']['created'])); ?></td>
+						<td> <?php echo format_db_date('d-M-Y', $delivers['DuroDelivery']['created']); ?></td>
 						<td>
 						<?php if($delivers['DuroDelivery']['status'] < 2){ ?>
 							<a href="<?php echo SITEURL.'duro_orders/delivery_edit/'.$delivers['DuroDelivery']['id']; ?>" class="btn btn-mini btn-info">Edit</a>	

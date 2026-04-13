@@ -38,7 +38,7 @@
 					<td><?php echo $AttendanceArrs['NappUser']['name'].' '.$AttendanceArrs['NappUser']['lname']; ?>&nbsp;</td>
 					<td><?php echo h($AttendanceArrs['NappUser']['email']); ?>&nbsp;</td>
 					<td><?php echo h($AttendanceArrs['Attendance']['address']); ?>&nbsp;</td>
-					<td><?php echo date('d M Y h:i a',strtotime($AttendanceArrs['Attendance']['created'])); ?>&nbsp;</td>				
+					<td><?php echo format_db_date('d M Y h:i a', $AttendanceArrs['Attendance']['created']); ?>&nbsp;</td>				
 				
 					<?php $i++;  endforeach; ?>
 

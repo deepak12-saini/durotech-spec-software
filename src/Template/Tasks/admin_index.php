@@ -101,9 +101,9 @@
 					<td><?= h($tasks->priority_number ?? ''); ?>&nbsp;</td>
 					<td><?= h($tasks->results_summary ?? ''); ?>&nbsp;</td>
 					<td>
-					<span class="label label-info">Project Started: <?= ($tasks->alloteddate && $tasks->alloteddate !== '0000-00-00') ? date('d M Y', strtotime($tasks->alloteddate)) : 'N/A'; ?></span> <br/><br/>
-					<span class="label label-warning">Assigned Date: <?= ($tasks->assigned_date && $tasks->assigned_date !== '0000-00-00') ? date('d M Y', strtotime($tasks->assigned_date)) : 'N/A'; ?></span> <br/><br/>
-					<span class="label label-danger">Deadline Date: <?= (!$tasks->task_completion_date || $tasks->task_completion_date === '0000-00-00') ? 'N/A' : date('d M Y', strtotime($tasks->task_completion_date)); ?></span>
+					<span class="label label-info">Project Started: <?= ($tasks->alloteddate && $tasks->alloteddate !== '0000-00-00') ? format_db_date('d M Y', $tasks->alloteddate) : 'N/A'; ?></span> <br/><br/>
+					<span class="label label-warning">Assigned Date: <?= ($tasks->assigned_date && $tasks->assigned_date !== '0000-00-00') ? format_db_date('d M Y', $tasks->assigned_date) : 'N/A'; ?></span> <br/><br/>
+					<span class="label label-danger">Deadline Date: <?= (!$tasks->task_completion_date || $tasks->task_completion_date === '0000-00-00') ? 'N/A' : format_db_date('d M Y', $tasks->task_completion_date); ?></span>
 					</td>			
 								
 								
@@ -125,7 +125,7 @@
 							<span class="label label-danger" id="demo_<?= $i; ?>">N/A</span>
 							<?php if ($tasks->task_completion_date && $tasks->task_completion_date !== '0000-00-00') { ?>
 							<script>
-							var countDownDate_<?= $i; ?> = new Date("<?= date('M d, Y 10:00:00', strtotime($tasks->task_completion_date)); ?>").getTime();
+							var countDownDate_<?= $i; ?> = new Date("<?= format_db_date('M d, Y 10:00:00', $tasks->task_completion_date); ?>").getTime();
 							var x = setInterval(function() {
 								var now = new Date().getTime();
 								var distance_<?= $i; ?> = countDownDate_<?= $i; ?> - now;
@@ -151,7 +151,7 @@
 					<?php } elseif ($st === 3) { ?><span class="label label-success">Completed</span>
 					<?php } ?>&nbsp;
 					</td>
-					<td><?= $tasks->created ? date('d-M-Y', strtotime($tasks->created)) : ''; ?></td>
+					<td><?= $tasks->created ? format_db_date('d-M-Y', $tasks->created) : ''; ?></td>
 					<td class="actions">
 						<?= $this->Html->link(__('Comments'), ['action' => 'admin_comment', $tasks->task_id], ['class' => 'btn btn-mini btn-inverse']); ?>
 						<?= $this->Html->link(__('Document'), ['action' => 'admin_taskdocument', $tasks->task_id], ['class' => 'btn btn-mini btn-primary']); ?>
@@ -256,9 +256,9 @@
 						<tr>
 							<th>Project Started/Assigned/Deadline Date: </th>
 							<td>
-							<span class="label label-info">Project Started: <?= ($tasknew->alloteddate && $tasknew->alloteddate !== '0000-00-00') ? date('d M Y', strtotime($tasknew->alloteddate)) : 'N/A'; ?></span> <br/><br/>
-							<span class="label label-warning">Assigned Date: <?= ($tasknew->assigned_date && $tasknew->assigned_date !== '0000-00-00') ? date('d M Y', strtotime($tasknew->assigned_date)) : 'N/A'; ?></span> <br/><br/>
-							<span class="label label-danger">Deadline Date: <?= (!$tasknew->task_completion_date || $tasknew->task_completion_date === '0000-00-00') ? 'N/A' : date('d M Y', strtotime($tasknew->task_completion_date)); ?></span>
+							<span class="label label-info">Project Started: <?= ($tasknew->alloteddate && $tasknew->alloteddate !== '0000-00-00') ? format_db_date('d M Y', $tasknew->alloteddate) : 'N/A'; ?></span> <br/><br/>
+							<span class="label label-warning">Assigned Date: <?= ($tasknew->assigned_date && $tasknew->assigned_date !== '0000-00-00') ? format_db_date('d M Y', $tasknew->assigned_date) : 'N/A'; ?></span> <br/><br/>
+							<span class="label label-danger">Deadline Date: <?= (!$tasknew->task_completion_date || $tasknew->task_completion_date === '0000-00-00') ? 'N/A' : format_db_date('d M Y', $tasknew->task_completion_date); ?></span>
 							</td>
 						</tr>
 						<tr>

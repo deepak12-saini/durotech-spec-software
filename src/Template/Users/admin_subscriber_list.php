@@ -26,7 +26,7 @@
 					<td><?php echo h($row['email'] ?? ''); ?>&nbsp;</td>
 					<td><?php echo h($row['popup'] ?? $row['offer'] ?? ''); ?>&nbsp;</td>
 					
-                    <td> <?php echo !empty($row['created']) ? date('d-M-Y', strtotime($row['created'])) : ''; ?></td>
+                    <td> <?php echo !empty($row['created']) ? format_db_date('d-M-Y', $row['created']) : ''; ?></td>
 					
 					</tr>
 					<?php endforeach; ?>

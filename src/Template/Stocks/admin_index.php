@@ -43,7 +43,7 @@ $acctype = $acctype ?? '';
 									<a class="label label-danger" href="<?= $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_status', 1, $coas->id, $coas->type]) ?>">No</a>
 								<?php endif; ?>
 							</td>
-							<td><?= $coas->created ? date('d-M-Y h:i a', strtotime($coas->created)) : '' ?></td>
+							<td><?= $coas->created ? format_db_date('d-M-Y h:i a', $coas->created) : '' ?></td>
 							<td>
 								<a onclick="return confirm('Are you sure delete this record?');" class="btn btn-mini btn-danger" href="<?= $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_delete', $coas->id, $acctype]) ?>">Delete</a>
 							</td>
@@ -85,7 +85,7 @@ $acctype = $acctype ?? '';
 										$d = is_object($StockReturnDatas) ? $StockReturnDatas : (object)$StockReturnDatas;
 									?>
 									<tr>
-										<td><?= $d->date ?? '' ? date('d-M-Y', strtotime($d->date)) : '' ?></td>
+										<td><?= $d->date ?? '' ? format_db_date('d-M-Y', $d->date) : '' ?></td>
 										<td><?= h($d->customer ?? '') ?></td>
 										<td><?= h($d->items ?? '') ?></td>
 										<td><?= h($d->reason ?? '') ?></td>

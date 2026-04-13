@@ -44,7 +44,7 @@
 					<td><?php echo h($br['check_test'] ?? ''); ?>&nbsp;</td>
 					<td><?php echo h($br['test_by'] ?? ''); ?>&nbsp;</td>					
 					<td><?php echo h($br['comments'] ?? ''); ?>&nbsp;</td>					
-                    <td><?php echo !empty($br['created']) ? date('d-M-Y', strtotime($br['created'])) : ''; ?></td>
+                    <td><?php echo !empty($br['created']) ? format_db_date('d-M-Y', $br['created']) : ''; ?></td>
 					<td><a href="<?php echo $this->Url->build(['controller' => 'Productions', 'action' => 'adminBatchRegisterEdit', $br['id'] ?? '']); ?>" class="btn btn-mini btn-info">Edit</a></td>
 					</tr>
 					<?php endforeach; ?>

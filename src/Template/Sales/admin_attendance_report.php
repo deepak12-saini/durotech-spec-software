@@ -94,7 +94,7 @@ Highcharts.chart('container', {
     type: 'column'
   },
   title: {
-    text: 'Daily Attendance Report : <?php echo !empty($start) ? date('d M Y',strtotime($start)) : ''; ?> To <?php echo !empty($end) ? date('d M Y',strtotime($end)) : ''; ?>'
+    text: 'Daily Attendance Report : <?php echo !empty($start) ? format_db_date('d M Y', $start) : ''; ?> To <?php echo !empty($end) ? format_db_date('d M Y', $end) : ''; ?>'
   },
   subtitle: {
     text: ''

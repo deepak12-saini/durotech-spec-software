@@ -29,7 +29,7 @@
 					<td><?php echo h($CareerApplyJobs['CareerApplyJob']['phone']); ?>&nbsp;</td>
 					<td><?php echo h($CareerApplyJobs['CareerApplyJob']['description']); ?>&nbsp;</td>
 					<td><a href="<?php echo h($CareerApplyJobs['CareerApplyJob']['resume']); ?>">Download</a> &nbsp;</td>
-					<td> <?php echo date('d-M-Y',strtotime($CareerApplyJobs['CareerApplyJob']['created'])); ?></td>
+					<td> <?php echo format_db_date('d-M-Y', $CareerApplyJobs['CareerApplyJob']['created']); ?></td>
 					
 					</tr>
 					<?php endforeach; ?>

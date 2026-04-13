@@ -39,7 +39,7 @@
 					
 					<?php if(!empty($labelArr['LabFile']['password'])){ echo h($labelArr['LabFile']['password']); }else{ echo 'N/A'; }?></td>
 								
-                    <td><?php echo date('d M Y H:i a',strtotime($labelArr['LabFile']['created'])); ?></td>
+                    <td><?php echo format_db_date('d M Y H:i a', $labelArr['LabFile']['created']); ?></td>
                     <td>						
 						<a class="btn btn-xs btn-success"href="<?php echo SITEURL.'admin/users/updatelabfile/'.$labelArr['LabFile']['id']?>">Update</a>						
 					</td>					

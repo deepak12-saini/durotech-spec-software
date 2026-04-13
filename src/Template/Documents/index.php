@@ -30,7 +30,7 @@
 						<td><?php echo h(($DocumentLibraryArrs['NappUser']['name'] ?? '').' '.($DocumentLibraryArrs['NappUser']['lname'] ?? '')); ?>&nbsp;</td>
 						<td><?php
 							$d = $DocumentLibraryArrs['DocumentLibrary']['date'] ?? null;
-							echo $d ? date('d-M-Y', strtotime($d)) : '';
+							echo $d ? format_db_date('d-M-Y', $d) : '';
 						?>&nbsp;</td>
 						<td><?php echo h($DocumentLibraryArrs['DocumentLibrary']['name_of_indentor'] ?? ''); ?>&nbsp;</td>
 						<td><?php echo h($DocumentLibraryArrs['DocumentLibrary']['desigaration'] ?? ''); ?>&nbsp;</td>
@@ -46,7 +46,7 @@
 						</td>					
 						<td><?php
 							$c = $DocumentLibraryArrs['DocumentLibrary']['created'] ?? null;
-							echo $c ? date('d-M-Y', strtotime($c)) : '';
+							echo $c ? format_db_date('d-M-Y', $c) : '';
 						?></td>
 						<td>
 							<a href="<?php echo SITEURL.'documents/editdoc/'.$DocumentLibraryArrs['DocumentLibrary']['id']; ?>" class="btn btn-mini btn-info">Edit</a>							
@@ -101,7 +101,7 @@
 					<tbody>
 					<tr><th>Documentid: </th><td><span class="label label-inverse"><?php echo h($DocumentLibraryArrs['DocumentLibrary']['documentid'] ?? ''); ?></span></td></tr>
 					<tr><th>Added By: </th><td><?php echo h(($DocumentLibraryArrs['NappUser']['name'] ?? '').' '.($DocumentLibraryArrs['NappUser']['lname'] ?? '')); ?></td></tr>
-					<tr><th>Date: </th><td><?php $d = $DocumentLibraryArrs['DocumentLibrary']['date'] ?? null; echo $d ? date('d-M-Y', strtotime($d)) : ''; ?></td></tr>
+					<tr><th>Date: </th><td><?php $d = $DocumentLibraryArrs['DocumentLibrary']['date'] ?? null; echo $d ? format_db_date('d-M-Y', $d) : ''; ?></td></tr>
 					<tr><th>Name of Indentor: </th><td><?php echo h($DocumentLibraryArrs['DocumentLibrary']['name_of_indentor'] ?? ''); ?></td></tr>
 					<tr><th>Designation: </th><td><?php echo h($DocumentLibraryArrs['DocumentLibrary']['desigaration'] ?? ''); ?></td></tr>
 					<tr><th>Department: </th><td><?php echo h($DocumentLibraryArrs['DocumentLibrary']['department'] ?? ''); ?></td></tr>						
@@ -117,7 +117,7 @@
 					<tr><th>Sign of coordinator: </th><td><?php echo h(($DocumentLibraryArrs['NappUser_2']['name'] ?? '').' '.($DocumentLibraryArrs['NappUser_2']['lname'] ?? '')); ?></td></tr>
 					<tr><th>Sign of hod: </th><td><?php echo h(($DocumentLibraryArrs['NappUser_3']['name'] ?? '').' '.($DocumentLibraryArrs['NappUser_3']['lname'] ?? '')); ?></td></tr>
 					<tr><th>sign of library: </th><td><?php echo h(($DocumentLibraryArrs['NappUser_4']['name'] ?? '').' '.($DocumentLibraryArrs['NappUser_4']['lname'] ?? '')); ?></td></tr>
-					<tr><th>Created: </th><td><?php $c = $DocumentLibraryArrs['DocumentLibrary']['created'] ?? null; echo $c ? date('d-M-Y', strtotime($c)) : ''; ?></td></tr>	
+					<tr><th>Created: </th><td><?php $c = $DocumentLibraryArrs['DocumentLibrary']['created'] ?? null; echo $c ? format_db_date('d-M-Y', $c) : ''; ?></td></tr>	
 					</tbody>
 					
 				</table>

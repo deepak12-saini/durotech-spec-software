@@ -33,7 +33,7 @@
 					<td><?php echo $staffArrs['Staff']['designation']; ?>&nbsp;</td>
 											
 					<td><?php if($staffArrs['Staff']['status'] == 1){ echo '<span class="label label-danger">Active</span>'; }else{ echo '<span class="label label-success">Deactive</span>'; } ?>&nbsp;</td>					
-					<td> <?php echo date('d-M-Y',strtotime($staffArrs['Staff']['created'])); ?></td>
+					<td> <?php echo format_db_date('d-M-Y', $staffArrs['Staff']['created']); ?></td>
 					
 					
 					</tr>

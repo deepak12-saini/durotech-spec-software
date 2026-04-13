@@ -35,7 +35,7 @@
 						<span class="label label-danger">Inactive</span>
 						<?php endif ?>&nbsp;
 						</td>
-                    <td> <?= date('d-M-Y', strtotime($category['Category']['created'] ?? 'now')) ?></td>
+                    <td> <?= format_db_date('d-M-Y', $category['Category']['created'] ?? 'now') ?></td>
 					 <td class="actions">
 						<a href="<?= h(rtrim(SITEURL, '/') . '/admin/categories/edit/' . (int)$category['Category']['id']) ?>" class="btn btn-mini btn-info">Edit</a>
 						<?= $this->Form->postLink(__('Delete'), ['action' => 'adminDelete', $category['Category']['id']], ['class' => 'btn btn-mini btn-danger', 'confirm' => __('Are you sure you want to delete # {0}?', $category['Category']['id'])]) ?>

@@ -73,7 +73,7 @@ $name = $name ?? '';
 								echo $labels ?: '&nbsp;';
 								?>
 							</td>
-							<td><?= ($user->insert_date ? date('d-M-Y', strtotime($user->insert_date)) : '') ?></td>
+							<td><?= ($user->insert_date ? format_db_date('d-M-Y', $user->insert_date) : '') ?></td>
 							<td>
 								<?php if ((int)($user->is_natspec_presentation ?? 0) === 0): ?>
 									<a class="btn btn-xs btn-danger" href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'admin_natspec_presentation_status', $user->id, 1]) ?>">Presentation Active</a>

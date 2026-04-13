@@ -58,8 +58,8 @@
 						<?php } elseif ($st == 1) { ?><span class="label label-warning">Accepted</span>
 						<?php } elseif ($st == 2) { ?><span class="label label-success">Completed</span><?php } ?>
 					</td>
-					<td><?php echo $lastmod ? date('d-M-Y h:i a', strtotime($lastmod)) : ''; ?></td>
-					<td><?php echo $created ? date('d-M-Y h:i a', strtotime($created)) : ''; ?></td>
+					<td><?php echo $lastmod ? format_db_date('d-M-Y h:i a', $lastmod) : ''; ?></td>
+					<td><?php echo $created ? format_db_date('d-M-Y h:i a', $created) : ''; ?></td>
 					</tr>
 					<?php endforeach; ?>
 
@@ -112,8 +112,8 @@
 						<?php } elseif ($st == 1) { ?><span class="label label-warning">Accepted</span>
 						<?php } elseif ($st == 2) { ?><span class="label label-success">Completed</span><?php } ?>
 					</td>
-					<td><?php echo $lastmod ? date('d-M-Y h:i a', strtotime($lastmod)) : ''; ?></td>
-					<td><?php echo $created ? date('d-M-Y h:i a', strtotime($created)) : ''; ?></td>
+					<td><?php echo $lastmod ? format_db_date('d-M-Y h:i a', $lastmod) : ''; ?></td>
+					<td><?php echo $created ? format_db_date('d-M-Y h:i a', $created) : ''; ?></td>
 					<th>
 						<?php if ($st == 0) { ?>
 							<a href="<?php echo $this->Url->build(['controller' => 'Materials', 'action' => 'status', 1, $oid, $typeLower]); ?>" class="btn btn-xs btn-success">Accept</a>

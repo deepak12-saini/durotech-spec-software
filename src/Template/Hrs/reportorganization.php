@@ -26,12 +26,12 @@
 					<tr>
 						<td><a data-toggle="modal" data-target="#myModal_<?php echo $k; ?>" href="#null"><?php echo h($HrPerformanceFeedbackArrs['HrReportOrganization']['documentid']); ?></a>&nbsp;</td>
 						<td><?php echo $HrPerformanceFeedbackArrs['NappUser']['name'].' '.$HrPerformanceFeedbackArrs['NappUser']['lname']; ?>&nbsp;</td>
-						<td><?php echo date('d-M-Y',strtotime($HrPerformanceFeedbackArrs['HrReportOrganization']['date'])); ?>&nbsp;</td>
+						<td><?php echo format_db_date('d-M-Y', $HrPerformanceFeedbackArrs['HrReportOrganization']['date']); ?>&nbsp;</td>
 						<td><?php echo h($HrPerformanceFeedbackArrs['HrReportOrganization']['empoyee_name']); ?>&nbsp;</td>
 						<td><?php echo h($HrPerformanceFeedbackArrs['HrReportOrganization']['email']); ?>&nbsp;</td>
 						<td><?php echo h($HrPerformanceFeedbackArrs['HrReportOrganization']['phone']); ?>&nbsp;</td>
 								
-						<td> <?php echo date('d-M-Y H:i a',strtotime($HrPerformanceFeedbackArrs['HrReportOrganization']['created'])); ?></td>
+						<td> <?php echo format_db_date('d-M-Y H:i a', $HrPerformanceFeedbackArrs['HrReportOrganization']['created']); ?></td>
 						<td>
 							<a href="<?php echo SITEURL.'hrs/reportorganization_edit/'.$HrPerformanceFeedbackArrs['HrReportOrganization']['id']; ?>" class="btn btn-mini btn-info">Edit</a>							
 											
@@ -89,7 +89,7 @@
 					<tr><th>Added By: </th><td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?></td></tr>	
 					
 					<tr><th>Name of Employee: </th><td><?php echo $DocumentLibraryArrs['HrReportOrganization']['empoyee_name']; ?></td></tr>		
-					<tr><th>Date: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['HrReportOrganization']['date'])); ?></td></tr>	
+					<tr><th>Date: </th><td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['HrReportOrganization']['date']); ?></td></tr>	
 					<tr><th>Permanent Address: </th><td><?php echo $DocumentLibraryArrs['HrReportOrganization']['permanent_address']; ?></td></tr>	
 					<tr><th>Corresponding Address: </th><td><?php echo $DocumentLibraryArrs['HrReportOrganization']['corresponding_address']; ?></td></tr>	
 					<tr><th>Email: </th><td><?php echo $DocumentLibraryArrs['HrReportOrganization']['email']; ?></td></tr>	
@@ -102,7 +102,7 @@
 					<!-- <tr><th>Signature: </th><td><?php echo $DocumentLibraryArrs['HrReportOrganization']['signature']; ?></td></tr>	
 					<tr><th>Remarks: </th><td><?php echo $DocumentLibraryArrs['HrReportOrganization']['remarks']; ?></td></tr>	 -->
 							
-					<tr><th>Created: </th><td><?php echo date('d-M-Y H:i a',strtotime($DocumentLibraryArrs['HrReportOrganization']['created'])); ?></td></tr>	
+					<tr><th>Created: </th><td><?php echo format_db_date('d-M-Y H:i a', $DocumentLibraryArrs['HrReportOrganization']['created']); ?></td></tr>	
 					</tbody>
 					
 				</table>

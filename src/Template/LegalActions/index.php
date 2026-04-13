@@ -39,8 +39,8 @@
 					<td><?= h($la['company_name'] ?? '') ?>&nbsp;</td>
 					<td>$<?= h($la['amount'] ?? '') ?>&nbsp;</td>
 					<td><?= h($la['email'] ?? '') ?>&nbsp;</td>
-					<td><?= !empty($la['date']) ? date('d-M-Y', strtotime($la['date'])) : '' ?>&nbsp;</td>
-					<td><?= !empty($la['created']) ? date('d-M-Y', strtotime($la['created'])) : '' ?></td>
+					<td><?= !empty($la['date']) ? format_db_date('d-M-Y', $la['date']) : '' ?>&nbsp;</td>
+					<td><?= !empty($la['created']) ? format_db_date('d-M-Y', $la['created']) : '' ?></td>
 					<td>
 					<?= $this->Html->link('Edit', ['action' => 'edit', $lid], ['class' => 'btn btn-mini btn-warning']) ?>
 					<?= $this->Html->link('Send Mail', ['action' => 'sendemails', $lid], ['class' => 'btn btn-mini btn-primary']) ?>

@@ -54,7 +54,7 @@
 						<td><?= $uploader ?></td>
 						<td><a href="<?= h($downloadUrl) ?>" target="_blank">Download Document</a></td>
 						<td><?= h($doc->ext ?? '') ?></td>
-						<td><?= $doc->created ? date('d M Y h:i a', strtotime($doc->created)) : '' ?></td>
+						<td><?= $doc->created ? format_db_date('d M Y h:i a', $doc->created) : '' ?></td>
 					</tr>
 					<?php $i++; endforeach; ?>
 				</tbody>

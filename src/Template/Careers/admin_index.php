@@ -32,7 +32,7 @@
 						<span class="label label-danger">Inactive</span>
 						<?php }?>&nbsp;
 						</td>
-                    <td> <?php echo date('d-M-Y',strtotime($career['Career']['created'])); ?></td>
+                    <td> <?php echo format_db_date('d-M-Y', $career['Career']['created']); ?></td>
 					 <td class="actions">
 						
 						<?php echo $this->Html->link(__('Edit'), ['action' => 'admin_edit', $career['Career']['id']], ['class' => 'btn btn-mini btn-info']); ?>

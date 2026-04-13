@@ -82,7 +82,7 @@
 									<div class="time">
 										<i class="icon-time bigger-110"></i>
 										<?php  
-										echo date('d M Y h:i a',strtotime($TaskAssigns['created']));
+										echo format_db_date('d M Y h:i a', $TaskAssigns['created']);
 										//$created = base64_encode($TaskAssigns['created']);									
 										//$time_elapsed_string = $this->requestAction('/tasks/time_elapsed_string/'.$created); ?>
 									</div>
@@ -128,7 +128,7 @@
 						if($TaskDocument['admin_id'] == 0){ echo '<span class="label label-info">'.$TaskDocument['NappUser']['name'].' '.$TaskDocument['NappUser']['lname'].'</span>'; }else{ echo  '<span class="label label-success">'.$TaskDocument['User']['name'].'</span>'; }
 						
 						
-						//echo $TaskDocument['NappUser']['name'].' '.$TaskDocument['NappUser']['lname']; ?> (<?php echo date('d M Y h:i a',strtotime($TaskDocument['created'])); ?>)</small>
+						//echo $TaskDocument['NappUser']['name'].' '.$TaskDocument['NappUser']['lname']; ?> (<?php echo format_db_date('d M Y h:i a', $TaskDocument['created']); ?>)</small>
 					</p>
 					<?php }else{ ?>
 					<p class="alert alert-success">
@@ -137,7 +137,7 @@
 						<small>
 						<?php 
 						if($TaskDocument['admin_id'] == 0){ echo '<span class="label label-info">'.$TaskDocument['NappUser']['name'].' '.$TaskDocument['NappUser']['lname'].'</span>'; }else{ echo  '<span class="label label-success">'.$TaskDocument['User']['name'].'</span>'; }
-						//echo $TaskDocument['NappUser']['name'].' '.$TaskDocument['NappUser']['lname']; ?> (<?php echo date('d M Y h:i a',strtotime($TaskDocument['created'])); ?>)</small>
+						//echo $TaskDocument['NappUser']['name'].' '.$TaskDocument['NappUser']['lname']; ?> (<?php echo format_db_date('d M Y h:i a', $TaskDocument['created']); ?>)</small>
 					</p>
 					<?php } $i++; } } ?>
 				</div>

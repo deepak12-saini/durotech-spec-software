@@ -28,7 +28,7 @@
 					<td><?php echo h($material['Material']['weight']); ?>&nbsp;</td>
 					<td><?php echo h($material['Material']['quantity']); ?>&nbsp;</td>					
 					<td><?php echo h($material['Material']['description']); ?>&nbsp;</td>					
-                    <td> <?php echo date('d-M-Y h:i a',strtotime($material['Material']['created'])); ?></td>
+                    <td> <?php echo format_db_date('d-M-Y h:i a', $material['Material']['created']); ?></td>
 					<td>
 					<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $material['Material']['id']),array('class'=>'btn btn-mini btn-info')); ?>
 					<a href="javascript:void()" onclick="qrcode('<?php echo $material['Material']['id']; ?>')" class="btn btn-mini btn-danger">QR Code</a>

@@ -21,7 +21,7 @@
 					</div>
 					<div class="col-xs-3">
 						<h4 style="text-align:left; margin-top:20px; color:#0684c7;">FORMAL MEETING MINUTES</h4>
-						<p style="text-align:left;"><span  style="color:#0684c7;">DATE:</span>	<?php echo date('D, F d, Y',strtotime($MintueMeetAll['MintueMeet']['date'])); ?> </p>
+						<p style="text-align:left;"><span  style="color:#0684c7;">DATE:</span>	<?php echo format_db_date('D, F d, Y', $MintueMeetAll['MintueMeet']['date']); ?> </p>
 						<p style="text-align:left;"><span  style="color:#0684c7;">TIME:</span>	<?php echo $MintueMeetAll['MintueMeet']['time']; ?> </p>
 						<p style=" text-align:left;"><span  style="color:#0684c7;">LOCATION:</span>	<?php echo $MintueMeetAll['MintueMeet']['referid']; ?></p>
 					</div>

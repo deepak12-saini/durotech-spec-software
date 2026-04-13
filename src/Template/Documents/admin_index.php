@@ -30,7 +30,7 @@
 						<td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?>&nbsp;</td>
 						
 						<!-- <td><?php echo h($DocumentLibraryArrs['DocumentLibrary']['format']); ?>&nbsp;</td> -->
-						<td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentLibrary']['date'])); ?>&nbsp;</td>
+						<td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['DocumentLibrary']['date']); ?>&nbsp;</td>
 						<td><?php echo h($DocumentLibraryArrs['DocumentLibrary']['name_of_indentor']); ?>&nbsp;</td>
 						<td><?php echo h($DocumentLibraryArrs['DocumentLibrary']['desigaration']); ?>&nbsp;</td>
 						<td><?php echo h($DocumentLibraryArrs['DocumentLibrary']['department']); ?>&nbsp;</td>				
@@ -43,7 +43,7 @@
 							}	
 						?>&nbsp;
 						</td>					
-						<td> <?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentLibrary']['created'])); ?></td>
+						<td> <?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['DocumentLibrary']['created']); ?></td>
 										
 					</tr>
 					<?php $k++; endforeach; ?>
@@ -96,7 +96,7 @@
 					
 					<tr><th>Added By: </th><td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?></td></tr>	
 					
-					<tr><th>Date: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentLibrary']['date'])); ?></td></tr>	
+					<tr><th>Date: </th><td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['DocumentLibrary']['date']); ?></td></tr>	
 					<tr><th>Name of Indentor: </th><td><?php echo $DocumentLibraryArrs['DocumentLibrary']['name_of_indentor']; ?></td></tr>	
 					<tr><th>Designation: </th><td><?php echo $DocumentLibraryArrs['DocumentLibrary']['desigaration']; ?></td></tr>	
 					<tr><th>Department: </th><td><?php echo $DocumentLibraryArrs['DocumentLibrary']['department']; ?></td></tr>						
@@ -113,7 +113,7 @@
 					<tr><th>Sign of hod: </th><td><?php echo $DocumentLibraryArrs['NappUser_3']['name'].' '.$DocumentLibraryArrs['NappUser_3']['lname'] ; ?></td></tr>	
 					<tr><th>sign of library: </th><td><?php echo $DocumentLibraryArrs['NappUser_4']['name'].' '.$DocumentLibraryArrs['NappUser_4']['lname'] ; ?></td></tr>	
 					
-					<tr><th>Created: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentLibrary']['created'])); ?></td></tr>	
+					<tr><th>Created: </th><td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['DocumentLibrary']['created']); ?></td></tr>	
 					</tbody>
 					
 				</table>

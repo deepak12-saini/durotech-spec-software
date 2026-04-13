@@ -72,7 +72,7 @@ $siteName = defined('SITENAME') ? SITENAME : 'Durotech Industries';
                         <?= $this->Form->error('ProductWarrantyRequest.serialnumber', null, ['class' => 'text-danger']) ?>
                     </div>
                     <div class="col-sm-6">
-                        <input type="text" name="ProductWarrantyRequest[dateofpurchase]" value="<?= !empty($log['dateofpurchase']) ? date('Y-m-d', strtotime($log['dateofpurchase'])) : '' ?>" id="dateofpurchase" class="datepicker col-xs-12 col-sm-12" placeholder="Date Of Purchase of Products">
+                        <input type="text" name="ProductWarrantyRequest[dateofpurchase]" value="<?= !empty($log['dateofpurchase']) ? format_db_date('Y-m-d', $log['dateofpurchase']) : '' ?>" id="dateofpurchase" class="datepicker col-xs-12 col-sm-12" placeholder="Date Of Purchase of Products">
                         <br><small>Date Of Purchase of Products</small>
                         <?= $this->Form->error('ProductWarrantyRequest.dateofpurchase', null, ['class' => 'text-danger']) ?>
                     </div>
@@ -130,8 +130,8 @@ $siteName = defined('SITENAME') ? SITENAME : 'Durotech Industries';
                         <?= $this->Form->error('ProductWarrantyRequest.building_name', null, ['class' => 'text-danger']) ?>
                     </div>
                     <div class="col-sm-6">
-                        <input type="text" name="ProductWarrantyRequest[start_requested_warranty]" value="<?= !empty($log['start_requested_warranty']) ? date('Y-m-d', strtotime($log['start_requested_warranty'])) : date('Y-m-d') ?>" id="start_requested_warranty" class="datepicker col-xs-6 col-sm-6" placeholder="Start">
-                        <input type="text" name="ProductWarrantyRequest[end_requested_warranty]" value="<?= !empty($log['end_requested_warranty']) ? date('Y-m-d', strtotime($log['end_requested_warranty'])) : date('Y-m-d') ?>" id="end_requested_warranty" class="datepicker col-xs-6 col-sm-6" placeholder="End">
+                        <input type="text" name="ProductWarrantyRequest[start_requested_warranty]" value="<?= !empty($log['start_requested_warranty']) ? format_db_date('Y-m-d', $log['start_requested_warranty']) : date('Y-m-d') ?>" id="start_requested_warranty" class="datepicker col-xs-6 col-sm-6" placeholder="Start">
+                        <input type="text" name="ProductWarrantyRequest[end_requested_warranty]" value="<?= !empty($log['end_requested_warranty']) ? format_db_date('Y-m-d', $log['end_requested_warranty']) : date('Y-m-d') ?>" id="end_requested_warranty" class="datepicker col-xs-6 col-sm-6" placeholder="End">
                         <br><small>Requested Warranty Period:</small>
                         <?= $this->Form->error('ProductWarrantyRequest.start_requested_warranty', null, ['class' => 'text-danger']) ?>
                         <?= $this->Form->error('ProductWarrantyRequest.end_requested_warranty', null, ['class' => 'text-danger']) ?>
@@ -183,7 +183,7 @@ $siteName = defined('SITENAME') ? SITENAME : 'Durotech Industries';
                         <?= $this->Form->error('ProductWarrantyRequest.contract_company_name', null, ['class' => 'text-danger']) ?>
                     </div>
                     <div class="col-sm-4">
-                        <input type="text" name="ProductWarrantyRequest[sign_date]" value="<?= !empty($log['sign_date']) ? date('Y-m-d', strtotime($log['sign_date'])) : '' ?>" id="sign_date" class="datepicker col-xs-12 col-sm-12" placeholder="Date">
+                        <input type="text" name="ProductWarrantyRequest[sign_date]" value="<?= !empty($log['sign_date']) ? format_db_date('Y-m-d', $log['sign_date']) : '' ?>" id="sign_date" class="datepicker col-xs-12 col-sm-12" placeholder="Date">
                         <br><small>Date</small>
                         <?= $this->Form->error('ProductWarrantyRequest.sign_date', null, ['class' => 'text-danger']) ?>
                     </div>

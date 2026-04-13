@@ -27,13 +27,13 @@
 					<tr>
 						<td><a data-toggle="modal" data-target="#myModal_<?php echo $k; ?>" href="#null"><?php echo h($HrPerformanceFeedbackArrs['HrPerformanceFeedback']['documentid']); ?></a>&nbsp;</td>
 						<td><?php echo $HrPerformanceFeedbackArrs['NappUser']['name'].' '.$HrPerformanceFeedbackArrs['NappUser']['lname']; ?>&nbsp;</td>
-						<td><?php echo date('d-M-Y',strtotime($HrPerformanceFeedbackArrs['HrPerformanceFeedback']['date'])); ?>&nbsp;</td>
+						<td><?php echo format_db_date('d-M-Y', $HrPerformanceFeedbackArrs['HrPerformanceFeedback']['date']); ?>&nbsp;</td>
 						<td><?php echo h($HrPerformanceFeedbackArrs['HrPerformanceFeedback']['name_of_employee']); ?>&nbsp;</td>
 						<td><?php echo h($HrPerformanceFeedbackArrs['HrPerformanceFeedback']['department']); ?>&nbsp;</td>
 						<td><?php echo h($HrPerformanceFeedbackArrs['HrPerformanceFeedback']['designation']); ?>&nbsp;</td>
 						<td><?php echo h($HrPerformanceFeedbackArrs['HrPerformanceFeedback']['date_of_joining']); ?>&nbsp;</td>
 								
-						<td> <?php echo date('d-M-Y',strtotime($HrPerformanceFeedbackArrs['HrPerformanceFeedback']['created'])); ?></td>
+						<td> <?php echo format_db_date('d-M-Y', $HrPerformanceFeedbackArrs['HrPerformanceFeedback']['created']); ?></td>
 						<td>
 							<a href="<?php echo SITEURL.'hrs/performance_feedback_edit/'.$HrPerformanceFeedbackArrs['HrPerformanceFeedback']['id']; ?>" class="btn btn-mini btn-info">Edit</a>							
 											
@@ -91,7 +91,7 @@
 					<tr><th>Added By: </th><td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?></td></tr>	
 					
 					<tr><th>Name of Employee: </th><td><?php echo $DocumentLibraryArrs['HrPerformanceFeedback']['name_of_employee']; ?></td></tr>	
-					<tr><th>Date: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['HrPerformanceFeedback']['date'])); ?></td></tr>	
+					<tr><th>Date: </th><td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['HrPerformanceFeedback']['date']); ?></td></tr>	
 					<tr><th>Department: </th><td><?php echo $DocumentLibraryArrs['HrPerformanceFeedback']['department']; ?></td></tr>	
 					<tr><th>Designation: </th><td><?php echo $DocumentLibraryArrs['HrPerformanceFeedback']['designation']; ?></td></tr>	
 					<tr><th>Date of joining: </th><td><?php echo $DocumentLibraryArrs['HrPerformanceFeedback']['date_of_joining']; ?></td></tr>	
@@ -105,7 +105,7 @@
 					<tr><th>Signature of hr executive: </th><td><?php echo $DocumentLibraryArrs['HrPerformanceFeedback']['signature_of_hr_executive']; ?></td></tr>	
 					<tr><th>signature of concerned dept. co-ordinator: </th><td><?php echo $DocumentLibraryArrs['HrPerformanceFeedback']['signature_of_concerned_deptt_coordinator']; ?></td></tr>	
 							
-					<tr><th>Created: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['HrPerformanceFeedback']['created'])); ?></td></tr>	
+					<tr><th>Created: </th><td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['HrPerformanceFeedback']['created']); ?></td></tr>	
 					</tbody>
 					
 				</table>

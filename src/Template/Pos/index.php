@@ -40,7 +40,7 @@
 								echo '<span class="label label-success">Completed</span>';
 							}	
 						?>&nbsp;</td>					
-						<td><?php echo !empty($po['created']) ? date('d-M-Y h:i a', strtotime($po['created'])) : ''; ?></td>	
+						<td><?php echo !empty($po['created']) ? format_db_date('d-M-Y h:i a', $po['created']) : ''; ?></td>	
 						<td>
 						<?php if($status < 2){ ?>
 							<a href="<?php echo $this->Url->build(['controller' => 'Pos', 'action' => 'edit', $po['id'] ?? '']); ?>" class="btn btn-mini btn-info">Edit</a>		
@@ -110,7 +110,7 @@
 					?>&nbsp;
 						</td></tr>	
 					<tr><th>Approved By: </th><td><?php echo h($po['approvedby'] ?? ''); ?></td></tr>
-					<tr><th>Created: </th><td><?php echo !empty($po['created']) ? date('d-M-Y', strtotime($po['created'])) : ''; ?></td></tr>	
+					<tr><th>Created: </th><td><?php echo !empty($po['created']) ? format_db_date('d-M-Y', $po['created']) : ''; ?></td></tr>	
 					</tbody>
 					
 				</table>

@@ -78,7 +78,7 @@
 										<div class="time">
 											<i class="icon-time bigger-110"></i>
 											<?php
-												if ($created) echo date('d M Y h:i a', strtotime($created));
+												if ($created) echo format_db_date('d M Y h:i a', $created);
 											?>
 										</div>
 									</div>

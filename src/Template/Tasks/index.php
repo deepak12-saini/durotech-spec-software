@@ -117,11 +117,11 @@
 					<td><?php echo $tasks['Task']['results_summary']; ?>&nbsp;</td>
 					<td>
 					
-					<span class="label label-info">Project Started: <?php if($tasks['Task']['alloteddate'] != '0000-00-00'){ echo date('d M Y',strtotime($tasks['Task']['alloteddate'])); }else{ echo 'N/A'; } ?>&nbsp;</span> <br/><br/>
+					<span class="label label-info">Project Started: <?php if($tasks['Task']['alloteddate'] != '0000-00-00'){ echo format_db_date('d M Y', $tasks['Task']['alloteddate']); }else{ echo 'N/A'; } ?>&nbsp;</span> <br/><br/>
 					
-					<span class="label label-warning">Assigned Date: <?php if($tasks['Task']['assigned_date'] != '0000-00-00'){ echo date('d M Y',strtotime($tasks['Task']['assigned_date'])); }else{ echo 'N/A'; }  ?>&nbsp;</span> <br/><br/>
+					<span class="label label-warning">Assigned Date: <?php if($tasks['Task']['assigned_date'] != '0000-00-00'){ echo format_db_date('d M Y', $tasks['Task']['assigned_date']); }else{ echo 'N/A'; }  ?>&nbsp;</span> <br/><br/>
 					
-					<span class="label label-danger">Deadline Date: <?php  if($tasks['Task']['task_completion_date'] == '0000-00-00'){  echo 'N/A'; }else{ echo date('d M Y',strtotime($tasks['Task']['task_completion_date']));  } ?>&nbsp;</span> 
+					<span class="label label-danger">Deadline Date: <?php  if($tasks['Task']['task_completion_date'] == '0000-00-00'){  echo 'N/A'; }else{ echo format_db_date('d M Y', $tasks['Task']['task_completion_date']);  } ?>&nbsp;</span> 
 					
 					</td>
 					
@@ -152,7 +152,7 @@
 							<script>
 							<?php if($tasks['Task']['task_completion_date'] != '0000-00-00'){   ?>
 							// Set the date we're counting down to
-							var countDownDate_<?php echo $i; ?> = new Date("<?php echo date('M d, Y 10:00:00',strtotime($tasks['Task']['task_completion_date']))?>").getTime();
+							var countDownDate_<?php echo $i; ?> = new Date("<?php echo format_db_date('M d, Y 10:00:00', $tasks['Task']['task_completion_date'])?>").getTime();
 
 							// Update the count down every 1 second
 							var x = setInterval(function() {
@@ -190,7 +190,7 @@
 						<span class="label label-success">Completed</span>
 					<?php }?>&nbsp
 					</td>
-                    <td> <?php echo date('d-M-Y',strtotime($tasks['Task']['created'])); ?></td>
+                    <td> <?php echo format_db_date('d-M-Y', $tasks['Task']['created']); ?></td>
 					 <td class="actions">
 					 
 						<?php echo $this->Html->link(__('Comments'), array('action' => 'comment', $tasks['Task']['task_id']),array('class'=>'btn btn-mini btn-inverse')); ?>
@@ -323,11 +323,11 @@
 							<th>Project Started/Assigned/Deadline Date: </th>
 							<td>
 						
-							<span class="label label-info">Project Started: <?php if($tasknew['Task']['alloteddate'] != '0000-00-00'){ echo date('d M Y',strtotime($tasknew['Task']['alloteddate'])); }else{ echo 'N/A'; } ?>&nbsp;</span> <br/><br/>
+							<span class="label label-info">Project Started: <?php if($tasknew['Task']['alloteddate'] != '0000-00-00'){ echo format_db_date('d M Y', $tasknew['Task']['alloteddate']); }else{ echo 'N/A'; } ?>&nbsp;</span> <br/><br/>
 							
-							<span class="label label-warning">Assigned Date: <?php if($tasknew['Task']['assigned_date'] != '0000-00-00'){ echo date('d M Y',strtotime($tasknew['Task']['assigned_date'])); }else{ echo 'N/A'; }  ?>&nbsp;</span> <br/><br/>
+							<span class="label label-warning">Assigned Date: <?php if($tasknew['Task']['assigned_date'] != '0000-00-00'){ echo format_db_date('d M Y', $tasknew['Task']['assigned_date']); }else{ echo 'N/A'; }  ?>&nbsp;</span> <br/><br/>
 							
-							<span class="label label-danger">Deadline Date: <?php  if($tasknew['Task']['task_completion_date'] == '0000-00-00'){  echo 'N/A'; }else{ echo date('d M Y',strtotime($tasknew['Task']['task_completion_date']));  } ?>&nbsp;</span> 
+							<span class="label label-danger">Deadline Date: <?php  if($tasknew['Task']['task_completion_date'] == '0000-00-00'){  echo 'N/A'; }else{ echo format_db_date('d M Y', $tasknew['Task']['task_completion_date']);  } ?>&nbsp;</span> 
 							
 							</td>
 						</tr>

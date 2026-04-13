@@ -58,7 +58,7 @@
 						<span class="label label-danger">Inactive</span>
 						<?php }?>&nbsp;
 						</td-->
-                    <td> <?php echo date('d-M-Y h:i a',strtotime($mailer['EoiMailer']['created'])); ?></td>
+                    <td> <?php echo format_db_date('d-M-Y h:i a', $mailer['EoiMailer']['created']); ?></td>
 					
 					</tr>
 					<?php endforeach; ?>

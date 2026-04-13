@@ -1,21 +1,26 @@
 	<?php
-		
-		if(!empty($StaffTime['StaffTime']['start_time'])){
+		if (!empty($StaffTime['StaffTime']['start_time'])) {
 			$start_time = $StaffTime['StaffTime']['start_time'];
-			$start = date('Y-m-d H:i:s',strtotime($StaffTime['StaffTime']['created']));
-		}else{
-			$start_time =  '';
+			$startTs = \App\Utility\SafeDate::timestamp($StaffTime['StaffTime']['created'] ?? null, [
+				$StaffTime['StaffTime']['startdate'] ?? null,
+			]);
+			$start = $startTs !== null ? date('Y-m-d H:i:s', $startTs) : '';
+		} else {
+			$start_time = '';
 			$start = '';
+			$startTs = null;
 		}
-		
-		if(!empty($StaffTime['StaffTime']['end_time'])){
+
+		if (!empty($StaffTime['StaffTime']['end_time'])) {
 			$end_time = $StaffTime['StaffTime']['end_time'];
-		}else{
-			$end_time =  '';
+		} else {
+			$end_time = '';
 		}
-		
+
 		$end = date('Y-m-d H:i:s');
-		$diff = abs(strtotime($end) - strtotime($start));
+		$endTs = strtotime($end);
+		$startForDiff = ($startTs !== null && $start !== '') ? $startTs : null;
+		$diff = ($startForDiff !== null && $endTs !== false) ? abs($endTs - $startForDiff) : 0;
 				
 		$years = floor($diff / (365*60*60*24));  
 		$months = floor(($diff - $years * 365*60*60*24) / (30*60*60*24));  

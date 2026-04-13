@@ -110,7 +110,7 @@ table tr td { }
 						<td><?php echo h($CpdMailers['CpdMailer']['email']); ?>&nbsp;</td>
 						<td><?php echo h($CpdMailers['CpdMailer']['phone']); ?>&nbsp;</td>				
 						
-						<td> <?php echo date('d-M-Y H:i:s',strtotime($CpdMailers['CpdMailer']['created'])); ?></td>
+						<td> <?php echo format_db_date('d-M-Y H:i:s', $CpdMailers['CpdMailer']['created']); ?></td>
 										
 					</tr>
 					<?php $k++; endforeach; ?>

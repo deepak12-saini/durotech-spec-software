@@ -32,7 +32,7 @@
 						<td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?>&nbsp;</td>
 						
 						<!-- <td><?php echo h($DocumentLibraryArrs['HrTrainingNeedAssessment']['format']); ?>&nbsp;</td> -->
-						<td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['HrTrainingNeedAssessment']['date'])); ?>&nbsp;</td>
+						<td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['HrTrainingNeedAssessment']['date']); ?>&nbsp;</td>
 						<td><?php echo h($DocumentLibraryArrs['HrTrainingNeedAssessment']['employee_name']); ?>&nbsp;</td>
 						<td><?php echo h($DocumentLibraryArrs['HrTrainingNeedAssessment']['qualification']); ?>&nbsp;</td>
 						<td><?php echo h($DocumentLibraryArrs['HrTrainingNeedAssessment']['designation']); ?>&nbsp;</td>
@@ -40,7 +40,7 @@
 						<td><?php echo h($DocumentLibraryArrs['HrTrainingNeedAssessment']['experience']); ?>&nbsp;</td>				
 						<td><?php echo h($DocumentLibraryArrs['HrTrainingNeedAssessment']['signature']); ?>&nbsp;</td>				
 										
-						<td> <?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['HrTrainingNeedAssessment']['created'])); ?></td>
+						<td> <?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['HrTrainingNeedAssessment']['created']); ?></td>
 						<td>
 							<a href="<?php echo SITEURL.'hrs/edit/'.$DocumentLibraryArrs['HrTrainingNeedAssessment']['id']; ?>" class="btn btn-mini btn-info">Edit</a>							
 											
@@ -97,14 +97,14 @@
 					
 					<tr><th>Added By: </th><td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?></td></tr>	
 					
-					<tr><th>Date: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['HrTrainingNeedAssessment']['date'])); ?></td></tr>	
+					<tr><th>Date: </th><td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['HrTrainingNeedAssessment']['date']); ?></td></tr>	
 					<tr><th>Employee Name: </th><td><?php echo $DocumentLibraryArrs['HrTrainingNeedAssessment']['employee_name']; ?></td></tr>	
 					<tr><th>Qualification: </th><td><?php echo $DocumentLibraryArrs['HrTrainingNeedAssessment']['qualification']; ?></td></tr>	
 					<tr><th>Designation: </th><td><?php echo $DocumentLibraryArrs['HrTrainingNeedAssessment']['designation']; ?></td></tr>	
 					<tr><th>Department: </th><td><?php echo $DocumentLibraryArrs['HrTrainingNeedAssessment']['department']; ?></td></tr>	
 					<tr><th>experience: </th><td><?php echo $DocumentLibraryArrs['HrTrainingNeedAssessment']['experience']; ?></td></tr>					
 					<tr><th>Signature: </th><td><?php echo $DocumentLibraryArrs['HrTrainingNeedAssessment']['signature']; ?></td></tr>					
-					<tr><th>Created: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['HrTrainingNeedAssessment']['created'])); ?></td></tr>	
+					<tr><th>Created: </th><td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['HrTrainingNeedAssessment']['created']); ?></td></tr>	
 					</tbody>
 					
 				</table>

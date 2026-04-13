@@ -32,7 +32,7 @@
 						<td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?>&nbsp;</td>
 						
 						<!-- <td><?php echo h($DocumentLibraryArrs['DocumentReceiveInspection']['format']); ?>&nbsp;</td> -->
-						<td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentReceiveInspection']['date'])); ?>&nbsp;</td>
+						<td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['DocumentReceiveInspection']['date']); ?>&nbsp;</td>
 						<td><?php echo h($DocumentLibraryArrs['DocumentReceiveInspection']['product_name']); ?>&nbsp;</td>
 						<td><?php echo h($DocumentLibraryArrs['DocumentReceiveInspection']['signature']); ?>&nbsp;</td>
 						<td><?php echo h($DocumentLibraryArrs['DocumentReceiveInspection']['finaldate']); ?>&nbsp;</td>				
@@ -47,7 +47,7 @@
 							}	
 						?>&nbsp;
 						</td>					
-						<td> <?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentReceiveInspection']['created'])); ?></td>
+						<td> <?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['DocumentReceiveInspection']['created']); ?></td>
 						<td>
 							<a href="<?php echo SITEURL.'documents/edit_receiving_insepction/'.$DocumentLibraryArrs['DocumentReceiveInspection']['id']; ?>" class="btn btn-mini btn-info">Edit</a>							
 											
@@ -103,7 +103,7 @@
 					
 					<tr><th>Added By: </th><td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?></td></tr>	
 					
-					<tr><th>Date: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentReceiveInspection']['date'])); ?></td></tr>	
+					<tr><th>Date: </th><td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['DocumentReceiveInspection']['date']); ?></td></tr>	
 					<tr><th>Project Name: </th><td><?php echo $DocumentLibraryArrs['DocumentReceiveInspection']['product_name']; ?></td></tr>	
 					<tr><th>Signature: </th><td><?php echo $DocumentLibraryArrs['DocumentReceiveInspection']['signature']; ?></td></tr>	
 					<tr><th>Finaldate: </th><td><?php echo $DocumentLibraryArrs['DocumentReceiveInspection']['finaldate']; ?></td></tr>						
@@ -118,7 +118,7 @@
 					}	 ?>
 					</td></tr>	
 					
-					<tr><th>Created: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentReceiveInspection']['created'])); ?></td></tr>	
+					<tr><th>Created: </th><td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['DocumentReceiveInspection']['created']); ?></td></tr>	
 					</tbody>
 					
 				</table>

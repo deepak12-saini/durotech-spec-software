@@ -106,7 +106,7 @@ if (!empty($csrfToken)) {
                             </td>
 
 
-                            <td><?= !empty($request['ProductWarrantyRequest']['created_at']) ? date('d/m/Y', strtotime($request['ProductWarrantyRequest']['created_at'])) : ''; ?></td>
+                            <td><?= !empty($request['ProductWarrantyRequest']['created_at']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['created_at']) : ''; ?></td>
                             <td>
                                 <button type="button" class="btn btn-xs btn-info autoModal" data-target="#detailModal_<?= $rowId; ?>">
                                     View Details
@@ -180,18 +180,18 @@ if (!empty($csrfToken)) {
                 <div class="modal-body">
                     <table class="table table-bordered">
                         <tr><th>Serial Number:</th><td><?= h($request['ProductWarrantyRequest']['serialnumber']); ?></td></tr>
-                        <tr><th>Date Of Purchase:</th><td><?= !empty($request['ProductWarrantyRequest']['dateofpurchase']) ? date('d/m/Y', strtotime($request['ProductWarrantyRequest']['dateofpurchase'])) : ''; ?></td></tr>
+                        <tr><th>Date Of Purchase:</th><td><?= !empty($request['ProductWarrantyRequest']['dateofpurchase']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['dateofpurchase']) : ''; ?></td></tr>
                         <tr><th>Product:</th><td><?= h($request['ProductWarrantyRequest']['product']); ?></td></tr>
                         <tr><th>Used As:</th><td><?= h($request['ProductWarrantyRequest']['used_as']); ?></td></tr>
                         <tr><th>Application:</th><td><?= h($request['ProductWarrantyRequest']['application']); ?></td></tr>
                         <tr><th>Area Warranted:</th><td><?= h($request['ProductWarrantyRequest']['area_warranted']); ?></td></tr>
                         <tr><th>Building Address:</th><td><?= h($request['ProductWarrantyRequest']['building_address']); ?></td></tr>
                         <tr><th>Building Name:</th><td><?= h($request['ProductWarrantyRequest']['building_name']); ?></td></tr>
-                        <tr><th>Start Warranty Date:</th><td><?= !empty($request['ProductWarrantyRequest']['start_requested_warranty']) ? date('d/m/Y', strtotime($request['ProductWarrantyRequest']['start_requested_warranty'])) : ''; ?></td></tr>
-                        <tr><th>End Warranty Date:</th><td><?= !empty($request['ProductWarrantyRequest']['end_requested_warranty']) ? date('d/m/Y', strtotime($request['ProductWarrantyRequest']['end_requested_warranty'])) : ''; ?></td></tr>
+                        <tr><th>Start Warranty Date:</th><td><?= !empty($request['ProductWarrantyRequest']['start_requested_warranty']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['start_requested_warranty']) : ''; ?></td></tr>
+                        <tr><th>End Warranty Date:</th><td><?= !empty($request['ProductWarrantyRequest']['end_requested_warranty']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['end_requested_warranty']) : ''; ?></td></tr>
                         <tr><th>Contractor Company Name:</th><td><?= h($request['ProductWarrantyRequest']['contract_company_name']); ?></td></tr>
                         <tr><th>Contractor Name:</th><td><?= h($request['ProductWarrantyRequest']['contract_name']); ?></td></tr>
-                        <tr><th>Sign Date:</th><td><?= !empty($request['ProductWarrantyRequest']['sign_date']) ? date('d/m/Y', strtotime($request['ProductWarrantyRequest']['sign_date'])) : ''; ?></td></tr>
+                        <tr><th>Sign Date:</th><td><?= !empty($request['ProductWarrantyRequest']['sign_date']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['sign_date']) : ''; ?></td></tr>
                     </table>
                 </div>
                 <div class="modal-footer">

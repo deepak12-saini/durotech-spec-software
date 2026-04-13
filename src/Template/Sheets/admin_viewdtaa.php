@@ -59,10 +59,10 @@
 				if(!empty($SheetTaskTrack)){ foreach($SheetTaskTrack as $SheetTaskTracks){ ?>
 					<tr>
 						<td><?php echo $i; ?></td>
-						<td><?php echo date('d M Y h:i a',strtotime($SheetTaskTracks['SheetTaskTrack']['start'])); ?></td>
+						<td><?php echo format_db_date('d M Y h:i a', $SheetTaskTracks['SheetTaskTrack']['start']); ?></td>
 						<td><?php 
 						if($SheetTaskTracks['SheetTaskTrack']['end'] != '0000-00-00 00:00:00'){
-							echo date('d M Y h:i a',strtotime($SheetTaskTracks['SheetTaskTrack']['end']));
+							echo format_db_date('d M Y h:i a', $SheetTaskTracks['SheetTaskTrack']['end']);
 						}else{
 							echo '-';
 						}

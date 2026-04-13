@@ -30,7 +30,7 @@
 					foreach ($DuroOrderArr as $DuroOrderArrs): ?>
 					<tr>
 						<td><a data-toggle="modal" data-target="#myModal_<?php echo $k; ?>" href="#null"><?php echo h($DuroOrderArrs['DuroOrder']['customer_order_no'] ?? ''); ?></a>&nbsp;</td>						
-						<td><?php echo date('d-M-Y',strtotime($DuroOrderArrs['DuroOrder']['date_of_order'] ?? 'now')); ?>&nbsp;</td>		
+						<td><?php echo format_db_date('d-M-Y', $DuroOrderArrs['DuroOrder']['date_of_order'] ?? 'now'); ?>&nbsp;</td>		
 						<td><?php
 						$napp = $DuroOrderArrs['NappUser'] ?? null;
 						echo $napp ? h($napp['name'] ?? '') . ' ' . h($napp['lname'] ?? '') : '—';
@@ -52,7 +52,7 @@
 	
 						?>&nbsp;
 						</td>					
-						<td> <?php echo date('d-M-Y',strtotime($DuroOrderArrs['DuroOrder']['created'])); ?></td>
+						<td> <?php echo format_db_date('d-M-Y', $DuroOrderArrs['DuroOrder']['created']); ?></td>
 						<td>
 						<?php if($DuroOrderArrs['DuroOrder']['status'] < 2){?>
 							<a href="<?php echo $this->Url->build('/admin/duro_orders/edit/' . (int)$DuroOrderArrs['DuroOrder']['id']); ?>" class="btn btn-sm btn-info">Edit</a>	
@@ -111,7 +111,7 @@
 					echo $napp ? h($napp['name'] ?? '') . ' ' . h($napp['lname'] ?? '') : '—';
 					?></td></tr>	
 					
-					<tr><th>Date: </th><td><?php echo date('d-M-Y',strtotime($DuroOrderArrs['DuroOrder']['date_of_order'])); ?></td></tr>	
+					<tr><th>Date: </th><td><?php echo format_db_date('d-M-Y', $DuroOrderArrs['DuroOrder']['date_of_order']); ?></td></tr>	
 					<tr><th>Account Name: </th><td><?php echo $DuroOrderArrs['DuroOrder']['account_name']; ?></td></tr>	
 					<tr><th>order taken by: </th><td><?php echo $DuroOrderArrs['DuroOrder']['order_taken_by']; ?></td></tr>	
 					<tr><th>contact name: </th><td><?php echo $DuroOrderArrs['DuroOrder']['contact_name']; ?></td></tr>	
@@ -130,7 +130,7 @@
 					?>&nbsp;
 						</td></tr>	
 					
-					<tr><th>Created: </th><td><?php echo date('d-M-Y',strtotime($DuroOrderArrs['DuroOrder']['created'])); ?></td></tr>	
+					<tr><th>Created: </th><td><?php echo format_db_date('d-M-Y', $DuroOrderArrs['DuroOrder']['created']); ?></td></tr>	
 					</tbody>
 					
 				</table>

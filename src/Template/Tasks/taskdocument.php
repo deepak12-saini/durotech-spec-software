@@ -29,7 +29,7 @@
 					<td><a href="<?php echo SITEURL.'tasks/download/'.$taskArrs['id']; ?>" target="blank">Download Document</a>&nbsp;</td>
 					<td><?php echo $taskArrs['ext']; ?>&nbsp;</td>
 					
-                    <td> <?php echo date('d M Y h:i a',strtotime($taskArrs['created'])); ?></td>
+                    <td> <?php echo format_db_date('d M Y h:i a', $taskArrs['created']); ?></td>
 					
 					</tr>
 					<?php $i++;  endforeach; ?>

@@ -98,7 +98,7 @@
 											<i class="icon-time bigger-110"></i>
 											<?php
 											if ($created && $created !== '0000-00-00 00:00:00') {
-												echo date('d M Y h:i a', strtotime($created));
+												echo format_db_date('d M Y h:i a', $created);
 											}
 											?>
 										</div>

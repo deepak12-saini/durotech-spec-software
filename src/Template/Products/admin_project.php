@@ -30,7 +30,7 @@
 					<?php }?>
 					</td>
 					
-                    <td> <?php echo date('d-M-Y',strtotime($imageArrs['Project']['created'])); ?></td>
+                    <td> <?php echo format_db_date('d-M-Y', $imageArrs['Project']['created']); ?></td>
 					 <td class="actions">
 						<?php echo $this->Form->postLink(__('Delete'), array('action' => 'projectdelete', $product_id,$imageArrs['Project']['id']), array('class'=>'btn btn-mini btn-danger','style'=>'margin-top:2px;'), __('Are you sure you want to delete # %s?', $imageArrs['Project']['id'])); ?>
 						

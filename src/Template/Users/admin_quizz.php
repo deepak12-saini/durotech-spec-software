@@ -37,7 +37,7 @@
 						<td><?php echo h($qs['landlineno'] ?? ''); ?>&nbsp;</td>							
 						<td><?php echo h($qs['company'] ?? ''); ?>&nbsp;</td>														
 						<td><?php echo h($qs['company_address'] ?? ''); ?>&nbsp;</td>														
-						<td><?php echo !empty($qs['created']) ? date('d M Y h:i a', strtotime($qs['created'])) : ''; ?></td>					
+						<td><?php echo !empty($qs['created']) ? format_db_date('d M Y h:i a', $qs['created']) : ''; ?></td>					
 					</tr>
 					<?php endforeach; ?>
 

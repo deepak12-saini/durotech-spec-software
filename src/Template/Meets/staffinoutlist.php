@@ -21,7 +21,7 @@
 					<th>Email</th>		
 					<th>Phone</th>		
 					<th>StartTime</th>		
-					<th>EmdTime</th>		
+					<th>EndTime</th>		
 					<th>Date</th>		
 					<th>Work Status</th>						
 				</tr>
@@ -39,7 +39,10 @@
 						<td><?php echo h($StaffTimes['StaffTime']['phone']); ?>&nbsp;</td>
 						<td><?php echo h($StaffTimes['StaffTime']['start_time']); ?>&nbsp;</td>
 						<td><?php echo h($StaffTimes['StaffTime']['end_time']); ?>&nbsp;</td>
-						<td><?php if($StaffTimes['StaffTime']['startdate'] != '0000-00-00 00:00:00'){ echo date('d M Y',strtotime($StaffTimes['StaffTime']['startdate']));} ?>&nbsp;</td>
+						<td><?php echo h($this->DateDisplay->mysqlDate($StaffTimes['StaffTime']['startdate'] ?? null, 'd M Y', [
+							$StaffTimes['StaffTime']['created'] ?? null,
+							$StaffTimes['StaffTime']['enddate'] ?? null,
+						])); ?>&nbsp;</td>
 						<td><?php if($StaffTimes['StaffTime']['work_status'] == ''){ echo 'Sent'; }else{ echo $StaffTimes['StaffTime']['work_status']; } ?>&nbsp;</td>
 					</tr>
 					<?php $i++; endforeach; ?>
@@ -75,7 +78,10 @@
 							<tr><th>Phone: </th><td><?php echo h($StaffTimes['StaffTime']['phone']); ?></td></tr>	
 							<tr><th>Start Time: </th><td><?php echo h($StaffTimes['StaffTime']['start_time']); ?></td></tr>	
 							<tr><th>End Time: </th><td><?php echo h($StaffTimes['StaffTime']['end_time']); ?></td></tr>	
-							<tr><th>Date: </th><td><?php if($StaffTimes['StaffTime']['startdate'] != '0000-00-00 00:00:00'){ echo date('d M Y',strtotime($StaffTimes['StaffTime']['startdate']));} ?></td></tr>	
+							<tr><th>Date: </th><td><?php echo h($this->DateDisplay->mysqlDate($StaffTimes['StaffTime']['startdate'] ?? null, 'd M Y', [
+								$StaffTimes['StaffTime']['created'] ?? null,
+								$StaffTimes['StaffTime']['enddate'] ?? null,
+							])); ?></td></tr>	
 							<tr><th>Work Status: </th><td><?php echo h($StaffTimes['StaffTime']['work_status']); ?></td></tr>						
 							<tr><th>Work Summary: </th><td><?php echo h($StaffTimes['StaffTime']['summary']); ?></td></tr>						
 												

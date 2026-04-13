@@ -36,7 +36,7 @@
 					<td><?php echo h($BatchRegisterArrs['BatchCountSheet']['date']); ?>&nbsp;</td>
 					<td><?php echo h($BatchRegisterArrs['BatchCountSheet']['date_completed']); ?>&nbsp;</td>
 					<td><?php echo h($BatchRegisterArrs['BatchCountSheet']['signature']); ?>&nbsp;</td>									
-                    <td> <?php echo date('d-M-Y',strtotime($BatchRegisterArrs['BatchCountSheet']['created'])); ?></td>
+                    <td> <?php echo format_db_date('d-M-Y', $BatchRegisterArrs['BatchCountSheet']['created']); ?></td>
 					<td><a href="<?php echo SITEURL.'productions/batch_count_sheet_edit/'.$BatchRegisterArrs['BatchCountSheet']['id'] ?>" class="btn btn-mini btn-info" >Edit</a></td>
 					</tr>
 					<?php endforeach; ?>

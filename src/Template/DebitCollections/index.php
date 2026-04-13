@@ -89,7 +89,7 @@ foreach ($stockreturn as $stockreturns):
 						</tr>	
 						<?php if(!empty($stockreturns)){ foreach($stockreturns['StockReturnData'] as $StockReturnDatas){ ?>
 							<tr>
-								<td><?php echo date('d-M-Y',strtotime($StockReturnDatas['date'])); ?></td>
+								<td><?php echo format_db_date('d-M-Y', $StockReturnDatas['date']); ?></td>
 								<td><?php echo $StockReturnDatas['customer']; ?></td>
 								<td><?php echo $StockReturnDatas['items']; ?></td>
 								<td><?php echo $StockReturnDatas['reason']; ?></td>

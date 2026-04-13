@@ -32,7 +32,7 @@
 						<td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?>&nbsp;</td>
 						
 						<!-- <td><?php echo h($DocumentLibraryArrs['DocumentFieldExecutiveDuty']['format']); ?>&nbsp;</td> -->
-						<td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentFieldExecutiveDuty']['date'])); ?>&nbsp;</td>
+						<td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['DocumentFieldExecutiveDuty']['date']); ?>&nbsp;</td>
 						<td><?php echo h($DocumentLibraryArrs['DocumentFieldExecutiveDuty']['name_of_requistioner']); ?>&nbsp;</td>
 						<td><?php echo h($DocumentLibraryArrs['DocumentFieldExecutiveDuty']['designation']); ?>&nbsp;</td>
 						<td><?php echo h($DocumentLibraryArrs['DocumentFieldExecutiveDuty']['deptartment']); ?>&nbsp;</td>				
@@ -41,7 +41,7 @@
 						<td><?php echo h($DocumentLibraryArrs['DocumentFieldExecutiveDuty']['date_of_visit']); ?>&nbsp;</td>				
 						<td><?php echo h($DocumentLibraryArrs['DocumentFieldExecutiveDuty']['priority']); ?>&nbsp;</td>				
 									
-						<td> <?php echo date('d-M-Y h:i a',strtotime($DocumentLibraryArrs['DocumentFieldExecutiveDuty']['created'])); ?></td>
+						<td> <?php echo format_db_date('d-M-Y h:i a', $DocumentLibraryArrs['DocumentFieldExecutiveDuty']['created']); ?></td>
 											
 					</tr>
 					<?php $k++; endforeach; ?>
@@ -94,7 +94,7 @@
 					
 					<tr><th>Added By: </th><td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?></td></tr>	
 					
-					<tr><th>Date: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentFieldExecutiveDuty']['date'])); ?></td></tr>	
+					<tr><th>Date: </th><td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['DocumentFieldExecutiveDuty']['date']); ?></td></tr>	
 				</tbody>
 				</table>	
 				<h5 class="label label-inverse">Fixed Executive Duty Requisition Form</h5>
@@ -104,7 +104,7 @@
 					<tr><th>Designation: </th><td><?php echo $DocumentLibraryArrs['DocumentFieldExecutiveDuty']['designation']; ?></td></tr>	
 					<tr><th>Contact no: </th><td><?php echo $DocumentLibraryArrs['DocumentFieldExecutiveDuty']['contact_no']; ?></td></tr>	
 					<tr><th>Department: </th><td><?php echo $DocumentLibraryArrs['DocumentFieldExecutiveDuty']['deptartment']; ?></td></tr>	
-					<tr><th>Date of Visit: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentFieldExecutiveDuty']['date_of_visit'])); ?></td></tr>	
+					<tr><th>Date of Visit: </th><td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['DocumentFieldExecutiveDuty']['date_of_visit']); ?></td></tr>	
 					<tr><th>Place of Visit: </th><td><?php echo $DocumentLibraryArrs['DocumentFieldExecutiveDuty']['place_of_visit']; ?></td></tr>	
 					<tr><th>Priority: </th><td><?php echo $DocumentLibraryArrs['DocumentFieldExecutiveDuty']['priority']; ?></td></tr>	
 					<tr><th>sign of requisitoner: </th><td><?php echo $DocumentLibraryArrs['DocumentFieldExecutiveDuty']['sign_of_requisitoner']; ?></td></tr>	

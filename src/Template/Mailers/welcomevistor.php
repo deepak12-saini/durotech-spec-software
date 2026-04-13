@@ -41,11 +41,11 @@
 								<?php if(!empty($visitor)){ foreach ($visitor as $visitors): ?>
 								<tr>
 									<td>#<?php echo $visitors['Visitor']['visitor_card_id']; ?>&nbsp;</td>
-									<td><?php echo date('d/m/Y',strtotime($visitors['Visitor']['date'])); ?>&nbsp;</td>
+									<td><?php echo format_db_date('d/m/Y', $visitors['Visitor']['date']); ?>&nbsp;</td>
 									<td><?php echo h($visitors['Visitor']['visitor_name']); ?>&nbsp;</td>					
 									<td><?php echo h($visitors['Visitor']['visit_for']); ?>&nbsp;</td>					
-									<td><?php if($visitors['Visitor']['timein'] != '0000-00-00 00:00:00') { echo date('h:i a',strtotime($visitors['Visitor']['timein'])); }else{ echo '--'; } ?></td>
-									<td><?php if($visitors['Visitor']['timeout'] != '0000-00-00 00:00:00') { echo date('h:i a',strtotime($visitors['Visitor']['timeout'])); }else{ echo '--'; } ?></td>
+									<td><?php if($visitors['Visitor']['timein'] != '0000-00-00 00:00:00') { echo format_db_date('h:i a', $visitors['Visitor']['timein']); }else{ echo '--'; } ?></td>
+									<td><?php if($visitors['Visitor']['timeout'] != '0000-00-00 00:00:00') { echo format_db_date('h:i a', $visitors['Visitor']['timeout']); }else{ echo '--'; } ?></td>
 									<td><?php if(!empty($visitors['Visitor']['sign'])){  ?> <img src="<?php echo SITEURL.'signature/'.$visitors['Visitor']['sign'] ?>" width="100"/>  <?php } ?>&nbsp;</td>
 									<td><?php if(!empty($visitors['Visitor']['image'])){  ?> <a target="_blank" href="<?php echo SITEURL.'signature/'.$visitors['Visitor']['image'] ?>"><img src="<?php echo SITEURL.'signature/'.$visitors['Visitor']['image'] ?>" width="100"/>  <?php } ?></a>&nbsp;</td>
 									<td>

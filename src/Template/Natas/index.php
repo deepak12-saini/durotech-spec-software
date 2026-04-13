@@ -60,10 +60,12 @@
 								<?php 
 								if(isset($nataevent[$i]['description'])){ 								
 									
-									$curdate  = date('Y-m-d');
+									$curdate = date('Y-m-d');
 									$date = $nataevent[$i]['date'];
-									
-									if(($nataevent[$i]['status'] == 0) && (strtotime($date) < strtotime($curdate))){
+									$dTs = \App\Utility\SafeDate::timestamp($date);
+									$cTs = \App\Utility\SafeDate::timestamp($curdate);
+
+									if (($nataevent[$i]['status'] == 0) && $dTs !== null && $cTs !== null && $dTs < $cTs) {
 										$class = 'label label-danger';
 									}else if($nataevent[$i]['status'] == 0){
 										$class = 'label label-info';

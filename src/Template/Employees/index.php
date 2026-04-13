@@ -128,7 +128,7 @@
 									if ($created instanceof \DateTimeInterface) {
 										echo $created->format('d-M-Y h:i a');
 									} else {
-										echo date('d-M-Y h:i a', strtotime(trim($created)));
+										echo format_db_date('d-M-Y h:i a', trim($created));
 									}
 								}
 								?>

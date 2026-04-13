@@ -71,7 +71,7 @@
 									<?php } ?>
 									<div class="time">
 										<i class="icon-time bigger-110"></i>
-										<?= $created ? date('d M Y h:i a', strtotime($created)) : '' ?>
+										<?= $created ? format_db_date('d M Y h:i a', $created) : '' ?>
 									</div>
 								</div>
 								<div class="tools action-buttons">
@@ -117,7 +117,7 @@
 								$uploaderName = '<span class="label label-success">' . h($user->name ?? $user['name'] ?? '') . '</span>';
 							}
 							$created = $doc->created ?? $doc['created'] ?? null;
-							$createdStr = $created ? date('d M Y h:i a', strtotime($created)) : '';
+							$createdStr = $created ? format_db_date('d M Y h:i a', $created) : '';
 							$cls = ($i % 2 === 0) ? 'alert alert-info' : 'alert alert-success';
 							$downloadUrl = $this->Url->build(['action' => 'admin_download', $docId], true);
 					?>

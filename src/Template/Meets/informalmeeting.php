@@ -1,7 +1,9 @@
 	<?php
-		$start = $this->request->getSession()->read('start');		
+		$start = $this->request->getSession()->read('start');
 		$end = date('Y-m-d H:i:s');
-		$diff = abs(strtotime($end) - strtotime($start));
+		$startTs = \App\Utility\SafeDate::timestamp($start);
+		$endTs = strtotime($end);
+		$diff = ($startTs !== null && $endTs !== false) ? abs($endTs - $startTs) : 0;
 				
 		$years = floor($diff / (365*60*60*24));  
 		$months = floor(($diff - $years * 365*60*60*24) / (30*60*60*24));  

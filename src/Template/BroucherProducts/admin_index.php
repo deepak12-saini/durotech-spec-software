@@ -65,7 +65,7 @@
 						<span class="label label-danger">Non featured</span>
 						<?php }?>&nbsp;
 					</td>
-                    <td> <?php echo date('d-M-Y',strtotime($product_arr['BroucherProduct']['created'])); ?></td>
+                    <td> <?php echo format_db_date('d-M-Y', $product_arr['BroucherProduct']['created']); ?></td>
 					 <td class="actions">
 						<?php echo $this->Html->link(__('Edit'), ['controller' => 'BroucherProducts', 'action' => 'admin_edit', $product_arr['BroucherProduct']['id']], ['class' => 'btn btn-mini btn-info']); ?>
 						<?php echo $this->Html->link(__('Project Image'), ['controller' => 'Products', 'action' => 'project', $product_arr['BroucherProduct']['id']], ['class' => 'btn btn-mini btn-primary']); ?>

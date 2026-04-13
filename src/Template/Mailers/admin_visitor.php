@@ -31,11 +31,11 @@
 					<tr>
 						<td><?php echo $i; ?>&nbsp;</td>
 						<td><?php echo h($row['visitor_card_id'] ?? ''); ?>&nbsp;</td>
-						<td><?php echo !empty($row['date']) ? date('d/m/Y', strtotime($row['date'])) : '—'; ?>&nbsp;</td>
+						<td><?php echo !empty($row['date']) ? format_db_date('d/m/Y', $row['date']) : '—'; ?>&nbsp;</td>
 						<td><?php echo h($row['visitor_name'] ?? ''); ?>&nbsp;</td>
 						<td><?php echo h($row['visit_for'] ?? ''); ?>&nbsp;</td>
-						<td><?php echo (!empty($row['timein']) && $row['timein'] != '0000-00-00 00:00:00') ? date('h:i a', strtotime($row['timein'])) : '--'; ?></td>
-						<td><?php echo (!empty($row['timeout']) && $row['timeout'] != '0000-00-00 00:00:00') ? date('h:i a', strtotime($row['timeout'])) : '--'; ?></td>
+						<td><?php echo (!empty($row['timein']) && $row['timein'] != '0000-00-00 00:00:00') ? format_db_date('h:i a', $row['timein']) : '--'; ?></td>
+						<td><?php echo (!empty($row['timeout']) && $row['timeout'] != '0000-00-00 00:00:00') ? format_db_date('h:i a', $row['timeout']) : '--'; ?></td>
 						<td><?php if (!empty($row['sign'])) { ?> <img src="<?php echo SITEURL . 'signature/' . h($row['sign']); ?>" width="100"/> <?php } ?>&nbsp;</td>
 						<td><?php if (!empty($row['image'])) { ?> <a target="_blank" href="<?php echo SITEURL . 'signature/' . h($row['image']); ?>"><img src="<?php echo SITEURL . 'signature/' . h($row['image']); ?>" width="100"/></a> <?php } ?>&nbsp;</td>
 					</tr>

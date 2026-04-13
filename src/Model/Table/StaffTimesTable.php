@@ -12,5 +12,13 @@ class StaffTimesTable extends Table
         parent::initialize($config);
         $this->setTable('staff_times');
         $this->setPrimaryKey('id');
+        // Table has `created` but not necessarily `modified`; only auto-fill created on insert.
+        $this->addBehavior('Timestamp', [
+            'events' => [
+                'Model.beforeSave' => [
+                    'created' => 'new',
+                ],
+            ],
+        ]);
     }
 }

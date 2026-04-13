@@ -45,7 +45,7 @@
 										<span class="label label-danger">Inactive</span>
 										<?php }?>&nbsp;
 									</td>
-									<td> <?php echo date('d-M-Y',strtotime($DriverAlls['Driver']['created'])); ?></td>
+									<td> <?php echo format_db_date('d-M-Y', $DriverAlls['Driver']['created']); ?></td>
 									<td class="actions">
 									<?php //echo $this->Html->link(__('Edit'), array('action' => 'edit', $brandAlls['Driver']['id']),array('class'=>'btn btn-xs btn-info')); ?>
 									<a href="javascript:void()" class="btn btn-xs btn-info" onclick="editbrand(<?php echo $DriverAlls['Driver']['id']; ?>)">Edit</a>

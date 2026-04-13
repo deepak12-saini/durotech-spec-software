@@ -23,7 +23,7 @@
 						<td><a data-toggle="modal" data-target="#myModal_<?php echo $k; ?>" href="#null"><?php echo h($HrPerformanceFeedbackArrs['HrFormatTrainingCalendar']['documentid']); ?></a>&nbsp;</td>
 						<td><?php echo $HrPerformanceFeedbackArrs['NappUser']['name'].' '.$HrPerformanceFeedbackArrs['NappUser']['lname']; ?>&nbsp;</td>
 						 
-						<td> <?php echo date('d-M-Y H:i a',strtotime($HrPerformanceFeedbackArrs['HrFormatTrainingCalendar']['created'])); ?></td>
+						<td> <?php echo format_db_date('d-M-Y H:i a', $HrPerformanceFeedbackArrs['HrFormatTrainingCalendar']['created']); ?></td>
 										
 					</tr>
 					<?php $k++; endforeach; ?>
@@ -78,7 +78,7 @@
 					<tr><th>Added By: </th><td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?></td></tr>	
 					
 					
-					<tr><th>Created: </th><td><?php echo date('d-M-Y H:i a',strtotime($DocumentLibraryArrs['HrFormatTrainingCalendar']['created'])); ?></td></tr>	
+					<tr><th>Created: </th><td><?php echo format_db_date('d-M-Y H:i a', $DocumentLibraryArrs['HrFormatTrainingCalendar']['created']); ?></td></tr>	
 					</tbody>
 					
 				</table>

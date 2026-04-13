@@ -10,7 +10,7 @@
 		<?php
 		$sv = $SiteVisitArr['SiteVisit'] ?? $SiteVisitArr ?? [];
 		$dateVal = $sv['date'] ?? null;
-		$dateInput = is_object($dateVal) && method_exists($dateVal, 'format') ? $dateVal->format('Y-m-d') : ($dateVal ? date('Y-m-d', strtotime((string)$dateVal)) : date('Y-m-d'));
+		$dateInput = is_object($dateVal) && method_exists($dateVal, 'format') ? $dateVal->format('Y-m-d') : (format_db_date('Y-m-d', $dateVal) ?: date('Y-m-d'));
 		echo $this->Form->create(null, ['url' => ['action' => 'edit', $sv['id'] ?? ''], 'class' => 'form-horizontal', 'type' => 'post']);
 		?>
 			<div class="form-group">

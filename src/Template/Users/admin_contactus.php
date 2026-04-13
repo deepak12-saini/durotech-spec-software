@@ -30,7 +30,7 @@
 					<td><?php echo h($row['email'] ?? ''); ?>&nbsp;</td>
 					<td><?php echo h($row['phone'] ?? ''); ?>&nbsp;</td>
 					<td><?php echo h($row['message'] ?? ''); ?>&nbsp;</td>					
-                    <td> <?php echo !empty($row['created']) ? date('d-M-Y', strtotime($row['created'])) : ''; ?></td>
+                    <td> <?php echo !empty($row['created']) ? format_db_date('d-M-Y', $row['created']) : ''; ?></td>
 					<td><a class="btn btn-mini btn-success" 
 					href="<?= $this->Url->build(['action' => 'admin_contact_delete', $row['id'] ?? '']) ?>"> Delete</a></td>
 					</tr>

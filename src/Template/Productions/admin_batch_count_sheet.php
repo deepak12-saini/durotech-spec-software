@@ -40,7 +40,7 @@
 					<td><?php echo h($bcs['date'] ?? ''); ?>&nbsp;</td>
 					<td><?php echo h($bcs['date_completed'] ?? ''); ?>&nbsp;</td>
 					<td><?php echo h($bcs['signature'] ?? ''); ?>&nbsp;</td>									
-                    <td><?php echo !empty($bcs['created']) ? date('d-M-Y', strtotime($bcs['created'])) : ''; ?></td>
+                    <td><?php echo !empty($bcs['created']) ? format_db_date('d-M-Y', $bcs['created']) : ''; ?></td>
 					
 					</tr>
 					<?php endforeach; ?>

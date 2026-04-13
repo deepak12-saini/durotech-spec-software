@@ -119,7 +119,7 @@
                     } elseif ($projectDateVal instanceof \DateTimeInterface) {
                         $projectDateVal = $projectDateVal->format('Y-m-d');
                     } elseif (is_string($projectDateVal) && $projectDateVal !== '') {
-                        $projectDateVal = strlen($projectDateVal) > 10 ? date('Y-m-d', strtotime($projectDateVal)) : $projectDateVal;
+                        $projectDateVal = strlen($projectDateVal) > 10 ? format_db_date('Y-m-d', $projectDateVal) : $projectDateVal;
                     }
                     echo $this->Form->input('project_date', [
                         'label' => 'Project Date',

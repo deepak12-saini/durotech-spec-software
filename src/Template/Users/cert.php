@@ -155,7 +155,7 @@
 						}
 						?>&nbsp;</td>				
 						
-						<td> <?php echo date('d-M-Y H:i:s',strtotime($QuestionSubmitArrs['QuestionSubmit']['created'])); ?></td>
+						<td> <?php echo format_db_date('d-M-Y H:i:s', $QuestionSubmitArrs['QuestionSubmit']['created']); ?></td>
 						<td> 
 						<a href="<?php echo SITEURL.'certificate.php?userid='.$useremail.'&id='.$certId; ?>" class="label label-info">Download</a>		
 						</td>

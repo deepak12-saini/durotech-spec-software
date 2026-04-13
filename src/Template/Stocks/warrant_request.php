@@ -108,7 +108,7 @@
 							<?php foreach ($WarrantyRequests['WarrantyRequestLog'] as $WarrantyRequestLogs){ ?>
 							
 								<tr><th>Serial Number: </th><td><span class="label label-inverse"><?php echo $WarrantyRequestLogs['serialnumber']; ?></span></td></tr>	
-								<tr><th>Date Of Purchase of Products: </th><td><?php echo date('d/m/Y',strtotime($WarrantyRequestLogs['dateofpurchase'])); ?></td></tr>	
+								<tr><th>Date Of Purchase of Products: </th><td><?php echo format_db_date('d/m/Y', $WarrantyRequestLogs['dateofpurchase']); ?></td></tr>	
 								<tr><th>Product: </th><td><?php echo $WarrantyRequestLogs['product']; ?></td></tr>	
 								<tr><th>Used As: </th><td><?php echo $WarrantyRequestLogs['used_as']; ?></td></tr>	
 								<tr><th>Application: </th><td><?php echo $WarrantyRequestLogs['application']; ?></td></tr>	
@@ -116,7 +116,7 @@
 								<tr><th>Building Address: </th><td><?php echo $WarrantyRequestLogs['building_address']; ?></td></tr>	
 								<tr><th>Building Name: </th><td><?php echo $WarrantyRequestLogs['building_name']; ?></td></tr>	
 								<tr><th>Requested Warranty Period: </th>
-								<td><?php echo date('d/m/Y',strtotime($WarrantyRequestLogs['start_requested_warranty'])).' To '.date('d/m/Y',strtotime($WarrantyRequestLogs['end_requested_warranty'])); ?></td></tr>	
+								<td><?php echo format_db_date('d/m/Y', $WarrantyRequestLogs['start_requested_warranty']).' To '.format_db_date('d/m/Y', $WarrantyRequestLogs['end_requested_warranty']); ?></td></tr>	
 								
 								<tr><th>Building Name: </th><td><?php echo $WarrantyRequestLogs['building_area_name']; ?></td></tr>	
 								<tr><th>Applicator Active ABN: </th><td><?php echo $WarrantyRequestLogs['applicator_active_abn']; ?></td></tr>	
@@ -127,7 +127,7 @@
 								
 								<tr><th>Contractors Company Name: </th><td><?php echo $WarrantyRequestLogs['contract_company_name']; ?></td></tr>	
 								<tr><th>Contractors Full Name: </th><td><?php echo $WarrantyRequestLogs['contract_name']; ?></td></tr>	
-								<tr><th>Sign_date: </th><td><?php echo date('d/m/Y',strtotime($WarrantyRequestLogs['sign_date'])); ?></td></tr>	
+								<tr><th>Sign_date: </th><td><?php echo format_db_date('d/m/Y', $WarrantyRequestLogs['sign_date']); ?></td></tr>	
 								
 								
 							<?php } ?>

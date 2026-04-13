@@ -62,7 +62,7 @@
 						<span class="label label-danger">Non featured</span>
 						<?php }?>&nbsp;
 					</td>
-                    <td> <?php echo date('d-M-Y',strtotime($product_arr['Product']['created'])); ?></td>
+                    <td> <?php echo format_db_date('d-M-Y', $product_arr['Product']['created']); ?></td>
 					 <td class="actions">
 						<?php echo $this->Html->link(__('Edit'), rtrim(SITEURL, '/') . '/admin/products/edit/' . $product_arr['Product']['id'], array('class'=>'btn btn-mini btn-info')); ?>
 						<?php echo $this->Html->link(__('Project Image'), rtrim(SITEURL, '/') . '/admin/products/project/' . (int)$product_arr['Product']['id'], array('class'=>'btn btn-mini btn-primary')); ?>

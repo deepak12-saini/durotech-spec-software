@@ -133,7 +133,7 @@
 							<a href="<?php echo h($logVoiceUrl); ?>" target="_blank" ><i class="fa fa-play" style="font-size:20px;"></i></a>
 						<?php  }else{	echo '--';	}	?>
 					</td>
-					<td><?php echo $logCreated ? date('d M Y h:i a', strtotime($logCreated)) : ''; ?></td>
+					<td><?php echo $logCreated ? format_db_date('d M Y h:i a', $logCreated) : ''; ?></td>
 					<?php $i++; endforeach; ?>
 					
 					<?php  $j = $i + 1; foreach ($SaleRepArr as $SaleRepArrs): 
@@ -181,7 +181,7 @@
 					<td><?php echo h($srAddress); ?>&nbsp;</td>	
 					<td>N/A</td>
 					<td>N/A</td>					
-					<td><?php echo $srCreated ? date('d M Y h:i a', strtotime($srCreated)) : ''; ?>&nbsp;</td>					
+					<td><?php echo $srCreated ? format_db_date('d M Y h:i a', $srCreated) : ''; ?>&nbsp;</td>					
 					
 					</tr>
 					<?php $j++; endforeach; ?>

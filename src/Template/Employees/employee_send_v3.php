@@ -52,7 +52,7 @@
 		$draftAddress = isset($draft) ? h($draft->address) : '';
 		$draftSpec = isset($draft) ? h($draft->specification) : '';
 		$draftEmail = isset($draft) ? h($draft->email) : '';
-		$draftDate = isset($draft) && $draft->date ? date('d/m/Y', strtotime($draft->date)) : date('d/m/Y');
+		$draftDate = isset($draft) && $draft->date ? format_db_date('d/m/Y', $draft->date) : date('d/m/Y');
 		$draftType = isset($draft) ? (string)$draft->type : '3';
 		$draftSubject = isset($draft) ? h($draft->subject) : 'Durotech: External Liquid WPM';
 		$draftSpectype = '1'; // not stored in DB, default

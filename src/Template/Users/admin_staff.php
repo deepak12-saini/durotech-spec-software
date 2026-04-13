@@ -68,7 +68,7 @@
 						?>
 						
 					</td>	
-                    <td> <?php echo date('d-M-Y',strtotime($staffArrs['NappUser']['insert_date'])); ?></td>
+                    <td> <?php echo format_db_date('d-M-Y', $staffArrs['NappUser']['insert_date']); ?></td>
 					<td> 
 										
 					<a href="<?php echo SITEURL.'admin/users/edit_staff/'.$staffArrs['NappUser']['id']; ?>" class="btn btn-mini btn-primary">Edit</a>

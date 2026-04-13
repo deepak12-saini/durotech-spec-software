@@ -27,13 +27,13 @@
 					<tr>
 						<td><a data-toggle="modal" data-target="#myModal_<?php echo $k; ?>" href="#null"><?php echo h($DocumentLibraryArrs['HrTrainingAttendance']['documentid']); ?></a>&nbsp;</td>
 						<td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?>&nbsp;</td>
-						<td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['HrTrainingAttendance']['date'])); ?>&nbsp;</td>
+						<td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['HrTrainingAttendance']['date']); ?>&nbsp;</td>
 						<td><?php echo h($DocumentLibraryArrs['HrTrainingAttendance']['training_title']); ?>&nbsp;</td>
 						<td><?php echo h($DocumentLibraryArrs['HrTrainingAttendance']['training_date']); ?>&nbsp;</td>
 						<td><?php echo h($DocumentLibraryArrs['HrTrainingAttendance']['trainers_name']); ?>&nbsp;</td>
 						<td><?php echo h($DocumentLibraryArrs['HrTrainingAttendance']['duration']); ?>&nbsp;</td>
 								
-						<td> <?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['HrTrainingAttendance']['created'])); ?></td>
+						<td> <?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['HrTrainingAttendance']['created']); ?></td>
 						<td>
 							<a href="<?php echo SITEURL.'hrs/attendance_edit/'.$DocumentLibraryArrs['HrTrainingAttendance']['id']; ?>" class="btn btn-mini btn-info">Edit</a>							
 											
@@ -91,11 +91,11 @@
 					<tr><th>Added By: </th><td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?></td></tr>	
 					
 					<tr><th>Training Title: </th><td><?php echo $DocumentLibraryArrs['HrTrainingAttendance']['training_title']; ?></td></tr>	
-					<tr><th>Training Date: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['HrTrainingAttendance']['training_date'])); ?></td></tr>	
+					<tr><th>Training Date: </th><td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['HrTrainingAttendance']['training_date']); ?></td></tr>	
 					<tr><th>Trainers name: </th><td><?php echo $DocumentLibraryArrs['HrTrainingAttendance']['trainers_name']; ?></td></tr>	
 					<tr><th>Duration: </th><td><?php echo $DocumentLibraryArrs['HrTrainingAttendance']['duration']; ?></td></tr>	
 							
-					<tr><th>Created: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['HrTrainingAttendance']['created'])); ?></td></tr>	
+					<tr><th>Created: </th><td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['HrTrainingAttendance']['created']); ?></td></tr>	
 					</tbody>
 					
 				</table>

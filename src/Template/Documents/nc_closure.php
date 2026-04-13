@@ -23,8 +23,8 @@
 					<tr>
 						<td><a data-toggle="modal" data-target="#myModal_<?php echo $k; ?>" href="#null"><?php echo h($DocumentLibraryArrs['DocumentNcClosure']['documentid']); ?></a>&nbsp;</td>
 						<td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?>&nbsp;</td>						
-						<td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentNcClosure']['date'])); ?>&nbsp;</td>										
-						<td> <?php echo date('d-M-Y h:i a',strtotime($DocumentLibraryArrs['DocumentNcClosure']['created'])); ?></td>
+						<td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['DocumentNcClosure']['date']); ?>&nbsp;</td>										
+						<td> <?php echo format_db_date('d-M-Y h:i a', $DocumentLibraryArrs['DocumentNcClosure']['created']); ?></td>
 						<td>
 							<a href="<?php echo SITEURL.'documents/edit_ncclosure/'.$DocumentLibraryArrs['DocumentNcClosure']['id']; ?>" class="btn btn-mini btn-info">Add/Edit Records</a>							
 											
@@ -80,9 +80,9 @@
 					
 					<tr><th>Added By: </th><td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?></td></tr>	
 					
-					<tr><th>Date: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentNcClosure']['date'])); ?></td></tr>	
+					<tr><th>Date: </th><td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['DocumentNcClosure']['date']); ?></td></tr>	
 				
-					<tr><th>Created: </th><td><?php echo date('d-M-Y h:i a',strtotime($DocumentLibraryArrs['DocumentNcClosure']['created'])); ?></td></tr>	
+					<tr><th>Created: </th><td><?php echo format_db_date('d-M-Y h:i a', $DocumentLibraryArrs['DocumentNcClosure']['created']); ?></td></tr>	
 					</tbody>
 					
 				</table>

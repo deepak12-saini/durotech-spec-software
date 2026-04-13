@@ -35,7 +35,7 @@
 						<td> <?php echo $HrPerformanceFeedbackArrs['HrFormatEvaluationEmployee']['other']; ?></td>
 						<td> <?php echo $HrPerformanceFeedbackArrs['HrFormatEvaluationEmployee']['remark']; ?></td>
 						<td> <?php echo $HrPerformanceFeedbackArrs['HrFormatEvaluationEmployee']['reviewed_by']; ?></td>
-						<td> <?php echo date('d-M-Y',strtotime($HrPerformanceFeedbackArrs['HrFormatEvaluationEmployee']['created'])); ?></td>
+						<td> <?php echo format_db_date('d-M-Y', $HrPerformanceFeedbackArrs['HrFormatEvaluationEmployee']['created']); ?></td>
 						<td>
 							<a href="<?php echo SITEURL.'hrs/format_evaluation_employe_edit/'.$HrPerformanceFeedbackArrs['HrFormatEvaluationEmployee']['id']; ?>" class="btn btn-mini btn-info">Edit</a>							
 											
@@ -98,7 +98,7 @@
 					<tr><th>Remark: </th><td> <?php echo $HrPerformanceFeedbackArrs['HrFormatEvaluationEmployee']['remark']; ?></td></tr>
 					<tr><th>Reviewed By: </th><td> <?php echo $HrPerformanceFeedbackArrs['HrFormatEvaluationEmployee']['reviewed_by']; ?></td></tr>
 					
-					<tr><th>Created: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['HrFormatEvaluationEmployee']['created'])); ?></td></tr>	
+					<tr><th>Created: </th><td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['HrFormatEvaluationEmployee']['created']); ?></td></tr>	
 					</tbody>
 					
 				</table>

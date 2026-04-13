@@ -60,7 +60,7 @@
 					<td><?php echo h($eoArr['subject'] ?? ''); ?>&nbsp;</td>
 					<td><?php echo h($eoArr['client_requested'] ?? ''); ?>&nbsp;</td>
 				
-                    <td><?php echo !empty($eoArr['created']) ? date('d-M-Y h:i a', strtotime($eoArr['created'])) : ''; ?></td>
+                    <td><?php echo !empty($eoArr['created']) ? format_db_date('d-M-Y h:i a', $eoArr['created']) : ''; ?></td>
 					
 					</tr>
 					<?php endforeach; ?>

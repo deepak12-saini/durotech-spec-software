@@ -32,10 +32,10 @@
 						<td><?php echo h($HrPerformanceFeedbackArrs['HrDuringLeave']['name_of_employee']); ?>&nbsp;</td>
 						<td><?php echo h($HrPerformanceFeedbackArrs['HrDuringLeave']['designation']); ?>&nbsp;</td>
 						<td><?php echo h($HrPerformanceFeedbackArrs['HrDuringLeave']['department']); ?>&nbsp;</td>
-						<td><?php echo date('d-M-Y',strtotime($HrPerformanceFeedbackArrs['HrDuringLeave']['leave_from'])); ?>&nbsp;</td>
-						<td><?php echo date('d-M-Y',strtotime($HrPerformanceFeedbackArrs['HrDuringLeave']['leave_to'])); ?>&nbsp;</td>
+						<td><?php echo format_db_date('d-M-Y', $HrPerformanceFeedbackArrs['HrDuringLeave']['leave_from']); ?>&nbsp;</td>
+						<td><?php echo format_db_date('d-M-Y', $HrPerformanceFeedbackArrs['HrDuringLeave']['leave_to']); ?>&nbsp;</td>
 								
-						<td> <?php echo date('d-M-Y H:i a',strtotime($HrPerformanceFeedbackArrs['HrDuringLeave']['created'])); ?></td>
+						<td> <?php echo format_db_date('d-M-Y H:i a', $HrPerformanceFeedbackArrs['HrDuringLeave']['created']); ?></td>
 									
 					</tr>
 					<?php $k++; endforeach; ?>
@@ -92,11 +92,11 @@
 					<tr><th>Name of Employee: </th><td><?php echo $DocumentLibraryArrs['HrDuringLeave']['name_of_employee']; ?></td></tr>		
 					<tr><th>Designation: </th><td><?php echo $DocumentLibraryArrs['HrDuringLeave']['designation']; ?></td></tr>		
 					<tr><th>Department: </th><td><?php echo $DocumentLibraryArrs['HrDuringLeave']['department']; ?></td></tr>		
-					<tr><th>Leave From: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['HrDuringLeave']['leave_from'])); ?></td></tr>	
-					<tr><th>Leave To: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['HrDuringLeave']['leave_to'])); ?></td></tr>	
+					<tr><th>Leave From: </th><td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['HrDuringLeave']['leave_from']); ?></td></tr>	
+					<tr><th>Leave To: </th><td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['HrDuringLeave']['leave_to']); ?></td></tr>	
 				
 							
-					<tr><th>Created: </th><td><?php echo date('d-M-Y H:i a',strtotime($DocumentLibraryArrs['HrDuringLeave']['created'])); ?></td></tr>	
+					<tr><th>Created: </th><td><?php echo format_db_date('d-M-Y H:i a', $DocumentLibraryArrs['HrDuringLeave']['created']); ?></td></tr>	
 					</tbody>
 					
 				</table>

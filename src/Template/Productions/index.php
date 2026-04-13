@@ -40,7 +40,7 @@
 					<td><?php echo h($BatchRegisterArrs['BatchRegister']['check_test']); ?>&nbsp;</td>
 					<td><?php echo h($BatchRegisterArrs['BatchRegister']['test_by']); ?>&nbsp;</td>					
 					<td><?php echo h($BatchRegisterArrs['BatchRegister']['comments']); ?>&nbsp;</td>					
-                    <td> <?php echo date('d-M-Y',strtotime($BatchRegisterArrs['BatchRegister']['created'])); ?></td>
+                    <td> <?php echo format_db_date('d-M-Y', $BatchRegisterArrs['BatchRegister']['created']); ?></td>
 					<td><a href="<?php echo $this->Url->build(['controller' => 'Productions', 'action' => 'batchRegisterEdit', $BatchRegisterArrs['BatchRegister']['id']]); ?>" class="btn btn-mini btn-info">Edit</a></td>
 					</tr>
 					<?php endforeach; ?>

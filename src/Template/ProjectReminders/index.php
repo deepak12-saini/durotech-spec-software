@@ -35,7 +35,7 @@
 						<td><?php echo h($ProjectReminders['ProjectReminder']['project_name']); ?>&nbsp;</td>
 						<td><?php echo h($ProjectReminders['ProjectReminder']['important']); ?>&nbsp;</td>	
 						<td><?php if($ProjectReminders['ProjectReminder']['status'] == 1) { echo 'Completed'; } else{ echo 'Pending'; } ?>&nbsp;</td>						
-						<td><?php echo date('d F Y H:i a',strtotime($ProjectReminders['ProjectReminder']['datetime'])); ?>&nbsp;</td>
+						<td><?php echo format_db_date('d F Y H:i a', $ProjectReminders['ProjectReminder']['datetime']); ?>&nbsp;</td>
 						<td>
 							<a href="<?php echo SITEURL.'project_reminders/edit/'.$ProjectReminders['ProjectReminder']['id']; ?>" class="btn btn-mini btn-success" >Edit</a>
 						</td>
@@ -80,7 +80,7 @@ foreach ($stockreturn as $stockreturns):
 						</tr>	
 						<?php if(!empty($stockreturns)){ foreach($stockreturns['StockReturnData'] as $StockReturnDatas){ ?>
 							<tr>
-								<td><?php echo date('d-M-Y',strtotime($StockReturnDatas['date'])); ?></td>
+								<td><?php echo format_db_date('d-M-Y', $StockReturnDatas['date']); ?></td>
 								<td><?php echo $StockReturnDatas['customer']; ?></td>
 								<td><?php echo $StockReturnDatas['items']; ?></td>
 								<td><?php echo $StockReturnDatas['reason']; ?></td>

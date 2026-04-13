@@ -37,7 +37,7 @@
 					<td><?php echo h($coas['Coa']['date_of_manu']); ?>&nbsp;</td>
 					<td><?php echo h($coas['Coa']['expiry_date']); ?>&nbsp;</td>
 					<td><?php echo h($coas['Coa']['form_no']); ?>&nbsp;</td>					
-                    <td> <?php echo date('d-M-Y h:i a',strtotime($coas['Coa']['created'])); ?></td>
+                    <td> <?php echo format_db_date('d-M-Y h:i a', $coas['Coa']['created']); ?></td>
 					<td>
 						<?= $this->Html->link('Edit', ['action' => 'edit', $coas['Coa']['id'] ?? ''], ['class' => 'btn btn-mini btn-primary']) ?>
 						<?= $this->Html->link('Download', ['action' => 'download', $coas['Coa']['id'] ?? ''], ['class' => 'btn btn-mini btn-info', 'target' => '_blank']) ?>

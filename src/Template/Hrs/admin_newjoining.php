@@ -28,7 +28,7 @@
 					<tr>
 						<td><?php echo h($HrNewJoiningDetailArrs['HrNewJoiningDetail']['documentid']); ?>&nbsp;</td>
 						<td><?php echo $HrNewJoiningDetailArrs['NappUser']['name'].' '.$HrNewJoiningDetailArrs['NappUser']['lname']; ?>&nbsp;</td>
-						<td><?php echo date('d-M-Y',strtotime($HrNewJoiningDetailArrs['HrNewJoiningDetail']['date'])); ?>&nbsp;</td>
+						<td><?php echo h(format_db_date('d-M-Y', $HrNewJoiningDetailArrs['HrNewJoiningDetail']['date'] ?? null)); ?>&nbsp;</td>
 						<td><?php echo h($HrNewJoiningDetailArrs['HrNewJoiningDetail']['name']); ?>&nbsp;</td>
 						<td><?php echo h($HrNewJoiningDetailArrs['HrNewJoiningDetail']['qualification']); ?>&nbsp;</td>
 						<td><?php echo h($HrNewJoiningDetailArrs['HrNewJoiningDetail']['designation']); ?>&nbsp;</td>

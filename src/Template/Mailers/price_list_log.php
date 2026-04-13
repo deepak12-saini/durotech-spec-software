@@ -34,9 +34,9 @@
 						<td><?php echo h($mailer['NewPriceListLog']['reference_id']); ?>&nbsp;</td>
 						<td><?php echo h($mailer['NewPriceListLog']['name']); ?>&nbsp;</td>
 						<td><?php echo h($mailer['NewPriceListLog']['email']); ?>&nbsp;</td>					
-						<td><?php echo date('d-M-Y',strtotime($mailer['NewPriceListLog']['date'])); ?>&nbsp;</td>
+						<td><?php echo format_db_date('d-M-Y', $mailer['NewPriceListLog']['date']); ?>&nbsp;</td>
 						<td><?php echo h($mailer['NewPriceListLog']['subject']); ?>&nbsp;</td>						
-						<td> <?php echo date('d-M-Y h:i a',strtotime($mailer['NewPriceListLog']['created'])); ?></td>					
+						<td> <?php echo format_db_date('d-M-Y h:i a', $mailer['NewPriceListLog']['created']); ?></td>					
 					</tr>
 					<?php endforeach; ?>
 

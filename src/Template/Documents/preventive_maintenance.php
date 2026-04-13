@@ -27,12 +27,12 @@
 					<tr>
 						<td><a data-toggle="modal" data-target="#myModal_<?php echo $k; ?>" href="#null"><?php echo h($DocumentLibraryArrs['DocumentPreventiveMaintenance']['documentid']); ?></a>&nbsp;</td>
 						<td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?>&nbsp;</td>						
-						<td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentPreventiveMaintenance']['date'])); ?>&nbsp;</td>
+						<td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['DocumentPreventiveMaintenance']['date']); ?>&nbsp;</td>
 						<td><?php echo h($DocumentLibraryArrs['DocumentPreventiveMaintenance']['machine_id']); ?>&nbsp;</td>
 						<td><?php echo h($DocumentLibraryArrs['DocumentPreventiveMaintenance']['period_from']); ?>&nbsp;</td>
 						<td><?php echo h($DocumentLibraryArrs['DocumentPreventiveMaintenance']['period_to']); ?>&nbsp;</td>				
 						<td><?php echo h($DocumentLibraryArrs['DocumentPreventiveMaintenance']['location']); ?>&nbsp;</td>	
-						<td> <?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentPreventiveMaintenance']['created'])); ?></td>
+						<td> <?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['DocumentPreventiveMaintenance']['created']); ?></td>
 						<td>
 							<a href="<?php echo SITEURL.'documents/edit_preventive_maintenance/'.$DocumentLibraryArrs['DocumentPreventiveMaintenance']['id']; ?>" class="btn btn-mini btn-info">Edit</a>										
 						</td>					
@@ -87,14 +87,14 @@
 					
 					<tr><th>Added By: </th><td><?php echo $DocumentLibraryArrs['NappUser']['name'].' '.$DocumentLibraryArrs['NappUser']['lname']; ?></td></tr>	
 					
-					<tr><th>Date: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentPreventiveMaintenance']['date'])); ?></td></tr>	
+					<tr><th>Date: </th><td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['DocumentPreventiveMaintenance']['date']); ?></td></tr>	
 					<tr><th>Machine id: </th><td><?php echo $DocumentLibraryArrs['DocumentPreventiveMaintenance']['machine_id']; ?></td></tr>	
 					<tr><th>Period Of Record From: </th><td><?php echo $DocumentLibraryArrs['DocumentPreventiveMaintenance']['period_from']; ?></td></tr>	
 					<tr><th>Period Of Record To: </th><td><?php echo $DocumentLibraryArrs['DocumentPreventiveMaintenance']['period_to']; ?></td></tr>	
 					<tr><th>Location: </th><td><?php echo $DocumentLibraryArrs['DocumentPreventiveMaintenance']['location']; ?></td></tr>						
 					
 					
-					<tr><th>Created: </th><td><?php echo date('d-M-Y',strtotime($DocumentLibraryArrs['DocumentPreventiveMaintenance']['created'])); ?></td></tr>	
+					<tr><th>Created: </th><td><?php echo format_db_date('d-M-Y', $DocumentLibraryArrs['DocumentPreventiveMaintenance']['created']); ?></td></tr>	
 					</tbody>
 					
 				</table>
