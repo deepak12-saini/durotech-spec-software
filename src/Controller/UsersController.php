@@ -668,6 +668,49 @@ class UsersController extends AppController
 		return $this->admin_customer();
 	}
 
+	/** Activate/Deactivate customer account login access. */
+	public function admin_customer_status($id = null, $status = null): ?Response
+	{
+		$this->request->allowMethod(['get', 'post']);
+		$this->viewBuilder()->setLayout('admin_layout');
+		$result = $this->checkAdminSession();
+		if ($result instanceof Response) {
+			return $result;
+		}
+
+		$uid = (int)$id;
+		$active = ((int)$status === 1) ? 1 : 0;
+		$backTo = (string)$this->request->getQuery('back', 'customer');
+		$redirectAction = ($backTo === 'staff') ? 'admin_staff' : 'admin_customer';
+		if ($uid <= 0) {
+			$this->Flash->error('Invalid user.');
+			return $this->redirect(['action' => $redirectAction]);
+		}
+
+		$user = $this->NappUser->find()
+			->where(['NappUser.id' => $uid])
+			->first();
+		if (!$user) {
+			$this->Flash->error('User not found.');
+			return $this->redirect(['action' => $redirectAction]);
+		}
+
+		$user->is_active = $active;
+		if ($this->NappUser->save($user)) {
+			$this->Flash->success($active === 1 ? 'Login activated successfully.' : 'Login deactivated successfully.');
+		} else {
+			$this->Flash->error('Unable to update login status.');
+		}
+
+		return $this->redirect(['action' => $redirectAction]);
+	}
+
+	/** CamelCase alias for dispatcher compatibility. */
+	public function adminCustomerStatus($id = null, $status = null): ?Response
+	{
+		return $this->admin_customer_status($id, $status);
+	}
+
 	// CamelCase alias for CakePHP 3 routing
 	public function adminQuizz() { return $this->admin_quizz(); }
 

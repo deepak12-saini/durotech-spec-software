@@ -72,6 +72,11 @@
 					<td> 
 										
 					<a href="<?php echo SITEURL.'admin/users/edit_staff/'.$staffArrs['NappUser']['id']; ?>" class="btn btn-mini btn-primary">Edit</a>
+					<?php if((int)$staffArrs['NappUser']['is_active'] === 1){ ?>
+						<a class="btn btn-xs btn-success" href="<?php echo $this->Url->build(['controller' => 'Users', 'action' => 'admin_customer_status', $staffArrs['NappUser']['id'], 0, '?' => ['back' => 'staff']]); ?>" onclick="return confirm('Deactivate this staff login?');">Deactivate Login</a>
+					<?php }else{ ?>
+						<a class="btn btn-xs btn-danger" href="<?php echo $this->Url->build(['controller' => 'Users', 'action' => 'admin_customer_status', $staffArrs['NappUser']['id'], 1, '?' => ['back' => 'staff']]); ?>" onclick="return confirm('Activate this staff login?');">Activate Login</a>
+					<?php } ?>
 					<a class="btn btn-mini btn-info" href="<?php echo SITEURL.'admin/users/access/'.$staffArrs['NappUser']['id'] ?>">Price PDF</a>
 					<a href="<?php echo SITEURL.'admin/users/permission/'.$staffArrs['NappUser']['id']; ?>" class="btn btn-mini btn-danger">Permission</a>
 					

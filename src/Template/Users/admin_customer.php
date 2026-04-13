@@ -75,6 +75,11 @@ $name = $name ?? '';
 							</td>
 							<td><?= ($user->insert_date ? format_db_date('d-M-Y', $user->insert_date) : '') ?></td>
 							<td>
+								<?php if ((int)($user->is_active ?? 0) === 1): ?>
+									<a class="btn btn-xs btn-success" href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'admin_customer_status', $user->id, 0]) ?>" onclick="return confirm('Deactivate this customer account? They will not be able to login.');">Deactivate Login</a>
+								<?php else: ?>
+									<a class="btn btn-xs btn-danger" href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'admin_customer_status', $user->id, 1]) ?>" onclick="return confirm('Activate this customer account?');">Activate Login</a>
+								<?php endif; ?>
 								<?php if ((int)($user->is_natspec_presentation ?? 0) === 0): ?>
 									<a class="btn btn-xs btn-danger" href="<?= $this->Url->build(['controller' => 'Users', 'action' => 'admin_natspec_presentation_status', $user->id, 1]) ?>">Presentation Active</a>
 								<?php else: ?>
