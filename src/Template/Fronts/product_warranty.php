@@ -37,6 +37,26 @@ $siteName = defined('SITENAME') ? SITENAME : 'Durotech Industries';
         input:focus, textarea:focus { outline: none; border-bottom-color: #0066cc !important; }
         .form-group small { color: #666; font-size: 11px; display: block; margin-top: 4px; }
         .text-danger { font-size: 12px; margin-top: 4px; display: block; }
+        .warranty-card { border: 2px solid #ddd; background: #fff; padding: 25px 30px; }
+        .form-group { margin-bottom: 18px; }
+        #add_ser_prd_btn { min-width: 130px; }
+
+        @media (max-width: 767px) {
+            .warranty-header { padding: 10px 12px; margin-bottom: 12px; }
+            .warranty-header .brand { font-size: 15px; }
+            .page-content { padding: 0 10px; }
+            .page-content .col-lg-10 { padding-left: 0; padding-right: 0; }
+            .warranty-card { padding: 14px 12px; }
+            h4 { font-size: 20px; line-height: 1.3; margin-top: 0; }
+            h5 { font-size: 17px; margin-top: 8px; }
+            .form-group { margin-bottom: 14px; }
+            .form-group [class*="col-"] { margin-bottom: 10px; }
+            .form-group [class*="col-"]:last-child { margin-bottom: 0; }
+            input, textarea { font-size: 16px; padding: 9px 0; }
+            .form-group small { font-size: 12px; line-height: 1.45; }
+            p[style*="font-size:10px"] { font-size: 12px !important; line-height: 1.6; }
+            #add_ser_prd_btn { width: 100%; min-height: 44px; font-size: 16px; }
+        }
     </style>
 </head>
 <body>
@@ -61,8 +81,8 @@ $siteName = defined('SITENAME') ? SITENAME : 'Durotech Industries';
                     <small style="float:right;"></small>
                 </p><br>
             </div>
-            <div class="col-lg-10 col-lg-offset-1" style="border: 2px solid #ddd; background: #fff; padding: 25px 30px;">
-                <h4 style="text-align:center;">PRODUCT INSPECTION CERTIFICATE</h4>
+            <div class="col-lg-10 col-lg-offset-1 warranty-card">
+                <h4 style="text-align:center;">PRODUCT WARRANTY REQUEST FORM</h4>
                 <?= $this->Flash->render() ?>
                 <?= $this->Form->create(null, ['url' => ['controller' => 'Fronts', 'action' => 'productWarranty'], 'type' => 'post', 'class' => 'form-horizontal']) ?>
 

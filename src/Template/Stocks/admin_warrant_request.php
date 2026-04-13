@@ -75,6 +75,7 @@
 									<a href="<?php echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_approve_warranty_request', $uniqueId]); ?>" class="btn btn-xs btn-success" onclick="return confirm('Approve this submitted request and generate certificate PDF?');">Approve</a>
 								<?php } ?>
 							<?php } ?>
+							<a href="<?php echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_delete_warranty_request', $uniqueId]); ?>" class="btn btn-xs btn-danger" onclick="return confirm('Are you sure you want to delete this warranty request? This action cannot be undone.');">Delete</a>
 						</td>
 					</tr>
 					<?php $i++; endforeach; ?>

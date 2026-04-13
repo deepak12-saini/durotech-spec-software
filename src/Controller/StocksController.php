@@ -1271,6 +1271,51 @@ class StocksController extends AppController
 		return $this->admin_approve_warranty_request($id);
 	}
 
+	/** Delete warranty request from admin list. */
+	public function admin_delete_warranty_request($id = null): ?Response
+	{
+		$this->request->allowMethod(['get', 'post']);
+		$this->checkAdminSession();
+		$uniqueId = $id ? (int)base64_decode(base64_decode(base64_decode((string)$id))) : 0;
+		if ($uniqueId <= 0) {
+			$this->Flash->error('Invalid request.');
+			return $this->redirect(['action' => 'admin_warrant_request']);
+		}
+
+		try {
+			$wr = $this->WarrantyRequests->get($uniqueId);
+		} catch (\Throwable $e) {
+			$this->Flash->error('Request not found.');
+			return $this->redirect(['action' => 'admin_warrant_request']);
+		}
+
+		$deletedLogs = false;
+		try {
+			$this->WarrantyRequestLogs->deleteAll(['warranty_request_id' => $uniqueId]);
+			$deletedLogs = true;
+		} catch (\Throwable $e) {
+			$deletedLogs = false;
+		}
+
+		if ($this->WarrantyRequests->delete($wr)) {
+			$this->Flash->success('Warranty request deleted successfully.');
+		} else {
+			$this->Flash->error(
+				$deletedLogs
+					? 'Failed to delete warranty request.'
+					: 'Failed to delete warranty request logs. Request was not deleted.'
+			);
+		}
+
+		return $this->redirect(['action' => 'admin_warrant_request']);
+	}
+
+	/** CamelCase alias for dispatcher compatibility. */
+	public function adminDeleteWarrantyRequest($id = null): ?Response
+	{
+		return $this->admin_delete_warranty_request($id);
+	}
+
 	/**
 	 * Legacy year-based warranty certificate generation.
 	 * Includes warrantyCertificate.php with app DB config (reliable vs HTTP file_get_contents).
