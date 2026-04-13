@@ -644,6 +644,20 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/pages/*', ['controller' => 'Pages', 'action' => 'display']);
 
     /*
+     * Price-list PDF tokens: LabFile.dir values often look like "Durotech…labelprice".
+     * Old/wrong links used SITEURL+dir only, so the app saw /{dir} as a controller name.
+     * Map /anything-ending-with-labelprice -> Users::labelpdffile($dir).
+     */
+    $routes->connect(
+        '/:dir',
+        ['controller' => 'Users', 'action' => 'labelpdffile'],
+        [
+            'pass' => ['dir'],
+            'dir' => '[^/]+labelprice',
+        ]
+    );
+
+    /*
      * Connect catchall routes for all controllers.
      *
      * Using the argument `DashedRoute`, the `fallbacks` method is a shortcut for

@@ -941,74 +941,68 @@ class UsersController extends AppController
 	
 	
 	
-	public function labelpdffile($dir=null){
-		
-		$is_staff_id=$this->request->getSession()->read('Customer.is_staff_id');	
-		if($is_staff_id == 0){
+	public function labelpdffile($dir = null): ?Response
+	{
+		$is_staff_id = $this->request->getSession()->read('Customer.is_staff_id');
+		if ($is_staff_id == 0) {
 			$this->viewBuilder()->setLayout('inner_layout');
-		}else{
+		} else {
 			$this->viewBuilder()->setLayout('staff_inner_layout');
-		}	
-		#$this->checkCustomerSession();
+		}
 		$this->checkcommonSession();
-		
-		$this->set('title_for_layout',SITENAME.' | Price PDF File');	
-		
-		$customer_id=$this->request->getSession()->read('Customer.id');
+
+		$this->set('title_for_layout', SITENAME . ' | Price PDF File');
+
+		$customer_id = $this->request->getSession()->read('Customer.id');
 		$LabFile = $this->LabFile->find()->where(['LabFile.dir' => $dir])->first();
-		if(empty($LabFile)){
-			$this->redirect('labfile');
-		}	
-		$this->set('is_access',0);
+		if (empty($LabFile)) {
+			return $this->redirect(['action' => 'labfile']);
+		}
+
+		$this->set('is_access', 0);
 		$opt = $this->request->getSession()->read('opt');
 		$pdfaceess = $this->request->getSession()->read('pdfaceess');
-		if(!empty($this->request->getData())){
-			$uotp = $this->request->getData()['otp'];
-			$userArr = $this->NappUser->find()->where(['NappUser.otp' => $uotp, 'NappUser.id' => $customer_id])->first();
-			
-			if(!empty($userArr)){
-				$update['NappUser']['id'] = $customer_id;
-				$update['NappUser']['otp'] = '';
-				$this->NappUser->save($update);	
-				$this->request->getSession()->write('pdfaceess',1);
+
+		if ($this->request->is('post') && $this->request->getData('otp') !== null && $this->request->getData('otp') !== '') {
+			$uotp = (string)$this->request->getData('otp');
+			$userEntity = $this->NappUser->find()->where(['NappUser.otp' => $uotp, 'NappUser.id' => $customer_id])->first();
+
+			if ($userEntity) {
+				$userEntity = $this->NappUser->patchEntity($userEntity, ['otp' => '']);
+				$this->NappUser->save($userEntity);
+				$this->request->getSession()->write('pdfaceess', 1);
 				$this->request->getSession()->delete('opt');
 				$this->Flash->success('Thank for verifying your account.');
-				$this->redirect('labelpdffile/'.$dir);
-				
-			}else{
-				$this->Flash->error('Wrong otp password. Please try again.');
-			}	
-		}else if(!empty($opt)){
-			$this->set('is_access',1);
-		}elseif(empty($pdfaceess)){			
-			$rand = rand(000000,999999);			
-			$update['NappUser']['id'] = $customer_id;
-			$update['NappUser']['otp'] = $rand;
-			$this->NappUser->save($update);	
-			
-			$userArr = $this->NappUser->find()->where(['NappUser.id' => $customer_id])->first();
-	
-			
-			$name = $userArr['NappUser']['name'].' '.$userArr['NappUser']['lname'];
-			
-			$to = $userArr['NappUser']['email'];								
-			$subject= SITENAME." :: One Time Password (OTP) for Price List Access. OTP is ".$rand;				
-			$template_name = 'otp';										
-			$variables = array('name'=>$name,'otp'=>$rand);	
-	
-			try{
-				$this->sendemail($to,$subject,$template_name,$variables);
-			}catch (Exception $e){
-				
+				return $this->redirect(['controller' => 'Users', 'action' => 'labelpdffile', $dir]);
 			}
-			
-			$this->request->getSession()->write('opt',$rand);			
+			$this->Flash->error('Wrong otp password. Please try again.');
+		} elseif (!empty($opt)) {
+			$this->set('is_access', 1);
+		} elseif (empty($pdfaceess) && $customer_id) {
+			$rand = random_int(0, 999999);
+			$userEntity = $this->NappUser->get($customer_id);
+			$userEntity = $this->NappUser->patchEntity($userEntity, ['otp' => (string)$rand]);
+			$this->NappUser->save($userEntity);
+
+			$name = trim(($userEntity->name ?? '') . ' ' . ($userEntity->lname ?? ''));
+			$to = $userEntity->email ?? '';
+			$subject = SITENAME . ' :: One Time Password (OTP) for Price List Access. OTP is ' . $rand;
+			$template_name = 'otp';
+			$variables = ['name' => $name, 'otp' => $rand];
+
+			try {
+				$this->sendemail($to, $subject, $template_name, $variables);
+			} catch (\Exception $e) {
+			}
+
+			$this->request->getSession()->write('opt', $rand);
 			$this->Flash->success('OTP sent at email. Please check your mail and verify.');
-			$this->redirect('labelpdffile/'.$dir);
+			return $this->redirect(['controller' => 'Users', 'action' => 'labelpdffile', $dir]);
 		}
-		
-	
-		$this->set('LabFile',$LabFile);
+
+		$this->set('LabFile', ['LabFile' => $LabFile->toArray()]);
+
+		return null;
 	}
 	
 	function admin_access($id = null): ?Response
@@ -1475,63 +1469,59 @@ class UsersController extends AppController
 		}	
 		$this->checkcommonSession();
 		
-		$user_id=$this->request->getSession()->read('Customer.id');
-		$cpdquestionaceess=$this->request->getSession()->read('cpdquestionaceess');		
-		if(!empty($this->request->getData()['otp'])){
-			$uotp = $this->request->getData()['otp'];
-			$userArr = $this->NappUser->find()->where(['NappUser.otp' => $uotp, 'NappUser.id' => $user_id])->first();
-			
-			if(!empty($userArr)){
-				$update['NappUser']['id'] = $user_id;
-				$update['NappUser']['otp'] = '';
-				$this->NappUser->save($update);	
-				$this->request->getSession()->write('cpdquestionaceess',2);
+		$user_id = $this->request->getSession()->read('Customer.id');
+		$cpdquestionaceess = $this->request->getSession()->read('cpdquestionaceess');
+
+		if ($this->request->is('post') && $this->request->getData('otp') !== null && $this->request->getData('otp') !== '') {
+			$uotp = (string)$this->request->getData('otp');
+			$userEntity = $this->NappUser->find()->where(['NappUser.otp' => $uotp, 'NappUser.id' => $user_id])->first();
+
+			if ($userEntity) {
+				$userEntity = $this->NappUser->patchEntity($userEntity, ['otp' => '']);
+				$this->NappUser->save($userEntity);
+				$this->request->getSession()->write('cpdquestionaceess', 2);
 				$this->request->getSession()->delete('opt');
 				$this->Flash->success('Thank for verifying your account.');
 				return $this->redirect(['action' => 'questionlist']);
-				
-			}else{
-				$this->Flash->error('Wrong otp password. Please try again.');
-				return $this->redirect(['action' => 'questionlist']);
-			}	
-		}else if(!empty($cpdquestionaceess)){
-			$this->set('is_access',$cpdquestionaceess);
-		}else if(empty($cpdquestionaceess) && !empty($type)){	
-		
-			$rand = rand(000000,999999);			
-			$update['NappUser']['id'] = $user_id;
-			$update['NappUser']['otp'] = $rand;
-			$this->NappUser->save($update);	
-			
-			$userArr = $this->NappUser->find()->where(['NappUser.id' => $user_id])->first();				
-			$name = $userArr['NappUser']['name'].' '.$userArr['NappUser']['lname'];			
-			$to = $userArr['NappUser']['email'];								
-			$subject= SITENAME." :: Secure One-Time-Password (OTP) for  Architect CPD Questionnaire. OTP is ".$rand;				
-			$template_name = 'durolabotp';										
-			$variables = array('email'=>$to,'name'=>$name,'otp'=>$rand);			
-			try{
-				$this->sendemail($to,$subject,$template_name,$variables);
-			}catch (Exception $e){
-				
 			}
-			if(!empty($userArr['NappUser']['mobile_number']) && ($userArr['NappUser']['is_active_otp'] == 1)){
-				if($userArr['NappUser']['country']  != 'india'){
-					$phones = str_replace(' ','',$userArr['NappUser']['mobile_number']);
-					$phone = ltrim($phones,'+');
-					$to = '+'.$phone;
-					$sid = TSID;	
-					$token = TOKEN;							
-					$from = FROM_NUMBER;	
-					$body = "Hi, Secure OTP for  Architect CPD Questionnaire Access. OTP is ".$rand;						
-					$this->Twilio->AccountSid = TSID;   
-					$this->Twilio->AccountToken = TOKEN;						
-					$response = $this->Twilio->sendsms($to,$from,$body);
+			$this->Flash->error('Wrong otp password. Please try again.');
+			return $this->redirect(['action' => 'questionlist']);
+		}
+		if (!empty($cpdquestionaceess)) {
+			$this->set('is_access', $cpdquestionaceess);
+		} elseif (empty($cpdquestionaceess) && !empty($type) && $user_id) {
+			$rand = random_int(0, 999999);
+			$userEntity = $this->NappUser->get($user_id);
+			$userEntity = $this->NappUser->patchEntity($userEntity, ['otp' => (string)$rand]);
+			$this->NappUser->save($userEntity);
+
+			$name = trim(($userEntity->name ?? '') . ' ' . ($userEntity->lname ?? ''));
+			$to = $userEntity->email ?? '';
+			$subject = SITENAME . ' :: Secure One-Time-Password (OTP) for  Architect CPD Questionnaire. OTP is ' . $rand;
+			$template_name = 'durolabotp';
+			$variables = ['email' => $to, 'name' => $name, 'otp' => $rand];
+			try {
+				$this->sendemail($to, $subject, $template_name, $variables);
+			} catch (\Exception $e) {
+			}
+			if (!empty($userEntity->mobile_number) && ((int)($userEntity->is_active_otp ?? 0) === 1)) {
+				if (strtolower((string)($userEntity->country ?? '')) !== 'india') {
+					$phones = str_replace(' ', '', (string)$userEntity->mobile_number);
+					$phone = ltrim($phones, '+');
+					$smsTo = '+' . $phone;
+					$from = defined('FROM_NUMBER') ? FROM_NUMBER : '';
+					$body = 'Hi, Secure OTP for  Architect CPD Questionnaire Access. OTP is ' . $rand;
+					if (isset($this->Twilio) && is_object($this->Twilio) && method_exists($this->Twilio, 'sendsms')) {
+						$this->Twilio->AccountSid = defined('TSID') ? TSID : '';
+						$this->Twilio->AccountToken = defined('TOKEN') ? TOKEN : '';
+						$this->Twilio->sendsms($smsTo, $from, $body);
+					}
 				}
 			}
-			$this->request->getSession()->write('cpdquestionaceess',1);
-			return $this->redirect(['action' => 'questionlist']);			
-		}else{
-			$this->set('is_access',0);
+			$this->request->getSession()->write('cpdquestionaceess', 1);
+			return $this->redirect(['action' => 'questionlist']);
+		} else {
+			$this->set('is_access', 0);
 		}
 		
 		
