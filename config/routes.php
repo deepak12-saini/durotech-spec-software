@@ -408,6 +408,8 @@ Router::scope('/', function (RouteBuilder $routes) {
     // Admin POS (DT PO - Purchase Orders)
     $routes->connect('/admin/pos', ['controller' => 'Pos', 'action' => 'admin_index']);
     $routes->connect('/admin/pos/index', ['controller' => 'Pos', 'action' => 'admin_index']);
+    $routes->connect('/admin/pos/approve/:id', ['controller' => 'Pos', 'action' => 'admin_approve'], ['pass' => ['id']]);
+    $routes->connect('/admin/pos/complete/:id', ['controller' => 'Pos', 'action' => 'admin_complete'], ['pass' => ['id']]);
 
     // Admin Fronts (Push Notifications)
     $routes->connect('/admin/fronts', ['controller' => 'Fronts', 'action' => 'admin_index']);

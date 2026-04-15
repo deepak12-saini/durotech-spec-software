@@ -33,6 +33,8 @@ class PosController extends AppController
 
     // CamelCase aliases for CakePHP 3 routing
     public function adminIndex() { return $this->admin_index(); }
+    public function adminApprove($id = null): ?Response { return $this->admin_approve($id); }
+    public function adminComplete($id = null): ?Response { return $this->admin_complete($id); }
 
     /**
      * Admin: PO Order list
@@ -54,6 +56,82 @@ class PosController extends AppController
         $results = $this->paginate($query);
         $poorders = $this->_entitiesToPoOrderArrays($results);
         $this->set(compact('poorders'));
+    }
+
+    /**
+     * Admin: Approve a PO order and set approvedby.
+     */
+    public function admin_approve($id = null): ?Response
+    {
+        $this->request->allowMethod(['post']);
+        $this->checkAdminSession();
+
+        $id = (int)$id;
+        if ($id <= 0) {
+            $this->Flash->error('Invalid PO order.');
+            return $this->redirect(['action' => 'admin_index']);
+        }
+
+        try {
+            $po = $this->PoOrders->get($id);
+        } catch (\Throwable $e) {
+            $this->Flash->error('PO order not found.');
+            return $this->redirect(['action' => 'admin_index']);
+        }
+
+        $admin = (array)$this->request->getSession()->read('User');
+        $approvedBy = trim((string)($admin['name'] ?? $admin['username'] ?? 'Admin'));
+
+        if ((int)($po->status ?? 0) < 1) {
+            $po->status = 1; // In-Process
+        }
+        $po->approvedby = $approvedBy;
+
+        if ($this->PoOrders->save($po)) {
+            $this->Flash->success('PO approved successfully.');
+        } else {
+            $this->Flash->error('Unable to approve PO order.');
+        }
+
+        return $this->redirect(['action' => 'admin_index']);
+    }
+
+    /**
+     * Admin: Complete a PO order.
+     */
+    public function admin_complete($id = null): ?Response
+    {
+        $this->request->allowMethod(['post']);
+        $this->checkAdminSession();
+
+        $id = (int)$id;
+        if ($id <= 0) {
+            $this->Flash->error('Invalid PO order.');
+            return $this->redirect(['action' => 'admin_index']);
+        }
+
+        try {
+            $po = $this->PoOrders->get($id);
+        } catch (\Throwable $e) {
+            $this->Flash->error('PO order not found.');
+            return $this->redirect(['action' => 'admin_index']);
+        }
+
+        $admin = (array)$this->request->getSession()->read('User');
+        $approvedBy = trim((string)($admin['name'] ?? $admin['username'] ?? 'Admin'));
+
+        if (empty((string)($po->approvedby ?? ''))) {
+            $po->approvedby = $approvedBy;
+        }
+        $po->status = 2; // Completed
+
+        if ($this->PoOrders->save($po)) {
+            $this->Flash->success('PO marked as completed.');
+        } else {
+            $this->Flash->error('Unable to complete PO order.');
+        }
+
+        return $this->redirect(['action' => 'admin_index']);
     }
 
     /**
@@ -90,6 +168,7 @@ class PosController extends AppController
 
         if ($this->request->is('post')) {
             $data = $this->request->getData();
+            $legacy = (array)($data['data'] ?? []);
             $PoOrderArr = $this->PoOrders->find()->orderDesc('id')->first();
             if (!empty($PoOrderArr)) {
                 $order = $PoOrderArr->id + 1;
@@ -104,7 +183,12 @@ class PosController extends AppController
                 $newid = 'DT PO001';
             }
 
-            $poOrderData = $data['PoOrder'] ?? $data;
+            $poOrderData = array_merge(
+                (array)($legacy['PoOrder'] ?? []),
+                (array)($data['PoOrder'] ?? [])
+            );
+            $itemNames = $data['item_name'] ?? ($legacy['item_name'] ?? []);
+            $quantities = $data['quantity'] ?? ($legacy['quantity'] ?? []);
             $poOrderData['orderid'] = $newid;
             $poOrderData['user_id'] = $userId;
             $poOrderData['created'] = date('Y-m-d H:i:s');
@@ -112,14 +196,14 @@ class PosController extends AppController
             $poOrder = $this->PoOrders->newEntity($poOrderData);
             if ($this->PoOrders->save($poOrder)) {
                 $lastinsertId = $poOrder->id;
-                if (!empty($data['item_name']) && is_array($data['item_name'])) {
+                if (!empty($itemNames) && is_array($itemNames)) {
                     $details = [];
-                    foreach ($data['item_name'] as $i => $itemName) {
+                    foreach ($itemNames as $i => $itemName) {
                         if (!empty($itemName)) {
                             $details[] = [
                                 'po_order_id' => $lastinsertId,
                                 'item_name' => $itemName,
-                                'quantity' => $data['quantity'][$i] ?? 0,
+                                'quantity' => $quantities[$i] ?? 0,
                             ];
                         }
                     }
@@ -157,7 +241,13 @@ class PosController extends AppController
 
         if ($this->request->is(['post', 'put', 'patch'])) {
             $data = $this->request->getData();
-            $poOrderData = $data['PoOrder'] ?? $data;
+            $legacy = (array)($data['data'] ?? []);
+            $poOrderData = array_merge(
+                (array)($legacy['PoOrder'] ?? []),
+                (array)($data['PoOrder'] ?? [])
+            );
+            $itemNames = $data['item_name'] ?? ($legacy['item_name'] ?? []);
+            $quantities = $data['quantity'] ?? ($legacy['quantity'] ?? []);
             $poOrderData['id'] = (int)$id;
             
             $poOrder = $this->PoOrders->patchEntity($PoOrderArr, $poOrderData);
@@ -166,14 +256,14 @@ class PosController extends AppController
                 $this->PoOrderDetails->deleteAll(['po_order_id' => $id]);
                 
                 // Add new details
-                if (!empty($data['item_name']) && is_array($data['item_name'])) {
+                if (!empty($itemNames) && is_array($itemNames)) {
                     $details = [];
-                    foreach ($data['item_name'] as $i => $itemName) {
+                    foreach ($itemNames as $i => $itemName) {
                         if (!empty($itemName)) {
                             $details[] = [
                                 'po_order_id' => $id,
                                 'item_name' => $itemName,
-                                'quantity' => $data['quantity'][$i] ?? 0,
+                                'quantity' => $quantities[$i] ?? 0,
                             ];
                         }
                     }

@@ -15,7 +15,7 @@
 					<th><?php echo $this->Paginator->sort('approvedby'); ?></th>									
 					<th><?php echo $this->Paginator->sort('status'); ?></th>									
 					<th><?php echo $this->Paginator->sort('created'); ?></th>
-					<th></th>
+					<th>Action</th>
 				</tr>
 				</thead>
 				<tbody>
@@ -43,7 +43,27 @@
 							}	
 						?>&nbsp;</td>					
 						<td><?php echo !empty($po['created']) ? format_db_date('d-M-Y h:i a', $po['created']) : ''; ?></td>	
-									
+						<td>
+							<?php if ($status === 0): ?>
+								<?php
+									echo $this->Form->postLink(
+										'Approve',
+										['controller' => 'Pos', 'action' => 'admin_approve', $po['id'] ?? 0],
+										['class' => 'btn btn-xs btn-success', 'confirm' => 'Approve this PO order?']
+									);
+								?>
+							<?php elseif ($status === 1): ?>
+								<?php
+									echo $this->Form->postLink(
+										'Complete',
+										['controller' => 'Pos', 'action' => 'admin_complete', $po['id'] ?? 0],
+										['class' => 'btn btn-xs btn-primary', 'confirm' => 'Mark this PO as completed?']
+									);
+								?>
+							<?php else: ?>
+								<span class="label label-success">Completed</span>
+							<?php endif; ?>
+						</td>
 					</tr>
 					<?php $k++; endforeach; ?>
 
