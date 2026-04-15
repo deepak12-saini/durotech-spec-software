@@ -80,6 +80,76 @@ class MailersController extends AppController
         return $this->admin_visitor();
     }
 
+    /**
+     * Admin: Visitor details page.
+     */
+    public function admin_visitor_view($id = null): ?Response
+    {
+        $this->viewBuilder()->setLayout('admin_layout');
+        $this->set('title_for_layout', SITENAME . ' Visitor Details');
+        $this->checkAdminSession();
+
+        $id = (int)$id;
+        if ($id <= 0) {
+            $this->Flash->error('Invalid visitor record.');
+            return $this->redirect(['action' => 'admin_visitor']);
+        }
+
+        try {
+            $visitor = $this->Visitor->get($id);
+        } catch (\Throwable $e) {
+            $this->Flash->error('Visitor record not found.');
+            return $this->redirect(['action' => 'admin_visitor']);
+        }
+
+        $this->set('visitor', $visitor->toArray());
+        return null;
+    }
+
+    /**
+     * CamelCase alias for dispatcher compatibility.
+     */
+    public function adminVisitorView($id = null): ?Response
+    {
+        return $this->admin_visitor_view($id);
+    }
+
+    /**
+     * Admin: delete visitor record.
+     */
+    public function admin_visitor_delete($id = null): ?Response
+    {
+        $this->request->allowMethod(['post', 'delete']);
+        $this->checkAdminSession();
+
+        $id = (int)$id;
+        if ($id <= 0) {
+            $this->Flash->error('Invalid visitor record.');
+            return $this->redirect(['action' => 'admin_visitor']);
+        }
+
+        try {
+            $visitor = $this->Visitor->get($id);
+            if ($this->Visitor->delete($visitor)) {
+                $this->Flash->success('Visitor record deleted successfully.');
+            } else {
+                $this->Flash->error('Unable to delete visitor record.');
+            }
+        } catch (\Throwable $e) {
+            $this->Flash->error('Visitor record not found.');
+        }
+
+        return $this->redirect(['action' => 'admin_visitor']);
+    }
+
+    /**
+     * CamelCase alias for dispatcher compatibility.
+     */
+    public function adminVisitorDelete($id = null): ?Response
+    {
+        return $this->admin_visitor_delete($id);
+    }
+
     /** CamelCase alias for routing /admin/mailers/eoi */
     public function adminEoi(): ?Response
     {

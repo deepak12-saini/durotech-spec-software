@@ -313,6 +313,8 @@ Router::scope('/', function (RouteBuilder $routes) {
     // Admin Mailers (specification mailer, EOI, visitor, price list)
     $routes->connect('/admin/mailers', ['controller' => 'Mailers', 'action' => 'admin_index']);
     $routes->connect('/admin/mailers/visitor', ['controller' => 'Mailers', 'action' => 'admin_visitor']);
+    $routes->connect('/admin/mailers/visitor_view/:id', ['controller' => 'Mailers', 'action' => 'admin_visitor_view'], ['pass' => ['id']]);
+    $routes->connect('/admin/mailers/visitor_delete/:id', ['controller' => 'Mailers', 'action' => 'admin_visitor_delete'], ['pass' => ['id']]);
     $routes->connect('/admin/mailers/eoi', ['controller' => 'Mailers', 'action' => 'admin_eoi']);
     $routes->connect('/admin/mailers/eoisend', ['controller' => 'Mailers', 'action' => 'eoisend']);
     $routes->connect('/admin/mailers/index_v3', ['controller' => 'Mailers', 'action' => 'admin_index_v3']);
@@ -572,6 +574,9 @@ Router::scope('/', function (RouteBuilder $routes) {
     // ---------- MISC ----------
     $routes->connect('/tmclead', ['controller' => 'Fronts', 'action' => 'newlead']);
     $routes->connect('/technical-literature/*', ['controller' => 'Fronts', 'action' => 'technicalLiteratureNew']);
+    $routes->connect('/welcomevistor', ['controller' => 'Fronts', 'action' => 'welcomevistor']);
+    $routes->connect('/fronts/welcomevistor', ['controller' => 'Fronts', 'action' => 'welcomevistor']);
+    $routes->connect('/fronts/punchout/:id', ['controller' => 'Fronts', 'action' => 'punchout'], ['pass' => ['id']]);
 
     $routes->connect('/durooem', ['controller' => 'Fronts', 'action' => 'durooem']);
     $routes->connect('/durolab', ['controller' => 'Fronts', 'action' => 'durolab']);

@@ -39,6 +39,7 @@ class FrontsController extends AppController
         $this->loadModel('Testimonials');
         $this->loadModel('Notifications');
         $this->loadModel('Contact');
+        $this->loadModel('Visitor');
     }
 
     /**
@@ -779,6 +780,147 @@ class FrontsController extends AppController
         } catch (\Throwable $e) {
             return $this->response->withStringBody('You successfully subscribed.');
         }
+    }
+
+    /**
+     * Visitor entry register page (kiosk style).
+     * GET: show today's entries. POST: save visitor in.
+     */
+    public function welcomevistor(): ?Response
+    {
+        $this->viewBuilder()->setLayout('visitor_layout');
+        $this->set('title_for_layout', (defined('SITENAME') ? SITENAME : 'Durotech') . ' Visitor Entry Register');
+
+        if ($this->request->is('post')) {
+            // Accept mixed payloads from legacy template fields:
+            // - Front[visitor_name] (FormHelper generated)
+            // - data[Front][visitor_card_id], data[Front][visit_for], etc. (manual inputs)
+            $front = array_merge(
+                (array)($this->request->getData('data.Front') ?? []),
+                (array)($this->request->getData('Front') ?? [])
+            );
+            $visitorName = trim((string)($front['visitor_name'] ?? ''));
+            $visitFor = trim((string)($front['visit_for'] ?? ''));
+            $visitorCardId = (int)($front['visitor_card_id'] ?? 0);
+            $dateRaw = trim((string)($front['date'] ?? ''));
+
+            if ($visitorName === '' || $visitFor === '' || $visitorCardId <= 0) {
+                $this->Flash->error('Visitor name, visitor pass id and visit reason are required.');
+                return $this->redirect(['action' => 'welcomevistor']);
+            }
+
+            $visitDate = date('Y-m-d');
+            if ($dateRaw !== '') {
+                $parsed = \DateTime::createFromFormat('d/m/Y', $dateRaw);
+                if ($parsed instanceof \DateTime) {
+                    $visitDate = $parsed->format('Y-m-d');
+                }
+            }
+
+            $signatureName = '';
+            $sigimage = (string)$this->request->getData('sigimage');
+            if ($sigimage !== '' && strpos($sigimage, 'data:image') === 0) {
+                $signatureData = preg_replace('/^data:image\/\w+;base64,/', '', $sigimage);
+                $signatureData = str_replace(' ', '+', (string)$signatureData);
+                $decoded = base64_decode((string)$signatureData, true);
+                if ($decoded !== false) {
+                    $signatureDir = WWW_ROOT . 'signature' . DS;
+                    if (!is_dir($signatureDir)) {
+                        @mkdir($signatureDir, 0755, true);
+                    }
+                    $signatureName = uniqid('sign_', true) . '.png';
+                    @file_put_contents($signatureDir . $signatureName, $decoded);
+                }
+            }
+
+            $imageName = '';
+            $uploadedFile = $this->request->getUploadedFile('file');
+            if ($uploadedFile && $uploadedFile->getError() === UPLOAD_ERR_OK) {
+                $signatureDir = WWW_ROOT . 'signature' . DS;
+                if (!is_dir($signatureDir)) {
+                    @mkdir($signatureDir, 0755, true);
+                }
+                $original = (string)$uploadedFile->getClientFilename();
+                $ext = strtolower((string)pathinfo($original, PATHINFO_EXTENSION));
+                if ($ext === '') {
+                    $ext = 'jpg';
+                }
+                $imageName = uniqid('photo_', true) . '.' . preg_replace('/[^a-z0-9]/', '', $ext);
+                $uploadedFile->moveTo($signatureDir . $imageName);
+            }
+
+            $entity = $this->Visitor->newEntity([
+                'visitor_card_id' => $visitorCardId,
+                'date' => $visitDate,
+                'visitor_name' => $visitorName,
+                'visit_for' => $visitFor,
+                'timein' => date('Y-m-d H:i:s'),
+                'timeout' => '0000-00-00 00:00:00',
+                'sign' => $signatureName,
+                'image' => $imageName,
+            ]);
+
+            if ($this->Visitor->save($entity)) {
+                $this->Flash->success('Visitor added successfully.');
+            } else {
+                $errors = $entity->getErrors();
+                if (!empty($errors)) {
+                    $firstField = (string)array_key_first($errors);
+                    $firstMessages = (array)($errors[$firstField] ?? []);
+                    $firstMessage = (string)reset($firstMessages);
+                    $this->Flash->error('Unable to add visitor: ' . ($firstMessage !== '' ? $firstMessage : 'validation failed'));
+                } else {
+                    $this->Flash->error('Unable to add visitor. Please try again.');
+                }
+            }
+            return $this->redirect(['action' => 'welcomevistor']);
+        }
+
+        $today = date('Y-m-d');
+        $visitorRows = $this->Visitor->find()
+            ->where(['date' => $today])
+            ->orderDesc('id')
+            ->all();
+        $visitor = [];
+        foreach ($visitorRows as $row) {
+            $visitor[] = ['Visitor' => $row->toArray()];
+        }
+        $this->set(compact('visitor'));
+        return null;
+    }
+
+    /**
+     * Visitor out action: sets timeout for selected visitor row.
+     */
+    public function punchout(?string $id = null): ?Response
+    {
+        $this->viewBuilder()->setLayout(false);
+        if (empty($id)) {
+            $this->Flash->error('Invalid visitor id.');
+            return $this->redirect(['action' => 'welcomevistor']);
+        }
+
+        $decoded = base64_decode($id, true);
+        $visitorId = $decoded === false ? 0 : (int)$decoded;
+        if ($visitorId <= 0) {
+            $this->Flash->error('Invalid visitor id.');
+            return $this->redirect(['action' => 'welcomevistor']);
+        }
+
+        $visitor = $this->Visitor->find()->where(['id' => $visitorId])->first();
+        if (!$visitor) {
+            $this->Flash->error('Visitor not found.');
+            return $this->redirect(['action' => 'welcomevistor']);
+        }
+
+        $visitor->timeout = date('Y-m-d H:i:s');
+        if ($this->Visitor->save($visitor)) {
+            $this->Flash->success('Visitor out time updated.');
+        } else {
+            $this->Flash->error('Unable to update visitor out time.');
+        }
+
+        return $this->redirect(['action' => 'welcomevistor']);
     }
 
     // -------------------------------------------------------------------------
