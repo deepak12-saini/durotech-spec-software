@@ -1831,31 +1831,41 @@ class UsersController extends AppController
 		return $this->change_password();
 	}
 	
-	function admin_accesstouser($custId=null){
-		
+	function admin_accesstouser($custId=null): ?Response
+	{
 		$this->autoRender = false;
-		if(!empty($custId)){
-			$custId = base64_decode(base64_decode($custId));
-			$user = $this->NappUser->find()->where(['NappUser.id' => $custId])->first();
-			if(!empty($user)){						
-				$admin_arr = $this->User->find()->first();
-				if(!empty($admin_arr)){				
-				$this->request->getSession()->write('User', $admin_arr['User']);
-				$this->request->getSession()->write('is_admin', 1);			
-				$this->redirect('access/'.$custId);
-				}else{
-					//$this->Flash->success(__('Wrong username/password', true));
-					$this->Flash->error('Wrong username/password');
-				}
-			}else{
-				$this->Flash->error('sorry this customer not exist.');	
-				$this->redirect(rtrim(SITEURL, '/') . '/admin');		
-			}	
-		}else{
-			$this->Flash->error('customer id is missing.');	
-			$this->redirect(rtrim(SITEURL, '/') . '/admin');
-		}	
-	}	
+		$adminBase = rtrim(SITEURL, '/') . '/admin';
+		if (empty($custId)) {
+			$this->Flash->error('customer id is missing.');
+			return $this->redirect($adminBase);
+		}
+		$decoded = base64_decode(base64_decode((string)$custId), true);
+		$userId = (int)($decoded !== false ? $decoded : 0);
+		if ($userId <= 0) {
+			$this->Flash->error('Invalid link.');
+			return $this->redirect($adminBase);
+		}
+		$user = $this->NappUser->find()->where(['NappUser.id' => $userId])->first();
+		if (empty($user)) {
+			$this->Flash->error('sorry this customer not exist.');
+			return $this->redirect($adminBase);
+		}
+		$admin_arr = $this->User->find()->first();
+		if (empty($admin_arr)) {
+			$this->Flash->error('Wrong username/password');
+			return $this->redirect($adminBase);
+		}
+		$this->request->getSession()->write('User', $admin_arr->toArray());
+		$this->request->getSession()->write('is_admin', 1);
+		// Explicit admin route (see routes.php /admin/users/access/:id)
+		return $this->redirect(rtrim(SITEURL, '/') . '/admin/users/access/' . $userId);
+	}
+
+	/** CamelCase alias for /admin/users/accesstouser/... */
+	public function adminAccesstouser($custId = null): ?Response
+	{
+		return $this->admin_accesstouser($custId);
+	}
 	
 	
 	
@@ -1870,7 +1880,7 @@ class UsersController extends AppController
 			$url = SITEURL.'admin/users/accesstouser/'.$custId;
 			$name = ($user->get('name') ?? '') . ' ' . ($user->get('lname') ?? '');
 			$to = 'kal@durotechindustries.com.au';				
-			#$to = 'web@xoroglobal.com';				
+			//   $to = 'deepaksaini10036@gmail.com';				
 			$subject=SITENAME." :: Request For Price List by ".$name;				
 			$template_name = 'pricelist';
 			
@@ -1893,7 +1903,9 @@ class UsersController extends AppController
 			
 			if($status == 0){
 							
-				$to = 'kal@durotechindustries.com.au';				
+				$to = 'kal@durotechi@ndustries.com.au';
+				// $to = 'deepaksaini10036@gmail.com';				
+
 				$subject=SITENAME." :: Refuel CPD Access";				
 				$template_name = 'refuel';
 				$name =  (string)($user->name ?? '') . ' ' . (string)($user->lname ?? '');

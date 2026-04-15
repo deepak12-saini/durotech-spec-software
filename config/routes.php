@@ -159,6 +159,12 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/users/edit_new_staff/:id', ['controller' => 'Users', 'action' => 'admin_edit_new_staff'], ['pass' => ['id']]);
     $routes->connect('/admin/users/permission/:id', ['controller' => 'Users', 'action' => 'admin_permission'], ['pass' => ['id']]);
     $routes->connect('/admin/users/access/:id', ['controller' => 'Users', 'action' => 'admin_access'], ['pass' => ['id']]);
+    // Price list grant link from email (was missing → fallback matched AdminController)
+    $routes->connect(
+        '/admin/users/accesstouser/:custId',
+        ['controller' => 'Users', 'action' => 'admin_accesstouser'],
+        ['pass' => ['custId'], 'custId' => '[^/]+']
+    );
     $routes->connect('/admin/users/customerpermission/:id', ['controller' => 'Users', 'action' => 'admin_customerpermission'], ['pass' => ['id']]);
     $routes->connect('/admin/users/natspec_presentation_status/:user_id/:status/:type', ['controller' => 'Users', 'action' => 'admin_natspec_presentation_status'], ['pass' => ['user_id', 'status', 'type']]);
     $routes->connect('/admin/users/natspec_presentation_status/:user_id/:status', ['controller' => 'Users', 'action' => 'admin_natspec_presentation_status'], ['pass' => ['user_id', 'status']]);
