@@ -12,5 +12,6 @@ class ContactTable extends Table
         parent::initialize($config);
         $this->setTable('contacts');
         $this->setPrimaryKey('id');
+        $this->setEntityClass(\App\Model\Entity\Contact::class);
     }
 }

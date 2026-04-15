@@ -38,6 +38,7 @@ class FrontsController extends AppController
         $this->loadModel('Products');
         $this->loadModel('Testimonials');
         $this->loadModel('Notifications');
+        $this->loadModel('Contact');
     }
 
     /**
@@ -524,12 +525,26 @@ class FrontsController extends AppController
         }
 
         try {
+            $now = date('Y-m-d H:i:s');
+            $contactEntity = $this->Contact->newEntity([
+                'name' => $name,
+                'email' => $email,
+                'phone' => $phone,
+                'message' => $message,
+                'created' => $now,
+            ]);
+            if (!$this->Contact->save($contactEntity)) {
+                Log::error('Contact form DB save failed: ' . json_encode($contactEntity->getErrors()));
+                $this->Flash->error(__('Could not save your message. Please try again later.'));
+
+                return null;
+            }
             $this->getMailer('Contact')->send('contactForm', [$data]);
             $session->delete('cap_code');
             $this->Flash->success(__('Your message has been sent successfully.'));
             return $this->redirect(['action' => 'contact']);
         } catch (\Throwable $e) {
-            Log::error('Contact form email failed: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
+            Log::error('Contact form failed: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
             $this->Flash->error(__('Sorry, we could not send your message. Please try again later.'));
         }
         return null;
