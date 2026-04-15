@@ -14,7 +14,7 @@
 					</h1>
 					<?= $this->Flash->render() ?>
 				</div>
-				<h4 class="blue" id="id-company-text">Visitor Entery Register (<?php echo date('d/m/Y'); ?>)			
+				<h4 class="blue" id="id-company-text">Visitor Entry Register (<?php echo date('d/m/Y'); ?>)			
 					<a class="btn btn-mini btn-primary" href="javascript:void();"  style="float:right;"  data-toggle="modal" data-target="#myModal">Visitor In</a>
 				</h4>
 				<div class="page-content">

@@ -477,18 +477,6 @@
 							</a>
 						</li>
 						<?php						
-						if(in_array(23,$chkuserpermission) ){
-						?>
-						<li class="<?php if ($this->params['controller']=='pos') { echo 'active';}?>">
-							<a href="<?php echo $this->Url->build(['controller' => 'Pos', 'action' => 'index']); ?>">
-								<i class="menu-icon fa fa-user"></i>
-								<span class="menu-text"> DT PO </span>
-							</a>
-
-							<b class="arrow"></b>
-						</li>
-						<?php } ?>
-						<?php						
 						if(in_array(11,$chkuserpermission) ){
 						?>
 							<li class="<?php if ($this->params['controller']=='hrs') {echo 'active';}?>">
@@ -714,6 +702,19 @@
 					<?php } ?>
 							
 						</ul>	
+					</li>
+					<?php } ?>
+
+					<?php						
+					if(in_array(23,$chkuserpermission) ){
+					?>
+					<li class="<?php if ($this->params['controller']=='pos') { echo 'active';}?>">
+						<a href="<?php echo $this->Url->build(['controller' => 'Pos', 'action' => 'index']); ?>">
+							<i class="menu-icon fa fa-user"></i>
+							<span class="menu-text"> DT PO </span>
+						</a>
+
+						<b class="arrow"></b>
 					</li>
 					<?php } ?>
 										
