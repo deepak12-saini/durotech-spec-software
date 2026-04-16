@@ -255,7 +255,7 @@
 
 	.home-testimonials {
 		background: #f7f7f7;
-		padding: 50px 0;
+		/* padding: 50px 0; */
 	}
 	.home-testimonials h3 {
 		text-align: center;
