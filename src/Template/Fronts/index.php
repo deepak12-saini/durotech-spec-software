@@ -252,6 +252,46 @@
 		width: 100% !important;
 		height: 100% !important;
 	}
+
+	.home-testimonials {
+		background: #f7f7f7;
+		padding: 50px 0;
+	}
+	.home-testimonials h3 {
+		text-align: center;
+		color: #2889c8;
+		font-size: 30px;
+		margin-bottom: 10px;
+	}
+	.home-testimonials p.section-subtitle {
+		text-align: center;
+		color: #585A5A;
+		margin-bottom: 30px;
+	}
+	.testimonial-grid-item {
+		margin-bottom: 24px;
+	}
+	.testimonial-box {
+		background: #fff;
+		border: 1px solid #dfdfdf;
+		padding: 28px;
+		min-height: 240px;
+	}
+	.testimonial-quote {
+		color: #666;
+		font-style: italic;
+		font-size: 16px;
+		line-height: 1.7;
+		margin: 0 0 18px;
+	}
+	.testimonial-client-name {
+		color: #b38b3e;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		font-size: 18px;
+		margin: 0;
+	}
 </style>
 <div class="banner col-lg-12 col-md-12 col-sm-12">
 	 
@@ -578,6 +618,38 @@
 				</section>
 			</div>
         </div>
+
+		<div class="home-testimonials col-lg-12 col-md-12 col-sm-12">
+			<div class="container">
+				<h3>What Our Clients Say</h3>
+				<p class="section-subtitle">Trusted feedback from Durotech customers.</p>
+				<div class="row">
+					<?php if (!empty($homeTestimonials)): ?>
+						<?php foreach ($homeTestimonials as $item): ?>
+							<?php
+								$t = $item['Testimonial'] ?? [];
+								$quote = trim((string)($t['quote'] ?? ''));
+								$name = trim((string)($t['name'] ?? ''));
+							?>
+							<div class="col-lg-6 col-md-6 col-sm-12 testimonial-grid-item">
+								<div class="testimonial-box">
+									<p class="testimonial-quote">
+										<?php echo h($quote); ?>
+									</p>
+									<p class="testimonial-client-name"><?php echo h($name); ?></p>
+								</div>
+							</div>
+						<?php endforeach; ?>
+					<?php else: ?>
+						<div class="col-lg-12">
+							<div class="testimonial-box">
+								<p class="testimonial-quote">Testimonials will be displayed here once published.</p>
+							</div>
+						</div>
+					<?php endif; ?>
+				</div>
+			</div>
+		</div>
         <script async src="//www.instagram.com/embed.js"></script>
 		<!-- <div class="client_logo col-lg-12 col-md-12 col-sm-12">		
 			<div class="container">

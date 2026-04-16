@@ -121,6 +121,18 @@ class FrontsController extends AppController
             ];
         }
         $this->set(compact('getCategories'));
+
+        // Home-page testimonials: show published items in display order.
+        $homeTestimonials = [];
+        $testimonialQuery = $this->Testimonials->find()
+            ->where(['Testimonials.status' => 1])
+            ->orderAsc('Testimonials.display_order')
+            ->orderDesc('Testimonials.id')
+            ->limit(6);
+        foreach ($testimonialQuery as $entity) {
+            $homeTestimonials[] = ['Testimonial' => $entity->toArray()];
+        }
+        $this->set(compact('homeTestimonials'));
         return null;
     }
 
