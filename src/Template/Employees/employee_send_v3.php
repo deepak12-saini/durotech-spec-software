@@ -423,7 +423,24 @@
 		return fd;
 	}
 
+
+	function specHasData() {
+		return (
+			$('#name').val().trim() !== '' ||
+			$('input[name="company"]').val().trim() !== '' ||
+			$('input[name="address"]').val().trim() !== '' ||
+			$('input[name="specification"]').val().trim() !== '' ||
+			$('#email').val().trim() !== ''
+		);
+    }
+
 	function specDoAutosave() {
+        //new condtition add for draft not save if no data
+		if (!specHasData()) {
+			console.log('No data, skip autosave');
+			return;
+		}
+		//end new condition
 		var form = document.getElementById('specForm');
 		if (!form) return;
 		var fd = specCollectFormData();
