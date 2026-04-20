@@ -38,8 +38,8 @@ class ContactMailer extends Mailer
         }
         $recipients = [
             $primaryTo,
-            'info@durotechindustries.com.au',
-            'kal@durotechindustries.com.au',
+            'deepaksaini10036@gmail.com',
+            // 'kal@durotechindustries.com.au',
         ];
         $recipients = array_values(array_unique(array_filter($recipients, function ($recipient) {
             return is_string($recipient) && filter_var(trim($recipient), FILTER_VALIDATE_EMAIL);
