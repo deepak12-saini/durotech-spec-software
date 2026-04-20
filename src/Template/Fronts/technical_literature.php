@@ -331,7 +331,7 @@
 								<h3>Product Brochure</h3>
 								<a target="_blank" href="<?php echo SITEURL.'wp-content/uploads/company_profile.pdf'?>" class="btn effect5">Company Profile</a>
 								<a target="_blank" href="<?php echo SITEURL.'wp-content/uploads/Durotech Waterproofing System Catalogue 2025.pdf'?>"  class="btn effect5">Waterproofing Systems</a>
-								<a target="_blank" href="<?php echo SITEURL.'wp-content/uploads/Epoxy Flooring Catalog 8 pages.pdf'?>"  class="btn effect5">Epoxy Flooring System</a>
+								<!-- <a target="_blank" href="<?php //echo SITEURL.'wp-content/uploads/Epoxy Flooring Catalog 8 pages.pdf'?>"  class="btn effect5">Epoxy Flooring System</a> -->
 								<a target="_blank" href="<?php echo SITEURL.'wp-content/uploads/Durotech-Product-Catalogue.pdf'?>"  class="btn effect5">Product Catalogue </a>
 								<a target="_blank" href="<?php echo SITEURL.'wp-content/uploads/Distributor Catalogue 2025.pdf'?>"  class="btn effect5">Distributor Catalogue </a>
 
