@@ -1519,21 +1519,42 @@ class UsersController extends AppController
 		$user_id = $this->request->getSession()->read('Customer.id');
 		$cpdquestionaceess = $this->request->getSession()->read('cpdquestionaceess');
 
-		if ($this->request->is('post') && $this->request->getData('otp') !== null && $this->request->getData('otp') !== '') {
-			$uotp = (string)$this->request->getData('otp');
-			$userEntity = $this->NappUser->find()->where(['NappUser.otp' => $uotp, 'NappUser.id' => $user_id])->first();
+		// if ($this->request->is('post') && $this->request->getData('otp') !== null && $this->request->getData('otp') !== '') {
+		// 	$uotp = (string)$this->request->getData('otp');
+		// 	$userEntity = $this->NappUser->find()->where(['NappUser.otp' => $uotp, 'NappUser.id' => $user_id])->first();
 
-			if ($userEntity) {
-				$userEntity = $this->NappUser->patchEntity($userEntity, ['otp' => '']);
-				$this->NappUser->save($userEntity);
+		// 	if ($userEntity) {
+		// 		$userEntity = $this->NappUser->patchEntity($userEntity, ['otp' => '']);
+		// 		$this->NappUser->save($userEntity);
+		// 		$this->request->getSession()->write('cpdquestionaceess', 2);
+		// 		$this->request->getSession()->delete('opt');
+		// 		$this->Flash->success('Thank for verifying your account.');
+		// 		return $this->redirect(['action' => 'questionlist']);
+		// 	}
+		// 	$this->Flash->error('Wrong otp password. Please try again.');
+		// 	return $this->redirect(['action' => 'questionlist']);
+		// }
+		
+		if ($this->request->is('post') && $this->request->getData('otp') !== null && $this->request->getData('otp') !== '') {
+			debug($this->request->getData());
+			exit;
+			$uotp = (string)$this->request->getData('otp');
+		
+			// ✅ STATIC OTP FOR TESTING
+			$validOtp = '1234';
+		
+			if ($uotp === $validOtp) {
+		
 				$this->request->getSession()->write('cpdquestionaceess', 2);
-				$this->request->getSession()->delete('opt');
-				$this->Flash->success('Thank for verifying your account.');
+				$this->Flash->success('OTP verified successfully (static test OTP).');
+		
 				return $this->redirect(['action' => 'questionlist']);
 			}
-			$this->Flash->error('Wrong otp password. Please try again.');
+		
+			$this->Flash->error('Wrong OTP. Please try again (use 1234).');
 			return $this->redirect(['action' => 'questionlist']);
 		}
+
 		if (!empty($cpdquestionaceess)) {
 			$this->set('is_access', $cpdquestionaceess);
 		} elseif (empty($cpdquestionaceess) && !empty($type) && $user_id) {

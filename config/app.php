@@ -57,7 +57,7 @@ return [
         'webroot' => 'webroot',
         'wwwRoot' => WWW_ROOT,
         //'baseUrl' => env('SCRIPT_NAME'),
-        'fullBaseUrl' => 'http://localhost/cake3app',
+        'fullBaseUrl' => false,
         'imageBaseUrl' => 'img/',
         'cssBaseUrl' => 'css/',
         'jsBaseUrl' => 'js/',
@@ -430,11 +430,5 @@ return [
         'facebook' => env('SITE_FACEBOOK', 'https://www.facebook.com/durotechindustries'),
         'twitter' => env('SITE_TWITTER', 'https://twitter.com/durotech'),
         'googlePlus' => env('SITE_GOOGLE_PLUS', 'https://plus.google.com/durotech'),
-    ],
-
-    'SpecEmail' => [
-        'to' => ['deepaksaini10036@gmail.com'],
-        'cc' => ['info@durotechindustries.com.au'],
-        'bcc' => ['sales@durotechindustries.com.au']
     ],
 ];

@@ -8,11 +8,6 @@ use Cake\Event\EventInterface;
 use Cake\Http\Response;
 use Cake\Mailer\MailerAwareTrait;
 use Cake\Routing\Router;
-use Cake\Mailer\Email;
-use Cake\Core\Configure;
-use Cake\Log\Log as CakeLog;
-use Exception;
-
 
 /**
  * Mailers Controller (CakePHP 3.10)
@@ -245,55 +240,15 @@ class MailersController extends AppController
 		return $this->admin_list($id, $newdiv);
 	}
 
-	// public function admin_list($id = null, $newdiv = null): ?Response
-	// {
-	// 	$this->viewBuilder()->setLayout(false);
-	// 	$userarea = [];
-
-	// 	// Accept keyword from GET (query) or POST (AJAX body)
-	// 	$keyword = $this->request->getData('keyword') ?? $this->request->getQuery('keyword');
-	// 	if (!empty($keyword)) {
-	// 		$keyword = trim($keyword);
-	// 		$results = $this->SpecUsearea->find()
-	// 			->select(['product', 'coverage', 'coverage_by_pack', 'Warranty'])
-	// 			->where([
-	// 				'product LIKE' => $keyword . '%',
-	// 				'serial !=' => '',
-	// 			])
-	// 			->orderAsc('product')
-	// 			->limit(20)
-	// 			->all();
-
-	// 		$seen = [];
-	// 		foreach ($results as $row) {
-	// 			$product = $row->product ?? '';
-	// 			$normalized = strtolower(trim(preg_replace('/\(.+\)/', '', $product)));
-	// 			if (!in_array($normalized, $seen)) {
-	// 				$seen[] = $normalized;
-	// 				$userarea[] = ['SpecUsearea' => $row->toArray()];
-	// 			}
-	// 			if (count($userarea) >= 6) {
-	// 				break;
-	// 			}
-	// 		}
-	// 	}
-
-	// 	$this->set('userarea', $userarea);
-	// 	$this->set('id', $id);
-	// 	$this->set('newdiv', $newdiv);
-	// 	return null;
-	// }
-
 	public function admin_list($id = null, $newdiv = null): ?Response
 	{
 		$this->viewBuilder()->setLayout(false);
 		$userarea = [];
 
+		// Accept keyword from GET (query) or POST (AJAX body)
 		$keyword = $this->request->getData('keyword') ?? $this->request->getQuery('keyword');
-
 		if (!empty($keyword)) {
 			$keyword = trim($keyword);
-
 			$results = $this->SpecUsearea->find()
 				->select(['product', 'coverage', 'coverage_by_pack', 'Warranty'])
 				->where([
@@ -305,23 +260,13 @@ class MailersController extends AppController
 				->all();
 
 			$seen = [];
-
 			foreach ($results as $row) {
 				$product = $row->product ?? '';
-
-				// ✅ FIX: Override default values for this product
-				if (stripos($product, 'WBE Hi-Build Epoxy') !== false) {
-					$row->coverage_by_pack = 'SC';           // MFT
-					$row->Warranty = '10 years';     // Warranty
-				}
-
 				$normalized = strtolower(trim(preg_replace('/\(.+\)/', '', $product)));
-
 				if (!in_array($normalized, $seen)) {
 					$seen[] = $normalized;
 					$userarea[] = ['SpecUsearea' => $row->toArray()];
 				}
-
 				if (count($userarea) >= 6) {
 					break;
 				}
@@ -331,7 +276,6 @@ class MailersController extends AppController
 		$this->set('userarea', $userarea);
 		$this->set('id', $id);
 		$this->set('newdiv', $newdiv);
-
 		return null;
 	}
 
@@ -360,7 +304,7 @@ class MailersController extends AppController
 		// DuroEzy Spec v3: show specs created by admin with spec_v = 1 (from send_v3)
 		$results = $this->Mailer->find()
 			->contain(['User' => function ($q) { return $q->select(['name', 'username']); }, 'NappUser' => function ($q) { return $q->select(['name', 'lname']); }])
-			->where(['Mailer.admin_id' => $user_id])
+			->where(['Mailer.spec_v' => 0, 'Mailer.admin_id' => $user_id])
 			->orderDesc('Mailer.id')
 			->all();
 
@@ -434,23 +378,20 @@ class MailersController extends AppController
 		
 		if (empty($to) || $to === '') {
 			$this->Flash->error('Cannot send email: No email address specified for this spec (ID: ' . $id . '). Please edit the spec and add an email address.');
-			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index_v3'], true));
+			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index'], true));
 		}
 
 		// Validate email format
 		if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
 			$this->Flash->error('Cannot send email: Invalid email address format: "' . htmlspecialchars($to) . '". Please edit the spec and correct the email address.');
-			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index_v3'], true));
+			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index'], true));
 		}
 
-		//$pdfname = base64_encode(base64_encode($mailer->id . '-' . $mailer->tracknumber . '.pdf'));
-		$pdfFile = basename($mailer->pdf_attachment); // correct file
-        $pdfname = base64_encode(base64_encode($pdfFile));
+		$pdfname = base64_encode(base64_encode($mailer->id . '-' . $mailer->tracknumber . '.pdf'));
 		$subject = $mailer->subject ?? 'Your specification';
 		$vars = [
 			'subject' => $subject,
 			'pdfname' => $pdfname,
-			'pdf_attachment' => $mailer->pdf_attachment, // ✅ ADD THIS
 			'name' => $mailer->name ?? '',
 			'address' => $mailer->address ?? '',
 			'company' => $mailer->company ?? '',
@@ -462,7 +403,7 @@ class MailersController extends AppController
 		// Final validation check before sending
 		if (empty($to) || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
 			$this->Flash->error('Cannot send email: Email validation failed. Email: "' . htmlspecialchars($to) . '"');
-			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index_v3'], true));
+			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index'], true));
 		}
 
 		try {
@@ -474,7 +415,7 @@ class MailersController extends AppController
 		} catch (\Throwable $e) {
 			$this->Flash->error('Failed to send email: ' . $e->getMessage());
 		}
-		return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index_v3'], true));
+		return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index'], true));
 	}
 
 	public function download($id): ?Response
@@ -502,8 +443,6 @@ class MailersController extends AppController
 		$this->viewBuilder()->setLayout('admin_layout');
 		$this->set('title_for_layout',SITENAME.' DuroEzy Specification Mailer');
 		$this->checkAdminSession(); 
-		$this->loadModel('Users'); // ✅ ADD THIS LINE
-
 		$user_id=$this->request->getSession()->read('User.id');
 		if (!empty($this->request->getData())) {
 			
@@ -642,76 +581,9 @@ class MailersController extends AppController
 					}
 				}
 				$this->Mailer->save($mailerEntity);
-
-				// ===== SEND EMAIL WITH SPEC PDF ATTACHED =====
-
-				$pdfFilePath = WWW_ROOT . str_replace('/', DS, $mailerEntity->pdf_attachment);
-
-				if (file_exists($pdfFilePath)) {
-					try {
-						$emailObj = new Email('default');
-
-						$emailObj->setFrom([
-							'info@durotechindustries.com.au' => 'Durotech Industries'
-						]);
-
-						$emailConfig = Configure::read('SpecEmail');
-
-						$emailObj->setTo($emailConfig['to'])
-							->setCc($emailConfig['cc'])
-							->setBcc($emailConfig['bcc']);
-
-						// $emailObj->setTo('kal@durotechindustries.com.au')
-						// 	->setCc(['info@durotechindustries.com.au'])
-						// 	->setBcc(['sales@durotechindustries.com.au']);
-						// $emailObj->setTo('deepaksaini10036@gmail.com');
-
-						$emailObj->setSubject(
-							'New Spec Created (Admin) – ' . $tracknumber
-						);
-
-						$emailObj->setEmailFormat('html');
-
-						$emailObj->setAttachments([
-							basename($pdfFilePath) => [
-								'file' => $pdfFilePath,
-								'mimetype' => 'application/pdf'
-							]
-						]);
-
-						$adminName = 'Admin'; // default fallback
-
-						$user = $this->Users->find()
-							->select(['name'])
-							->where(['id' => $user_id])
-							->first();
-
-						if ($user && !empty($user->name)) {
-							$adminName = $user->name;
-						}
-
-						$emailObj->send(
-							'
-                            <p>A new specification has been created by <b>' . $adminName . '</b>.</p>
-							<p>
-								<b>Track No:</b> ' . $tracknumber . '<br>
-								<b>Company:</b> ' . $company . '<br>
-								<b>Specification:</b> ' . $specification . '
-							</p>
-
-							<p>Please find the specification PDF attached.</p>
-
-							<p>Regards,<br>
-							Durotech System</p>'
-						);
-
-					} catch (\Exception $e) {
-						CakeLog::error('Admin spec email failed (track: ' . $tracknumber . '): ' . $e->getMessage());
-					}
-				}
 				
 				$this->Flash->success('Spec saved successfully.');
-				return $this->redirect(\Cake\Routing\Router::url('/admin/mailers/index_v3'));
+				return $this->redirect(\Cake\Routing\Router::url('/admin/mailers/emp_spec_index'));
 			}
 		}
 		$refernce = $this->Mailer->getNextSpecTrackNumber();
@@ -1313,9 +1185,7 @@ class MailersController extends AppController
 					return $this->redirect(Router::url(['controller' => 'Mailers', 'action' => 'admin_index'], true));
 				}
 
-				$pdfname = $lastinsertId . '-' . preg_replace('/[^A-Za-z0-9\-]/', '-', $tracknumber);
-
-				// $pdfname = $lastinsertId . '-' . $tracknumber;
+				$pdfname = $lastinsertId . '-' . $tracknumber;
 				$dateVal = $this->request->getData('date');
 				$fields = array(
 					'tracknumber' => urlencode((string) $tracknumber),
@@ -1351,58 +1221,7 @@ class MailersController extends AppController
 				
 				$response = file_get_contents($url, false, stream_context_create($arrContextOptions));
 
-				$pdfFilePath = WWW_ROOT . 'dompdf' . DS . $pdfname . '.pdf';
-				$pdfRelativePath = 'dompdf/' . $pdfname . '.pdf';
-				
-				if (file_exists($pdfFilePath)) {
-					$mailerEntity->pdf_attachment = $pdfRelativePath;
-					$this->Mailer->save($mailerEntity);
 
-					try {
-						$email = new Email('default');
-
-						$email->setFrom([
-							'no-reply@durotechindustries.com.au' => 'Durotech Industries'
-						]);
-
-						$emailConfig = Configure::read('SpecEmail');
-
-						$email->setTo('deepaksaini10036@gmail.com');							// ->setCc($emailConfig['cc'])
-							// ->setBcc($emailConfig['bcc']);
-
-						$email->setSubject('Specification Updated – ' . $tracknumber);
-						$email->setEmailFormat('html');
-
-						// Attach PDF
-						$email->setAttachments([
-							$pdfname . '.pdf' => [
-								'file' => $pdfFilePath,
-								'mimetype' => 'application/pdf'
-							]
-						]);
-
-						// Email Body
-						$email->send('
-							<p>The specification has been <b>updated</b> by Admin.</p>
-
-							<p>
-								<b>Track No:</b> ' . $tracknumber . '<br>
-								<b>Company:</b> ' . $company . '<br>
-								<b>Specification:</b> ' . $specification . '
-							</p>
-
-							<p>Please find the updated specification PDF attached.</p>
-
-							<p>Regards,<br>
-							Durotech System</p>
-						');
-					} catch (\Exception $e) {
-						\Cake\Log\Log::error('Admin spec email failed: ' . $e->getMessage());
-					}
-				}
-
-
-				
 				//$result = file_get_contents($url);
 				
 				$this->Flash->success('PDF file updated successfully.');
@@ -2301,9 +2120,7 @@ class MailersController extends AppController
 					}
 				}
 
-				// $pdfname = $lastinsertId . '-' . $tracknumber;
-				$pdfname = $lastinsertId . '-' . preg_replace('/[^A-Za-z0-9\-]/', '-', $tracknumber);
-
+				$pdfname = $lastinsertId . '-' . $tracknumber;
 				$dateVal = $this->request->getData('date');
 				$fields = array(
 					'tracknumber' => urlencode((string)$tracknumber),
@@ -2342,57 +2159,7 @@ class MailersController extends AppController
 				//echo $url; die();
 				$response = file_get_contents($url, false, stream_context_create($arrContextOptions));
 
-				$pdfFilePath = WWW_ROOT . 'dompdf' . DS . $pdfname . '.pdf';
-				$pdfRelativePath = 'dompdf/' . $pdfname . '.pdf';
-				
-				if (file_exists($pdfFilePath)) {
-					$mailerEntity->pdf_attachment = $pdfRelativePath;
-					$this->Mailer->save($mailerEntity);
 
-					try {
-						$email = new Email('default');
-
-						$email->setFrom([
-							'no-reply@durotechindustries.com.au' => 'Durotech Industries'
-						]);
-
-						$emailConfig = Configure::read('SpecEmail');
-
-						$email->setTo($emailConfig['to'])
-						->setCc($emailConfig['cc'])
-						->setBcc($emailConfig['bcc']);							// ->setCc($emailConfig['cc'])
-							// ->setBcc($emailConfig['bcc']);
-
-						$email->setSubject('Specification Updated – ' . $tracknumber);
-						$email->setEmailFormat('html');
-
-						// Attach PDF
-						$email->setAttachments([
-							$pdfname . '.pdf' => [
-								'file' => $pdfFilePath,
-								'mimetype' => 'application/pdf'
-							]
-						]);
-
-						// Email Body
-						$email->send('
-							<p>The specification has been <b>updated</b> by Admin.</p>
-
-							<p>
-								<b>Track No:</b> ' . $tracknumber . '<br>
-								<b>Company:</b> ' . $company . '<br>
-								<b>Specification:</b> ' . $specification . '
-							</p>
-
-							<p>Please find the updated specification PDF attached.</p>
-
-							<p>Regards,<br>
-							Durotech System</p>
-						');
-					} catch (\Exception $e) {
-						\Cake\Log\Log::error('Admin spec email failed: ' . $e->getMessage());
-					}
-				}
 				//$result = file_get_contents($url);
 				
 				$this->Flash->success('PDF file updated successfully.');
