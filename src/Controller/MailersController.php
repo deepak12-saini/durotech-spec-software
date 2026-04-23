@@ -240,15 +240,55 @@ class MailersController extends AppController
 		return $this->admin_list($id, $newdiv);
 	}
 
+	// public function admin_list($id = null, $newdiv = null): ?Response
+	// {
+	// 	$this->viewBuilder()->setLayout(false);
+	// 	$userarea = [];
+
+	// 	// Accept keyword from GET (query) or POST (AJAX body)
+	// 	$keyword = $this->request->getData('keyword') ?? $this->request->getQuery('keyword');
+	// 	if (!empty($keyword)) {
+	// 		$keyword = trim($keyword);
+	// 		$results = $this->SpecUsearea->find()
+	// 			->select(['product', 'coverage', 'coverage_by_pack', 'Warranty'])
+	// 			->where([
+	// 				'product LIKE' => $keyword . '%',
+	// 				'serial !=' => '',
+	// 			])
+	// 			->orderAsc('product')
+	// 			->limit(20)
+	// 			->all();
+
+	// 		$seen = [];
+	// 		foreach ($results as $row) {
+	// 			$product = $row->product ?? '';
+	// 			$normalized = strtolower(trim(preg_replace('/\(.+\)/', '', $product)));
+	// 			if (!in_array($normalized, $seen)) {
+	// 				$seen[] = $normalized;
+	// 				$userarea[] = ['SpecUsearea' => $row->toArray()];
+	// 			}
+	// 			if (count($userarea) >= 6) {
+	// 				break;
+	// 			}
+	// 		}
+	// 	}
+
+	// 	$this->set('userarea', $userarea);
+	// 	$this->set('id', $id);
+	// 	$this->set('newdiv', $newdiv);
+	// 	return null;
+	// }
+
 	public function admin_list($id = null, $newdiv = null): ?Response
 	{
 		$this->viewBuilder()->setLayout(false);
 		$userarea = [];
 
-		// Accept keyword from GET (query) or POST (AJAX body)
 		$keyword = $this->request->getData('keyword') ?? $this->request->getQuery('keyword');
+
 		if (!empty($keyword)) {
 			$keyword = trim($keyword);
+
 			$results = $this->SpecUsearea->find()
 				->select(['product', 'coverage', 'coverage_by_pack', 'Warranty'])
 				->where([
@@ -260,13 +300,23 @@ class MailersController extends AppController
 				->all();
 
 			$seen = [];
+
 			foreach ($results as $row) {
 				$product = $row->product ?? '';
+
+				// ✅ FIX: Override default values for this product
+				if (stripos($product, 'WBE Hi-Build Epoxy') !== false) {
+					$row->coverage_by_pack = 'SC';           // MFT
+					$row->Warranty = '10 years';     // Warranty
+				}
+
 				$normalized = strtolower(trim(preg_replace('/\(.+\)/', '', $product)));
+
 				if (!in_array($normalized, $seen)) {
 					$seen[] = $normalized;
 					$userarea[] = ['SpecUsearea' => $row->toArray()];
 				}
+
 				if (count($userarea) >= 6) {
 					break;
 				}
@@ -276,6 +326,7 @@ class MailersController extends AppController
 		$this->set('userarea', $userarea);
 		$this->set('id', $id);
 		$this->set('newdiv', $newdiv);
+
 		return null;
 	}
 
