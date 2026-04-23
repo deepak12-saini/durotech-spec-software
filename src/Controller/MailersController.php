@@ -434,13 +434,13 @@ class MailersController extends AppController
 		
 		if (empty($to) || $to === '') {
 			$this->Flash->error('Cannot send email: No email address specified for this spec (ID: ' . $id . '). Please edit the spec and add an email address.');
-			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index'], true));
+			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index_v3'], true));
 		}
 
 		// Validate email format
 		if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
 			$this->Flash->error('Cannot send email: Invalid email address format: "' . htmlspecialchars($to) . '". Please edit the spec and correct the email address.');
-			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index'], true));
+			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index_v3'], true));
 		}
 
 		$pdfname = base64_encode(base64_encode($mailer->id . '-' . $mailer->tracknumber . '.pdf'));
@@ -459,7 +459,7 @@ class MailersController extends AppController
 		// Final validation check before sending
 		if (empty($to) || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
 			$this->Flash->error('Cannot send email: Email validation failed. Email: "' . htmlspecialchars($to) . '"');
-			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index'], true));
+			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index_v3'], true));
 		}
 
 		try {
@@ -471,7 +471,7 @@ class MailersController extends AppController
 		} catch (\Throwable $e) {
 			$this->Flash->error('Failed to send email: ' . $e->getMessage());
 		}
-		return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index'], true));
+		return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index_v3'], true));
 	}
 
 	public function download($id): ?Response
