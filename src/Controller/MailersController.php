@@ -634,7 +634,7 @@ class MailersController extends AppController
 				$this->Mailer->save($mailerEntity);
 				
 				$this->Flash->success('Spec saved successfully.');
-				return $this->redirect(\Cake\Routing\Router::url('/admin/mailers/emp_spec_index'));
+				return $this->redirect(\Cake\Routing\Router::url('/admin/mailers/index_v3'));
 			}
 		}
 		$refernce = $this->Mailer->getNextSpecTrackNumber();
