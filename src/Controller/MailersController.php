@@ -8,6 +8,11 @@ use Cake\Event\EventInterface;
 use Cake\Http\Response;
 use Cake\Mailer\MailerAwareTrait;
 use Cake\Routing\Router;
+use Cake\Mailer\Email;
+use Cake\Core\Configure;
+use Cake\Log\Log as CakeLog;
+use Exception;
+
 
 /**
  * Mailers Controller (CakePHP 3.10)
@@ -494,6 +499,8 @@ class MailersController extends AppController
 		$this->viewBuilder()->setLayout('admin_layout');
 		$this->set('title_for_layout',SITENAME.' DuroEzy Specification Mailer');
 		$this->checkAdminSession(); 
+		$this->loadModel('Users'); // ✅ ADD THIS LINE
+
 		$user_id=$this->request->getSession()->read('User.id');
 		if (!empty($this->request->getData())) {
 			
@@ -632,6 +639,73 @@ class MailersController extends AppController
 					}
 				}
 				$this->Mailer->save($mailerEntity);
+
+				// ===== SEND EMAIL WITH SPEC PDF ATTACHED =====
+
+				$pdfFilePath = WWW_ROOT . str_replace('/', DS, $mailerEntity->pdf_attachment);
+
+				if (file_exists($pdfFilePath)) {
+					try {
+						$emailObj = new Email('default');
+
+						$emailObj->setFrom([
+							'info@durotechindustries.com.au' => 'Durotech Industries'
+						]);
+
+						$emailConfig = Configure::read('SpecEmail');
+
+						$emailObj->setTo($emailConfig['to'])
+							->setCc($emailConfig['cc'])
+							->setBcc($emailConfig['bcc']);
+
+						// $emailObj->setTo('kal@durotechindustries.com.au')
+						// 	->setCc(['info@durotechindustries.com.au'])
+						// 	->setBcc(['sales@durotechindustries.com.au']);
+						// $emailObj->setTo('deepaksaini10036@gmail.com');
+
+						$emailObj->setSubject(
+							'New Spec Created (Admin) – ' . $tracknumber
+						);
+
+						$emailObj->setEmailFormat('html');
+
+						$emailObj->setAttachments([
+							basename($pdfFilePath) => [
+								'file' => $pdfFilePath,
+								'mimetype' => 'application/pdf'
+							]
+						]);
+
+						$adminName = 'Admin'; // default fallback
+
+						$user = $this->Users->find()
+							->select(['name'])
+							->where(['id' => $user_id])
+							->first();
+
+						if ($user && !empty($user->name)) {
+							$adminName = $user->name;
+						}
+
+						$emailObj->send(
+							'
+                            <p>A new specification has been created by <b>' . $adminName . '</b>.</p>
+							<p>
+								<b>Track No:</b> ' . $tracknumber . '<br>
+								<b>Company:</b> ' . $company . '<br>
+								<b>Specification:</b> ' . $specification . '
+							</p>
+
+							<p>Please find the specification PDF attached.</p>
+
+							<p>Regards,<br>
+							Durotech System</p>'
+						);
+
+					} catch (\Exception $e) {
+						CakeLog::error('Admin spec email failed (track: ' . $tracknumber . '): ' . $e->getMessage());
+					}
+				}
 				
 				$this->Flash->success('Spec saved successfully.');
 				return $this->redirect(\Cake\Routing\Router::url('/admin/mailers/index_v3'));
