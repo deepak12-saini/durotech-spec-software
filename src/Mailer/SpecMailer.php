@@ -50,8 +50,6 @@ class SpecMailer extends Mailer
             ->setLayout('default')
             ->setOptions(['ext' => 'php']);
 
-        // return $this->deliver();
-        return $this; // ✅ FIXED
-
+        return $this->deliver();
     }
 }
