@@ -330,7 +330,7 @@ public function index()
     $this->loadModel('Mailer');
     $query = $this->Mailer->find()
         ->where([
-            'Mailer.spec_v' => 0,
+            // 'Mailer.spec_v' => 0,
             'Mailer.employee_id' => $employee_id,
             // Specs only
             'Mailer.type' => 3,

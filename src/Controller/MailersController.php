@@ -355,7 +355,7 @@ class MailersController extends AppController
 		// DuroEzy Spec v3: show specs created by admin with spec_v = 1 (from send_v3)
 		$results = $this->Mailer->find()
 			->contain(['User' => function ($q) { return $q->select(['name', 'username']); }, 'NappUser' => function ($q) { return $q->select(['name', 'lname']); }])
-			->where(['Mailer.spec_v' => 0, 'Mailer.admin_id' => $user_id])
+			->where(['Mailer.admin_id' => $user_id])
 			->orderDesc('Mailer.id')
 			->all();
 
