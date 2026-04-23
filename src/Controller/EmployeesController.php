@@ -538,6 +538,9 @@ public function employee_send_v3() {
                     $generatedPdfFileName = (string)$json['filename'];
                 }
             }
+            $pdfPath = 'dompdf/' . $generatedPdfFileName;
+            $savedMailer->pdf_attachment = $pdfPath;
+            $this->Mailer->save($savedMailer);
 
 
             // ===== SEND EMAIL WITH SPEC PDF ATTACHED (non-blocking: spec/PDF already saved) =====
@@ -1173,6 +1176,7 @@ public function editsendV3($id = null) {
 
             $variables = array(
                 'subject' => $subject,
+                'pdf_attachment' => $MailerArr['pdf_attachment'] ?? '', // ✅ use this
                 'pdfname' => $pdfname,
                 'name' => $MailerArr['name'] ?? '',
                 'address' => $MailerArr['address'] ?? '',
