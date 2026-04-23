@@ -41,15 +41,29 @@ class SpecMailer extends Mailer
             $fromEmail = 'noreply@durotechindustries.com.au';
         }
 
-        $this->setFrom([$fromEmail => $fromName])
-            ->setTo($to)
-            ->setSubject($subject)
-            ->setViewVars($vars)
-            ->viewBuilder()
-            ->setTemplate('new_sendeasyspec')
-            ->setLayout('default')
-            ->setOptions(['ext' => 'php']);
+        // $this->setFrom([$fromEmail => $fromName])
+        //     ->setTo($to)
+        //     ->setSubject($subject)
+        //     ->setViewVars($vars)
+        //     ->viewBuilder()
+        //     ->setTemplate('new_sendeasyspec')
+        //     ->setLayout('default')
+        //     ->setOptions(['ext' => 'php']);
 
-        return $this->deliver();
+        // return $this->deliver();
+
+            // ✅ SET EMAIL FIRST
+    $this->setFrom([$fromEmail => $fromName]);
+    $this->setTo($to);
+    $this->setSubject($subject);
+    $this->setEmailFormat('html');
+    $this->setViewVars($vars);
+
+    // ✅ THEN TEMPLATE (separately)
+    $this->viewBuilder()
+        ->setTemplate('new_sendeasyspec')
+        ->setLayout('default');
+
+    return $this; // ❗ NOT deliver()
     }
 }

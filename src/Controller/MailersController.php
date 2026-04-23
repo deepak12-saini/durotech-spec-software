@@ -443,11 +443,14 @@ class MailersController extends AppController
 			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index_v3'], true));
 		}
 
-		$pdfname = base64_encode(base64_encode($mailer->id . '-' . $mailer->tracknumber . '.pdf'));
+		//$pdfname = base64_encode(base64_encode($mailer->id . '-' . $mailer->tracknumber . '.pdf'));
+		$pdfFile = basename($mailer->pdf_attachment); // correct file
+        $pdfname = base64_encode(base64_encode($pdfFile));
 		$subject = $mailer->subject ?? 'Your specification';
 		$vars = [
 			'subject' => $subject,
 			'pdfname' => $pdfname,
+			'pdf_attachment' => $mailer->pdf_attachment, // ✅ ADD THIS
 			'name' => $mailer->name ?? '',
 			'address' => $mailer->address ?? '',
 			'company' => $mailer->company ?? '',
