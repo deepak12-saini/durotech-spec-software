@@ -25,7 +25,7 @@ $logoUrl = Router::url('/customdurotech/images/durotech_logo.png', true);
                 
                 <!-- Header -->
                 <tr>
-                    <td style="background:#1e3a5f;padding:20px;text-align:center;">
+                    <td style="background:#e4edf4;padding:20px;text-align:center;">
                         <img src="<?= $logoUrl ?>" alt="Durotech" style="max-width:180px;">
                     </td>
                 </tr>
