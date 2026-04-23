@@ -1313,7 +1313,9 @@ class MailersController extends AppController
 					return $this->redirect(Router::url(['controller' => 'Mailers', 'action' => 'admin_index'], true));
 				}
 
-				$pdfname = $lastinsertId . '-' . $tracknumber;
+				$pdfname = $lastinsertId . '-' . preg_replace('/[^A-Za-z0-9\-]/', '-', $tracknumber);
+
+				// $pdfname = $lastinsertId . '-' . $tracknumber;
 				$dateVal = $this->request->getData('date');
 				$fields = array(
 					'tracknumber' => urlencode((string) $tracknumber),
@@ -1349,7 +1351,58 @@ class MailersController extends AppController
 				
 				$response = file_get_contents($url, false, stream_context_create($arrContextOptions));
 
+				$pdfFilePath = WWW_ROOT . 'dompdf' . DS . $pdfname . '.pdf';
+				$pdfRelativePath = 'dompdf/' . $pdfname . '.pdf';
+				
+				if (file_exists($pdfFilePath)) {
+					$mailerEntity->pdf_attachment = $pdfRelativePath;
+					$this->Mailer->save($mailerEntity);
 
+					try {
+						$email = new Email('default');
+
+						$email->setFrom([
+							'no-reply@durotechindustries.com.au' => 'Durotech Industries'
+						]);
+
+						$emailConfig = Configure::read('SpecEmail');
+
+						$email->setTo('deepaksaini10036@gmail.com');							// ->setCc($emailConfig['cc'])
+							// ->setBcc($emailConfig['bcc']);
+
+						$email->setSubject('Specification Updated – ' . $tracknumber);
+						$email->setEmailFormat('html');
+
+						// Attach PDF
+						$email->setAttachments([
+							$pdfname . '.pdf' => [
+								'file' => $pdfFilePath,
+								'mimetype' => 'application/pdf'
+							]
+						]);
+
+						// Email Body
+						$email->send('
+							<p>The specification has been <b>updated</b> by Admin.</p>
+
+							<p>
+								<b>Track No:</b> ' . $tracknumber . '<br>
+								<b>Company:</b> ' . $company . '<br>
+								<b>Specification:</b> ' . $specification . '
+							</p>
+
+							<p>Please find the updated specification PDF attached.</p>
+
+							<p>Regards,<br>
+							Durotech System</p>
+						');
+					} catch (\Exception $e) {
+						\Cake\Log\Log::error('Admin spec email failed: ' . $e->getMessage());
+					}
+				}
+
+
+				
 				//$result = file_get_contents($url);
 				
 				$this->Flash->success('PDF file updated successfully.');
@@ -2248,7 +2301,9 @@ class MailersController extends AppController
 					}
 				}
 
-				$pdfname = $lastinsertId . '-' . $tracknumber;
+				// $pdfname = $lastinsertId . '-' . $tracknumber;
+				$pdfname = $lastinsertId . '-' . preg_replace('/[^A-Za-z0-9\-]/', '-', $tracknumber);
+
 				$dateVal = $this->request->getData('date');
 				$fields = array(
 					'tracknumber' => urlencode((string)$tracknumber),
@@ -2287,7 +2342,57 @@ class MailersController extends AppController
 				//echo $url; die();
 				$response = file_get_contents($url, false, stream_context_create($arrContextOptions));
 
+				$pdfFilePath = WWW_ROOT . 'dompdf' . DS . $pdfname . '.pdf';
+				$pdfRelativePath = 'dompdf/' . $pdfname . '.pdf';
+				
+				if (file_exists($pdfFilePath)) {
+					$mailerEntity->pdf_attachment = $pdfRelativePath;
+					$this->Mailer->save($mailerEntity);
 
+					try {
+						$email = new Email('default');
+
+						$email->setFrom([
+							'no-reply@durotechindustries.com.au' => 'Durotech Industries'
+						]);
+
+						$emailConfig = Configure::read('SpecEmail');
+
+						$email->setTo($emailConfig['to'])
+						->setCc($emailConfig['cc'])
+						->setBcc($emailConfig['bcc']);							// ->setCc($emailConfig['cc'])
+							// ->setBcc($emailConfig['bcc']);
+
+						$email->setSubject('Specification Updated – ' . $tracknumber);
+						$email->setEmailFormat('html');
+
+						// Attach PDF
+						$email->setAttachments([
+							$pdfname . '.pdf' => [
+								'file' => $pdfFilePath,
+								'mimetype' => 'application/pdf'
+							]
+						]);
+
+						// Email Body
+						$email->send('
+							<p>The specification has been <b>updated</b> by Admin.</p>
+
+							<p>
+								<b>Track No:</b> ' . $tracknumber . '<br>
+								<b>Company:</b> ' . $company . '<br>
+								<b>Specification:</b> ' . $specification . '
+							</p>
+
+							<p>Please find the updated specification PDF attached.</p>
+
+							<p>Regards,<br>
+							Durotech System</p>
+						');
+					} catch (\Exception $e) {
+						\Cake\Log\Log::error('Admin spec email failed: ' . $e->getMessage());
+					}
+				}
 				//$result = file_get_contents($url);
 				
 				$this->Flash->success('PDF file updated successfully.');

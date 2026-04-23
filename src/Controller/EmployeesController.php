@@ -1042,7 +1042,8 @@ public function editsend_v3($id = null) {
             }
 
             // Generate PDF
-            $pdfname = $lastinsertId . '-' . $tracknumber;
+            // $pdfname = $lastinsertId . '-' . $tracknumber;
+            $pdfname = $lastinsertId . '-' . preg_replace('/[^A-Za-z0-9\-]/', '-', $tracknumber);
 
             $fields = [
                 'tracknumber'   => $tracknumber,
@@ -1073,6 +1074,11 @@ public function editsend_v3($id = null) {
             // --- After generating PDF ---
             $pdfFilePath = WWW_ROOT . 'dompdf' . DS . $pdfname . '.pdf';
 
+            $pdfRelativePath = 'dompdf/' . $pdfname . '.pdf';
+            // ✅ SAVE UPDATED PDF PATH IN DB
+            $savedMailer->pdf_attachment = $pdfRelativePath;
+            $this->Mailer->save($savedMailer);
+
             // Check if PDF exists
             if (file_exists($pdfFilePath)) {
                 $email = new Email('default');
@@ -1081,8 +1087,14 @@ public function editsend_v3($id = null) {
                     'no-reply@durotechindustries.com.au' => 'Durotech Industries'
                 ]);
 
+                $emailConfig = Configure::read('SpecEmail');
+
+                $email->setTo($emailConfig['to'])
+                    ->setCc($emailConfig['cc'])
+                    ->setBcc($emailConfig['bcc']);
+
                 // Recipient: Kal or others if needed
-                $email->setTo('Kal@durotechindustries.com.au');
+                // $email->setTo('deepaksaini10036@gmail.com');
 
                 $email->setSubject('Specification Edited – ' . $inserty['Mailer']['tracknumber']);
                 $email->setEmailFormat('html');
