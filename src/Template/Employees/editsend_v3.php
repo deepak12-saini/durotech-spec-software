@@ -16,6 +16,7 @@
 	<div class="row">
 		<div class="col-xs-12">
 		<?php echo $this->Form->create('Employee',array('class'=>'form-horizontal','enctype'=>'multipart/form-data')); ?>
+		<input type="hidden" name="return_page" value="<?php echo isset($returnPage) ? (int)$returnPage : 1; ?>">
 		
 			<div class="form-group">
 				<label for="form-field-2" class="col-sm-3 control-label no-padding-right"> Is Create New One: </label>
@@ -242,30 +243,62 @@
 	function commnetdivremove(newdiv){
 		$("#commentdiv_"+newdiv).remove();
 	}
+	var productSuggestMinChars = 3;
+	var productSuggestXhrByKey = {};
+	var lastProductKeywordByKey = {};
+	var productSuggestTimerByKey = {};
+
 	function onkeyups(id,newdiv){
+		var fieldKey = id + '_' + newdiv;
+		var keyword = ($("#pro_"+id+"_"+newdiv).val() || '').trim();
+		if (productSuggestTimerByKey[fieldKey]) {
+			clearTimeout(productSuggestTimerByKey[fieldKey]);
+		}
+		if (keyword.length < productSuggestMinChars) {
+			$("#suggesstion-box_"+id+"_"+newdiv+"").hide().html('');
+			lastProductKeywordByKey[fieldKey] = '';
+			if (productSuggestXhrByKey[fieldKey] && productSuggestXhrByKey[fieldKey].readyState !== 4) {
+				productSuggestXhrByKey[fieldKey].abort();
+			}
+			productSuggestXhrByKey[fieldKey] = null;
+			return;
+		}
 		var csrfToken = $('input[name="_csrfToken"]').val() || '';
 		if (!csrfToken) {
 			var m = document.cookie.match(/(?:^|;\s*)csrfToken=([^;]+)/);
 			csrfToken = m ? decodeURIComponent(m[1]) : '';
 		}
 
-		$.ajax({
-		type: "POST",
-		url: "<?php echo SITEURL.'admin/mailers/list' ?>/"+id+"/"+newdiv,
-		headers: { 'X-CSRF-Token': csrfToken },
-		data:{
-			keyword: $("#pro_"+id+"_"+newdiv).val(),
-			_csrfToken: csrfToken
-		},
-		beforeSend: function(){
-			//$("#search-box").css("background","#FFF url(LoaderIcon.gif) no-repeat 165px");
-		},
-		success: function(data){
-			$("#suggesstion-box_"+id+"_"+newdiv+"").show();
-			$("#suggesstion-box_"+id+"_"+newdiv+"").html(data);
-			$("#pro_"+id+"_"+newdiv).css("background","#FFF");
-		}
-		});
+		productSuggestTimerByKey[fieldKey] = setTimeout(function() {
+			if (lastProductKeywordByKey[fieldKey] === keyword) {
+				return;
+			}
+			lastProductKeywordByKey[fieldKey] = keyword;
+			if (productSuggestXhrByKey[fieldKey] && productSuggestXhrByKey[fieldKey].readyState !== 4) {
+				productSuggestXhrByKey[fieldKey].abort();
+			}
+			productSuggestXhrByKey[fieldKey] = $.ajax({
+				type: "POST",
+				url: "<?php echo SITEURL.'admin/mailers/list' ?>/"+id+"/"+newdiv,
+				headers: { 'X-CSRF-Token': csrfToken },
+				data:{
+					keyword: keyword,
+					_csrfToken: csrfToken
+				},
+				beforeSend: function(){
+					//$("#search-box").css("background","#FFF url(LoaderIcon.gif) no-repeat 165px");
+				},
+				success: function(data){
+					if (data !== '') {
+						$("#suggesstion-box_"+id+"_"+newdiv+"").show();
+						$("#suggesstion-box_"+id+"_"+newdiv+"").html(data);
+					} else {
+						$("#suggesstion-box_"+id+"_"+newdiv+"").hide().html('');
+					}
+					$("#pro_"+id+"_"+newdiv).css("background","#FFF");
+				}
+			});
+		}, 500);
 	}
 	function selectCountry(product,coverage,coverage_by_pack,Warranty,id,newdiv) {
 		

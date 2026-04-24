@@ -338,6 +338,38 @@ public function index()
         ->contain(['Employee'])
         ->orderDesc('Mailer.id');
 
+    $filters = [
+        'tracknumber' => trim((string)$this->request->getQuery('tracknumber')),
+        'name' => trim((string)$this->request->getQuery('name')),
+        'email' => trim((string)$this->request->getQuery('email')),
+        'company' => trim((string)$this->request->getQuery('company')),
+        'specification' => trim((string)$this->request->getQuery('specification')),
+        'date_from' => trim((string)$this->request->getQuery('date_from')),
+        'date_to' => trim((string)$this->request->getQuery('date_to')),
+    ];
+
+    if ($filters['tracknumber'] !== '') {
+        $query->andWhere(['Mailer.tracknumber LIKE' => '%' . $filters['tracknumber'] . '%']);
+    }
+    if ($filters['name'] !== '') {
+        $query->andWhere(['Mailer.name LIKE' => '%' . $filters['name'] . '%']);
+    }
+    if ($filters['email'] !== '') {
+        $query->andWhere(['Mailer.email LIKE' => '%' . $filters['email'] . '%']);
+    }
+    if ($filters['company'] !== '') {
+        $query->andWhere(['Mailer.company LIKE' => '%' . $filters['company'] . '%']);
+    }
+    if ($filters['specification'] !== '') {
+        $query->andWhere(['Mailer.specification LIKE' => '%' . $filters['specification'] . '%']);
+    }
+    if ($filters['date_from'] !== '') {
+        $query->andWhere(['Mailer.date >=' => $filters['date_from']]);
+    }
+    if ($filters['date_to'] !== '') {
+        $query->andWhere(['Mailer.date <=' => $filters['date_to']]);
+    }
+
     // Exclude drafts from list so only submitted specs show (no duplicate-looking rows)
     if ($this->Mailer->getSchema()->getColumn('save_status')) {
         $query->andWhere([
@@ -362,7 +394,7 @@ public function index()
         ]);
     }
 
-    $this->set(compact('mailers', 'hasDraft'));
+    $this->set(compact('mailers', 'hasDraft', 'filters'));
 }
 
 
@@ -916,8 +948,10 @@ public function editsend_v3($id = null) {
     $this->loadModel('SpecUsearea');
 
     $employee_id = $this->Session->read('Employee.id');
+    $returnPage = (int)$this->request->getQuery('page');
 
     if (!empty($this->request->data)) {
+        $returnPage = isset($this->request->data['return_page']) ? (int)$this->request->data['return_page'] : $returnPage;
         $form_type = $this->request->data['form_type'];
 
         $exp = explode('/', $this->request->data['date']);
@@ -1115,7 +1149,7 @@ public function editsend_v3($id = null) {
 
 
             $this->Flash->success('PDF file updated successfully.');
-            return $this->redirect(['action' => 'index']);
+            return $this->redirect(['action' => 'index', '?' => ['page' => max(1, $returnPage)]]);
         }
     }
 
@@ -1145,6 +1179,7 @@ public function editsend_v3($id = null) {
     $this->set('product', $product);
     $this->set('refernce', $MailerArr['Mailer']['tracknumber'] ?? '');
     $this->set('MailerArr', $MailerArr);
+    $this->set('returnPage', max(1, $returnPage));
 }
 
 /**

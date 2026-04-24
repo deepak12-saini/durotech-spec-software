@@ -22,6 +22,20 @@
 	<!-- Main content row -->
 	<div class="row">
 		<div class="col-xs-12">
+			<div class="well well-sm" style="margin-bottom:12px;">
+				<?php echo $this->Form->create(null, ['type' => 'get', 'class' => 'form-inline']); ?>
+					<input type="text" name="tracknumber" class="form-control input-sm" placeholder="Track Number" value="<?php echo h($filters['tracknumber'] ?? ''); ?>" style="margin-right:6px;margin-bottom:6px;">
+					<input type="text" name="name" class="form-control input-sm" placeholder="Name/Attn" value="<?php echo h($filters['name'] ?? ''); ?>" style="margin-right:6px;margin-bottom:6px;">
+					<input type="text" name="email" class="form-control input-sm" placeholder="Email" value="<?php echo h($filters['email'] ?? ''); ?>" style="margin-right:6px;margin-bottom:6px;">
+					<input type="text" name="company" class="form-control input-sm" placeholder="Company" value="<?php echo h($filters['company'] ?? ''); ?>" style="margin-right:6px;margin-bottom:6px;">
+					<input type="text" name="specification" class="form-control input-sm" placeholder="Specification" value="<?php echo h($filters['specification'] ?? ''); ?>" style="margin-right:6px;margin-bottom:6px;">
+					<input type="date" name="date_from" class="form-control input-sm" value="<?php echo h($filters['date_from'] ?? ''); ?>" style="margin-right:6px;margin-bottom:6px;">
+					<input type="date" name="date_to" class="form-control input-sm" value="<?php echo h($filters['date_to'] ?? ''); ?>" style="margin-right:6px;margin-bottom:6px;">
+					<button type="submit" class="btn btn-primary btn-xs" style="margin-right:6px;margin-bottom:6px;">Filter</button>
+					<?php echo $this->Html->link('Reset', ['controller' => 'employees', 'action' => 'index'], ['class' => 'btn btn-default btn-xs', 'style' => 'margin-bottom:6px;']); ?>
+				<?php echo $this->Form->end(); ?>
+			</div>
+
 			<!-- Makes the table scrollable if necessary -->
 			<div class="table-responsive">
 				<!-- Main data table -->
@@ -142,9 +156,9 @@
 
 									// Allow edit, send, download if not submitted yet
 									if ($is_review === 0) {
-										echo $this->Html->link('Edit', array('controller' => 'employees', 'action' => 'editsend_v3', $mailerId), array('class' => 'btn btn-mini btn-primary')) . '&nbsp;';
+										echo $this->Html->link('Edit', ['controller' => 'employees', 'action' => 'editsend_v3', $mailerId, '?' => ['page' => (int)$this->request->getQuery('page')]], ['class' => 'btn btn-mini btn-primary']) . '&nbsp;';
 									} else {
-										echo $this->Html->link('Edit', array('controller' => 'employees', 'action' => 'editsend_v3', $mailerId), array('class' => 'btn btn-mini btn-primary')) . '&nbsp;';
+										echo $this->Html->link('Edit', ['controller' => 'employees', 'action' => 'editsend_v3', $mailerId, '?' => ['page' => (int)$this->request->getQuery('page')]], ['class' => 'btn btn-mini btn-primary']) . '&nbsp;';
 
 										// Only allow download once submitted
 										//echo $this->Html->link('Download', SITEURL . 'dompdf/' . $pdffilename, array('class' => 'btn btn-mini btn-info', 'target' => '_blank'));
@@ -164,6 +178,7 @@
 				</table>
 			</div>
 			<div class="text-center" style="margin-top: 10px;">
+				<?php $this->Paginator->options(['url' => array_filter((array)($filters ?? []), function ($v) { return $v !== null && $v !== ''; })]); ?>
 				<ul class="pagination" style="margin:0;">
 					<?php echo $this->Paginator->first('<< First'); ?>
 					<?php echo $this->Paginator->prev('< Prev'); ?>

@@ -24,7 +24,7 @@ if (!empty($user)) {
 	<div class="row">
 		<div class="col-xs-12">
 		
-		<?= $this->Form->create(null) ?>
+		 <form action="" method="post" >
           <div class="box">
 				<div class="box-header">
 					<h3 class="box-title" style="width:100%;">
@@ -204,7 +204,7 @@ if (!empty($user)) {
 				<?php } elseif ($is_access == 0) { ?>
 					<h3> Sorry, you don't have access to this folder. You can request the admin to give you access. <a href="<?php echo SITEURL.'users/access/0'; ?>">Click here</a></h3>
 				<?php } ?>
-				<?= $this->Form->end() ?>
+			</form>
 			
 			
 			<?php if (!$isCpdPresentation && ($is_access == 0)) { ?>

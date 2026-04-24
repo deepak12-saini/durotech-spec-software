@@ -329,6 +329,7 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/mailers/review_edit/:id', ['controller' => 'Mailers', 'action' => 'admin_review_edit'], ['pass' => ['id']]);
     $routes->connect('/admin/mailers/approve/:id', ['controller' => 'Mailers', 'action' => 'admin_approve'], ['pass' => ['id']]);
     $routes->connect('/admin/mailers/list/:id/:newdiv', ['controller' => 'Mailers', 'action' => 'admin_list'], ['pass' => ['id', 'newdiv']]);
+    $routes->connect('/admin/mailers/title_list/:id', ['controller' => 'Mailers', 'action' => 'admin_title_list'], ['pass' => ['id']]);
     $routes->connect('/admin/mailers/spec_index', ['controller' => 'Mailers', 'action' => 'admin_spec_index']);
     $routes->connect('/admin/mailers/emp_spec_index', ['controller' => 'Mailers', 'action' => 'admin_emp_spec_index']);
     $routes->connect('/admin/mailers/specRequest_index', ['controller' => 'Mailers', 'action' => 'admin_specRequest_index']);

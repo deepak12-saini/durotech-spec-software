@@ -205,36 +205,65 @@
 	function commnetdivremove(newdiv){
 		$("#commentdiv_"+newdiv).remove();
 	}
+	var productSuggestMinChars = 3;
+	var productSuggestXhrByKey = {};
+	var lastProductKeywordByKey = {};
+	var productSuggestTimerByKey = {};
+
 	function onkeyups(id,newdiv){
+		var fieldKey = id + '_' + newdiv;
+		var keyword = ($("#pro_"+id+"_"+newdiv).val() || '').trim();
+		if (productSuggestTimerByKey[fieldKey]) {
+			clearTimeout(productSuggestTimerByKey[fieldKey]);
+		}
+		if (keyword.length < productSuggestMinChars) {
+			$("#suggesstion-box_"+id+"_"+newdiv+"").hide().html('');
+			lastProductKeywordByKey[fieldKey] = '';
+			if (productSuggestXhrByKey[fieldKey] && productSuggestXhrByKey[fieldKey].readyState !== 4) {
+				productSuggestXhrByKey[fieldKey].abort();
+			}
+			productSuggestXhrByKey[fieldKey] = null;
+			return;
+		}
 		var csrfToken = $('input[name="_csrfToken"]').val() || '';
 		if (!csrfToken) {
 			var m = document.cookie.match(/(?:^|;\s*)csrfToken=([^;]+)/);
 			csrfToken = m ? decodeURIComponent(m[1]) : '';
 		}
 
-		$.ajax({
-		type: "POST",
-		url: "<?php echo SITEURL.'admin/mailers/list' ?>/"+id+"/"+newdiv,
-		headers: { 'X-CSRF-Token': csrfToken },
-		data:{
-			keyword: $("#pro_"+id+"_"+newdiv).val(),
-			_csrfToken: csrfToken
-		},
-		beforeSend: function(){
-			//$("#search-box").css("background","#FFF url(LoaderIcon.gif) no-repeat 165px");
-		},
-		success: function(data){
-			if(data != ''){
-				$("#suggesstion-box_"+id+"_"+newdiv+"").show();
-				$("#suggesstion-box_"+id+"_"+newdiv+"").html(data);
-				$("#pro_"+id+"_"+newdiv).css("background","#FFF");
-			}else{
-				$("#suggesstion-box_"+id+"_"+newdiv+"").hide();
-				$("#suggesstion-box_"+id+"_"+newdiv+"").html('');
-				$("#pro_"+id+"_"+newdiv).css("background","#FFF");
+		productSuggestTimerByKey[fieldKey] = setTimeout(function() {
+			if (lastProductKeywordByKey[fieldKey] === keyword) {
+				return;
 			}
-		}
-		});
+			lastProductKeywordByKey[fieldKey] = keyword;
+			if (productSuggestXhrByKey[fieldKey] && productSuggestXhrByKey[fieldKey].readyState !== 4) {
+				productSuggestXhrByKey[fieldKey].abort();
+			}
+
+			productSuggestXhrByKey[fieldKey] = $.ajax({
+				type: "POST",
+				url: "<?php echo SITEURL.'admin/mailers/list' ?>/"+id+"/"+newdiv,
+				headers: { 'X-CSRF-Token': csrfToken },
+				data:{
+					keyword: keyword,
+					_csrfToken: csrfToken
+				},
+				beforeSend: function(){
+					//$("#search-box").css("background","#FFF url(LoaderIcon.gif) no-repeat 165px");
+				},
+				success: function(data){
+					if(data != ''){
+						$("#suggesstion-box_"+id+"_"+newdiv+"").show();
+						$("#suggesstion-box_"+id+"_"+newdiv+"").html(data);
+						$("#pro_"+id+"_"+newdiv).css("background","#FFF");
+					}else{
+						$("#suggesstion-box_"+id+"_"+newdiv+"").hide();
+						$("#suggesstion-box_"+id+"_"+newdiv+"").html('');
+						$("#pro_"+id+"_"+newdiv).css("background","#FFF");
+					}
+				}
+			});
+		}, 500);
 	}
 	function selectCountry(product,coverage,coverage_by_pack,Warranty,id,newdiv) {
 		
@@ -303,9 +332,14 @@
 	}
 
 
+	var nextSectionId = 0;
+	function getNextSectionId() {
+		nextSectionId += 1;
+		return nextSectionId;
+	}
+
 	function addnewsection() {
-		var numItems = $('.addsection').length;
-		var newdiv = numItems + 1;
+		var newdiv = getNextSectionId();
 
 		var varhtml = '' +
 			'<div class="form-group addsection" id="section_' + newdiv + '">' +
@@ -363,6 +397,7 @@
 			'</div>';
 
 		$("#addsection").append(varhtml);
+		return newdiv;
 	}
 
 
@@ -374,16 +409,34 @@
 	};
   }
 
+	var titleSuggestMinChars = 3;
+	var titleSuggestXhrById = {};
+	var lastTitleKeywordById = {};
+
 	function fetchTitleSuggestions(id) {
-		const keyword = $("#title_" + id).val();
+		const keyword = ($("#title_" + id).val() || '').trim();
 		
-		if (keyword.length === 0) {
+		if (keyword.length < titleSuggestMinChars) {
 			$("#title-suggestion-box_" + id).hide().html('');
+			lastTitleKeywordById[id] = '';
+			if (titleSuggestXhrById[id] && titleSuggestXhrById[id].readyState !== 4) {
+				titleSuggestXhrById[id].abort();
+			}
+			titleSuggestXhrById[id] = null;
 			return;
 		}
 
-		$.ajax({
-			type: "POST",
+		if (lastTitleKeywordById[id] === keyword) {
+			return;
+		}
+		lastTitleKeywordById[id] = keyword;
+
+		if (titleSuggestXhrById[id] && titleSuggestXhrById[id].readyState !== 4) {
+			titleSuggestXhrById[id].abort();
+		}
+
+		titleSuggestXhrById[id] = $.ajax({
+			type: "GET",
 			url: "<?php echo SITEURL.'admin/mailers/title_list' ?>/" + id,
 			data: { keyword: keyword },
 			success: function(data) {
@@ -398,8 +451,8 @@
 		});
 	}
 
-	// Create a debounced version of the function, with 300ms delay
-	const debouncedFetch = debounce(fetchTitleSuggestions, 300);
+	// Debounce avoids request burst while user is typing.
+	const debouncedFetch = debounce(fetchTitleSuggestions, 500);
 
 	// Change your onTitleSearch to just call the debounced function
 	function onTitleSearch(id) {
@@ -495,8 +548,7 @@
 				sec = draftSections[secIdx];
 				rows = sec.rows || [];
 				if (rows.length === 0) continue;
-				addnewsection();
-				sectionId = $('.addsection').length;
+				sectionId = addnewsection();
 				$('#title_' + sectionId).val(sec.title || '');
 
 				$section = $('#section_' + sectionId);

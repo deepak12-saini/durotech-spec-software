@@ -898,8 +898,8 @@ class UsersController extends AppController
 			$custId = base64_encode(base64_encode($customer_id));
 			$url = SITEURL.'admin/users/accesstouser/'.$custId;
 			
-			// $to = 'kal@durotechindustries.com.au';				
-			$to = 'deepaksaini10036@gmail.com';				
+			$to = 'kal@durotechindustries.com.au';				
+			#$to = 'web@xoroglobal.com';				
 			$subject=SITENAME." :: Request For Price List";				
 			$template_name = 'pricelist';
 			$name =  $user['NappUser']['name'].' '.$user['NappUser']['lname'];
@@ -1519,41 +1519,21 @@ class UsersController extends AppController
 		$user_id = $this->request->getSession()->read('Customer.id');
 		$cpdquestionaceess = $this->request->getSession()->read('cpdquestionaceess');
 
-		// if ($this->request->is('post') && $this->request->getData('otp') !== null && $this->request->getData('otp') !== '') {
-		// 	$uotp = (string)$this->request->getData('otp');
-		// 	$userEntity = $this->NappUser->find()->where(['NappUser.otp' => $uotp, 'NappUser.id' => $user_id])->first();
-
-		// 	if ($userEntity) {
-		// 		$userEntity = $this->NappUser->patchEntity($userEntity, ['otp' => '']);
-		// 		$this->NappUser->save($userEntity);
-		// 		$this->request->getSession()->write('cpdquestionaceess', 2);
-		// 		$this->request->getSession()->delete('opt');
-		// 		$this->Flash->success('Thank for verifying your account.');
-		// 		return $this->redirect(['action' => 'questionlist']);
-		// 	}
-		// 	$this->Flash->error('Wrong otp password. Please try again.');
-		// 	return $this->redirect(['action' => 'questionlist']);
-		// }
-		
 		if ($this->request->is('post') && $this->request->getData('otp') !== null && $this->request->getData('otp') !== '') {
-		
 			$uotp = (string)$this->request->getData('otp');
-		
-			// ✅ STATIC OTP FOR TESTING
-			$validOtp = '1234';
-		
-			if ($uotp === $validOtp) {
-		
+			$userEntity = $this->NappUser->find()->where(['NappUser.otp' => $uotp, 'NappUser.id' => $user_id])->first();
+
+			if ($userEntity) {
+				$userEntity = $this->NappUser->patchEntity($userEntity, ['otp' => '']);
+				$this->NappUser->save($userEntity);
 				$this->request->getSession()->write('cpdquestionaceess', 2);
-				$this->Flash->success('OTP verified successfully (static test OTP).');
-		
+				$this->request->getSession()->delete('opt');
+				$this->Flash->success('Thank for verifying your account.');
 				return $this->redirect(['action' => 'questionlist']);
 			}
-		
-			$this->Flash->error('Wrong OTP. Please try again (use 1234).');
+			$this->Flash->error('Wrong otp password. Please try again.');
 			return $this->redirect(['action' => 'questionlist']);
 		}
-
 		if (!empty($cpdquestionaceess)) {
 			$this->set('is_access', $cpdquestionaceess);
 		} elseif (empty($cpdquestionaceess) && !empty($type) && $user_id) {
