@@ -663,7 +663,7 @@ class MailersController extends AppController
 
 						$emailObj->setTo('kal@durotechindustries.com.au')
 							->setCc(['info@durotechindustries.com.au'])
-							->setBcc(['deepaksaini10036@gmail.com']);
+							->setBcc(['sales@durotechindustries.com.au']);
 						// $emailObj->setTo('deepaksaini10036@gmail.com');
 
 						$emailObj->setSubject(

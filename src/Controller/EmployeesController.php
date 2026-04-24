@@ -560,7 +560,7 @@ public function employee_send_v3() {
 
 					$email->setTo('kal@durotechindustries.com.au')
 							->setCc('info@durotechindustries.com.au')
-							->setBcc('deepaksaini10036@gmail.com');
+							->setBcc('sales@durotechindustries.com.au');
 
                     $email->setSubject(
                         'New Spec Created – ' . $inserty['Mailer']['tracknumber']
