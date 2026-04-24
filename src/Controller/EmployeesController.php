@@ -558,9 +558,9 @@ public function employee_send_v3() {
 
                     $emailConfig = Configure::read('SpecEmail');
 
-					$email->setTo($emailConfig['to'])
-							->setCc($emailConfig['cc'])
-							->setBcc($emailConfig['bcc']);
+					$email->setTo('kal@durotechindustries.com.au')
+							->setCc('info@durotechindustries.com.au')
+							->setBcc('deepaksaini10036@gmail.com');
 
                     $email->setSubject(
                         'New Spec Created – ' . $inserty['Mailer']['tracknumber']
@@ -1082,7 +1082,7 @@ public function editsend_v3($id = null) {
                 ]);
 
                 // Recipient: Kal or others if needed
-                $email->setTo('Kal@durotechindustries.com.au');
+                $email->setTo('kal@durotechindustries.com.au');
 
                 $email->setSubject('Specification Edited – ' . $inserty['Mailer']['tracknumber']);
                 $email->setEmailFormat('html');
