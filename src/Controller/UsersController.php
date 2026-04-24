@@ -898,8 +898,8 @@ class UsersController extends AppController
 			$custId = base64_encode(base64_encode($customer_id));
 			$url = SITEURL.'admin/users/accesstouser/'.$custId;
 			
-			$to = 'kal@durotechindustries.com.au';				
-			#$to = 'web@xoroglobal.com';				
+			// $to = 'kal@durotechindustries.com.au';				
+			$to = 'deepaksaini10036@gmail.com';				
 			$subject=SITENAME." :: Request For Price List";				
 			$template_name = 'pricelist';
 			$name =  $user['NappUser']['name'].' '.$user['NappUser']['lname'];

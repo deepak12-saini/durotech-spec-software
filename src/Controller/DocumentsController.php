@@ -549,6 +549,48 @@ class DocumentsController extends AppController
 		$this->set('DocumentLibraryArr', $DocumentLibraryArr);
 	}
 
+	public function receivingInsepction()
+	{
+		return $this->staff_receiving_insepction();
+	}
+
+	function staff_receiving_insepction()
+	{
+		$this->viewBuilder()->setLayout('staff_inner_layout'); // ✅ staff layout
+		$this->set('title_for_layout', SITENAME . ' Receiving and Insepction List');
+		$this->checkSatffSession(); // ✅ staff session check
+
+		$query = $this->DocumentReceiveInspection->find()
+			->contain([
+				'NappUser' => function($q) {
+					return $q->select(['id', 'name', 'lname']);
+				}
+			])
+			->orderDesc('DocumentReceiveInspection.id');
+
+		$DocumentLibraryArr = $this->paginate($query, ['limit' => 10]);
+
+		// Convert entities to array format
+		$DocumentLibraryArrArray = [];
+		foreach ($DocumentLibraryArr as $doc) {
+			$docData = $doc->toArray();
+
+			$result = ['DocumentReceiveInspection' => $docData];
+
+			if (isset($docData['napp_user']) && is_array($docData['napp_user'])) {
+				$result['NappUser'] = $docData['napp_user'];
+			} elseif (isset($doc->napp_user) && $doc->napp_user) {
+				$result['NappUser'] = $doc->napp_user->toArray();
+			} else {
+				$result['NappUser'] = ['id' => null, 'name' => '', 'lname' => ''];
+			}
+
+			$DocumentLibraryArrArray[] = $result;
+		}
+
+		$this->set('DocumentLibraryArr', $DocumentLibraryArrArray);
+	}
+
 	/**
 	 * CamelCase wrapper for admin_receiving_insepction
 	 */
@@ -592,6 +634,8 @@ class DocumentsController extends AppController
 
 		$this->set('DocumentLibraryArr', $DocumentLibraryArr);
 	}
+
+
 
 	/**
 	 * CamelCase wrapper for admin_preventive_maintenance

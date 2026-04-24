@@ -431,4 +431,10 @@ return [
         'twitter' => env('SITE_TWITTER', 'https://twitter.com/durotech'),
         'googlePlus' => env('SITE_GOOGLE_PLUS', 'https://plus.google.com/durotech'),
     ],
+
+    'SpecEmail' => [
+        'to' => ['kal@durotechindustries.com.au'],
+        'cc' => ['info@durotechindustries.com.au'],
+        'bcc' => ['sales@durotechindustries.com.au'],
+     ],
 ];
