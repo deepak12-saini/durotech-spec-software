@@ -272,6 +272,11 @@ class MailersController extends AppController
 			$seen = [];
 			foreach ($results as $row) {
 				$product = $row->product ?? '';
+				// Product-specific default override requested by business.
+				if (strcasecmp(trim((string)$product), 'WBE Hi-Build Epoxy') === 0) {
+					$row->coverage_by_pack = 'SC';
+					$row->Warranty = '10 years';
+				}
 				$normalized = strtolower(trim(preg_replace('/\(.+\)/', '', $product)));
 				if (!in_array($normalized, $seen)) {
 					$seen[] = $normalized;
