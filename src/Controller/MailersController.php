@@ -321,7 +321,46 @@ class MailersController extends AppController
 			->contain(['User' => function ($q) { return $q->select(['name', 'username']); }, 'NappUser' => function ($q) { return $q->select(['name', 'lname']); }])
 			->where(['Mailer.spec_v' => 0, 'Mailer.admin_id' => $user_id])
 			->orderDesc('Mailer.id')
-			->all();
+			;
+		$filters = [
+			'tracknumber' => trim((string)$this->request->getQuery('tracknumber')),
+			'name' => trim((string)$this->request->getQuery('name')),
+			'email' => trim((string)$this->request->getQuery('email')),
+			'company' => trim((string)$this->request->getQuery('company')),
+			'specification' => trim((string)$this->request->getQuery('specification')),
+			'date_from' => trim((string)$this->request->getQuery('date_from')),
+			'date_to' => trim((string)$this->request->getQuery('date_to')),
+		];
+		if ($filters['tracknumber'] !== '') {
+			$results->andWhere(['Mailer.tracknumber LIKE' => '%' . $filters['tracknumber'] . '%']);
+		}
+		if ($filters['name'] !== '') {
+			$results->andWhere(['Mailer.name LIKE' => '%' . $filters['name'] . '%']);
+		}
+		if ($filters['email'] !== '') {
+			$results->andWhere(['Mailer.email LIKE' => '%' . $filters['email'] . '%']);
+		}
+		if ($filters['company'] !== '') {
+			$results->andWhere(['Mailer.company LIKE' => '%' . $filters['company'] . '%']);
+		}
+		if ($filters['specification'] !== '') {
+			$results->andWhere(['Mailer.specification LIKE' => '%' . $filters['specification'] . '%']);
+		}
+		if ($filters['date_from'] !== '') {
+			$results->andWhere(['Mailer.date >=' => $filters['date_from']]);
+		}
+		if ($filters['date_to'] !== '') {
+			$results->andWhere(['Mailer.date <=' => $filters['date_to']]);
+		}
+		if ($this->Mailer->getSchema()->getColumn('save_status')) {
+			$results->andWhere([
+				'OR' => [
+					['Mailer.save_status IS' => null],
+					['Mailer.save_status !=' => 'draft'],
+				],
+			]);
+		}
+		$results = $results->all();
 
 		$mailers = [];
 		foreach ($results as $row) {
@@ -331,7 +370,15 @@ class MailersController extends AppController
 				'NappUser' => $row->napp_user ? $row->napp_user->toArray() : [],
 			];
 		}
-		$this->set('mailers', $mailers);
+		$hasDraft = false;
+		if ($this->Mailer->getSchema()->getColumn('save_status')) {
+			$hasDraft = $this->Mailer->exists([
+				'Mailer.admin_id' => $user_id,
+				'Mailer.type' => 3,
+				'Mailer.save_status' => 'draft',
+			]);
+		}
+		$this->set(compact('mailers', 'hasDraft', 'filters'));
 		return null;
 	}
 
@@ -459,7 +506,9 @@ class MailersController extends AppController
 		$this->set('title_for_layout',SITENAME.' DuroEzy Specification Mailer');
 		$this->checkAdminSession(); 
 		$user_id=$this->request->getSession()->read('User.id');
+		$hasSaveStatusColumn = $this->Mailer->getSchema()->getColumn('save_status');
 		if (!empty($this->request->getData())) {
+			$draftIdFromForm = (int)$this->request->getData('draft_id');
 			
 			//new_code deepak
 
@@ -509,11 +558,48 @@ class MailersController extends AppController
 				'spec_v' => 1,
 				'created' => date('Y-m-d H:i:s'),
 			];
+			if ($hasSaveStatusColumn) {
+				$mailerData['save_status'] = 'submitted';
+			}
 			if ($pdfAttachment !== '') {
 				$mailerData['pdf_attachment'] = $pdfAttachment;
 			}
-			
-			$mailerEntity = $this->Mailer->newEntity($mailerData);
+
+			if ($hasSaveStatusColumn && $draftIdFromForm > 0) {
+				$existingDraft = $this->Mailer->find()
+					->where([
+						'Mailer.id' => $draftIdFromForm,
+						'Mailer.admin_id' => $user_id,
+						'Mailer.save_status' => 'draft',
+					])
+					->first();
+				if ($existingDraft) {
+					$mailerEntity = $this->Mailer->patchEntity($existingDraft, $mailerData);
+				} else {
+					$mailerEntity = $this->Mailer->newEntity($mailerData);
+				}
+			} else {
+				// Keep one active admin draft only; remove stale draft when submitting new one.
+				if ($hasSaveStatusColumn) {
+					$oldDraftIds = $this->Mailer->find()
+						->select(['id'])
+						->where([
+							'Mailer.admin_id' => $user_id,
+							'Mailer.type' => 3,
+							'Mailer.save_status' => 'draft',
+						])
+						->enableHydration(false)
+						->all()
+						->extract('id')
+						->toArray();
+					if (!empty($oldDraftIds)) {
+						$this->MailerComment->deleteAll(['mailer_id IN' => $oldDraftIds]);
+						$this->SpecUsearea->deleteAll(['mailer_id IN' => $oldDraftIds]);
+						$this->Mailer->deleteAll(['id IN' => $oldDraftIds]);
+					}
+				}
+				$mailerEntity = $this->Mailer->newEntity($mailerData);
+			}
 			if ($this->Mailer->save($mailerEntity)) {
 				$lastinsertId = $mailerEntity->id;
 				
@@ -598,11 +684,134 @@ class MailersController extends AppController
 				$this->Mailer->save($mailerEntity);
 				
 				$this->Flash->success('Spec saved successfully.');
-				return $this->redirect(\Cake\Routing\Router::url('/admin/mailers/emp_spec_index'));
+				return $this->redirect(\Cake\Routing\Router::url('/mailers/index_v3'));
 			}
 		}
 		$refernce = $this->Mailer->getNextSpecTrackNumber();
-		$this->set('refernce', $refernce);
+		$draft = null;
+		$draftId = null;
+		$resumeDraft = $this->request->getQuery('resume') && $hasSaveStatusColumn;
+		if ($resumeDraft) {
+			$draft = $this->Mailer->find()
+				->where([
+					'Mailer.admin_id' => $user_id,
+					'Mailer.type' => 3,
+					'Mailer.save_status' => 'draft',
+				])
+				->orderDesc('Mailer.id')
+				->first();
+			if ($draft) {
+				$draftId = (int)$draft->id;
+				$draft->comments = $this->MailerComment->find()->where(['mailer_id' => $draftId])->all();
+				$draft->spec_useareas = $this->SpecUsearea->find()->where(['mailer_id' => $draftId])->orderAsc('id')->all();
+			}
+		}
+		$this->set(compact('refernce', 'draft', 'draftId'));
+	}
+
+	/** AJAX autosave for admin spec v3 draft. */
+	public function admin_specDraftAutosaveV3(): ?Response
+	{
+		$this->request->allowMethod(['post']);
+		$this->viewBuilder()->setLayout(false);
+		$this->autoRender = false;
+		$this->checkAdminSession();
+
+		$user_id = (int)$this->request->getSession()->read('User.id');
+		$hasSaveStatusColumn = $this->Mailer->getSchema()->getColumn('save_status');
+		if (!$hasSaveStatusColumn) {
+			$this->response = $this->response->withType('application/json')
+				->withStringBody(json_encode(['success' => false, 'error' => 'Draft not configured.']));
+			return $this->response;
+		}
+
+		$data = (array)$this->request->getData();
+		$draftIdFromForm = isset($data['draft_id']) ? (int)$data['draft_id'] : 0;
+		$exp = explode('/', (string)($data['date'] ?? date('d/m/Y')));
+		$date = (count($exp) === 3) ? ($exp[2] . '-' . $exp[1] . '-' . $exp[0]) : date('Y-m-d');
+		$use_area = isset($data['use_area']) ? (int)$data['use_area'] : 1;
+
+		$entity = null;
+		if ($draftIdFromForm > 0) {
+			$entity = $this->Mailer->find()
+				->where([
+					'Mailer.id' => $draftIdFromForm,
+					'Mailer.admin_id' => $user_id,
+					'Mailer.save_status' => 'draft',
+				])
+				->first();
+		}
+		if (!$entity) {
+			$entity = $this->Mailer->newEntity([
+				'admin_id' => $user_id,
+				'type' => 3,
+				'spec_v' => 1,
+				'save_status' => 'draft',
+				'created' => date('Y-m-d H:i:s'),
+			]);
+		}
+
+		$entity = $this->Mailer->patchEntity($entity, [
+			'name' => (string)($data['name'] ?? ''),
+			'tracknumber' => '',
+			'address' => (string)($data['address'] ?? ''),
+			'specification' => (string)($data['specification'] ?? ''),
+			'date' => $date,
+			'email' => (string)($data['email'] ?? ''),
+			'company' => (string)($data['company'] ?? ''),
+			'type' => (int)($data['type'] ?? 3),
+			'subject' => (string)($data['subject'] ?? ''),
+			'use_area' => $use_area,
+			'spec_v' => 1,
+			'save_status' => 'draft',
+		]);
+
+		if (!$this->Mailer->save($entity)) {
+			$this->response = $this->response->withType('application/json')
+				->withStringBody(json_encode(['success' => false, 'error' => 'Save failed.']));
+			return $this->response;
+		}
+
+		$draftId = (int)$entity->id;
+		$this->MailerComment->deleteAll(['mailer_id' => $draftId]);
+		$this->SpecUsearea->deleteAll(['mailer_id' => $draftId]);
+
+		if (!empty($data['comment']) && is_array($data['comment'])) {
+			foreach ($data['comment'] as $comment) {
+				$this->MailerComment->save($this->MailerComment->newEntity([
+					'mailer_id' => $draftId,
+					'use_area' => 1,
+					'comment' => (string)$comment,
+				]));
+			}
+		}
+		if (!empty($data['product']) && is_array($data['product'])) {
+			foreach ($data['product'] as $key => $prodt) {
+				$typesKey = $data['types'][$key] ?? null;
+				$title = isset($data['title'][$typesKey]) ? $data['title'][$typesKey] : '';
+				$this->SpecUsearea->save($this->SpecUsearea->newEntity([
+					'mailer_id' => $draftId,
+					'use_area' => 1,
+					'title' => $title,
+					'product' => $prodt,
+					'types' => $data['types'][$key] ?? '',
+					'serial' => $data['serial'][$key] ?? '',
+					'coverage' => $data['coverage'][$key] ?? '',
+					'Warranty' => $data['Warranty'][$key] ?? '',
+					'coverage_by_pack' => $data['coverage_by_pack'][$key] ?? '',
+				]));
+			}
+		}
+
+		$this->response = $this->response->withType('application/json')
+			->withStringBody(json_encode(['success' => true, 'draft_id' => $draftId]));
+		return $this->response;
+	}
+
+	/** CamelCase alias for dispatcher compatibility. */
+	public function adminSpecDraftAutosaveV3(): ?Response
+	{
+		return $this->admin_specDraftAutosaveV3();
 	}
 
 	/** CamelCase alias for route /admin/mailers/send (dispatcher may expect adminSend) */
@@ -1999,8 +2208,10 @@ class MailersController extends AppController
 		$this->set('title_for_layout',SITENAME.' DuroEzy Specification Mailer');
 		$this->checkAdminSession(); 
 		$user_id=$this->request->getSession()->read('User.id');
+		$returnPage = (int)$this->request->getQuery('page');
 		if (!empty($this->request->getData())) 
 		{
+			$returnPage = isset($this->request->getData()['return_page']) ? (int)$this->request->getData()['return_page'] : $returnPage;
 					
 			// pr($this->request->getData());
 			// die();
@@ -2079,7 +2290,7 @@ class MailersController extends AppController
                 $inserty['Mailer']['pdf_attachment'] = 'uploads/datasheets/' . $filename;
             } else {
                 $this->Flash->error('Failed to upload file.');
-                return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index_v3'], true));
+                return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index_v3', '?' => ['page' => max(1, $returnPage)]], true));
             }
         }
 			
@@ -2178,7 +2389,7 @@ class MailersController extends AppController
 				//$result = file_get_contents($url);
 				
 				$this->Flash->success('PDF file updated successfully.');
-				return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index_v3'], true));
+				return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index_v3', '?' => ['page' => max(1, $returnPage)]], true));
 			}
 		}		
 		
@@ -2218,6 +2429,7 @@ class MailersController extends AppController
 		$this->set('product', $product);
 		$this->set('refernce', $refernce);
 		$this->set('MailerArr', $MailerArr);
+		$this->set('returnPage', max(1, $returnPage));
 	}
 
 

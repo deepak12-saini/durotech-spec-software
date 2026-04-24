@@ -319,6 +319,7 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/mailers/eoisend', ['controller' => 'Mailers', 'action' => 'eoisend']);
     $routes->connect('/admin/mailers/index_v3', ['controller' => 'Mailers', 'action' => 'admin_index_v3']);
     $routes->connect('/admin/mailers/send_v3', ['controller' => 'Mailers', 'action' => 'admin_send_v3']);
+    $routes->connect('/admin/mailers/spec-draft-autosave-v3', ['controller' => 'Mailers', 'action' => 'admin_specDraftAutosaveV3']);
     $routes->connect('/admin/mailers/editsend_v3/:id', ['controller' => 'Mailers', 'action' => 'admin_editsend_v3'], ['pass' => ['id']]);
     $routes->connect('/admin/mailers/send', ['controller' => 'Mailers', 'action' => 'admin_send']);
     $routes->connect('/admin/mailers/create_dwps', ['controller' => 'Mailers', 'action' => 'admin_create_dwps']);

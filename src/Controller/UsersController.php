@@ -753,6 +753,12 @@ class UsersController extends AppController
 		return $this->admin_staff();
 	}
 
+	/** CamelCase alias for legacy /users/staff calls. */
+	public function staff()
+	{
+		return $this->admin_staff();
+	}
+
 	function admin_staff()
 	{
 		$this->viewBuilder()->setLayout('admin_layout');

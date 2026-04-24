@@ -16,6 +16,7 @@
 	<div class="row">
 		<div class="col-xs-12">
 		<?php echo $this->Form->create('Mailer',array('class'=>'form-horizontal','enctype'=>'multipart/form-data')); ?>
+		<input type="hidden" name="return_page" value="<?php echo isset($returnPage) ? (int)$returnPage : 1; ?>">
 		
 			<div class="form-group">
 				<label for="form-field-2" class="col-sm-3 control-label no-padding-right"> Is Create New One: </label>

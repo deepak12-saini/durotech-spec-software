@@ -839,6 +839,12 @@ class DocumentsController extends AppController
 		$this->set('DocumentLibraryArr', $DocumentLibraryArr);
 	}
 
+	/** CamelCase alias for staff/public route compatibility. */
+	public function preventiveMaintenance()
+	{
+		return $this->preventive_maintenance();
+	}
+
 	function add_preventive_maintenance()
 	{
 		$this->viewBuilder()->setLayout('staff_inner_layout');
@@ -1002,6 +1008,12 @@ class DocumentsController extends AppController
 		$DocumentLibraryArr = $DocumentLibraryArrArray;
 
 		$this->set('DocumentLibraryArr', $DocumentLibraryArr);
+	}
+
+	/** CamelCase alias for staff/public route compatibility. */
+	public function executiveDutyRequisition()
+	{
+		return $this->executive_duty_requisition();
 	}
 
 	function add_executive_duty()

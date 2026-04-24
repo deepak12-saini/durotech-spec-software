@@ -38,7 +38,46 @@
 	
 	<div class="row">
 		<div class="col-xs-12">
-		<?php echo $this->Form->create('Mailer',array('class'=>'form-horizontal','enctype'=>'multipart/form-data')); ?>
+		<?php
+		$draftIdVal = isset($draftId) ? (int)$draftId : 0;
+		$draftName = isset($draft) ? h($draft->name) : '';
+		$draftCompany = isset($draft) ? h($draft->company) : '';
+		$draftAddress = isset($draft) ? h($draft->address) : '';
+		$draftSpec = isset($draft) ? h($draft->specification) : '';
+		$draftEmail = isset($draft) ? h($draft->email) : '';
+		$draftDate = isset($draft) && $draft->date ? format_db_date('d/m/Y', $draft->date) : date('d/m/Y');
+		$draftType = isset($draft) ? (string)$draft->type : '3';
+		$draftSubject = isset($draft) ? h($draft->subject) : 'Durotech: External Liquid WPM';
+		$draftSectionsJson = '[]';
+		$draftCommentsJson = '[]';
+		if (!empty($draft) && isset($draft->spec_useareas)) {
+			$bySection = [];
+			foreach ($draft->spec_useareas as $row) {
+				$tid = (int)$row->types;
+				if (!isset($bySection[$tid])) $bySection[$tid] = ['title' => $row->title ?? '', 'rows' => []];
+				$bySection[$tid]['rows'][] = [
+					'serial' => $row->serial ?? '',
+					'coverage' => $row->coverage ?? '',
+					'product' => $row->product ?? '',
+					'coverage_by_pack' => $row->coverage_by_pack ?? '',
+					'Warranty' => $row->Warranty ?? '',
+				];
+			}
+			$draftSectionsJson = json_encode(array_values($bySection));
+		}
+		if (!empty($draft) && isset($draft->comments)) {
+			$draftCommentsJson = json_encode(array_map(function ($c) { return $c->comment ?? ''; }, $draft->comments->toArray()));
+		}
+		?>
+		<?php echo $this->Form->create('Mailer',array('class'=>'form-horizontal','enctype'=>'multipart/form-data','id'=>'specForm')); ?>
+		<input type="hidden" name="draft_id" id="draft_id" value="<?php echo $draftIdVal; ?>">
+		<div id="spec-draft-status" class="alert alert-info" style="margin-top:10px;margin-bottom:10px;">
+			<strong>Status:</strong> <span id="spec-status-text"><?php echo !empty($draftId) ? 'Draft (restored)' : 'New'; ?></span>
+			<span id="spec-last-saved" style="margin-left:15px;"></span>
+			<?php if (!empty($draftId)): ?>
+				<span style="margin-left:15px;"><?php echo $this->Html->link('Start New Spec (discard this draft)', ['controller' => 'mailers', 'action' => 'admin_send_v3'], ['class' => 'btn btn-default btn-xs']); ?></span>
+			<?php endif; ?>
+		</div>
 		
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Track Number:</label>
@@ -50,38 +89,38 @@
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Name/Attn:</label>
 				<div class="col-sm-9">
-					<input type="text" name="name" value="" id="name" class = "col-xs-10 col-sm-8">
+					<input type="text" name="name" value="<?php echo $draftName; ?>" id="name" class = "col-xs-10 col-sm-8">
 				</div>
 			</div>	
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Company:</label>
 				<div class="col-sm-9">
-					<input type="text" name="company" value=""  class = "col-xs-10 col-sm-8">
+					<input type="text" name="company" value="<?php echo $draftCompany; ?>"  class = "col-xs-10 col-sm-8">
 				</div>
 			</div>
 			
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Address:</label>
 				<div class="col-sm-9">
-					<input type="text" name="address" value=""  class = "col-xs-10 col-sm-8">
+					<input type="text" name="address" value="<?php echo $draftAddress; ?>"  class = "col-xs-10 col-sm-8">
 				</div>
 			</div>
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Specification:</label>
 				<div class="col-sm-9">
-					<input type="text" name="specification" value=""  class = "col-xs-10 col-sm-8">
+					<input type="text" name="specification" value="<?php echo $draftSpec; ?>"  class = "col-xs-10 col-sm-8">
 				</div>
 			</div>
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Email:</label>
 				<div class="col-sm-9">
-					<input type="text" name="email" value="" id="email"  class = "col-xs-10 col-sm-8">
+					<input type="text" name="email" value="<?php echo $draftEmail; ?>" id="email"  class = "col-xs-10 col-sm-8">
 				</div>
 			</div>
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Date:</label>
 				<div class="col-sm-9">
-					<input type="text" name="date" value="<?php echo date('d/m/Y');?>" id="date"  class = "datepicker col-xs-10 col-sm-8">
+					<input type="text" name="date" value="<?php echo $draftDate; ?>" id="date"  class = "datepicker col-xs-10 col-sm-8">
 				</div>
 			</div>
 			<div class="form-group">
@@ -91,14 +130,14 @@
 						<!-- <option value="">Select Client Requested</option> -->
 						<!--option value="1">INSTALLATION OF DUROMASTIC P-15 WATERPROOFING MEMBRANE</option>
 						<option value="2">Waterproofing Specification – Wet area shower</option-->
-						<option value="3">External Liquid WPM</option> 
+						<option value="3"<?php echo $draftType === '3' ? ' selected' : ''; ?>>External Liquid WPM</option> 
 					</select>
 				</div>
 			</div>
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Subject:</label>
 				<div class="col-sm-9">
-					<input type="text" name="subject" value="Durotech: External Liquid WPM" id="subject" class = "col-xs-10 col-sm-8">
+					<input type="text" name="subject" value="<?php echo $draftSubject; ?>" id="subject" class = "col-xs-10 col-sm-8">
 				</div>
 			</div>
 			<div class="form-group">
@@ -166,7 +205,7 @@
 			
 			<div class="form-group">
 				<div class="col-md-offset-3 col-md-9">
-					<?php echo $this->Form->submit('Submit',array('div'=>false,'label'=>false, 'class' => 'btn btn-mini  btn-success','id'=>'add_ser_prd_btn','value'=>'Submit'));?>&nbsp;
+					<button type="submit" name="submit_spec" value="1" class="btn btn-mini btn-success" id="add_ser_prd_btn">Submit / Publish</button>&nbsp;
 				
 				</div>
 			</div>
@@ -430,6 +469,114 @@
 	function selectTitle(title, id) {
 		$("#title_" + id).val(title);
 		$("#title-suggestion-box_" + id).hide().html('');
+	}
+
+	// Draft auto-save every 45 seconds
+	var specAutosaveInterval = 45000;
+	var specAutosaveTimer = null;
+
+	function specCollectFormData() {
+		var form = document.getElementById('specForm');
+		if (!form) return null;
+		var fd = new FormData(form);
+		fd.append('submit_spec', '0');
+		return fd;
+	}
+
+	function specHasData() {
+		return (
+			$('#name').val().trim() !== '' ||
+			$('input[name="company"]').val().trim() !== '' ||
+			$('input[name="address"]').val().trim() !== '' ||
+			$('input[name="specification"]').val().trim() !== '' ||
+			$('#email').val().trim() !== ''
+		);
+	}
+
+	function specDoAutosave() {
+		if (!specHasData()) return;
+		var fd = specCollectFormData();
+		if (!fd) return;
+		$.ajax({
+			type: 'POST',
+			url: '<?php echo SITEURL; ?>admin/mailers/spec-draft-autosave-v3',
+			data: fd,
+			processData: false,
+			contentType: false,
+			dataType: 'json',
+			success: function(res) {
+				if (res && res.success) {
+					if (res.draft_id) {
+						$('#draft_id').val(res.draft_id);
+						$('#spec-status-text').text('Draft');
+					}
+					var now = new Date();
+					var timeStr = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
+					$('#spec-last-saved').text('Last saved at ' + timeStr).css('color', '#333');
+				}
+			},
+			error: function() {
+				$('#spec-last-saved').text('(Save failed)').css('color', '#c00');
+			}
+		});
+	}
+
+	function specStartAutosave() {
+		if (specAutosaveTimer) clearInterval(specAutosaveTimer);
+		specAutosaveTimer = setInterval(specDoAutosave, specAutosaveInterval);
+	}
+
+	jQuery(function() {
+		specStartAutosave();
+		$('#specForm').on('submit', function() {
+			var $btn = $('#add_ser_prd_btn');
+			if ($btn.length) {
+				$btn.prop('disabled', true).html('Submitting...');
+			}
+		});
+	});
+
+	// Restore draft product sections
+	var draftSections = <?php echo $draftSectionsJson; ?>;
+	if (draftSections && draftSections.length > 0) {
+		jQuery(function() {
+			var secIdx, rowIdx, sec, rows, sectionId;
+			for (secIdx = 0; secIdx < draftSections.length; secIdx++) {
+				sec = draftSections[secIdx];
+				rows = sec.rows || [];
+				if (rows.length === 0) continue;
+				addnewsection();
+				sectionId = $('.addsection').length;
+				$('#title_' + sectionId).val(sec.title || '');
+				$('#section_' + sectionId).find('input[name="serial[]"]').first().val(rows[0].serial || sectionId);
+				$('#coverage_' + sectionId + '_0').val(rows[0].coverage || '');
+				$('#pro_' + sectionId + '_0').val(rows[0].product || '');
+				$('#coverage_by_pack_' + sectionId + '_0').val(rows[0].coverage_by_pack || '');
+				$('#warranty_' + sectionId + '_0').val(rows[0].Warranty || '');
+
+				for (rowIdx = 1; rowIdx < rows.length; rowIdx++) {
+					addmore(sectionId);
+					$('#section_' + sectionId).find('input[name="serial[]"]').last().val(rows[rowIdx].serial || (sectionId + '.' + rowIdx));
+					$('#coverage_' + sectionId + '_' + rowIdx).val(rows[rowIdx].coverage || '');
+					$('#pro_' + sectionId + '_' + rowIdx).val(rows[rowIdx].product || '');
+					$('#coverage_by_pack_' + sectionId + '_' + rowIdx).val(rows[rowIdx].coverage_by_pack || '');
+					$('#warranty_' + sectionId + '_' + rowIdx).val(rows[rowIdx].Warranty || '');
+				}
+			}
+		});
+	}
+
+	// Restore draft comments
+	var draftComments = <?php echo $draftCommentsJson; ?>;
+	if (draftComments && draftComments.length > 0) {
+		jQuery(function() {
+			var i;
+			$('.commentdiv input[name="comment[]"]').eq(0).val(draftComments[0] || '');
+			for (i = 1; i < draftComments.length; i++) {
+				addmorecomment();
+				$('.commentdiv input[name="comment[]"]').eq(i).val(draftComments[i] || '');
+			}
+		});
 	}
 
 

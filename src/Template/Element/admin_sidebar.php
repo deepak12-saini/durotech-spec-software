@@ -214,7 +214,7 @@
 					<li class="<?php if ($reqController=='mailers' && $reqAction=='admin_index_v3') {echo 'active';}?>">
 						<a href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_index_v3']); ?>">
 							<i class="menu-icon fa fa-image "></i>
-							<span class="menu-text">DuroEzy Spec v3</span></b>
+							<span class="menu-text">DuroEzy Spec v3 <span class="label label-warning" style="margin-left:6px;">New</span></span></b>
 						</a>
 					</li>
 

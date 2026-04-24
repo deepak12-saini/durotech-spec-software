@@ -9,12 +9,28 @@
 		<h1>DuroEzy Specification v3
 			<!-- Link to create a new spec (calls send action in MailersController) -->
 			<?php echo $this->Html->link('Create New Spec', '/admin/mailers/send_v3', ['class' => 'btn btn-info btn-xs top-button']); ?>
+			<?php if (!empty($hasDraft)): ?>
+				<?php echo $this->Html->link('Resume Draft', ['controller' => 'Mailers', 'action' => 'admin_send_v3', '?' => ['resume' => '1']], ['class' => 'btn btn-warning btn-xs top-button']); ?>
+			<?php endif; ?>
 		</h1>
 	</div>
 
 	<!-- Main content row -->
 	<div class="row">
 		<div class="col-xs-12">
+			<div class="well well-sm" style="margin-bottom:12px;">
+				<?php echo $this->Form->create(null, ['type' => 'get', 'class' => 'form-inline']); ?>
+					<input type="text" name="tracknumber" class="form-control input-sm" placeholder="Track Number" value="<?php echo h($filters['tracknumber'] ?? ''); ?>" style="margin-right:6px;margin-bottom:6px;">
+					<input type="text" name="name" class="form-control input-sm" placeholder="Name/Attn" value="<?php echo h($filters['name'] ?? ''); ?>" style="margin-right:6px;margin-bottom:6px;">
+					<input type="text" name="email" class="form-control input-sm" placeholder="Email" value="<?php echo h($filters['email'] ?? ''); ?>" style="margin-right:6px;margin-bottom:6px;">
+					<input type="text" name="company" class="form-control input-sm" placeholder="Company" value="<?php echo h($filters['company'] ?? ''); ?>" style="margin-right:6px;margin-bottom:6px;">
+					<input type="text" name="specification" class="form-control input-sm" placeholder="Specification" value="<?php echo h($filters['specification'] ?? ''); ?>" style="margin-right:6px;margin-bottom:6px;">
+					<input type="date" name="date_from" class="form-control input-sm" value="<?php echo h($filters['date_from'] ?? ''); ?>" style="margin-right:6px;margin-bottom:6px;">
+					<input type="date" name="date_to" class="form-control input-sm" value="<?php echo h($filters['date_to'] ?? ''); ?>" style="margin-right:6px;margin-bottom:6px;">
+					<button type="submit" class="btn btn-primary btn-xs" style="margin-right:6px;margin-bottom:6px;">Filter</button>
+					<?php echo $this->Html->link('Reset', ['controller' => 'mailers', 'action' => 'admin_index_v3'], ['class' => 'btn btn-default btn-xs', 'style' => 'margin-bottom:6px;']); ?>
+				<?php echo $this->Form->end(); ?>
+			</div>
 			<!-- Makes the table scrollable if necessary -->
 			<div class="table-responsive">
 				<!-- Main data table -->
@@ -90,7 +106,7 @@
 							<!-- Action buttons -->
 							<td>
 								<!-- Edit spec -->
-								<a class="btn btn-mini btn-primary" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_editsend_v3', $mailer['Mailer']['id']]); ?>">Edit</a>
+								<a class="btn btn-mini btn-primary js-edit-spec" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_editsend_v3', $mailer['Mailer']['id']]); ?>">Edit</a>
 								
 								<!-- Download PDF -->
 								<a class="btn btn-mini btn-info" href="<?php echo h($this->Url->build('/', true) . 'dompdf/' . $pdffilename); ?>" target="_blank">Download</a>
@@ -110,8 +126,26 @@
 <!-- Initialize DataTable (jQuery plugin for searchable/sortable tables) -->
 <script>
 $(document).ready(function() {
-	$('#example').DataTable({
+	var dt = $('#example').DataTable({
 		"order": [[ 1, "desc" ]] // Sort by second column (Send Name) descending
+	});
+
+	// Restore DataTables page from URL query (?page=N).
+	var params = new URLSearchParams(window.location.search || '');
+	var pageParam = parseInt(params.get('page') || '1', 10);
+	if (!isNaN(pageParam) && pageParam > 1) {
+		var targetIndex = pageParam - 1; // DataTables is 0-based
+		if (targetIndex < dt.page.info().pages) {
+			dt.page(targetIndex).draw('page');
+		}
+	}
+
+	// Preserve current DataTables page while opening edit.
+	$(document).on('click', 'a.js-edit-spec', function() {
+		var currentPage = (dt.page.info().page || 0) + 1; // 1-based for URL
+		var href = ($(this).attr('href') || '').split('?')[0];
+		if (!href) return;
+		$(this).attr('href', href + '?page=' + currentPage);
 	});
 });
 </script>
