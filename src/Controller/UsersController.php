@@ -1536,8 +1536,7 @@ class UsersController extends AppController
 		// }
 		
 		if ($this->request->is('post') && $this->request->getData('otp') !== null && $this->request->getData('otp') !== '') {
-			debug($this->request->getData());
-			exit;
+		
 			$uotp = (string)$this->request->getData('otp');
 		
 			// ✅ STATIC OTP FOR TESTING
