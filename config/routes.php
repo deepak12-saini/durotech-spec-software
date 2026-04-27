@@ -339,6 +339,13 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/mailers/specRequest_disapproved', ['controller' => 'Mailers', 'action' => 'admin_specRequest_disapproved']);
     $routes->connect('/mailers/download/:id', ['controller' => 'Mailers', 'action' => 'download'], ['pass' => ['id']]);
 
+    // AI Lessons demo (OpenAI script + quiz generation)
+    $routes->connect('/admin/ai_lessons', ['controller' => 'AiLessons', 'action' => 'admin_index']);
+    $routes->connect('/admin/ai_lessons/add', ['controller' => 'AiLessons', 'action' => 'admin_add']);
+    $routes->connect('/admin/ai_lessons/view/:id', ['controller' => 'AiLessons', 'action' => 'admin_view'], ['pass' => ['id']]);
+    $routes->connect('/ai_lessons/view/:id', ['controller' => 'AiLessons', 'action' => 'view'], ['pass' => ['id']]);
+    $routes->connect('/ai_lessons/submit/:id', ['controller' => 'AiLessons', 'action' => 'submit'], ['pass' => ['id']]);
+
     // Admin NATA (avoid "Controller Admin could not be found")
     $routes->connect('/admin/natas', ['controller' => 'Natas', 'action' => 'admin_index']);
     $routes->connect('/admin/natas/index/:nextdate', ['controller' => 'Natas', 'action' => 'admin_index'], ['pass' => ['nextdate']]);

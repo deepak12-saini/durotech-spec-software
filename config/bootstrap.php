@@ -49,13 +49,22 @@ use Cake\Utility\Security;
  * and decreased performance on each request. The purpose of the .env file is to emulate
  * the presence of the environment variables like they would be present in production.
  */
-// if (!env('APP_NAME') && file_exists(CONFIG . '.env')) {
-//     $dotenv = new \josegonzalez\Dotenv\Loader([CONFIG . '.env']);
-//     $dotenv->parse()
-//         ->putenv()
-//         ->toEnv()
-//         ->toServer();
-// }
+if (!env('APP_NAME')) {
+    $dotenvPaths = [];
+    if (file_exists(ROOT . DS . '.env')) {
+        $dotenvPaths[] = ROOT . DS . '.env';
+    }
+    if (file_exists(CONFIG . '.env')) {
+        $dotenvPaths[] = CONFIG . '.env';
+    }
+    if (!empty($dotenvPaths)) {
+        $dotenv = new \josegonzalez\Dotenv\Loader($dotenvPaths);
+        $dotenv->parse()
+            ->putenv()
+            ->toEnv()
+            ->toServer();
+    }
+}
 
 /*
  * Read configuration file and inject configuration into various
