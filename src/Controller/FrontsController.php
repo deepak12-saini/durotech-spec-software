@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\Cache\Cache;
 use Cake\Core\Configure;
 use Cake\Event\EventInterface;
 use Cake\Http\Response;
@@ -513,6 +514,7 @@ class FrontsController extends AppController
         if (!$this->request->is('post')) {
             $code = (string)rand(10000, 99999);
             $this->request->getSession()->write('cap_code', $code);
+            $this->request->getSession()->write('contact_form_started_at', time());
             $this->set('cap_code', $code);
             return null;
         }
@@ -521,9 +523,46 @@ class FrontsController extends AppController
         $session = $this->request->getSession();
         $capCode = $session->read('cap_code');
         $userCap = $data['captcha'] ?? '';
+        $honeypot = trim((string)($data['website'] ?? ''));
+        $startedAt = (int)$session->read('contact_form_started_at');
+        $elapsed = time() - $startedAt;
+        $ip = (string)($this->request->clientIp() ?? 'unknown');
+
+        // Spam bots usually fill hidden fields.
+        if ($honeypot !== '') {
+            Log::warning('Contact spam blocked by honeypot: ' . $ip);
+            $this->Flash->error(__('Unable to submit form. Please try again.'));
+            return $this->redirect(['action' => 'contact']);
+        }
+
+        // Bots often submit instantly; humans need a few seconds.
+        if ($startedAt <= 0 || $elapsed < 3) {
+            Log::warning('Contact spam blocked by timing check: ' . $ip);
+            $this->Flash->error(__('Please wait a few seconds and try again.'));
+            return $this->redirect(['action' => 'contact']);
+        }
+
+        // Basic IP rate-limit: max 3 submissions per 10 minutes.
+        $rateKey = 'contact_rate_' . sha1($ip);
+        $bucket = Cache::read($rateKey, 'default');
+        if (!is_array($bucket)) {
+            $bucket = [];
+        }
+        $nowTs = time();
+        $bucket = array_values(array_filter($bucket, function ($ts) use ($nowTs) {
+            return ($nowTs - (int)$ts) < 600;
+        }));
+        if (count($bucket) >= 3) {
+            Log::warning('Contact spam blocked by rate-limit: ' . $ip);
+            $this->Flash->error(__('Too many submissions. Please try again later.'));
+            return $this->redirect(['action' => 'contact']);
+        }
+        $bucket[] = $nowTs;
+        Cache::write($rateKey, $bucket, 'default');
 
         if (empty($capCode) || (string)$userCap !== (string)$capCode) {
             $this->Flash->error(__('Wrong captcha code. Please try again.'));
+            $session->write('cap_code', (string)rand(10000, 99999));
             return null;
         }
 
@@ -531,9 +570,33 @@ class FrontsController extends AppController
         $email = trim($data['email'] ?? '');
         $phone = trim($data['phone'] ?? '');
         $message = trim($data['message'] ?? '');
+        $normalizedMessage = html_entity_decode((string)$message, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $normalizedMessage = trim($normalizedMessage);
 
         if ($name === '' || $email === '' || $phone === '' || $message === '') {
             $this->Flash->error(__('Please fill in all fields.'));
+            return null;
+        }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->Flash->error(__('Please enter a valid email address.'));
+            return null;
+        }
+        if (!preg_match('/^[0-9\-\+\(\)\s]{7,20}$/', $phone)) {
+            $this->Flash->error(__('Please enter a valid phone number.'));
+            return null;
+        }
+        if (mb_strlen($normalizedMessage) < 10 || mb_strlen($normalizedMessage) > 2000) {
+            $this->Flash->error(__('Message must be between 10 and 2000 characters.'));
+            return null;
+        }
+        // Reject HTML/anchor injection and URL-like content in the message body.
+        if (preg_match('/<[^>]+>|href\s*=|https?:\/\/|www\.|(?:\b[a-z0-9-]+\.)+(?:ru|cn|tk|pw|xyz)\b/i', $normalizedMessage)) {
+            $this->Flash->error(__('Links/HTML are not allowed in message.'));
+            return null;
+        }
+        // Reject embedded email addresses inside the message body (common spam pattern).
+        if (preg_match('/[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}/i', $normalizedMessage)) {
+            $this->Flash->error(__('Please remove email addresses from message body.'));
             return null;
         }
 
@@ -543,7 +606,7 @@ class FrontsController extends AppController
                 'name' => $name,
                 'email' => $email,
                 'phone' => $phone,
-                'message' => $message,
+                'message' => $normalizedMessage,
                 'created' => $now,
             ]);
             if (!$this->Contact->save($contactEntity)) {
@@ -552,8 +615,15 @@ class FrontsController extends AppController
 
                 return null;
             }
-            $this->getMailer('Contact')->send('contactForm', [$data]);
+            $mailData = [
+                'name' => $name,
+                'email' => $email,
+                'phone' => $phone,
+                'message' => $normalizedMessage,
+            ];
+            $this->getMailer('Contact')->send('contactForm', [$mailData]);
             $session->delete('cap_code');
+            $session->delete('contact_form_started_at');
             $this->Flash->success(__('Your message has been sent successfully.'));
             return $this->redirect(['action' => 'contact']);
         } catch (\Throwable $e) {
