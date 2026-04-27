@@ -321,6 +321,7 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/mailers/send_v3', ['controller' => 'Mailers', 'action' => 'admin_send_v3']);
     $routes->connect('/admin/mailers/spec-draft-autosave-v3', ['controller' => 'Mailers', 'action' => 'admin_specDraftAutosaveV3']);
     $routes->connect('/admin/mailers/editsend_v3/:id', ['controller' => 'Mailers', 'action' => 'admin_editsend_v3'], ['pass' => ['id']]);
+    $routes->connect('/admin/mailers/audit_log/:id', ['controller' => 'Mailers', 'action' => 'admin_audit_log'], ['pass' => ['id']]);
     $routes->connect('/admin/mailers/send', ['controller' => 'Mailers', 'action' => 'admin_send']);
     $routes->connect('/admin/mailers/create_dwps', ['controller' => 'Mailers', 'action' => 'admin_create_dwps']);
     $routes->connect('/admin/mailers/create-dwps', ['controller' => 'Mailers', 'action' => 'admin_create_dwps']);
@@ -363,6 +364,9 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/duro_orders/delivery_add', ['controller' => 'DuroOrders', 'action' => 'delivery_add']);
     $routes->connect('/duro_orders/delivery_edit/:id', ['controller' => 'DuroOrders', 'action' => 'delivery_edit'], ['pass' => ['id']]);
     $routes->connect('/duro_orders/delivery_delete/:id', ['controller' => 'DuroOrders', 'action' => 'delivery_delete'], ['pass' => ['id']]);
+
+    // Employee spec audit trail
+    $routes->connect('/employees/audit_log/:id', ['controller' => 'Employees', 'action' => 'audit_log'], ['pass' => ['id']]);
 
     // Staff panel Debit Collections (explicit routes so controller resolves to DebitCollections, not Debit_collections)
     $routes->connect('/debit_collections', ['controller' => 'DebitCollections', 'action' => 'index']);

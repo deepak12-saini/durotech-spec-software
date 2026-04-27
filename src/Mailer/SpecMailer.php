@@ -52,18 +52,56 @@ class SpecMailer extends Mailer
 
         // return $this->deliver();
 
-            // ✅ SET EMAIL FIRST
-    $this->setFrom([$fromEmail => $fromName]);
-    $this->setTo($to);
-    $this->setSubject($subject);
-    $this->setEmailFormat('html');
-    $this->setViewVars($vars);
+        // Prefer attachment path saved in DB.
+        $attachmentPath = '';
+        $attachmentName = '';
+        $pdfAttachment = (string)($vars['pdf_attachment'] ?? '');
+        if ($pdfAttachment !== '') {
+            $candidate = WWW_ROOT . ltrim(str_replace('/', DS, $pdfAttachment), DS);
+            if (is_file($candidate)) {
+                $attachmentPath = $candidate;
+                $attachmentName = basename($candidate);
+            }
+        }
 
-    // ✅ THEN TEMPLATE (separately)
-    $this->viewBuilder()
-        ->setTemplate('new_sendeasyspec')
-        ->setLayout('default');
+        // Fallback for legacy rows where only mailer_id + tracknumber exists.
+        if ($attachmentPath === '') {
+            $mailerId = (int)($vars['mailer_id'] ?? 0);
+            $tracknumber = (string)($vars['tracknumber'] ?? '');
+            if ($mailerId > 0 && $tracknumber !== '') {
+                $baseName = $mailerId . '-' . $tracknumber;
+                $fallbacks = [
+                    WWW_ROOT . 'dompdf' . DS . $baseName . '.pdf',
+                    WWW_ROOT . 'dompdf' . DS . $baseName . '-V2.pdf',
+                ];
+                foreach ($fallbacks as $filePath) {
+                    if (is_file($filePath)) {
+                        $attachmentPath = $filePath;
+                        $attachmentName = basename($filePath);
+                        break;
+                    }
+                }
+            }
+        }
 
-    return $this; // ❗ NOT deliver()
+        $this->setFrom([$fromEmail => $fromName]);
+        $this->setTo($to);
+        $this->setSubject($subject);
+        $this->setEmailFormat('html');
+        $this->setViewVars($vars);
+        if ($attachmentPath !== '') {
+            $this->setAttachments([
+                $attachmentName => [
+                    'file' => $attachmentPath,
+                    'mimetype' => 'application/pdf',
+                ],
+            ]);
+        }
+
+        $this->viewBuilder()
+            ->setTemplate('new_sendeasyspec')
+            ->setLayout('default');
+
+        return $this; // Mailer::send() will handle delivery.
     }
 }

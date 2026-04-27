@@ -397,4 +397,29 @@ class AppController extends Controller
             throw $e; // rethrow to trigger catch in calling method
         }
     }
+
+    /**
+     * Write one spec audit row (best-effort, never blocks main flow).
+     */
+    protected function logSpecAudit(array $data): void
+    {
+        try {
+            $this->loadModel('SpecAuditLogs');
+            $entity = $this->SpecAuditLogs->newEntity([
+                'mailer_id' => isset($data['mailer_id']) ? (int)$data['mailer_id'] : null,
+                'tracknumber' => (string)($data['tracknumber'] ?? ''),
+                'action' => (string)($data['action'] ?? 'updated'),
+                'actor_role' => (string)($data['actor_role'] ?? 'system'),
+                'actor_id' => isset($data['actor_id']) ? (int)$data['actor_id'] : null,
+                'source' => (string)($data['source'] ?? ''),
+                'ip_address' => (string)$this->request->clientIp(),
+                'message' => (string)($data['message'] ?? ''),
+                'meta_json' => !empty($data['meta']) ? json_encode($data['meta']) : null,
+                'created' => date('Y-m-d H:i:s'),
+            ]);
+            $this->SpecAuditLogs->save($entity);
+        } catch (\Throwable $e) {
+            Log::warning('Spec audit log write failed: ' . $e->getMessage());
+        }
+    }
 }

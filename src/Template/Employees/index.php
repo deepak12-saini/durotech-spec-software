@@ -38,6 +38,11 @@
 
 			<!-- Makes the table scrollable if necessary -->
 			<div class="table-responsive">
+				<div class="clearfix" style="margin-bottom:8px;">
+					<div class="pull-right" style="max-width:280px;">
+						<input type="text" id="employeeTableSearch" class="form-control input-sm" placeholder="Search in current table...">
+					</div>
+				</div>
 				<!-- Main data table -->
 				<table class="table table-striped table-bordered table-hover" id="example">
 					<!-- Table header -->
@@ -165,6 +170,8 @@
 									}
 									echo $this->Html->link('Send Mail', array('controller' => 'employees', 'action' => 'emp_sendemail', $mailerId), array('class' => 'btn btn-mini btn-danger', 'onclick' => 'return confirm("Are you sure send email?")'));
 
+									echo $this->Html->link('History', array('controller' => 'employees', 'action' => 'audit_log', $mailerId), array('class' => 'btn btn-mini btn-default')) . '&nbsp;';
+
 									echo $this->Html->link('Download', SITEURL . 'dompdf/' . $pdffilename, array('class' => 'btn btn-mini btn-info', 'target' => '_blank')) . '&nbsp;';
 
 									echo $this->Form->postLink('Delete', array('controller' => 'employees', 'action' => 'deleteSpec', $mailerId), array('class' => 'btn btn-mini btn-xs btn-default', 'confirm' => 'Delete this spec? This cannot be undone.', 'escape' => false));
@@ -193,3 +200,22 @@
 		</div>
 	</div>
 </div>
+
+<script>
+(function () {
+	var input = document.getElementById('employeeTableSearch');
+	var table = document.getElementById('example');
+	if (!input || !table) return;
+	var tbody = table.getElementsByTagName('tbody')[0];
+	if (!tbody) return;
+
+	input.addEventListener('input', function () {
+		var q = (input.value || '').toLowerCase().trim();
+		var rows = tbody.getElementsByTagName('tr');
+		for (var i = 0; i < rows.length; i++) {
+			var text = (rows[i].innerText || rows[i].textContent || '').toLowerCase();
+			rows[i].style.display = (q === '' || text.indexOf(q) !== -1) ? '' : 'none';
+		}
+	});
+})();
+</script>

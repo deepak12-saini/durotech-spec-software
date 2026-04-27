@@ -397,6 +397,47 @@ public function index()
     $this->set(compact('mailers', 'hasDraft', 'filters'));
 }
 
+public function audit_log($id = null)
+{
+    $this->viewBuilder()->setLayout('employee_layout');
+    $this->set('title_for_layout', SITENAME . ' Spec Audit Trail');
+    $this->checkEmployeeSession();
+
+    $employee_id = (int)$this->Session->read('Employee.id');
+    $id = (int)$id;
+    if ($id <= 0) {
+        $this->Flash->error('Invalid spec id.');
+        return $this->redirect(['action' => 'index']);
+    }
+
+    $this->loadModel('Mailer');
+    $mailer = $this->Mailer->find()
+        ->where([
+            'Mailer.id' => $id,
+            'Mailer.employee_id' => $employee_id,
+            'Mailer.type' => 3,
+        ])
+        ->first();
+    if (!$mailer) {
+        $this->Flash->error('Spec not found.');
+        return $this->redirect(['action' => 'index']);
+    }
+
+    $this->loadModel('SpecAuditLogs');
+    $rows = $this->SpecAuditLogs->find()
+        ->where(['mailer_id' => $id])
+        ->orderDesc('id')
+        ->all()
+        ->toArray();
+
+    $this->set(compact('mailer', 'rows'));
+}
+
+public function auditLog($id = null)
+{
+    return $this->audit_log($id);
+}
+
 
 
 
@@ -573,6 +614,19 @@ public function employee_send_v3() {
             $pdfPath = 'dompdf/' . $generatedPdfFileName;
             $savedMailer->pdf_attachment = $pdfPath;
             $this->Mailer->save($savedMailer);
+            $this->logSpecAudit([
+                'mailer_id' => $lastinsertId,
+                'tracknumber' => (string)$savedMailer->tracknumber,
+                'action' => 'spec_created',
+                'actor_role' => 'employee',
+                'actor_id' => (int)$employee_id,
+                'source' => 'employee_panel',
+                'message' => 'Employee created new spec.',
+                'meta' => [
+                    'specification' => (string)($inserty['Mailer']['specification'] ?? ''),
+                    'company' => (string)($inserty['Mailer']['company'] ?? ''),
+                ],
+            ]);
 
 
             // ===== SEND EMAIL WITH SPEC PDF ATTACHED (non-blocking: spec/PDF already saved) =====
@@ -771,6 +825,15 @@ protected function _saveEmployeeSpecAsSubmitted(int $mailerId, array $formData, 
             '<p>Please find the specification PDF attached.</p><p>Regards,<br>Durotech System</p>'
         );
     }
+    $this->logSpecAudit([
+        'mailer_id' => $mailerId,
+        'tracknumber' => (string)$tracknumber,
+        'action' => 'draft_submitted',
+        'actor_role' => 'employee',
+        'actor_id' => (int)$employee_id,
+        'source' => 'employee_panel',
+        'message' => 'Employee resumed and submitted draft spec.',
+    ]);
 }
 
 /**
@@ -932,6 +995,15 @@ public function deleteSpec($id = null)
     $this->MailerComment->deleteAll(['mailer_id' => $id]);
     $this->SpecUsearea->deleteAll(['mailer_id' => $id]);
     $this->Mailer->delete($mailer);
+    $this->logSpecAudit([
+        'mailer_id' => (int)$id,
+        'tracknumber' => (string)($mailer->tracknumber ?? ''),
+        'action' => 'spec_deleted',
+        'actor_role' => 'employee',
+        'actor_id' => (int)$employee_id,
+        'source' => 'employee_panel',
+        'message' => 'Employee deleted spec.',
+    ]);
 
     $this->Flash->success('Spec deleted.');
     return $this->redirect(['action' => 'index']);
@@ -1146,6 +1218,19 @@ public function editsend_v3($id = null) {
                     Durotech System</p>'
                 );
             }
+            $this->logSpecAudit([
+                'mailer_id' => $lastinsertId,
+                'tracknumber' => (string)$tracknumber,
+                'action' => 'spec_updated',
+                'actor_role' => 'employee',
+                'actor_id' => (int)$employee_id,
+                'source' => 'employee_panel',
+                'message' => ($form_type == 0) ? 'Employee edited existing spec.' : 'Employee created revised/new spec from edit screen.',
+                'meta' => [
+                    'form_type' => (int)$form_type,
+                    'revision' => (int)$revision,
+                ],
+            ]);
 
 
             $this->Flash->success('PDF file updated successfully.');

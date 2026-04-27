@@ -319,7 +319,7 @@ class MailersController extends AppController
 		// DuroEzy Spec v3: show specs created by admin with spec_v = 1 (from send_v3)
 		$results = $this->Mailer->find()
 			->contain(['User' => function ($q) { return $q->select(['name', 'username']); }, 'NappUser' => function ($q) { return $q->select(['name', 'lname']); }])
-			->where(['Mailer.spec_v' => 0, 'Mailer.admin_id' => $user_id])
+			->where(['Mailer.spec_v' => 1, 'Mailer.admin_id' => $user_id])
 			->orderDesc('Mailer.id')
 			;
 		$filters = [
@@ -379,6 +379,46 @@ class MailersController extends AppController
 			]);
 		}
 		$this->set(compact('mailers', 'hasDraft', 'filters'));
+		return null;
+	}
+
+	/** CamelCase alias for audit log action dispatcher compatibility. */
+	public function adminAuditLog($id = null): ?Response
+	{
+		return $this->admin_audit_log($id);
+	}
+
+	/**
+	 * Admin: show audit history for one spec.
+	 */
+	public function admin_audit_log($id = null): ?Response
+	{
+		$this->viewBuilder()->setLayout('admin_layout');
+		$this->set('title_for_layout', SITENAME . ' Spec Audit Trail');
+		$this->checkAdminSession();
+		$user_id = (int)$this->request->getSession()->read('User.id');
+		$id = (int)$id;
+		if ($id <= 0) {
+			$this->Flash->error('Invalid spec id.');
+			return $this->redirect(['action' => 'admin_index_v3']);
+		}
+
+		$mailer = $this->Mailer->find()
+			->where(['Mailer.id' => $id, 'Mailer.admin_id' => $user_id])
+			->first();
+		if (!$mailer) {
+			$this->Flash->error('Spec not found.');
+			return $this->redirect(['action' => 'admin_index_v3']);
+		}
+
+		$this->loadModel('SpecAuditLogs');
+		$rows = $this->SpecAuditLogs->find()
+			->where(['mailer_id' => $id])
+			->orderDesc('id')
+			->all()
+			->toArray();
+
+		$this->set(compact('mailer', 'rows'));
 		return null;
 	}
 
@@ -454,6 +494,9 @@ class MailersController extends AppController
 		$vars = [
 			'subject' => $subject,
 			'pdfname' => $pdfname,
+			'pdf_attachment' => $mailer->pdf_attachment ?? '',
+			'mailer_id' => (int)$mailer->id,
+			'tracknumber' => (string)($mailer->tracknumber ?? ''),
 			'name' => $mailer->name ?? '',
 			'address' => $mailer->address ?? '',
 			'company' => $mailer->company ?? '',
@@ -682,6 +725,19 @@ class MailersController extends AppController
 					}
 				}
 				$this->Mailer->save($mailerEntity);
+				$this->logSpecAudit([
+					'mailer_id' => (int)$lastinsertId,
+					'tracknumber' => (string)$tracknumber,
+					'action' => 'spec_created',
+					'actor_role' => 'admin',
+					'actor_id' => (int)$user_id,
+					'source' => 'admin_panel',
+					'message' => 'Admin created new v3 spec.',
+					'meta' => [
+						'specification' => (string)$specification,
+						'company' => (string)$company,
+					],
+				]);
 				
 				$this->Flash->success('Spec saved successfully.');
 				return $this->redirect(\Cake\Routing\Router::url('/mailers/index_v3'));
@@ -2387,6 +2443,16 @@ class MailersController extends AppController
 
 
 				//$result = file_get_contents($url);
+				$this->logSpecAudit([
+					'mailer_id' => (int)$lastinsertId,
+					'tracknumber' => (string)$tracknumber,
+					'action' => 'spec_updated',
+					'actor_role' => 'admin',
+					'actor_id' => (int)$user_id,
+					'source' => 'admin_panel',
+					'message' => ($form_type == 0) ? 'Admin edited existing v3 spec.' : 'Admin created revised/new spec from edit screen.',
+					'meta' => ['form_type' => (int)$form_type],
+				]);
 				
 				$this->Flash->success('PDF file updated successfully.');
 				return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index_v3', '?' => ['page' => max(1, $returnPage)]], true));
