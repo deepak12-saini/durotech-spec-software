@@ -2,11 +2,13 @@
 /* Push content below fixed header so banner image is fully visible */
 .page-about-wrap {
     padding-top: 140px;
+    background: #e4edf4;
 }
 .content_about:first-child,
 .page-about-wrap > .content_about {
     margin-top: 0;
     padding-top: 0;
+    background: #e4edf4;
 }
 @media (max-width: 767px) {
     .page-about-wrap {

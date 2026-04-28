@@ -234,6 +234,9 @@
 
 
 	/* new css for reels */
+	.instagram-reels {
+		background: #e4edf4;
+	}
 
 	.instagram-slider .slick-track {
 		display: flex !important;

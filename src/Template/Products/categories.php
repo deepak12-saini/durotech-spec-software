@@ -2,6 +2,7 @@
 /* Clear fixed header so "Categories" heading is not cut off */
 .products-categories-page {
     padding-top: 40px;
+    background: #e4edf4;
 }
 @media (max-width: 767px) {
     .products-categories-page {

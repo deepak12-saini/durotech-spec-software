@@ -68,6 +68,9 @@
 	width: 100%;
 	box-sizing: border-box;
 }
+.technical_literature {
+	background: #e4edf4;
+}
 .technical_literature .container_service {
 	overflow-x: hidden;
 }

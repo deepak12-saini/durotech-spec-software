@@ -39,6 +39,11 @@ a:focus, a:hover {
        text-align: left;
 }
 .borderleft{ border-left:1px solid #000; }
+.durotech_product,
+.product_list,
+.product_image_section {
+	background: #e4edf4;
+}
 @media screen and (max-width: 768px) {
 	.product_image_section {
 		padding: 0px 1%;

@@ -66,6 +66,10 @@
 
 <!-- ✅ Improved Styling -->
 <style>
+.content_projects {
+    background: #e4edf4;
+    padding-bottom: 40px;
+}
 
 .banner-img {
     width: 100%;
