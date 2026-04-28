@@ -117,6 +117,43 @@
     transform: rotateY(180deg);
     background: #03446a;
 }
+/* Standards/Test section alignment (layout-only; no color changes) */
+.durolab-standards-intro {
+    margin: 0 0 16px;
+    line-height: 1.7;
+}
+.durolab-standards-grid {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -12px;
+}
+.durolab-standards-grid .durolab_list {
+    float: none;
+    width: 50%;
+    padding: 0 12px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+.durolab-standards-grid .durolab_list strong {
+    display: block;
+    margin-bottom: 10px;
+}
+.durolab-standards-grid .durolab_list ul {
+    margin: 0;
+    padding-left: 18px;
+    list-style-type: disc;
+    list-style-position: outside;
+}
+.durolab-standards-grid .durolab_list li {
+    margin-bottom: 6px;
+    line-height: 1.6;
+    display: list-item;
+}
+@media (max-width: 767px) {
+    .durolab-standards-grid .durolab_list {
+        width: 100%;
+    }
+}
 body{background:url(<?php echo SITEURL.'img/'?>bg-4.png)}
 </style>
 <div class="page-durolab-wrap">
@@ -149,38 +186,39 @@ At Durotech 45 years ago DuroLab was establishing for one main purpose to suppor
                   <div class="duro_lab_content_heading col-lg-12 col-md-12 col-sm-12">
 			          <h3>Making Sure We Meet The Most Up to Date Standards</h3>
 			      
-			     <p>Our State of the Art Laboratory is just one piece of the puzzle. The Other part is being sure we comply with all the latest and most up to date Australian standards. Being Australian Compliant is extremely strenuous and tough standard to comply to but with our state of the art testing facility and highly trained technical team our products pass with flying colors:<br>
-               
+			     <p class="durolab-standards-intro">Our State of the Art Laboratory is just one piece of the puzzle. The Other part is being sure we comply with all the latest and most up to date Australian standards. Being Australian Compliant is extremely strenuous and tough standard to comply to but with our state of the art testing facility and highly trained technical team our products pass with flying colors:</p>
+
+				 <div class="durolab-standards-grid">
 				 <div class="durolab_list col-lg-6 col-md-6 col-sm-6">
 					 <strong>Some Of the Australian Standards we test to:</strong>
 					 <ul>
-						<li>- AS4654.1 - Waterproofing Membrane Systems for External above ground use – materials</li>
-						<li>- AS4858 - Wet Area Membranes</li>
-						<li>- AS4020 - Products for use in contact with Drinking Water</li>
+						<li>AS4654.1 - Waterproofing Membrane Systems for External above ground use - materials</li>
+						<li>AS4858 - Wet Area Membranes</li>
+						<li>AS4020 - Products for use in contact with Drinking Water</li>
 					 </ul>
 				 </div>
 				 <div class="durolab_list col-lg-6 col-md-6 col-sm-6">
 					 <strong>Some Of the Test We perform:</strong>
 					 <ul>
-						<li>- Abrasion Resistance</li><li>- Heat Ageing</li>
-						<li>- Bond Strength</li>
-						<li>- Temperature resistance</li>
-						<li>- Cyclic Movement</li>	
-						<li>- Ultraviolet Resistance</li>
-						<li>- Dimensional Stability</li> 
-						<li>- Tensile Strength</li>
-						<li>- Elongation at Break</li> 
-						<li>- Thickness</li>
-						<li>- Field Seam Strength</li>	
-						<li>- Durability</li>
-						<li>- Negative pressure rating</li> 
-						<li>- Water Vapor Transmission rate</li>
-						<li>- AS4858 – Wet Area Membranes</li>
-						<li>- AS4020 – Products for use in contact with Drinking Water</li>
+						<li>Abrasion Resistance</li>
+						<li>Heat Ageing</li>
+						<li>Bond Strength</li>
+						<li>Temperature resistance</li>
+						<li>Cyclic Movement</li>
+						<li>Ultraviolet Resistance</li>
+						<li>Dimensional Stability</li>
+						<li>Tensile Strength</li>
+						<li>Elongation at Break</li>
+						<li>Thickness</li>
+						<li>Field Seam Strength</li>
+						<li>Durability</li>
+						<li>Negative pressure rating</li>
+						<li>Water Vapor Transmission rate</li>
+						<li>AS4858 - Wet Area Membranes</li>
+						<li>AS4020 - Products for use in contact with Drinking Water</li>
 					 </ul>
 				 </div>
-                 
-                 </p>
+                 </div>
 			     </div>
 				 
 

@@ -292,6 +292,53 @@
 		font-size: 18px;
 		margin: 0;
 	}
+	.testimonial-marquee-row {
+		overflow: hidden;
+		width: 100%;
+		margin-bottom: 20px;
+	}
+	.testimonial-marquee-track {
+		display: flex;
+		align-items: stretch;
+		width: max-content;
+		will-change: transform;
+		animation: testimonialMarqueeRtl 48s linear infinite;
+	}
+	.testimonial-marquee-row.row-2 .testimonial-marquee-track {
+		animation-duration: 56s;
+	}
+	.testimonial-marquee-row:hover .testimonial-marquee-track {
+		animation-play-state: paused;
+	}
+	.testimonial-marquee-item {
+		flex: 0 0 480px;
+		max-width: 480px;
+		padding: 0 12px;
+		box-sizing: border-box;
+	}
+	@keyframes testimonialMarqueeRtl {
+		from { transform: translateX(0); }
+		to { transform: translateX(-50%); }
+	}
+	@media (max-width: 991px) {
+		.testimonial-marquee-item {
+			flex-basis: 420px;
+			max-width: 420px;
+		}
+	}
+	@media (max-width: 767px) {
+		.testimonial-marquee-track {
+			animation: none;
+			width: 100%;
+			display: block;
+		}
+		.testimonial-marquee-item {
+			max-width: 100%;
+			width: 100%;
+			padding: 0;
+			margin-bottom: 16px;
+		}
+	}
 </style>
 <div class="banner col-lg-12 col-md-12 col-sm-12">
 	 
@@ -623,31 +670,71 @@
 			<div class="container">
 				<h3>What Our Clients Say</h3>
 				<p class="section-subtitle">Trusted feedback from Durotech customers.</p>
-				<div class="row">
-					<?php if (!empty($homeTestimonials)): ?>
-						<?php foreach ($homeTestimonials as $item): ?>
-							<?php
-								$t = $item['Testimonial'] ?? [];
-								$quote = trim((string)($t['quote'] ?? ''));
-								$name = trim((string)($t['name'] ?? ''));
-							?>
-							<div class="col-lg-6 col-md-6 col-sm-12 testimonial-grid-item">
-								<div class="testimonial-box">
-									<p class="testimonial-quote">
-										<?php echo h($quote); ?>
-									</p>
-									<p class="testimonial-client-name"><?php echo h($name); ?></p>
-								</div>
-							</div>
-						<?php endforeach; ?>
-					<?php else: ?>
+				<?php
+					$testimonialItems = [];
+					if (!empty($homeTestimonials)) {
+						foreach ($homeTestimonials as $item) {
+							$t = $item['Testimonial'] ?? [];
+							$quote = trim((string)($t['quote'] ?? ''));
+							$name = trim((string)($t['name'] ?? ''));
+							if ($quote !== '' || $name !== '') {
+								$testimonialItems[] = ['quote' => $quote, 'name' => $name];
+							}
+						}
+					}
+				?>
+				<?php if (!empty($testimonialItems)): ?>
+					<?php
+						$row1 = [];
+						$row2 = [];
+						foreach ($testimonialItems as $idx => $card) {
+							if ($idx % 2 === 0) {
+								$row1[] = $card;
+							} else {
+								$row2[] = $card;
+							}
+						}
+						if (empty($row2)) {
+							$row2 = $row1;
+						}
+					?>
+					<div class="testimonial-marquee-row row-1">
+						<div class="testimonial-marquee-track">
+							<?php for ($loop = 0; $loop < 2; $loop++): ?>
+								<?php foreach ($row1 as $card): ?>
+									<div class="testimonial-marquee-item">
+										<div class="testimonial-box">
+											<p class="testimonial-quote"><?php echo h((string)$card['quote']); ?></p>
+											<p class="testimonial-client-name"><?php echo h((string)$card['name']); ?></p>
+										</div>
+									</div>
+								<?php endforeach; ?>
+							<?php endfor; ?>
+						</div>
+					</div>
+					<div class="testimonial-marquee-row row-2">
+						<div class="testimonial-marquee-track">
+							<?php for ($loop = 0; $loop < 2; $loop++): ?>
+								<?php foreach ($row2 as $card): ?>
+									<div class="testimonial-marquee-item">
+										<div class="testimonial-box">
+											<p class="testimonial-quote"><?php echo h((string)$card['quote']); ?></p>
+											<p class="testimonial-client-name"><?php echo h((string)$card['name']); ?></p>
+										</div>
+									</div>
+								<?php endforeach; ?>
+							<?php endfor; ?>
+						</div>
+					</div>
+				<?php else: ?>
+					<div class="row">
 						<div class="col-lg-12">
 							<div class="testimonial-box">
 								<p class="testimonial-quote">Testimonials will be displayed here once published.</p>
 							</div>
 						</div>
-					<?php endif; ?>
-				</div>
+					</div>
+				<?php endif; ?>
 			</div>
 		</div>
         <script async src="//www.instagram.com/embed.js"></script>
