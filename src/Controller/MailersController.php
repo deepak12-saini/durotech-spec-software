@@ -273,7 +273,8 @@ class MailersController extends AppController
 			foreach ($results as $row) {
 				$product = $row->product ?? '';
 				// Product-specific default override requested by business.
-				if (strcasecmp(trim((string)$product), 'WBE Hi-Build Epoxy') === 0) {
+				// Accept common naming variations (e.g. "WBE Hi-Build", "WBE Hi Build Epoxy").
+				if (preg_match('/\bwbe\b.*\bhi[-\s]*build\b/i', trim((string)$product))) {
 					$row->coverage_by_pack = 'SC';
 					$row->Warranty = '10 years';
 				}

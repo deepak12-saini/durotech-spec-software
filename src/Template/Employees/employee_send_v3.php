@@ -266,7 +266,16 @@
 		}, 500);
 	}
 	function selectCountry(product,coverage,coverage_by_pack,Warranty,id,newdiv) {
-		
+		var normalizedProduct = (product || '').toString().toLowerCase().replace(/\s+/g, ' ').trim();
+		var isWbeHiBuild = normalizedProduct.indexOf('wbe') !== -1 && normalizedProduct.indexOf('hi-build') !== -1;
+		if (!isWbeHiBuild) {
+			isWbeHiBuild = normalizedProduct.indexOf('wbe') !== -1 && normalizedProduct.indexOf('hi build') !== -1;
+		}
+		if (isWbeHiBuild) {
+			coverage_by_pack = 'SC';
+			Warranty = '10 years';
+		}
+
 		$("#pro_"+id+"_"+newdiv).val(product);
 		$("#coverage_by_pack_"+id+"_"+newdiv).val(coverage_by_pack);
 		$("#coverage_"+id+"_"+newdiv).val(coverage);
