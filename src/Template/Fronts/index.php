@@ -235,22 +235,42 @@
 
 	/* new css for reels */
 
+	.instagram-slider .slick-track {
+		display: flex !important;
+	}
+	.instagram-slider .slick-slide {
+		height: inherit !important;
+	}
 	.instagram-slider .slide {
 		padding: 5px; /* spacing between reels */
+		height: auto;
 	}
 
 	.insta-reel-wrapper {
-		width: 100%;          /* width fills the slide */
-		/* padding-top: 100%;  */
+		width: 100%;
 		position: relative;
+		height: 420px;
+		overflow: hidden;
+		background: #fff;
+		border: 1px solid #e4e4e4;
 	}
 
 	.insta-reel-wrapper blockquote {
-		position: absolute;
-		top: 0;
-		left: 0;
+		position: static;
 		width: 100% !important;
 		height: 100% !important;
+		min-width: 100% !important;
+		margin: 0 !important;
+	}
+	@media (max-width: 991px) {
+		.insta-reel-wrapper {
+			height: 390px;
+		}
+	}
+	@media (max-width: 576px) {
+		.insta-reel-wrapper {
+			height: 360px;
+		}
 	}
 
 	.home-testimonials {
@@ -328,15 +348,15 @@
 	}
 	@media (max-width: 767px) {
 		.testimonial-marquee-track {
-			animation: none;
-			width: 100%;
-			display: block;
+			animation: testimonialMarqueeRtl 42s linear infinite;
+			width: max-content;
+			display: flex;
 		}
 		.testimonial-marquee-item {
-			max-width: 100%;
-			width: 100%;
-			padding: 0;
-			margin-bottom: 16px;
+			flex: 0 0 86vw;
+			max-width: 86vw;
+			padding: 0 8px;
+			margin-bottom: 0;
 		}
 	}
 </style>
@@ -904,33 +924,42 @@
 
 
 		<script>
-			document.getElementById('chatButton').onclick = function() {
-			const popup = document.getElementById('chatPopup');
-			popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
-			};
+			(function () {
+				var chatButton = document.getElementById('chatButton');
+				var chatPopup = document.getElementById('chatPopup');
+				var sendBtn = document.getElementById('sendBtn');
+				var chatInput = document.getElementById('chatInput');
+				var chatBox = document.getElementById('chatBox');
+				if (!chatPopup || !sendBtn || !chatInput || !chatBox) {
+					return;
+				}
 
-			document.getElementById('sendBtn').onclick = async function() {
-			const msg = document.getElementById('chatInput').value;
-			if (!msg) return;
-			const chatBox = document.getElementById('chatBox');
-			chatBox.innerHTML += `<div><b>You:</b> ${msg}</div>`;
-			document.getElementById('chatInput').value = '';
+				if (chatButton) {
+					chatButton.onclick = function() {
+						chatPopup.style.display = chatPopup.style.display === 'none' ? 'block' : 'none';
+					};
+				}
 
-		   const response = await fetch('<?php echo SITEURL; ?>chat_bot/chatbot', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-				body: 'message=' + encodeURIComponent(msg)
-			});
+				sendBtn.onclick = async function() {
+					var msg = chatInput.value;
+					if (!msg) return;
+					chatBox.innerHTML += '<div><b>You:</b> ' + msg + '</div>';
+					chatInput.value = '';
 
+					const response = await fetch('<?php echo SITEURL; ?>chat_bot/chatbot', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+						body: 'message=' + encodeURIComponent(msg)
+					});
 
-
-
-			const data = await response.json();
-			console.log(data);
-			const reply = data.choices[0].message.content;
-			chatBox.innerHTML += `<div style="color:#2889c8;"><b>AI:</b> ${reply}</div>`;
-			chatBox.scrollTop = chatBox.scrollHeight;
-			};
+					const data = await response.json();
+					const reply = (data && data.choices && data.choices[0] && data.choices[0].message)
+						? data.choices[0].message.content
+						: 'Sorry, no response received.';
+					chatBox.innerHTML += '<div style="color:#2889c8;"><b>AI:</b> ' + reply + '</div>';
+					chatBox.scrollTop = chatBox.scrollHeight;
+				};
+			})();
 		</script>
 		<script>
 		$(document).ready(function(){

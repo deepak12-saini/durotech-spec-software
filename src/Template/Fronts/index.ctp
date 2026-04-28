@@ -786,33 +786,42 @@
 
 
 		<script>
-			document.getElementById('chatButton').onclick = function() {
-			const popup = document.getElementById('chatPopup');
-			popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
-			};
+			(function () {
+				var chatButton = document.getElementById('chatButton');
+				var chatPopup = document.getElementById('chatPopup');
+				var sendBtn = document.getElementById('sendBtn');
+				var chatInput = document.getElementById('chatInput');
+				var chatBox = document.getElementById('chatBox');
+				if (!chatPopup || !sendBtn || !chatInput || !chatBox) {
+					return;
+				}
 
-			document.getElementById('sendBtn').onclick = async function() {
-			const msg = document.getElementById('chatInput').value;
-			if (!msg) return;
-			const chatBox = document.getElementById('chatBox');
-			chatBox.innerHTML += `<div><b>You:</b> ${msg}</div>`;
-			document.getElementById('chatInput').value = '';
+				if (chatButton) {
+					chatButton.onclick = function() {
+						chatPopup.style.display = chatPopup.style.display === 'none' ? 'block' : 'none';
+					};
+				}
 
-		   const response = await fetch('<?php echo SITEURL; ?>chat_bot/chatbot', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-				body: 'message=' + encodeURIComponent(msg)
-			});
+				sendBtn.onclick = async function() {
+					var msg = chatInput.value;
+					if (!msg) return;
+					chatBox.innerHTML += '<div><b>You:</b> ' + msg + '</div>';
+					chatInput.value = '';
 
+					const response = await fetch('<?php echo SITEURL; ?>chat_bot/chatbot', {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+						body: 'message=' + encodeURIComponent(msg)
+					});
 
-
-
-			const data = await response.json();
-			console.log(data);
-			const reply = data.choices[0].message.content;
-			chatBox.innerHTML += `<div style="color:#2889c8;"><b>AI:</b> ${reply}</div>`;
-			chatBox.scrollTop = chatBox.scrollHeight;
-			};
+					const data = await response.json();
+					const reply = (data && data.choices && data.choices[0] && data.choices[0].message)
+						? data.choices[0].message.content
+						: 'Sorry, no response received.';
+					chatBox.innerHTML += '<div style="color:#2889c8;"><b>AI:</b> ' + reply + '</div>';
+					chatBox.scrollTop = chatBox.scrollHeight;
+				};
+			})();
 		</script>
 		<script>
 		$(document).ready(function(){
