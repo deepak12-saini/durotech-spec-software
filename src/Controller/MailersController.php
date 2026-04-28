@@ -315,12 +315,13 @@ class MailersController extends AppController
 		$this->viewBuilder()->setLayout('admin_layout');
 		$this->set('title_for_layout', SITENAME . ' DuroEzy Specification Mailer');
 		$this->checkAdminSession();
-		$user_id = $this->request->getSession()->read('User.id');
+		$user_id = (int)$this->request->getSession()->read('User.id');
 
-		// DuroEzy Spec v3: show specs created by admin with spec_v = 1 (from send_v3)
+		// DuroEzy Spec v3 list: only this admin's specs (admin_id = session User.id).
+		// type=3 = specification mailer; do not require spec_v=1 (many rows use 0/NULL).
 		$results = $this->Mailer->find()
 			->contain(['User' => function ($q) { return $q->select(['name', 'username']); }, 'NappUser' => function ($q) { return $q->select(['name', 'lname']); }])
-			->where(['Mailer.spec_v' => 1, 'Mailer.admin_id' => $user_id])
+			->where(['Mailer.type' => 3, 'Mailer.admin_id' => $user_id])
 			->orderDesc('Mailer.id')
 			;
 		$filters = [
@@ -405,7 +406,7 @@ class MailersController extends AppController
 		}
 
 		$mailer = $this->Mailer->find()
-			->where(['Mailer.id' => $id, 'Mailer.admin_id' => $user_id])
+			->where(['Mailer.id' => $id, 'Mailer.type' => 3, 'Mailer.admin_id' => $user_id])
 			->first();
 		if (!$mailer) {
 			$this->Flash->error('Spec not found.');
@@ -2057,9 +2058,9 @@ class MailersController extends AppController
 		$this->viewBuilder()->setTemplate('admin_spec_index');
 		$this->set('title_for_layout',SITENAME.' DuroEzy Specification Mailer');		
 		$this->checkAdminSession(); 
-		$user_id=$this->request->getSession()->read('User.id');
+		$user_id = (int)$this->request->getSession()->read('User.id');
 		$query = $this->Mailer->find()
-			->where(['Mailer.spec_v' => 1, 'Mailer.admin_id' => $user_id])
+			->where(['Mailer.type' => 3, 'Mailer.admin_id' => $user_id])
 			->contain(['User'])
 			->orderDesc('Mailer.id');
 		$mailers = $this->paginate($query, ['limit' => 25]);
@@ -2264,7 +2265,7 @@ class MailersController extends AppController
 		$this->viewBuilder()->setLayout('admin_layout');
 		$this->set('title_for_layout',SITENAME.' DuroEzy Specification Mailer');
 		$this->checkAdminSession(); 
-		$user_id=$this->request->getSession()->read('User.id');
+		$user_id = (int)$this->request->getSession()->read('User.id');
 		$returnPage = (int)$this->request->getQuery('page');
 		if (!empty($this->request->getData())) 
 		{
@@ -2275,7 +2276,13 @@ class MailersController extends AppController
 
 			
 			$form_type = $this->request->getData()['form_type'];
-			
+			if ((int)$form_type === 0 && $id !== null && $id !== '') {
+				if (!$this->Mailer->exists(['Mailer.id' => (int)$id, 'Mailer.admin_id' => $user_id])) {
+					$this->Flash->error('You do not have access to this specification.');
+					return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index_v3', '?' => ['page' => max(1, $returnPage)]], true));
+				}
+			}
+
 			$exp =  explode('/',$this->request->getData()['date']); 
 			$name = $this->request->getData()['name'];
 			$email = $this->request->getData()['email'];
@@ -2462,6 +2469,10 @@ class MailersController extends AppController
 		
 		// CakePHP 3: associations defined in MailerTable; load with contain (no bindModel)
 		$mailer = $this->Mailer->get((int)$id, ['contain' => ['MailerComment', 'SpecUsearea']]);
+		if ((int)$mailer->admin_id !== $user_id) {
+			$this->Flash->error('You do not have access to this specification.');
+			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index_v3', '?' => ['page' => max(1, $returnPage)]], true));
+		}
 		$mailerData = $mailer->toArray();
 		unset($mailerData['mailer_comment'], $mailerData['spec_usearea']);
 		$MailerArr = [
