@@ -2081,6 +2081,12 @@ public function monthlySpecs() {
     $this->loadModel('Mailer');
 
     $employeeId = (int)$this->Session->read('Employee.id');
+    $employeeFirstName = trim((string)$this->request->getSession()->read('Employee.name'));
+    $employeeLastName = trim((string)$this->request->getSession()->read('Employee.lname'));
+    $employeeDisplayName = trim($employeeFirstName . ' ' . $employeeLastName);
+    if ($employeeDisplayName === '') {
+        $employeeDisplayName = 'Employee';
+    }
     $currentYear = (int)date('Y');
     $selectedYear = (int)($this->request->getQuery('year') ?? $currentYear);
     if ($selectedYear < 2015 || $selectedYear > $currentYear) {
@@ -2154,7 +2160,7 @@ public function monthlySpecs() {
 
    
 
-    $this->set(compact('monthlySpecs', 'selectedYear', 'filter', 'availableYears'));
+    $this->set(compact('monthlySpecs', 'selectedYear', 'filter', 'availableYears', 'employeeDisplayName'));
 }
 
 /**

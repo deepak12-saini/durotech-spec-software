@@ -192,7 +192,7 @@ h2.page-title {
 </style>
 
 <h2 class="page-title">
-    Josh – Monthly Specs (<?= h($selectedYear) ?>)
+    <?= h($employeeDisplayName ?? 'Employee') ?> – Monthly Specs (<?= h($selectedYear) ?>)
 </h2>
 
 <div class="filter-dropdown">
@@ -219,7 +219,10 @@ h2.page-title {
     <?php
         $monthNum = $monthToNum[$month] ?? null;
         $cardUrl = SITEURL . 'employees/index';
-        if (!empty($monthNum) && !empty($selectedYear)) {
+        if ($filter === 'today') {
+            $today = date('Y-m-d');
+            $cardUrl .= '?date_from=' . $today . '&date_to=' . $today;
+        } elseif (!empty($monthNum) && !empty($selectedYear)) {
             $lastDay = cal_days_in_month(CAL_GREGORIAN, (int)$monthNum, (int)$selectedYear);
             $dateFrom = $selectedYear . '-' . $monthNum . '-01';
             $dateTo = $selectedYear . '-' . $monthNum . '-' . str_pad((string)$lastDay, 2, '0', STR_PAD_LEFT);

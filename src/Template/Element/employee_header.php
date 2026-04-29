@@ -42,7 +42,12 @@
 								
 								<span class="user-info">
 									<small>Welcome,</small>
-									<?php $name=$this->Session->read('Customer.name'); echo $name; ?>
+									<?php
+										$firstName = trim((string)$this->Session->read('Employee.name'));
+										$lastName = trim((string)$this->Session->read('Employee.lname'));
+										$fullName = trim($firstName . ' ' . $lastName);
+										echo h($fullName !== '' ? $fullName : 'Employee');
+									?>
 								</span>
 
 								<i class="ace-icon fa fa-caret-down"></i>
