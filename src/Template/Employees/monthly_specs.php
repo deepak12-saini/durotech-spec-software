@@ -1,14 +1,54 @@
 <?php
 $max = 20; // Peak value
+$monthToNum = [
+    'JAN' => '01', 'FEB' => '02', 'MAR' => '03', 'APR' => '04',
+    'MAY' => '05', 'JUN' => '06', 'JUL' => '07', 'AUG' => '08',
+    'SEP' => '09', 'OCT' => '10', 'NOV' => '11', 'DEC' => '12'
+];
 ?>
 
 <style>
+    /* Dashboard background to match sidebar theme */
+    .main-content-inner {
+        background: #f2f2f2;
+        min-height: 100vh;
+        padding-bottom: 24px;
+    }
+
+    /* Two cards per row on desktop */
+    .monthly-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        padding: 0 10px 10px;
+        align-items: stretch;
+    }
+
+    @media (max-width: 768px) {
+        .monthly-cards-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
 h2.page-title {
     font-weight: 600;
     margin-bottom: 20px;
     text-align: center;
     /* color: #1c1c1e; */
 }
+
+    /* Make whole card clickable */
+    .monthly-card-link {
+        display: block;
+        height: 100%;
+        text-decoration: none;
+        color: inherit;
+        cursor: pointer;
+    }
+
+    .monthly-card-link .card {
+        height: 100%;
+    }
 
 /* .card {
     background: #fff;
@@ -27,10 +67,10 @@ h2.page-title {
     border-radius: 16px;
     border: 1px solid #e0e0e0; /* softer border */
     padding: 20px;
-    margin-bottom: 16px;
-    width: 60%;
-    margin-left: auto;
-    margin-right: auto;
+    width: 100%;
+
+    /* Grid handles spacing; keep margin from messing layout */
+    margin-bottom: 0;
 
     /* Multi-layer shadow for depth */
     box-shadow: 
@@ -86,12 +126,12 @@ h2.page-title {
 
 /* Power bar container */
 .power-bar {
-    height: 12px;
+    height: 10px; /* small graph */
     background: #eee;
     border-radius: 12px;
     display: flex;
     overflow: hidden;
-    margin-top: 6px;
+    margin-top: 8px;
 }
 
 .power-segment {
@@ -102,6 +142,8 @@ h2.page-title {
 .power-segment {
     flex: 1; /* Equal width */
     transition: opacity 0.3s ease;
+    background: #ddd;
+    position: relative;
 }
 
 /* Inactive segment */
@@ -110,9 +152,15 @@ h2.page-title {
 }
 
 /* Active segments colors */
-.power-segment.red { background: #ff3b30; }
-.power-segment.yellow { background: #ffcc00; }
-.power-segment.green { background: #34c759; }
+.power-segment.red .seg-fill { background: #ff3b30; }
+.power-segment.yellow .seg-fill { background: #ffcc00; }
+.power-segment.green .seg-fill { background: #34c759; }
+
+.seg-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease;
+}
 
 .scale {
     font-size: 12px;
@@ -124,6 +172,14 @@ h2.page-title {
 .filter-dropdown {
     text-align: center;
     margin-bottom: 20px;
+}
+
+.filter-dropdown form {
+    display: inline-flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
 }
 
 .filter-dropdown select {
@@ -140,44 +196,75 @@ h2.page-title {
 </h2>
 
 <div class="filter-dropdown">
-    <select id="timeFilter" onchange="filterSpecs()">
-        <option value="today" <?= $filter === 'today' ? 'selected' : '' ?>>Today</option>
-        <option value="month" <?= $filter === 'month' ? 'selected' : '' ?>>This Month</option>
-        <option value="year" <?= $filter === 'year' ? 'selected' : '' ?>>This Year</option>
-    </select>
+    <form id="monthlySpecsFilterForm" method="get">
+        <select id="timeFilter" name="filter" onchange="filterSpecs()">
+            <option value="today" <?= $filter === 'today' ? 'selected' : '' ?>>Today</option>
+            <option value="month" <?= $filter === 'month' ? 'selected' : '' ?>>This Month</option>
+            <option value="year" <?= $filter === 'year' ? 'selected' : '' ?>>This Year</option>
+        </select>
+
+        <select id="yearFilter" name="year" onchange="filterSpecs()">
+            <?php foreach (($availableYears ?? []) as $yearOption): ?>
+                <option value="<?= (int)$yearOption ?>" <?= (int)$selectedYear === (int)$yearOption ? 'selected' : '' ?>>
+                    <?= (int)$yearOption ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </form>
 </div>
 
-<?php foreach ($monthlySpecs as $month => $specCount): ?>
+<div class="monthly-cards-grid">
+    <?php foreach ($monthlySpecs as $month => $specCount): ?>
     <?php $percent = min(($specCount / $max) * 100, 100); ?>
     <?php
-        // Determine number of active segments (0 to 3)
-        $activeSegments = round($percent / 33.33);
-        $colors = ['red', 'yellow', 'green'];
+        $monthNum = $monthToNum[$month] ?? null;
+        $cardUrl = SITEURL . 'employees/index';
+        if (!empty($monthNum) && !empty($selectedYear)) {
+            $lastDay = cal_days_in_month(CAL_GREGORIAN, (int)$monthNum, (int)$selectedYear);
+            $dateFrom = $selectedYear . '-' . $monthNum . '-01';
+            $dateTo = $selectedYear . '-' . $monthNum . '-' . str_pad((string)$lastDay, 2, '0', STR_PAD_LEFT);
+            $cardUrl .= '?date_from=' . $dateFrom . '&date_to=' . $dateTo;
+        } elseif ($filter === 'year' && !empty($selectedYear)) {
+            $cardUrl .= '?date_from=' . $selectedYear . '-01-01&date_to=' . $selectedYear . '-12-31';
+        }
+
+        // Build a small 3-part progress bar (red/yellow/green)
+        $segMax = 33.33;
+        $fill1 = min($percent, $segMax);
+        $fill2 = min(max($percent - $segMax, 0), $segMax);
+        $fill3 = min(max($percent - (2 * $segMax), 0), $segMax);
+
+        $fill1Pct = $segMax > 0 ? ($fill1 / $segMax) * 100 : 0;
+        $fill2Pct = $segMax > 0 ? ($fill2 / $segMax) * 100 : 0;
+        $fill3Pct = $segMax > 0 ? ($fill3 / $segMax) * 100 : 0;
     ?>
+    <a class="monthly-card-link" href="<?= h($cardUrl) ?>">
     <div class="card">
         <div class="card-header">
             <div class="month"><?= h($month) ?></div>
             <div class="count"><?= (int)$specCount ?> <span>specs</span></div>
         </div>
 
-        <!-- <div class="power-bar">
-            <?php
-            // $remainingPercent = ($specCount / $max) * 100; // 0 to 100
-            // foreach ($colors as $color):
-            //     $fill = min($remainingPercent, 33.33);
-            //     $remainingPercent -= $fill;
-            ?>
-                <div class="power-segment <?= $color ?>" style="width: <?= $fill ?>%;"></div>
-            <?php //endforeach; ?>
-        </div> -->
+        <div class="power-bar" aria-label="Monthly specs progress">
+            <div class="power-segment red">
+                <div class="seg-fill" style="width: <?= round($fill1Pct, 2) ?>%;"></div>
+            </div>
+            <div class="power-segment yellow">
+                <div class="seg-fill" style="width: <?= round($fill2Pct, 2) ?>%;"></div>
+            </div>
+            <div class="power-segment green">
+                <div class="seg-fill" style="width: <?= round($fill3Pct, 2) ?>%;"></div>
+            </div>
+        </div>
 
         <div class="scale"><?= (int)$specCount ?> / <?= $max ?> (Peak)</div>
     </div>
+    </a>
 <?php endforeach; ?>
+</div>
 
 <script>
 function filterSpecs() {
-    const filter = document.getElementById('timeFilter').value;
-    window.location.href = "?filter=" + filter;
+    document.getElementById('monthlySpecsFilterForm').submit();
 }
 </script>
