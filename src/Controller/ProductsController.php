@@ -95,6 +95,28 @@ class ProductsController extends AppController
 		}
 	}
 
+	/**
+	 * VOC add/edit forms use legacy field names data[VocCertificate][...]; read nested payload for CakePHP 3.
+	 *
+	 * @return array<string, mixed>
+	 */
+	protected function getRequestVocCertificateData(): array
+	{
+		$all = $this->request->getData();
+		if (isset($all['data']['VocCertificate']) && is_array($all['data']['VocCertificate'])) {
+			return $all['data']['VocCertificate'];
+		}
+		if (isset($all['VocCertificate']) && is_array($all['VocCertificate'])) {
+			return $all['VocCertificate'];
+		}
+		$nested = $this->request->getData('data.VocCertificate');
+		if (is_array($nested) && $nested !== []) {
+			return $nested;
+		}
+		$flat = $this->request->getData('VocCertificate');
+		return is_array($flat) ? $flat : [];
+	}
+
 	public function adminVocVertificate()
 	{
 		$this->viewBuilder()->setLayout('admin_layout');
@@ -116,13 +138,16 @@ class ProductsController extends AppController
 		$this->viewBuilder()->setLayout('admin_layout');
 		$this->set('title_for_layout', SITENAME . ' Add Product');
 		$this->checkAdminSession();
-		$data = $this->request->getData('VocCertificate');
-		if (!empty($data)) {
-			$data['created'] = date('Y-m-d H:i:s');
-			$entity = $this->VocCertificate->newEntity($data);
-			if ($this->VocCertificate->save($entity)) {
-				$this->Flash->success('Voc Certificate saved');
-				return $this->redirect(['action' => 'adminVocVertificate']);
+		if ($this->request->is('post')) {
+			$data = $this->getRequestVocCertificateData();
+			if ($data !== []) {
+				$data['created'] = date('Y-m-d H:i:s');
+				$entity = $this->VocCertificate->newEntity($data);
+				if ($this->VocCertificate->save($entity)) {
+					$this->Flash->success('Voc Certificate saved');
+					return $this->redirect(['action' => 'adminVocVertificate']);
+				}
+				$this->Flash->error('Could not save VOC certificate. ' . json_encode($entity->getErrors()));
 			}
 		}
 	}
@@ -139,15 +164,18 @@ class ProductsController extends AppController
 		$this->viewBuilder()->setTemplate('admin_vocedit');
 		$this->set('title_for_layout', SITENAME . ' Add Product');
 		$this->checkAdminSession();
-		$data = $this->request->getData('VocCertificate');
-		if (!empty($data)) {
-			$data['id'] = (int)$id;
-			$data['created'] = date('Y-m-d H:i:s');
-			$entity = $this->VocCertificate->get($id);
-			$entity = $this->VocCertificate->patchEntity($entity, $data);
-			if ($this->VocCertificate->save($entity)) {
-				$this->Flash->success('Voc Certificate updated');
-				return $this->redirect(['action' => 'adminVocVertificate']);
+		if ($this->request->is('post')) {
+			$data = $this->getRequestVocCertificateData();
+			if ($data !== []) {
+				$data['id'] = (int)$id;
+				$data['created'] = date('Y-m-d H:i:s');
+				$entity = $this->VocCertificate->get($id);
+				$entity = $this->VocCertificate->patchEntity($entity, $data);
+				if ($this->VocCertificate->save($entity)) {
+					$this->Flash->success('Voc Certificate updated');
+					return $this->redirect(['action' => 'adminVocVertificate']);
+				}
+				$this->Flash->error('Could not update VOC certificate. ' . json_encode($entity->getErrors()));
 			}
 		}
 		$entity = $this->VocCertificate->get($id);
