@@ -1,6 +1,36 @@
 	<?php
 	$reqController = strtolower($this->request->getParam('controller'));
 	$reqAction = \Cake\Utility\Inflector::underscore($this->request->getParam('action'));
+
+	// New employee spec requests since admin last opened Employees Spec list (see MailersController::refreshEmpSpecMenuLastSeenMarker).
+	$empSpecPendingCount = 0;
+	if ($this->request->getSession()->read('is_admin')) {
+		try {
+			$mailerTable = \Cake\ORM\TableRegistry::getTableLocator()->get('Mailer');
+			$lastSeenMaxId = (int)$this->request->getSession()->read('Mailers.emp_spec_menu_last_seen_max_id');
+			$pendingWhere = [
+				'Mailer.type' => 3,
+				'Mailer.employee_id >' => 0,
+				'Mailer.id >' => $lastSeenMaxId,
+				'OR' => [
+					['Mailer.status' => 0],
+					['Mailer.is_review' => 0],
+				],
+			];
+			$schema = $mailerTable->getSchema();
+			if ($schema && $schema->getColumn('save_status')) {
+				$pendingWhere[] = [
+					'OR' => [
+						['Mailer.save_status IS' => null],
+						['Mailer.save_status !=' => 'draft'],
+					],
+				];
+			}
+			$empSpecPendingCount = (int)$mailerTable->find()->where($pendingWhere)->count();
+		} catch (\Throwable $e) {
+			$empSpecPendingCount = 0;
+		}
+	}
 	?>
 	<script type="text/javascript">
 				try{ace.settings.check('main-container' , 'fixed')}catch(e){}
@@ -273,9 +303,17 @@
 					<li class="<?php if ($reqController=='mailers' && $reqAction=='emp_spec_index') {echo 'active';}?>">
 						<a href="<?php echo SITEURL?>admin/mailers/emp_spec_index">
 							<i class="menu-icon fa fa-image "></i>
-							<span class="menu-text">Employees Spec</span></b>
+							<span class="menu-text">Employees Spec<?php
+								if ($empSpecPendingCount > 0) {
+									$n = (int)$empSpecPendingCount;
+									$badgeText = $n === 1 ? '(1)' : '(' . $n . ')';
+									echo ' <span class="label label-danger" style="margin-left:6px;font-size:11px;font-weight:600;white-space:nowrap;" title="New employee spec request(s) since you last opened this list — click to review">'
+										. h($badgeText)
+										. '</span>';
+								}
+							?></span>
 						</a>
-					</li> 
+					</li>
 
 					<li class="<?php if ($reqController=='mailers' && $reqAction=='admin_eoi') {echo 'active';}?>">
 						<a href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_eoi']); ?>">

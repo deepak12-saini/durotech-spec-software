@@ -16,6 +16,9 @@
 		box-shadow: 0 4px 6px rgba(0,0,0,0.2); /* Highlight active button */
 		font-weight: bold;
 	}
+	#simple-table tbody tr {
+		display: table-row !important;
+	}
 
 	</style>
 	<div class="page-content">
@@ -48,22 +51,30 @@
 				?>
 			</div>
 
+			<div class="alert alert-info" style="margin-top:12px;margin-bottom:16px;">
+				<strong>Workflow (employee specs):</strong>
+				<ol style="margin:8px 0 0 18px;padding:0;">
+					<li><strong>One screen</strong> — Open <em>Review &amp; Edit</em>, then use <strong>Review &amp; Approve</strong> on that page to review and finalise in one step.</li>
+					<li><strong>Or two steps</strong> — Use <em>Save review only</em> on the review page, then <em>Pending for Approval</em> on this list (approve is blocked until review is saved).</li>
+				</ol>
+			</div>
+
 			<div class="table-responsive">
 			<table class="table table-striped table-bordered table-hover" id="simple-table" >
 				<thead>
 				<tr>
-					<th><?php echo $this->Paginator->sort('tracknumber'); ?></th>					
-					<th><?php echo $this->Paginator->sort('Employee Name'); ?></th>					
-					<th><?php echo $this->Paginator->sort('name','Name/Attn'); ?></th>
-					<th><?php echo $this->Paginator->sort('Email'); ?></th>
-					<th><?php echo $this->Paginator->sort('Company'); ?></th>
-					<th><?php echo $this->Paginator->sort('address'); ?></th>
-					<th><?php echo $this->Paginator->sort('specification'); ?></th>
-					<th><?php echo $this->Paginator->sort('date'); ?></th>
+					<th>Tracknumber</th>
+					<th>Employee Name</th>
+					<th>Name/Attn</th>
+					<th>Email</th>
+					<th>Company</th>
+					<th>Address</th>
+					<th>Specification</th>
+					<th>Date</th>
 					<!-- <th><?php echo $this->Paginator->sort('type'); ?></th>					
 					<th><?php echo $this->Paginator->sort('subject'); ?></th>				 -->	
-					<th><?php echo $this->Paginator->sort('created'); ?></th>
-										<th><?php echo $this->Paginator->sort('status', 'Approve Status'); ?></th>
+					<th>Created</th>
+										<th>Approve Status</th>
 
 					<th>Action</th>
 				</tr>
@@ -81,7 +92,8 @@
 					<tr>
 					<td>#<?php echo h($mailer->tracknumber ?? ''); ?>&nbsp;</td>
 					<td><?php
-						$empName = (!empty($mailer->employee) && isset($mailer->employee->name)) ? $mailer->employee->name : ($mailer->employee_name ?? null);
+						$empId = (int)($mailer->employee_id ?? 0);
+						$empName = $employeeNameMap[$empId] ?? null;
 						echo h($empName !== null && $empName !== '' ? $empName : ('#' . ($mailer->employee_id ?? $id)));
 					?>&nbsp;</td>
 					<td><?php echo h($mailer->name ?? ''); ?>&nbsp;</td>
@@ -149,19 +161,36 @@
 	</div>		
 	<div class="row">
 		<div class="col-xs-6">
-			<div class="dataTables_info" id="dynamic-table_info" role="status" aria-live="polite"><?php	echo $this->Paginator->counter(array(
-'format' => __('showing {{start}} to {{end}} records out of {{count}} entries')));?>	</div>
+			<div class="dataTables_info" id="dynamic-table_info" role="status" aria-live="polite">
+				<?php echo __('showing {0} to {1} records out of {2} entries', $start, $end, $totalCount); ?>
+			</div>
 		</div>
 		<div class="col-xs-6">
 			<div class="dataTables_paginate paging_simple_numbers" id="dynamic-table_paginate">
 			<ul class="pagination">
-				<li class="paginate_button previous disabled" aria-controls="dynamic-table" tabindex="0" id="dynamic-table_previous"><?php
-				echo $this->Paginator->prev('< ' . __('previous'), array(), null, array('class' => 'prev disabled'));?></li>
-				
-				<li class="paginate_button next" aria-controls="dynamic-table" tabindex="0" id="dynamic-table_next"><?php echo $this->Paginator->next(__('next') . ' >', array(), null, array('class' => 'next disabled'));?></li>
+				<li class="paginate_button previous <?php echo $hasPrev ? '' : 'disabled'; ?>" aria-controls="dynamic-table" tabindex="0" id="dynamic-table_previous">
+					<?php if ($hasPrev): ?>
+						<a href="<?php echo $this->Url->build(['action' => 'admin_emp_spec_index', '?' => ['status' => $filter, 'page' => $page - 1]]); ?>">&lt; <?php echo __('previous'); ?></a>
+					<?php else: ?>
+						<a href="javascript:void(0)">&lt; <?php echo __('previous'); ?></a>
+					<?php endif; ?>
+				</li>
+				<li class="paginate_button next <?php echo $hasNext ? '' : 'disabled'; ?>" aria-controls="dynamic-table" tabindex="0" id="dynamic-table_next">
+					<?php if ($hasNext): ?>
+						<a href="<?php echo $this->Url->build(['action' => 'admin_emp_spec_index', '?' => ['status' => $filter, 'page' => $page + 1]]); ?>"><?php echo __('next'); ?> &gt;</a>
+					<?php else: ?>
+						<a href="javascript:void(0)"><?php echo __('next'); ?> &gt;</a>
+					<?php endif; ?>
+				</li>
 				
 			</ul>
 			</div>
 		</div>
 	</div>	
 </div>		
+<script type="text/javascript">
+jQuery(function ($) {
+	// Keep server-side paginated rows visible if any legacy script hides table rows.
+	$('#simple-table tbody tr').css('display', 'table-row');
+});
+</script>

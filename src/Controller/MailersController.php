@@ -1889,7 +1889,16 @@ class MailersController extends AppController
 			$inserty['subject'] = $subject;
 			$inserty['use_area'] = $use_area;
 			$inserty['created'] = date('Y-m-d H:i:s');
-			$inserty['is_review'] = isset($this->request->getData()['Mailer']['is_review']) ? $this->request->getData()['Mailer']['is_review'] : 0;
+			$reviewAction = (string)($this->request->getData('review_action') ?? 'save');
+			// Form uses legacy name "data[Mailer][is_review]" — not always under getData('Mailer').
+			$reqData = $this->request->getData();
+			$postedIsReview = $reqData['Mailer']['is_review'] ?? $reqData['data']['Mailer']['is_review'] ?? null;
+			// This screen is always an admin review: mark reviewed on save (hidden field is 1).
+			$inserty['is_review'] = ($postedIsReview !== null && $postedIsReview !== '') ? (int)$postedIsReview : 1;
+			// Single-page workflow: "Review & Approve" finalises in one save (existing spec only).
+			if ($form_type == 0 && $reviewAction === 'save_and_approve') {
+				$inserty['status'] = 1;
+			}
 
 			if($form_type == 0){
 				$mailerEntity = $this->Mailer->get((int)$id);
@@ -1983,7 +1992,13 @@ class MailersController extends AppController
 					}
 				}
 				
-				$this->Flash->success('Review saved and PDF updated successfully.');
+				if ($reviewAction === 'save_and_approve' && $form_type == 0) {
+					$this->Flash->success('Specification reviewed and approved successfully.');
+				} else {
+					$this->Flash->success(
+						'Review saved and PDF updated successfully. You can still use Approve from the list later, or use Review & Approve on this page next time.'
+					);
+				}
 				return $this->redirect(array('action' => 'admin_emp_spec_index'));
 			}
 		}		
@@ -2708,39 +2723,74 @@ class MailersController extends AppController
 	{
 		$this->viewBuilder()->setLayout('admin_layout');
 		$this->set('title_for_layout', SITENAME . ' DuroEzy Specification Mailer');
+		$this->checkAdminSession();
+		$this->refreshEmpSpecMenuLastSeenMarker();
 		$filter = (string)$this->request->getQuery('status', 'all');
-		// DuroEzy specs (type=3): employee-submitted OR admin-created, exclude drafts
-		$conditions = [
+		// Employee spec listing for admin: show all employee-submitted specs across all employees.
+		$where = [
 			'Mailer.type' => 3,
-			'OR' => [
-				['Mailer.employee_id IS NOT' => null],
-				['Mailer.admin_id >' => 0],
-			],
+			'Mailer.employee_id >' => 0,
 		];
 		$schema = $this->Mailer->getSchema();
 		if ($schema && $schema->getColumn('save_status')) {
-			$conditions[] = ['OR' => [
+			$where[] = ['OR' => [
 				['Mailer.save_status IS' => null],
 				['Mailer.save_status !=' => 'draft'],
 			]];
 		}
-		$query = $this->Mailer->find()
-			->where($conditions)
-			->contain(['Employee'])
-			->orderDesc('Mailer.id');
-
 		if ($filter === 'approved') {
-			$query->andWhere(['Mailer.status' => 1, 'Mailer.is_review' => 1]);
+			$where['Mailer.status'] = 1;
+			$where['Mailer.is_review'] = 1;
 		} elseif ($filter === 'pending') {
-			$query->andWhere(['OR' => [
+			$where[] = ['OR' => [
 				['Mailer.status' => 0],
 				['Mailer.is_review' => 0],
-			]]);
+			]];
 		}
 
-		$mailers = $this->paginate($query, ['limit' => 25]);
+		$page = max(1, (int)$this->request->getQuery('page', 1));
+		$limit = 25;
+		// Fresh query for count (avoid sharing state with list query).
+		$totalCount = $this->Mailer->find()->where($where)->count();
+		$totalPages = max(1, (int)ceil($totalCount / $limit));
+		if ($page > $totalPages) {
+			$page = $totalPages;
+		}
+		$offset = ($page - 1) * $limit;
+		// Materialize to array: controller loop below must not exhaust ResultSet before the view iterates.
+		$mailers = $this->Mailer->find()
+			->where($where)
+			->orderDesc('Mailer.id')
+			->limit($limit)
+			->offset($offset)
+			->all()
+			->toArray();
+		$employeeIds = [];
+		foreach ($mailers as $mailerRow) {
+			$empId = (int)($mailerRow->employee_id ?? 0);
+			if ($empId > 0) {
+				$employeeIds[] = $empId;
+			}
+		}
+		$employeeNameMap = [];
+		if (!empty($employeeIds)) {
+			$this->loadModel('Employee');
+			$employeeRows = $this->Employee->find()
+				->select(['id', 'name'])
+				->where(['Employee.id IN' => array_values(array_unique($employeeIds))])
+				->all();
+			foreach ($employeeRows as $empRow) {
+				$employeeNameMap[(int)$empRow->id] = (string)$empRow->name;
+			}
+		}
+		$start = $totalCount > 0 ? ($offset + 1) : 0;
+		$end = min($offset + $limit, $totalCount);
+		$hasPrev = $page > 1;
+		$hasNext = $page < $totalPages;
+
 		$this->set('mailers', $mailers);
 		$this->set('filter', $filter); // pass to view
+		$this->set(compact('page', 'limit', 'totalCount', 'totalPages', 'start', 'end', 'hasPrev', 'hasNext', 'employeeNameMap'));
     }
 
 
@@ -2753,30 +2803,80 @@ class MailersController extends AppController
 	public function admin_approve($id = null) {
 		$this->autoRender = false;
 
-		$this->checkAdminSession(); 
-		$user_id = $this->request->getSession()->read('User.id');
+		$this->checkAdminSession();
+		$user_id = (int)$this->request->getSession()->read('User.id');
+		$id = (int)$id;
 
-		if (!$id || !$this->Mailer->exists($id)) {
+		if ($id <= 0) {
 			$this->Flash->error('Invalid Mailer ID');
-			return $this->redirect(array('action' => 'admin_emp_spec_index'));
+			return $this->redirect(['action' => 'admin_emp_spec_index']);
 		}
 
-		$data = array(
-			'Mailer' => array(
-				'id' => $id,
-				'status' => 1,
-				'admin_id' => $user_id
-			)
-		);
+		try {
+			$mailer = $this->Mailer->get($id);
+		} catch (\Throwable $e) {
+			$this->Flash->error('Specification not found.');
+			return $this->redirect(['action' => 'admin_emp_spec_index']);
+		}
 
-		if ($this->Mailer->save($data)) {
+		// Employee-submitted specs (Easy Spec): two-step workflow — review first, then approve.
+		$employeeId = (int)($mailer->employee_id ?? 0);
+		$isReview = (int)($mailer->is_review ?? 0);
+		$type = (int)($mailer->type ?? 0);
+		if ($type === 3 && $employeeId > 0 && $isReview !== 1) {
+			$this->Flash->error(
+				'This employee spec must be reviewed first. Open Review & Edit, save changes, then use Approve.'
+			);
+			return $this->redirect(['action' => 'admin_emp_spec_index']);
+		}
+
+		if ((int)($mailer->status ?? 0) === 1 && $isReview === 1) {
+			$this->Flash->success('This specification is already approved.');
+			return $this->redirect(['action' => 'admin_emp_spec_index']);
+		}
+
+		$mailer->status = 1;
+		$mailer->admin_id = $user_id;
+
+		if ($this->Mailer->save($mailer)) {
 			$this->Flash->success('Spec approved successfully.');
 		} else {
-			$this->Flash->error('Approval failed.');
+			$this->Flash->error('Approval failed. Please try again.');
 		}
 
-		return $this->redirect(array('action' => 'admin_emp_spec_index'));
+		return $this->redirect(['action' => 'admin_emp_spec_index']);
 	}
 
+	/**
+	 * When admin opens the Employees Spec list, store the highest non-draft employee spec id
+	 * so the sidebar badge only counts newer rows (new requests after that visit).
+	 */
+	protected function refreshEmpSpecMenuLastSeenMarker(): void
+	{
+		try {
+			$where = [
+				'Mailer.type' => 3,
+				'Mailer.employee_id >' => 0,
+			];
+			$schema = $this->Mailer->getSchema();
+			if ($schema && $schema->getColumn('save_status')) {
+				$where[] = [
+					'OR' => [
+						['Mailer.save_status IS' => null],
+						['Mailer.save_status !=' => 'draft'],
+					],
+				];
+			}
+			$row = $this->Mailer->find()
+				->select(['id'])
+				->where($where)
+				->orderDesc('Mailer.id')
+				->first();
+			$maxId = $row ? (int)$row->id : 0;
+			$this->request->getSession()->write('Mailers.emp_spec_menu_last_seen_max_id', $maxId);
+		} catch (\Throwable $e) {
+			// ignore
+		}
+	}
 
 }

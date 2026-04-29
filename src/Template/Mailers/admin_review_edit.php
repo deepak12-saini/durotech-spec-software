@@ -225,8 +225,13 @@
 			
 			<div class="form-group">
 				<div class="col-md-offset-3 col-md-9">
-					<?php echo $this->Form->submit('Submit',array('div'=>false,'label'=>false, 'class' => 'btn btn-mini  btn-success','id'=>'add_ser_prd_btn','value'=>'Submit'));?>&nbsp;
-				
+					<p class="help-block" style="margin-bottom:10px;">
+						<strong>Save review only</strong> marks the spec as reviewed. Use <strong>Review &amp; Approve</strong> to review and finalise in one step (existing spec only).
+					</p>
+					<button type="submit" name="review_action" value="save" class="btn btn-success btn-sm" id="btn_save_review">Save review only</button>
+					&nbsp;
+					<button type="submit" name="review_action" value="save_and_approve" class="btn btn-primary btn-sm" id="btn_review_approve"
+						onclick="return confirm('Review and approve this specification now? This marks it as approved.');">Review &amp; Approve</button>
 				</div>
 			</div>
 			<?php echo $this->Form->end(); ?>
