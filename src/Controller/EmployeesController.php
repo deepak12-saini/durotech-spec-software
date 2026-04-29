@@ -660,22 +660,29 @@ public function employee_send_v3() {
                             'mimetype' => 'application/pdf'
                         ]
                     ]);
+                    // Use a branded HTML template instead of plain inline HTML.
+                    $email->viewBuilder()
+                        ->setClassName('App\View\AppView')
+                        ->setTemplate('new_sendeasyspec');
 
-                    $email->send(
-                        '
-                        <p>A new specification has been created by <b>Josh</b>.</p>
-
-                        <p>
-                            <b>Track No:</b> ' . $inserty['Mailer']['tracknumber'] . '<br>
-                            <b>Company:</b> ' . $inserty['Mailer']['company'] . '<br>
-                            <b>Specification:</b> ' . $inserty['Mailer']['specification'] . '
-                        </p>
-
-                        <p>Please find the specification PDF attached.</p>
-
-                        <p>Regards,<br>
-                        Durotech System</p>'
+                    $createdBy = trim(
+                        (string)$this->request->getSession()->read('Employee.name') . ' ' .
+                        (string)$this->request->getSession()->read('Employee.lname')
                     );
+
+                    $email->setViewVars([
+                        'name' => (string)($inserty['Mailer']['name'] ?? ''),
+                        'address' => (string)($inserty['Mailer']['address'] ?? ''),
+                        'company' => (string)($inserty['Mailer']['company'] ?? ''),
+                        'specification' => (string)($inserty['Mailer']['specification'] ?? ''),
+                        'tracknumber' => (string)($inserty['Mailer']['tracknumber'] ?? ''),
+                        'date' => (string)($formData['date'] ?? ''),
+                        'revision' => '',
+                        'created_by' => $createdBy,
+                        'pdf_attachment' => 'dompdf/' . (string)$generatedPdfFileName,
+                    ]);
+
+                    $email->send();
                 } catch (\Exception $e) {
                     // SMTP timeout/connection errors must not block submission; spec and PDF are already saved.
                     CakeLog::error('Employee spec email failed (track: ' . ($inserty['Mailer']['tracknumber'] ?? '') . '): ' . $e->getMessage());
@@ -819,11 +826,23 @@ protected function _saveEmployeeSpecAsSubmitted(int $mailerId, array $formData, 
         $email->setAttachments([
             $generatedPdfFileName => ['file' => $pdfFilePath, 'mimetype' => 'application/pdf'],
         ]);
-        $email->send(
-            '<p>A new specification has been created.</p>' .
-            '<p><b>Track No:</b> ' . $tracknumber . '<br><b>Company:</b> ' . $mailer->company . '<br><b>Specification:</b> ' . $mailer->specification . '</p>' .
-            '<p>Please find the specification PDF attached.</p><p>Regards,<br>Durotech System</p>'
-        );
+        // Use the branded HTML template (logo + UI).
+        $email->viewBuilder()
+            ->setClassName('App\View\AppView')
+            ->setTemplate('new_sendeasyspec');
+
+        $email->setViewVars([
+            'name' => (string)($mailer->name ?? ''),
+            'address' => (string)($mailer->address ?? ''),
+            'company' => (string)($mailer->company ?? ''),
+            'specification' => (string)($mailer->specification ?? ''),
+            'tracknumber' => (string)$tracknumber,
+            'date' => (string)($formData['date'] ?? ($mailer->date ?? '')),
+            'revision' => '',
+            'pdf_attachment' => 'dompdf/' . (string)$generatedPdfFileName,
+        ]);
+
+        $email->send();
     }
     $this->logSpecAudit([
         'mailer_id' => $mailerId,
@@ -1020,10 +1039,10 @@ public function editsend_v3($id = null) {
     $this->loadModel('SpecUsearea');
 
     $employee_id = $this->Session->read('Employee.id');
-    $returnPage = (int)$this->request->getQuery('page');
+    $returnPage = max(1, (int)($this->request->getQuery('page') ?? 1));
 
     if (!empty($this->request->data)) {
-        $returnPage = isset($this->request->data['return_page']) ? (int)$this->request->data['return_page'] : $returnPage;
+        $returnPage = isset($this->request->data['return_page']) ? max(1, (int)$this->request->data['return_page']) : $returnPage;
         $form_type = $this->request->data['form_type'];
 
         $exp = explode('/', $this->request->data['date']);
@@ -1200,23 +1219,29 @@ public function editsend_v3($id = null) {
                         'mimetype' => 'application/pdf'
                     ]
                 ]);
+                // Use the branded HTML template (logo + UI).
+                $email->viewBuilder()
+                    ->setClassName('App\View\AppView')
+                    ->setTemplate('new_sendeasyspec');
 
-                // Email body
-                $email->send('
-                    <p>The specification has been <b>edited</b> by <b>Josh</b>.</p>
-
-                    <p>
-                        <b>Track No:</b> ' . $inserty['Mailer']['tracknumber'] . '<br>
-                        <b>Company:</b> ' . $inserty['Mailer']['company'] . '<br>
-                        <b>Specification:</b> ' . $inserty['Mailer']['specification'] . '<br>
-                        <b>Revision:</b> ' . $revision . '
-                    </p>
-
-                    <p>Please find the updated specification PDF attached.</p>
-
-                    <p>Regards,<br>
-                    Durotech System</p>'
+                $createdBy = trim(
+                    (string)$this->request->getSession()->read('Employee.name') . ' ' .
+                    (string)$this->request->getSession()->read('Employee.lname')
                 );
+
+                $email->setViewVars([
+                    'name' => (string)($inserty['Mailer']['name'] ?? ''),
+                    'address' => (string)($inserty['Mailer']['address'] ?? ''),
+                    'company' => (string)($inserty['Mailer']['company'] ?? ''),
+                    'specification' => (string)($inserty['Mailer']['specification'] ?? ''),
+                    'tracknumber' => (string)($inserty['Mailer']['tracknumber'] ?? ''),
+                    'date' => (string)($this->request->data['date'] ?? ''),
+                    'revision' => $revision,
+                    'created_by' => $createdBy,
+                    'pdf_attachment' => 'dompdf/' . (string)$pdfname . '.pdf',
+                ]);
+
+                $email->send();
             }
             $this->logSpecAudit([
                 'mailer_id' => $lastinsertId,

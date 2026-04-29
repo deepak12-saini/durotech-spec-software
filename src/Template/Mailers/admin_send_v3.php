@@ -453,7 +453,7 @@
 
 		titleSuggestXhrById[id] = $.ajax({
 			type: "GET",
-			url: "<?php echo SITEURL.'admin/mailers/title_list' ?>/" + id,
+			url: "<?php echo rtrim(SITEURL, '/').'/admin/mailers/title_list' ?>/" + id,
 			data: { keyword: keyword },
 			success: function(data) {
 				const suggestionBox = $("#title-suggestion-box_" + id);

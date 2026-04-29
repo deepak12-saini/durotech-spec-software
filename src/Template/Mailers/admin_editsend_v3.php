@@ -4,6 +4,34 @@
 	#country-list li{padding: 10px; background: #e6fddd; border-bottom: #bbb9b9 1px solid; }
 	#country-list li:hover{background:#ece3d2;cursor: pointer;}
 	#search-box{padding: 10px;border: #a8d4b1 1px solid;border-radius:4px;}
+
+	/* Title suggestions dropdown from /admin/mailers/title_list */
+	.title-dropdown {
+		list-style: none;
+		padding-left: 0;
+		margin: 0;
+		position: absolute;
+		z-index: 999;
+		background: #fff;
+		border: 1px solid #ccc;
+		width: 100%;
+		max-height: 200px;
+		overflow-y: auto;
+	}
+	.title-dropdown li {
+		padding: 5px 10px;
+		background: #e6fddd;
+		border-bottom: 1px solid #bbb9b9;
+		cursor: pointer;
+	}
+	.title-dropdown li:hover {
+		background-color: #f0f0f0;
+	}
+
+	/* Suggestion container used across product/title search UIs */
+	.suggesstion-box {
+		display: block;
+	}
 	
 	</style>
 	<div class="page-content">
@@ -132,7 +160,18 @@
 				<div class="col-sm-9">
 				<table>
 					<tbody>
-						<tr><td colspan="5"><input class="newitem_<?php echo $i; ?>" type="text" style="width:100%;" name="title[<?php echo $i; ?>]" value="<?php echo $products[0]['title']; ?>" placeholder="enter title e,g Wet area or planter box" required></td></tr>
+						<tr><td colspan="5">
+							<div class="frmSearch" style="position:relative;">
+								<input class="newitem_<?php echo $i; ?>" type="text" style="width:100%;" name="title[<?php echo $i; ?>]" id="title_<?php echo $i; ?>"
+									value="<?php echo $products[0]['title']; ?>"
+									placeholder="enter title e,g Wet area or planter box"
+									required
+									onkeyup="onTitleSearch(<?php echo $i; ?>)"
+									onkeydown="if(event.keyCode === 13){ event.preventDefault(); return false; }"
+								>
+								<div class="suggesstion-box" id="title-suggestion-box_<?php echo $i; ?>"></div>
+							</div>
+						</td></tr>
 						<tr>
 							<th></th>
 							<th>Product Type</th>
@@ -309,6 +348,69 @@
 			$("#subject").val('Durotech: External Liquid WPM');
 		}
 	}	
+	
+	// ===== Title suggestions (title_list AJAX) =====
+	function debounce(func, delay) {
+		let timer;
+		return function(...args) {
+			clearTimeout(timer);
+			timer = setTimeout(() => func.apply(this, args), delay);
+		};
+	}
+
+	var titleSuggestMinChars = 3;
+	var titleSuggestXhrById = {};
+	var lastTitleKeywordById = {};
+
+	function fetchTitleSuggestions(id) {
+		var keyword = ($("#title_" + id).val() || '').trim();
+
+		if (keyword.length < titleSuggestMinChars) {
+			$("#title-suggestion-box_" + id).hide().html('');
+			lastTitleKeywordById[id] = '';
+			if (titleSuggestXhrById[id] && titleSuggestXhrById[id].readyState !== 4) {
+				titleSuggestXhrById[id].abort();
+			}
+			titleSuggestXhrById[id] = null;
+			return;
+		}
+
+		if (lastTitleKeywordById[id] === keyword) {
+			return;
+		}
+		lastTitleKeywordById[id] = keyword;
+
+		if (titleSuggestXhrById[id] && titleSuggestXhrById[id].readyState !== 4) {
+			titleSuggestXhrById[id].abort();
+		}
+
+		titleSuggestXhrById[id] = $.ajax({
+			type: "GET",
+			url: "<?php echo rtrim(SITEURL, '/').'/admin/mailers/title_list' ?>/" + id,
+			data: { keyword: keyword },
+			success: function(data) {
+				var suggestionBox = $("#title-suggestion-box_" + id);
+				if (data.trim() !== '') {
+					suggestionBox.show().html(data);
+					$("#title_" + id).css("background", "#FFF");
+				} else {
+					suggestionBox.hide().html('');
+				}
+			}
+		});
+	}
+
+	const debouncedFetchTitle = debounce(fetchTitleSuggestions, 500);
+
+	function onTitleSearch(id) {
+		debouncedFetchTitle(id);
+	}
+
+	function selectTitle(title, id) {
+		$("#title_" + id).val(title);
+		$("#title-suggestion-box_" + id).hide().html('');
+	}
+	
 	jQuery(function(){ //short for $(document).ready(function(){
 
 		$('.datepicker').datepicker({
@@ -341,7 +443,32 @@
 	function addnewsection(){
 		var numItems = $('.addsection').length;		
 		var newdiv = 	numItems + 1;
-		var varhtml = '<div class="form-group addsection" id="section_'+newdiv+'"><label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label><div class="col-sm-9"><table><tr><td colspan="5"><input type="text" style="width:100%;" name="title['+newdiv+']" value="" placeholder="enter title e,g Wet area or planter box" required></td></tr><tr><th></th><th>Product Type</th><th>Product</th><th>MFT</th><th>Warranty Period</th></tr><tr><td><input type="hidden" style="width:30px;" name="types[]" value="'+newdiv+'"><input type="text" style="width:63px;" name="serial[]" value="'+newdiv+'"></td><td><input type="text" style="width:225px;" name="coverage[]" value="" id="coverage_'+newdiv+'_0"></td><td><div class="frmSearch"><input type="text" autocomplete="off" style="width:225px;" name="product[]" id="pro_'+newdiv+'_0" value="" onkeyup="onkeyups('+newdiv+',0)" ><div id="suggesstion-box_'+newdiv+'_0"></div></div></td><td><input type="text" style="width:100px;" name="coverage_by_pack[]" value="" id="coverage_by_pack_'+newdiv+'_0"></td><td><input type="text" style="width:100px;" name="Warranty[]" value="" id="warranty_'+newdiv+'_0"></td><td><a href="javascript:void(0);" style="color:red;" onclick="removesection('+newdiv+')">&nbsp;&nbsp; X </a></td></tr></table><div id="addnew_'+newdiv+'"></div><a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addmore('+newdiv+')"><i class="fa fa-plus"></i> Add More</a></div></div>';	
+		var varhtml = '' +
+			'<div class="form-group addsection" id="section_'+newdiv+'">' +
+				'<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>' +
+				'<div class="col-sm-9">' +
+					'<table>' +
+						'<tr>' +
+							'<td colspan="5">' +
+								'<div class="frmSearch" style="position:relative;">' +
+									'<input type="text" style="width:100%;" name="title['+newdiv+']" id="title_'+newdiv+'" value="" placeholder="enter title e,g Wet area or planter box" required onkeyup="onTitleSearch('+newdiv+')" onkeydown="if(event.keyCode === 13){ event.preventDefault(); return false; }">' +
+									'<div class="suggesstion-box" id="title-suggestion-box_'+newdiv+'"></div>' +
+								'</div>' +
+							'</td>' +
+						'</tr>' +
+						'<tr><th></th><th>Product Type</th><th>Product</th><th>MFT</th><th>Warranty Period</th></tr>' +
+						'<tr><td><input type="hidden" style="width:30px;" name="types[]" value="'+newdiv+'"><input type="text" style="width:63px;" name="serial[]" value="'+newdiv+'"></td>' +
+							'<td><input type="text" style="width:225px;" name="coverage[]" value="" id="coverage_'+newdiv+'_0"></td>' +
+							'<td><div class="frmSearch"><input type="text" autocomplete="off" style="width:225px;" name="product[]" id="pro_'+newdiv+'_0" value="" onkeyup="onkeyups('+newdiv+',0)" ><div id="suggesstion-box_'+newdiv+'_0"></div></div></td>' +
+							'<td><input type="text" style="width:100px;" name="coverage_by_pack[]" value="" id="coverage_by_pack_'+newdiv+'_0"></td>' +
+							'<td><input type="text" style="width:100px;" name="Warranty[]" value="" id="warranty_'+newdiv+'_0"></td>' +
+							'<td><a href="javascript:void(0);" style="color:red;" onclick="removesection('+newdiv+')">&nbsp;&nbsp; X </a></td>' +
+						'</tr>' +
+					'</table>' +
+					'<div id="addnew_'+newdiv+'"></div>' +
+					'<a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addmore('+newdiv+')"><i class="fa fa-plus"></i> Add More</a>' +
+				'</div>' +
+			'</div>';	
 		
 		$("#addsection").append(varhtml);	
 	}

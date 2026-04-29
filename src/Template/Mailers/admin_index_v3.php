@@ -75,7 +75,12 @@
 						<tr>
 							<!-- Output data for each column -->
 							<td>#<?php echo h($mailer['Mailer']['tracknumber']); ?>&nbsp;</td>
-							<td><?php echo $mailer['User']['name'].'('.$mailer['User']['username'].')'; ?>&nbsp;</td>
+							<td><?php
+								$user = $mailer['User'] ?? [];
+								$userName = $user['name'] ?? $user['display_name'] ?? $user['username'] ?? '';
+								$userUsername = $user['username'] ?? '';
+								echo h($userName) . (!empty($userUsername) ? ('(' . h($userUsername) . ')') : '');
+							?>&nbsp;</td>
 							<td><?php echo h($mailer['Mailer']['name']); ?>&nbsp;</td>
 							<td><?php echo h($mailer['Mailer']['email']); ?>&nbsp;</td>
 							<td><?php echo h($mailer['Mailer']['company']); ?>&nbsp;</td>

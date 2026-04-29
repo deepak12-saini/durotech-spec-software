@@ -6,6 +6,9 @@ $name = $name ?? '';
 $address = $address ?? '';
 $company = $company ?? '';
 $specification = $specification ?? '';
+$tracknumber = $tracknumber ?? '';
+$revision = $revision ?? '';
+$created_by = $created_by ?? '';
 $email = $email ?? '';
 $date = $date ?? '';
 $pdf_attachment = $pdf_attachment ?? '';
@@ -41,12 +44,32 @@ $logoUrl = Router::url('/customdurotech/images/durotech_logo.png', true);
                             Please find your specification details below:
                         </p>
 
+                        <?php if (!empty($created_by)): ?>
+                        <p style="font-size:14px;color:#555;margin:0 0 14px 0;">
+                            A new specification has been created by <strong><?= h($created_by) ?></strong>.
+                        </p>
+                        <?php endif; ?>
+
                         <table width="100%" cellpadding="8" cellspacing="0" style="margin-top:15px;border-collapse:collapse;">
                             
                             <?php if ($company): ?>
                             <tr>
                                 <td style="background:#f1f1f1;"><strong>Company</strong></td>
                                 <td><?= h($company) ?></td>
+                            </tr>
+                            <?php endif; ?>
+
+                            <?php if ($tracknumber): ?>
+                            <tr>
+                                <td style="background:#f1f1f1;"><strong>Track No</strong></td>
+                                <td><?= h($tracknumber) ?></td>
+                            </tr>
+                            <?php endif; ?>
+
+                            <?php if (!empty($created_by)): ?>
+                            <tr>
+                                <td style="background:#f1f1f1;"><strong>Created By</strong></td>
+                                <td><?= h($created_by) ?></td>
                             </tr>
                             <?php endif; ?>
 
@@ -68,6 +91,13 @@ $logoUrl = Router::url('/customdurotech/images/durotech_logo.png', true);
                             <tr>
                                 <td style="background:#f1f1f1;"><strong>Date</strong></td>
                                 <td><?= h($date) ?></td>
+                            </tr>
+                            <?php endif; ?>
+
+                            <?php if ($revision !== ''): ?>
+                            <tr>
+                                <td style="background:#f1f1f1;"><strong>Revision</strong></td>
+                                <td><?= h((string)$revision) ?></td>
                             </tr>
                             <?php endif; ?>
 

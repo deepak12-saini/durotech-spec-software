@@ -161,9 +161,17 @@
 
 									// Allow edit, send, download if not submitted yet
 									if ($is_review === 0) {
-										echo $this->Html->link('Edit', ['controller' => 'employees', 'action' => 'editsend_v3', $mailerId, '?' => ['page' => (int)$this->request->getQuery('page')]], ['class' => 'btn btn-mini btn-primary']) . '&nbsp;';
+										echo $this->Html->link(
+											'Edit',
+											['controller' => 'employees', 'action' => 'editsend_v3', $mailerId, '?' => ['page' => max(1, (int)$this->request->getQuery('page'))]],
+											['class' => 'btn btn-mini btn-primary']
+										) . '&nbsp;';
 									} else {
-										echo $this->Html->link('Edit', ['controller' => 'employees', 'action' => 'editsend_v3', $mailerId, '?' => ['page' => (int)$this->request->getQuery('page')]], ['class' => 'btn btn-mini btn-primary']) . '&nbsp;';
+										echo $this->Html->link(
+											'Edit',
+											['controller' => 'employees', 'action' => 'editsend_v3', $mailerId, '?' => ['page' => max(1, (int)$this->request->getQuery('page'))]],
+											['class' => 'btn btn-mini btn-primary']
+										) . '&nbsp;';
 
 										// Only allow download once submitted
 										//echo $this->Html->link('Download', SITEURL . 'dompdf/' . $pdffilename, array('class' => 'btn btn-mini btn-info', 'target' => '_blank'));
