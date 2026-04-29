@@ -620,4 +620,75 @@ class CoasController extends AppController
         ]);
         return $this->response;
     }
+
+    /**
+     * Staff: send COA email (legacy action name used by template links).
+     */
+    public function sendemails($id = null): ?Response
+    {
+        $result = $this->checkSatffSession();
+        if ($result instanceof Response) {
+            return $result;
+        }
+
+        $userId = (int)$this->request->getSession()->read('Customer.id');
+        if (!$userId) {
+            $userId = (int)$this->request->getSession()->read('User.id');
+        }
+
+        $id = $id !== null ? (int)$id : null;
+        if (!$id || !$this->Coas->exists(['id' => $id, 'admin_id' => $userId])) {
+            $this->Flash->error('Record not found.');
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $coa = $this->Coas->get($id);
+        $email = trim((string)($coa->email ?? ''));
+        if ($email === '') {
+            $this->Flash->error('No email address set for this COA.');
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $subject = trim((string)($coa->subject ?? ''));
+        if ($subject === '') {
+            $subject = (defined('SITENAME') ? SITENAME : 'Durotech') . ' - Certificate of Analysis';
+            if (!empty($coa->product)) {
+                $subject .= ' - ' . $coa->product;
+            }
+        }
+
+        $dateOfManu = $coa->date_of_manu;
+        $expiryDate = $coa->expiry_date;
+        if ($dateOfManu instanceof \DateTimeInterface) {
+            $dateOfManu = $dateOfManu->format('Y-m-d');
+        } else {
+            $dateOfManu = $dateOfManu !== null && $dateOfManu !== '' ? (string)$dateOfManu : '';
+        }
+        if ($expiryDate instanceof \DateTimeInterface) {
+            $expiryDate = $expiryDate->format('Y-m-d');
+        } else {
+            $expiryDate = $expiryDate !== null && $expiryDate !== '' ? (string)$expiryDate : '';
+        }
+
+        $variables = [
+            'subject' => $subject,
+            'pdfname' => base64_encode(base64_encode((string)($coa->pdfname ?? ''))),
+            'name' => (string)($coa->name ?? ''),
+            'product' => (string)($coa->product ?? ''),
+            'batch_no' => (string)($coa->batch_no ?? ''),
+            'date_of_manu' => $dateOfManu,
+            'expiry_date' => $expiryDate,
+            'form_no' => (string)($coa->form_no ?? ''),
+        ];
+
+        try {
+            $this->sendemail($email, $subject, 'coapdf', $variables);
+            $this->Flash->success('Email sent successfully.');
+        } catch (\Exception $e) {
+            \Cake\Log\Log::error('COA send email failed: ' . $e->getMessage());
+            $this->Flash->error('Failed to send email. Please try again.');
+        }
+
+        return $this->redirect(['action' => 'index']);
+    }
 }
