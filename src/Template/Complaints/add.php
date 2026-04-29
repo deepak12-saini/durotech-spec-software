@@ -58,7 +58,10 @@
 						<select id="dept_id" name="data[Complaint][dept_id]" class="col-xs-10 col-sm-5" >
 							<option value="">Select Department</option>
 							<?php foreach($departmentArr as $departments){ ?>
-								<option value="<?php echo $departments['Department']['id'];?>"><?php echo $departments['Department']['department_title'];?></option>
+								<?php $department = isset($departments['Department']) ? $departments['Department'] : $departments; ?>
+								<?php if (!empty($department['id'])) { ?>
+								<option value="<?php echo $department['id'];?>"><?php echo $department['department_title'] ?? '';?></option>
+								<?php } ?>
 							<?php  }  ?>
 						</select>
 					</div>
@@ -69,7 +72,13 @@
 						<select id="complaint_to" name="data[Complaint][complaint_to]" class="col-xs-10 col-sm-5" >
 							<option value="">Select Employee</option>
 							<?php foreach($NappUser as $NappUsers){ ?>
-								<option value="<?php echo $NappUsers['NappUser']['id'];?>"><?php echo $NappUsers['NappUser']['name'].' '.$NappUsers['NappUser']['lname'].' ('.$NappUsers['Department']['department_title'].')';?></option>
+								<?php $user = isset($NappUsers['NappUser']) ? $NappUsers['NappUser'] : $NappUsers; ?>
+								<?php $department = $NappUsers['Department'] ?? ($NappUsers['department'] ?? []); ?>
+								<?php if (!empty($user['id'])) { ?>
+								<option value="<?php echo $user['id'];?>">
+									<?php echo ($user['name'] ?? '').' '.($user['lname'] ?? '').' ('.($department['department_title'] ?? '').')';?>
+								</option>
+								<?php } ?>
 							<?php  }  ?>
 						</select>
 					</div>
@@ -80,7 +89,10 @@
 						<select id="complaint_type" name="data[Complaint][complaint_type]" class="col-xs-10 col-sm-5" onchange="complaint(this.value)" >
 							<option value="">Select Complaint Type</option>
 							<?php foreach($ComplaintType as $ComplaintTypes){ ?>
-								<option value="<?php echo $ComplaintTypes['ComplaintType']['id'];?>"><?php echo $ComplaintTypes['ComplaintType']['title'];?></option>
+								<?php $type = isset($ComplaintTypes['ComplaintType']) ? $ComplaintTypes['ComplaintType'] : $ComplaintTypes; ?>
+								<?php if (!empty($type['id'])) { ?>
+								<option value="<?php echo $type['id'];?>"><?php echo $type['title'] ?? '';?></option>
+								<?php } ?>
 							<?php  }  ?>
 						</select>
 					</div>

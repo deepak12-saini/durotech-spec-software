@@ -259,8 +259,8 @@
 						<td>
 							<a href="<?php echo SITEURL.'staffs/detail/'.base64_encode($conformance['Conformance']['nc_number']).'/1'; ?>" class="btn btn-mini btn-danger ">View</a>
 							
-							<?php if($conformance['Conformance']['complaintid']  > 0){?>
-								<a href="<?php echo SITEURL.'complaints/detail/'.base64_encode($conformance['Complaint']['complaint_id']).'/1'; ?>" class="btn btn-mini btn-info to ">Complaint Detail</a>
+							<?php if (!empty($conformance['Conformance']['complaintid']) && (int)$conformance['Conformance']['complaintid'] > 0) { ?>
+								<a href="<?php echo SITEURL.'complaints/detail/'.base64_encode($conformance['Conformance']['complaintid']).'/1'; ?>" class="btn btn-mini btn-info to ">Complaint Detail</a>
 							<?php } ?>
 							<?php if(($conformance['Conformance']['compaint_by'] != $user_id) && ($conformance['Conformance']['status'] < 3)){?>
 								<a href="<?php echo SITEURL.'staffs/replyto/'.base64_encode($conformance['Conformance']['id']).'/'.base64_encode($user_id); ?>" class="btn btn-mini btn-primary to ">Reply</a>
