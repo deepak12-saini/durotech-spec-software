@@ -628,11 +628,16 @@
 							<?php endif; ?>
 						</div>
 					<?php else: ?>
-
-						   <p class="text-center text-muted" style="color:#888; font-weight:500; margin-top:50px;">
+						<div class="text-center" style="padding: 35px 0;">
+							<img
+								src="<?= SITEURL . 'img/coming-soon.png'; ?>"
+								alt="Coming soon"
+								style="max-width: 260px; width: 100%; height: auto; display: inline-block;"
+							>
+							<!-- <p class="text-muted" style="color:#888; font-weight:500; margin-top:12px;">
 								No Voc certificate available.
-							</p>
-						
+							</p> -->
+						</div>
 					<?php endif; ?>
 				</div>
 
