@@ -2034,6 +2034,15 @@ class MailersController extends AppController
 				}
 				
 				if ($reviewAction === 'save_and_approve' && $form_type == 0) {
+					$this->logSpecAudit([
+						'mailer_id' => (int)$lastinsertId,
+						'tracknumber' => (string)$tracknumber,
+						'action' => 'spec_approved',
+						'actor_role' => 'admin',
+						'actor_id' => (int)$user_id,
+						'source' => 'admin_panel',
+						'message' => 'Admin reviewed and approved employee spec.',
+					]);
 					$this->Flash->success('Specification reviewed and approved successfully.');
 				} else {
 					$this->Flash->success(
@@ -2951,6 +2960,15 @@ class MailersController extends AppController
 		$mailer->admin_id = $user_id;
 
 		if ($this->Mailer->save($mailer)) {
+			$this->logSpecAudit([
+				'mailer_id' => (int)$mailer->id,
+				'tracknumber' => (string)($mailer->tracknumber ?? ''),
+				'action' => 'spec_approved',
+				'actor_role' => 'admin',
+				'actor_id' => (int)$user_id,
+				'source' => 'admin_panel',
+				'message' => 'Admin approved employee spec from list.',
+			]);
 			$this->Flash->success('Spec approved successfully.');
 		} else {
 			$this->Flash->error('Approval failed. Please try again.');
