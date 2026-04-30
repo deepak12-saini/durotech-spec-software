@@ -322,6 +322,17 @@ class MailersController extends AppController
 		$results = $this->Mailer->find()
 			->contain(['User' => function ($q) { return $q->select(['name', 'username']); }, 'NappUser' => function ($q) { return $q->select(['name', 'lname']); }])
 			->where(['Mailer.type' => 3, 'Mailer.admin_id' => $user_id])
+			->andWhere([
+				'OR' => [
+					['Mailer.employee_id IS' => null],
+					['Mailer.employee_id <=' => 0],
+					[
+						'Mailer.employee_id >' => 0,
+						'Mailer.status' => 1,
+						'Mailer.is_review' => 1,
+					],
+				],
+			])
 			->orderDesc('Mailer.id')
 			;
 		$filters = [
@@ -2306,6 +2317,18 @@ class MailersController extends AppController
 		$this->checkAdminSession(); 
 		$user_id = (int)$this->request->getSession()->read('User.id');
 		$returnPage = (int)$this->request->getQuery('page');
+		$id = (int)$id;
+		$existingMailer = null;
+		if ($id > 0 && $this->Mailer->exists(['Mailer.id' => $id])) {
+			$existingMailer = $this->Mailer->get($id);
+		}
+		$isStaffSpec = $existingMailer ? ((int)($existingMailer->user_id ?? 0) > 0) : false;
+		$backAction = 'admin_index_v3';
+		if ($isStaffSpec) {
+			$backAction = ((int)($existingMailer->is_approved ?? 0) === 1)
+				? 'admin_specRequest_approved'
+				: 'admin_specRequest_disapproved';
+		}
 		if (!empty($this->request->getData())) 
 		{
 			$returnPage = isset($this->request->getData()['return_page']) ? (int)$this->request->getData()['return_page'] : $returnPage;
@@ -2316,9 +2339,15 @@ class MailersController extends AppController
 			
 			$form_type = $this->request->getData()['form_type'];
 			if ((int)$form_type === 0 && $id !== null && $id !== '') {
-				if (!$this->Mailer->exists(['Mailer.id' => (int)$id, 'Mailer.admin_id' => $user_id])) {
+				if (!$this->Mailer->exists([
+					'Mailer.id' => (int)$id,
+					'OR' => [
+						['Mailer.admin_id' => $user_id],
+						['Mailer.user_id !=' => 0],
+					],
+				])) {
 					$this->Flash->error('You do not have access to this specification.');
-					return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index_v3', '?' => ['page' => max(1, $returnPage)]], true));
+					return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => $backAction, '?' => ['page' => max(1, $returnPage)]], true));
 				}
 			}
 
@@ -2502,15 +2531,15 @@ class MailersController extends AppController
 				]);
 				
 				$this->Flash->success('PDF file updated successfully.');
-				return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index_v3', '?' => ['page' => max(1, $returnPage)]], true));
+				return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => $backAction, '?' => ['page' => max(1, $returnPage)]], true));
 			}
 		}		
 		
 		// CakePHP 3: associations defined in MailerTable; load with contain (no bindModel)
 		$mailer = $this->Mailer->get((int)$id, ['contain' => ['MailerComment', 'SpecUsearea']]);
-		if ((int)$mailer->admin_id !== $user_id) {
+		if ((int)$mailer->admin_id !== $user_id && (int)($mailer->user_id ?? 0) === 0) {
 			$this->Flash->error('You do not have access to this specification.');
-			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index_v3', '?' => ['page' => max(1, $returnPage)]], true));
+			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => $backAction, '?' => ['page' => max(1, $returnPage)]], true));
 		}
 		$mailerData = $mailer->toArray();
 		unset($mailerData['mailer_comment'], $mailerData['spec_usearea']);
@@ -2697,6 +2726,51 @@ class MailersController extends AppController
 		$msg = $newStatus ? 'Specification Approved' : 'Specification Disapproved';
 		$this->Flash->success($msg);
 
+		return $this->redirect($this->referer());
+	}
+
+	/** CamelCase alias for route /admin/mailers/delete_spec_request/:id */
+	public function adminDeleteSpecRequest($id = null): ?Response
+	{
+		return $this->admin_delete_spec_request($id);
+	}
+
+	/**
+	 * Admin: delete one staff Easy Spec request (mailer + child rows).
+	 */
+	public function admin_delete_spec_request($id = null): ?Response
+	{
+		$this->request->allowMethod(['post', 'delete']);
+		$redirect = $this->checkAdminSession();
+		if ($redirect instanceof Response) {
+			return $redirect;
+		}
+		$id = (int)$id;
+		if ($id <= 0) {
+			$this->Flash->error('Invalid request id.');
+			return $this->redirect($this->referer());
+		}
+
+		$mailer = $this->Mailer->find()
+			->where([
+				'Mailer.id' => $id,
+				'Mailer.type' => 3,
+				'Mailer.user_id !=' => 0,
+			])
+			->first();
+		if (!$mailer) {
+			$this->Flash->error('Spec request not found.');
+			return $this->redirect($this->referer());
+		}
+
+		$this->MailerComment->deleteAll(['mailer_id' => $id]);
+		$this->SpecUsearea->deleteAll(['mailer_id' => $id]);
+		$ok = $this->Mailer->delete($mailer);
+		if ($ok) {
+			$this->Flash->success('Spec request deleted successfully.');
+		} else {
+			$this->Flash->error('Unable to delete spec request.');
+		}
 		return $this->redirect($this->referer());
 	}
 

@@ -75,42 +75,43 @@
             <div class="form-group">
                 <label class="col-sm-3 control-label no-padding-right">Name/Attn:</label>
                 <div class="col-sm-9">
-                    <input type="text" name="name" id="name" class="col-xs-10 col-sm-8" value="">
+                    <input type="text" name="name" id="name" class="col-xs-10 col-sm-8" value="<?php echo h($sourceMailer->name ?? ''); ?>">
                 </div>
             </div>
 
             <div class="form-group">
                 <label class="col-sm-3 control-label no-padding-right">Company:</label>
                 <div class="col-sm-9">
-                    <input type="text" name="company" class="col-xs-10 col-sm-8" value="">
+                    <input type="text" name="company" class="col-xs-10 col-sm-8" value="<?php echo h($sourceMailer->company ?? ''); ?>">
                 </div>
             </div>
 
             <div class="form-group">
                 <label class="col-sm-3 control-label no-padding-right">Address:</label>
                 <div class="col-sm-9">
-                    <input type="text" name="address" class="col-xs-10 col-sm-8" value="">
+                    <input type="text" name="address" class="col-xs-10 col-sm-8" value="<?php echo h($sourceMailer->address ?? ''); ?>">
                 </div>
             </div>
 
             <div class="form-group">
                 <label class="col-sm-3 control-label no-padding-right">Specification:</label>
                 <div class="col-sm-9">
-                    <input type="text" name="specification" class="col-xs-10 col-sm-8" value="">
+                    <input type="text" name="specification" class="col-xs-10 col-sm-8" value="<?php echo h($sourceMailer->specification ?? ''); ?>">
                 </div>
             </div>
 
             <div class="form-group">
                 <label class="col-sm-3 control-label no-padding-right">Email:</label>
                 <div class="col-sm-9">
-                    <input type="text" name="email" id="email" class="col-xs-10 col-sm-8" value="">
+                    <input type="text" name="email" id="email" class="col-xs-10 col-sm-8" value="<?php echo h($sourceMailer->email ?? ''); ?>">
                 </div>
             </div>
 
             <div class="form-group">
                 <label class="col-sm-3 control-label no-padding-right">Date:</label>
                 <div class="col-sm-9">
-                    <input type="text" name="date" id="date" class="datepicker col-xs-10 col-sm-8" value="<?php echo date('d/m/Y'); ?>">
+                    <?php $prefDate = !empty($sourceMailer->date) ? format_db_date('d/m/Y', $sourceMailer->date) : date('d/m/Y'); ?>
+                    <input type="text" name="date" id="date" class="datepicker col-xs-10 col-sm-8" value="<?php echo h($prefDate); ?>">
                 </div>
             </div>
 
@@ -130,7 +131,7 @@
             <div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Subject:</label>
 				<div class="col-sm-9">
-					<input type="text" name="subject" value="Durotech: External Liquid WPM" id="subject" class = "col-xs-10 col-sm-8">
+					<input type="text" name="subject" value="<?php echo h($sourceMailer->subject ?? 'Durotech: External Liquid WPM'); ?>" id="subject" class = "col-xs-10 col-sm-8">
 				</div>
 			</div>
 
@@ -144,6 +145,60 @@
 				</div>
 			</div>
 
+            <?php if (!empty($sourceProducts)): ?>
+                <?php $si = 1; foreach ($sourceProducts as $products): ?>
+                <div class="form-group addsection" id="section_<?php echo (int)$si; ?>">
+                    <label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
+                    <div class="col-sm-9">
+                        <table>
+                            <tbody>
+                                <tr><td colspan="5">
+                                    <div class="frmSearch" style="position:relative;">
+                                        <input
+                                            class="newitem_<?php echo (int)$si; ?>"
+                                            type="text"
+                                            style="width:100%;"
+                                            name="title[<?php echo (int)$si; ?>]"
+                                            id="title_<?php echo (int)$si; ?>"
+                                            value="<?php echo h($products[0]['title'] ?? ''); ?>"
+                                            placeholder="enter title e.g. Wet area or planter box"
+                                            required
+                                            onkeyup="onTitleSearch(<?php echo (int)$si; ?>)"
+                                        >
+                                        <div class="suggesstion-box" id="title-suggestion-box_<?php echo (int)$si; ?>"></div>
+                                    </div>
+                                </td></tr>
+                                <tr>
+                                    <th></th>
+                                    <th>Product Type</th>
+                                    <th>Product</th>
+                                    <th>MFT</th>
+                                    <th>Warranty Period</th>
+                                </tr>
+                                <?php $sk = 0; foreach ($products as $key => $pro): ?>
+                                <tr <?php if ($sk > 0): ?>class="newitem_<?php echo (int)$si; ?>" id="div_<?php echo (int)$si; ?>_<?php echo (int)$sk; ?>"<?php endif; ?>>
+                                    <td><input type="hidden" style="width:30px;" name="types[]" value="<?php echo (int)$si; ?>"><input type="text" style="width:63px;" name="serial[]" value="<?php echo h($pro['serial'] ?? ''); ?>"></td>
+                                    <td><input type="text" style="width:225px;" name="coverage[]" value="<?php echo h($pro['coverage'] ?? ''); ?>" id="coverage_<?php echo (int)$si; ?>_<?php echo (int)$key; ?>"></td>
+                                    <td><div class="frmSearch"><input type="text" autocomplete="off" style="width:225px;" name="product[]" id="pro_<?php echo (int)$si; ?>_<?php echo (int)$key; ?>" value="<?php echo h($pro['product'] ?? ''); ?>" onkeyup="onkeyups(<?php echo (int)$si; ?>,<?php echo (int)$key; ?>)"><div id="suggesstion-box_<?php echo (int)$si; ?>_<?php echo (int)$key; ?>"></div></div></td>
+                                    <td><input type="text" style="width:100px;" name="coverage_by_pack[]" value="<?php echo h($pro['coverage_by_pack'] ?? ''); ?>" id="coverage_by_pack_<?php echo (int)$si; ?>_<?php echo (int)$key; ?>"></td>
+                                    <td><input type="text" style="width:100px;" name="Warranty[]" value="<?php echo h($pro['Warranty'] ?? ''); ?>" id="warranty_<?php echo (int)$si; ?>_<?php echo (int)$key; ?>"></td>
+                                    <td>
+                                        <?php if ($sk === 0): ?>
+                                            <a href="javascript:void(0);" style="color:red;" onclick="removesection('<?php echo (int)$si; ?>')">&nbsp;&nbsp; X </a>
+                                        <?php else: ?>
+                                            <a href="javascript:void(0);" style="color:red;" onclick="remove('<?php echo (int)$si; ?>','<?php echo (int)$sk; ?>')">&nbsp;&nbsp; X </a>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                                <?php $sk++; endforeach; ?>
+                            </tbody>
+                        </table>
+                        <div id="addnew_<?php echo (int)$si; ?>"></div>
+                        <a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addmore(<?php echo (int)$si; ?>)"><i class="fa fa-plus"></i> Add More</a>
+                    </div>
+                </div>
+                <?php $si++; endforeach; ?>
+            <?php endif; ?>
             <div id="addsection"></div>
 			
 			<div class="form-group">
@@ -158,14 +213,29 @@
             <div class="form-group" style="margin-top:40px;">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
 				<div class="col-sm-9">				
-					<table  class="commentdiv">
-						<tr>	
-							<th>Comments 1.</th>							
-						</tr>
-						<tr>							
-							<td><input type="text" style="width:400px;" name="comment[]" value=""></td>
-						</tr>
-					</table>
+                    <?php if (!empty($sourceComments)): ?>
+                        <?php $cm = 1; foreach ($sourceComments as $existingComment): ?>
+                        <table class="commentdiv" id="commentdiv_<?php echo (int)$cm; ?>">
+                            <tr>
+                                <th>Comments <?php echo (int)$cm; ?>.</th>
+                                <th></th>
+                            </tr>
+                            <tr>
+                                <td><input type="text" style="width:400px;" name="comment[]" value="<?php echo h($existingComment); ?>"></td>
+                                <td><a href="javascript:void(0);" style="color:red;" onclick="commnetdivremove('<?php echo (int)$cm; ?>')">&nbsp;&nbsp; X </a></td>
+                            </tr>
+                        </table>
+                        <?php $cm++; endforeach; ?>
+                    <?php else: ?>
+                        <table class="commentdiv">
+                            <tr>
+                                <th>Comments 1.</th>
+                            </tr>
+                            <tr>
+                                <td><input type="text" style="width:400px;" name="comment[]" value=""></td>
+                            </tr>
+                        </table>
+                    <?php endif; ?>
 					<div id="addcommentnew"></div>
 					<a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addmorecomment()"><i class="fa fa-plus"></i> Add More Comment</a>
 				</div>
@@ -418,6 +488,15 @@
 		$("#suggesstion-box_"+id+"_"+newdiv+"").hide();
 		$(".suggesstion-box").hide();
 	}
+
+	$(document).ready(function() {
+		if (typeof $.fn.datepicker !== 'undefined' && $('.datepicker').length) {
+			$('.datepicker').datepicker({
+				format: 'dd/mm/yyyy',
+				autoclose: true
+			});
+		}
+	});
 
     </script>
 

@@ -1721,6 +1721,53 @@ class StaffsController extends AppController {
 	
 	}
 
+	/** CamelCase alias for URL staffs/spec_request_index */
+	public function staffSpecRequestIndex()
+	{
+		return $this->staff_specRequest_index();
+	}
+
+	public function staff_specRequest_index()
+	{
+		$this->viewBuilder()->setLayout('staff_inner_layout');
+		$this->set('title_for_layout', 'DuroEzy Easy Spec Requests');
+		$this->checkSatffSession();
+
+		$user_id = (int)$this->request->getSession()->read('Customer.id');
+		$query = $this->Mailer->find()
+			->where([
+				'Mailer.type' => 3,
+				'Mailer.user_id' => $user_id,
+			])
+			->orderDesc('Mailer.id');
+
+		$filters = [
+			'tracknumber' => trim((string)$this->request->getQuery('tracknumber')),
+			'name' => trim((string)$this->request->getQuery('name')),
+			'email' => trim((string)$this->request->getQuery('email')),
+			'company' => trim((string)$this->request->getQuery('company')),
+			'specification' => trim((string)$this->request->getQuery('specification')),
+		];
+		if ($filters['tracknumber'] !== '') {
+			$query->andWhere(['Mailer.tracknumber LIKE' => '%' . $filters['tracknumber'] . '%']);
+		}
+		if ($filters['name'] !== '') {
+			$query->andWhere(['Mailer.name LIKE' => '%' . $filters['name'] . '%']);
+		}
+		if ($filters['email'] !== '') {
+			$query->andWhere(['Mailer.email LIKE' => '%' . $filters['email'] . '%']);
+		}
+		if ($filters['company'] !== '') {
+			$query->andWhere(['Mailer.company LIKE' => '%' . $filters['company'] . '%']);
+		}
+		if ($filters['specification'] !== '') {
+			$query->andWhere(['Mailer.specification LIKE' => '%' . $filters['specification'] . '%']);
+		}
+
+		$mailers = $this->paginate($query, ['limit' => 20]);
+		$this->set(compact('mailers', 'filters'));
+	}
+
 	/** CamelCase alias for URL staffs/staff-spec-request-form */
 	public function staffSpecRequestForm()
 	{
@@ -1733,7 +1780,42 @@ class StaffsController extends AppController {
 		$this->set('title_for_layout', 'Submit New Spec Request');
 		$this->checkSatffSession();
 
-		$user_id = $this->request->getSession()->read('Customer.id');
+		$user_id = (int)$this->request->getSession()->read('Customer.id');
+		$sourceMailer = null;
+		$sourceProducts = [];
+		$sourceComments = [];
+		$sourceId = (int)$this->request->getQuery('source_id');
+		if ($sourceId > 0) {
+			$sourceMailer = $this->Mailer->find()
+				->contain(['MailerComment', 'SpecUsearea'])
+				->where([
+					'Mailer.id' => $sourceId,
+					'Mailer.user_id' => $user_id,
+					'Mailer.type' => 3,
+				])
+				->first();
+			if ($sourceMailer) {
+				$sections = $sourceMailer->spec_usearea ?? [];
+				foreach ($sections as $row) {
+					$types = (int)($row->types ?? 0);
+					if ($types <= 0) {
+						$types = 1;
+					}
+					$sourceProducts[$types][] = [
+						'title' => (string)($row->title ?? ''),
+						'product' => (string)($row->product ?? ''),
+						'coverage' => (string)($row->coverage ?? ''),
+						'coverage_by_pack' => (string)($row->coverage_by_pack ?? ''),
+						'serial' => (string)($row->serial ?? ''),
+						'Warranty' => (string)($row->Warranty ?? ''),
+					];
+				}
+				$comments = $sourceMailer->mailer_comment ?? [];
+				foreach ($comments as $c) {
+					$sourceComments[] = (string)($c->comment ?? '');
+				}
+			}
+		}
 	
 		$data = $this->request->getData();
 		if (!empty($data)) {
@@ -1746,7 +1828,14 @@ class StaffsController extends AppController {
 			$company = $data['company'] ?? '';
 			$address = $data['address'] ?? '';
 			$specification = $data['specification'] ?? '';
-			$date = !empty($data['date']) ? date('Y-m-d', strtotime($data['date'])) : date('Y-m-d');
+			$date = date('Y-m-d');
+			if (!empty($data['date'])) {
+				$rawDate = trim((string)$data['date']);
+				$ts = strtotime(str_replace('/', '-', $rawDate));
+				if ($ts !== false) {
+					$date = date('Y-m-d', $ts);
+				}
+			}
 			$type = $data['type'] ?? '';
 			$subject = $data['subject'] ?? '';
 			$use_area = $data['use_area'] ?? 1;
@@ -1891,10 +1980,132 @@ class StaffsController extends AppController {
 				}
 
 				$this->Flash->success('PDF file generated successfully.');
-				return $this->redirect(['action' => 'staff_specRequest_form']);
+				return $this->redirect(['action' => 'staff_specRequest_index']);
 			}
 
 			$this->Flash->error('Failed to submit.');
 		}
+		$this->set(compact('sourceMailer', 'sourceProducts', 'sourceComments'));
+	}
+
+	public function staff_audit_log($id = null)
+	{
+		$this->viewBuilder()->setLayout('staff_inner_layout');
+		$this->set('title_for_layout', SITENAME . ' Spec Audit Trail');
+		$this->checkSatffSession();
+
+		$user_id = (int)$this->request->getSession()->read('Customer.id');
+		$id = (int)$id;
+		if ($id <= 0) {
+			$this->Flash->error('Invalid spec id.');
+			return $this->redirect(['action' => 'staff_specRequest_index']);
+		}
+
+		$mailer = $this->Mailer->find()
+			->where([
+				'Mailer.id' => $id,
+				'Mailer.user_id' => $user_id,
+				'Mailer.type' => 3,
+			])
+			->first();
+		if (!$mailer) {
+			$this->Flash->error('Spec not found.');
+			return $this->redirect(['action' => 'staff_specRequest_index']);
+		}
+
+		$this->loadModel('SpecAuditLogs');
+		$rows = $this->SpecAuditLogs->find()
+			->where(['mailer_id' => $id])
+			->orderDesc('id')
+			->all()
+			->toArray();
+
+		$this->set(compact('mailer', 'rows'));
+	}
+
+	public function staffAuditLog($id = null)
+	{
+		return $this->staff_audit_log($id);
+	}
+
+	public function staff_sendemail($id = null)
+	{
+		$this->autoRender = false;
+		$this->checkSatffSession();
+		$user_id = (int)$this->request->getSession()->read('Customer.id');
+		$id = (int)$id;
+
+		$mailer = $this->Mailer->find()
+			->where([
+				'Mailer.id' => $id,
+				'Mailer.user_id' => $user_id,
+				'Mailer.type' => 3,
+			])
+			->first();
+		if (!$mailer) {
+			$this->Flash->error('Record not found.');
+			return $this->redirect(['action' => 'staff_specRequest_index']);
+		}
+
+		$to = trim((string)($mailer->email ?? ''));
+		if ($to === '') {
+			$this->Flash->error('Recipient email is missing for this record.');
+			return $this->redirect(['action' => 'staff_specRequest_index']);
+		}
+		if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
+			$this->Flash->error('Invalid recipient email address for this record.');
+			return $this->redirect(['action' => 'staff_specRequest_index']);
+		}
+
+		$mailerId = (int)$mailer->id;
+		$trackNo = (string)($mailer->tracknumber ?? '');
+		$subject = (string)($mailer->subject ?? 'Specification');
+		$pdfname = base64_encode(base64_encode($mailerId . '-' . $trackNo . '.pdf'));
+		$template_name = 'new_sendeasyspec';
+		$variables = [
+			'subject' => $subject,
+			'pdf_attachment' => (string)($mailer->pdf_attachment ?? ''),
+			'pdfname' => $pdfname,
+			'name' => (string)($mailer->name ?? ''),
+			'address' => (string)($mailer->address ?? ''),
+			'company' => (string)($mailer->company ?? ''),
+			'specification' => (string)($mailer->specification ?? ''),
+			'email' => $to,
+			'date' => (string)($mailer->date ?? ''),
+		];
+
+		try {
+			$this->sendemail($to, $subject, $template_name, $variables);
+		} catch (\Exception $e) {
+			$this->Flash->error('Unable to send email right now.');
+			return $this->redirect(['action' => 'staff_specRequest_index']);
+		}
+
+		if ($this->Mailer->getSchema()->getColumn('spec_email_sent_at')) {
+			$mailer->spec_email_sent_at = date('Y-m-d H:i:s');
+			if ($this->Mailer->getSchema()->getColumn('spec_email_sent_to')) {
+				$mailer->spec_email_sent_to = $to;
+			}
+			$this->Mailer->save($mailer);
+		}
+
+		$this->logSpecAudit([
+			'mailer_id' => $mailerId,
+			'tracknumber' => $trackNo,
+			'action' => 'spec_email_sent',
+			'actor_role' => 'staff',
+			'actor_id' => $user_id,
+			'source' => 'staff_panel',
+			'message' => 'Staff sent spec email to customer.',
+			'meta' => ['to' => $to],
+		]);
+
+		$this->Flash->success('Email sent successfully');
+		return $this->redirect(['action' => 'staff_specRequest_index']);
+	}
+
+	public function staffSendemail($id = null)
+	{
+		return $this->staff_sendemail($id);
 	}
 }

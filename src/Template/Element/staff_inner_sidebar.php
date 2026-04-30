@@ -202,8 +202,8 @@
 					<?php } ?>
 
 
-					<li class="<?php if ($this->params['controller']=='staffs' && $this->params['action']=='staff_specRequest_form') { echo 'active'; } ?>">
-						<a href="<?php echo SITEURL ?>/staffs/staff_specRequest_form">
+					<li class="<?php if ($this->params['controller']=='staffs' && in_array($this->params['action'], ['staff_specRequest_index', 'staffSpecRequestIndex', 'staff_specRequest_form', 'staffSpecRequestForm'], true)) { echo 'active'; } ?>">
+						<a href="<?php echo SITEURL ?>/staffs/staff_specRequest_index">
 							<i class="menu-icon fa fa-file-text-o"></i>
 							<span class="menu-text">Easy Spec Request </span>
 						</a>

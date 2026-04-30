@@ -41,8 +41,17 @@
 						// CakePHP 3: $mailer is an Entity; use property access
 						foreach ($mailers as $mailer):
 							$pdfUrl = !empty($mailer->pdf_attachment)
-								? ($this->Url->build('/', true) . $mailer->pdf_attachment)
+								? ($this->Url->build('/', true) . ltrim((string)$mailer->pdf_attachment, '/'))
 								: null;
+							if (!$pdfUrl) {
+								$pdfBaseName = (string)($mailer->id ?? '') . '-' . (string)($mailer->tracknumber ?? '');
+								$pdfBaseName = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $pdfBaseName);
+								$pdfBaseName = preg_replace('/_+/', '_', (string)$pdfBaseName);
+								$pdfBaseName = trim((string)$pdfBaseName, '_');
+								if ($pdfBaseName !== '') {
+									$pdfUrl = $this->Url->build('/', true) . 'dompdf/' . $pdfBaseName . '.pdf';
+								}
+							}
 						?>
 						<tr>
 							<td>#<?php echo h($mailer->tracknumber ?? ''); ?>&nbsp;</td>
@@ -51,11 +60,18 @@
 							<td><?php echo h($mailer->company ?? ''); ?>&nbsp;</td>
 							<td><?php echo h($mailer->address ?? ''); ?>&nbsp;</td>
 							<td><?php echo h($mailer->specification ?? ''); ?>&nbsp;</td>
-							<td><?php echo h($mailer->date ?? ''); ?>&nbsp;</td>
+							<td><?php
+								$specDate = (string)($mailer->date ?? '');
+								if ($specDate === '1970-01-01' || $specDate === '0000-00-00' || $specDate === '') {
+									echo h(!empty($mailer->created) ? format_db_date('Y-m-d', $mailer->created) : '—');
+								} else {
+									echo h(format_db_date('Y-m-d', $specDate));
+								}
+							?>&nbsp;</td>
 
 							<td>
-								<?php if (!empty($mailer->pdf_attachment)): ?>
-									<a href="<?php echo $this->Url->build('/', true) . $mailer->pdf_attachment; ?>" target="_blank">View PDF</a>
+								<?php if ($pdfUrl): ?>
+									<a href="<?php echo h($pdfUrl); ?>" target="_blank">View PDF</a>
 								<?php else: ?>
 									No Attachment
 								<?php endif; ?>
@@ -83,6 +99,7 @@
 									<span class="btn btn-mini btn-default" title="Generate PDF from Edit page">No PDF</span>
 								<?php endif; ?>
 								<a onclick="return confirm('Are you sure send email?')" class="btn btn-mini btn-danger" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_sendemail', $mailer->id], true); ?>">Send Mail</a>
+								<?php echo $this->Form->postLink('Delete', ['controller' => 'Mailers', 'action' => 'admin_delete_spec_request', $mailer->id], ['class' => 'btn btn-mini btn-default', 'confirm' => 'Delete this spec request? This cannot be undone.']); ?>
 							</td>
 						</tr>
 						<?php endforeach; ?>
@@ -97,7 +114,7 @@
 <script>
 $(document).ready(function() {
 	$('#example').DataTable({
-		"order": [[ 1, "desc" ]] // Sort by second column (Send Name) descending
+		"order": [] // Keep backend order (Mailer.id DESC)
 	});
 });
 </script>

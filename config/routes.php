@@ -257,7 +257,10 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/staffs/dashboard', ['controller' => 'Staffs', 'action' => 'dashboard']);
     $routes->connect('/staffs/profile', ['controller' => 'Staffs', 'action' => 'profile']);
     $routes->connect('/staffs/change_password', ['controller' => 'Staffs', 'action' => 'change_password']);
+    $routes->connect('/staffs/staff_spec_request_index', ['controller' => 'Staffs', 'action' => 'staff_specRequest_index']);
     $routes->connect('/staffs/staff_spec_request_form', ['controller' => 'Staffs', 'action' => 'staff_specRequest_form']);
+    $routes->connect('/staffs/staff_sendemail/:id', ['controller' => 'Staffs', 'action' => 'staff_sendemail'], ['pass' => ['id']]);
+    $routes->connect('/staffs/staff_audit_log/:id', ['controller' => 'Staffs', 'action' => 'staff_audit_log'], ['pass' => ['id']]);
     $routes->connect('/staffs/logout', ['controller' => 'Staffs', 'action' => 'logout']);
     $routes->connect('/staffs/autologin/:id', ['controller' => 'Staffs', 'action' => 'autologin'], ['pass' => ['id']]);
 
@@ -337,6 +340,7 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/mailers/specRequest_index', ['controller' => 'Mailers', 'action' => 'admin_specRequest_index']);
     $routes->connect('/admin/mailers/specRequest_approved', ['controller' => 'Mailers', 'action' => 'admin_specRequest_approved']);
     $routes->connect('/admin/mailers/specRequest_disapproved', ['controller' => 'Mailers', 'action' => 'admin_specRequest_disapproved']);
+    $routes->connect('/admin/mailers/delete_spec_request/:id', ['controller' => 'Mailers', 'action' => 'admin_delete_spec_request'], ['pass' => ['id']]);
     $routes->connect('/mailers/download/:id', ['controller' => 'Mailers', 'action' => 'download'], ['pass' => ['id']]);
 
     // AI Lessons demo (OpenAI script + quiz generation)
