@@ -103,7 +103,7 @@ class EmployeesController extends AppController {
                     ]);
                     $this->LoginHistory->save($loginHistory);
 
-                    return $this->redirect('/employees/monthly_specs');
+                    return $this->redirect($this->getAndClearEmployeeIntendedUrl());
                 }
             } else {
                 $this->Flash->error('Wrong username/password');
@@ -1207,7 +1207,10 @@ public function editsend_v3($id = null) {
                 ]);
 
                 // Recipient: Kal or others if needed
-                $email->setTo('kal@durotechindustries.com.au');
+                // $email->setTo('kal@durotechindustries.com.au');
+                $email->setTo('kal@durotechindustries.com.au')
+							->setCc('info@durotechindustries.com.au')
+							->setBcc('sales@durotechindustries.com.au');
 
                 $email->setSubject('Specification Edited – ' . $inserty['Mailer']['tracknumber']);
                 $email->setEmailFormat('html');
@@ -1639,8 +1642,8 @@ protected function _sendApprovalNotification($caseData) {
 
         // ✅ From Durotech info email
         $email->setFrom(['info@durotechindustries.com.au' => 'Durotech Employee Portal'])
-            //   ->setTo('kal@durotechindustries.com.au')
-              ->setTo('deepaksaini10036@gmail.com')
+              ->setTo('kal@durotechindustries.com.au')
+            //   ->setTo('deepaksaini10036@gmail.com')
               ->setSubject('New Case Study Submitted for Approval')
               ->setEmailFormat('html');
 
@@ -1729,7 +1732,7 @@ protected function _sendApprovalNotification($caseData) {
 
 public function test_email() {
     $email = new Email('default');
-    $email->setTo('deepaksaini10036@gmail.com');
+    $email->setTo('kal@durotechindustries.com.au');
     $email->setSubject('Test Email from Durotech');
     $email->send('This is a test email from Durotech server.');
     echo "Email sent!";

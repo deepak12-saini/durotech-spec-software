@@ -155,9 +155,54 @@ class AppController extends Controller
         if (!$session->read('is_employee')) {
             // set flash message and redirect
             $this->Flash->error('Sorry, you have no user account access. Please login with user account.');
+            if (($this->request->is('get') || $this->request->is('head'))
+                && !$this->request->is('ajax')) {
+                $target = $this->request->getRequestTarget();
+                if ($this->isSafeEmployeeRedirectUrl($target)
+                    && stripos($target, 'spec-draft-autosave') === false) {
+                    $session->write('Employee.intended_url', $target);
+                }
+            }
             return $this->redirect(rtrim(SITEURL, '/') . '/employees/login');
         }
         return null;
+    }
+
+    /**
+     * Whether a path (request-target) is safe to use after employee login (same-site, /employees/* only).
+     */
+    protected function isSafeEmployeeRedirectUrl(string $url): bool
+    {
+        if ($url === '' || $url[0] !== '/') {
+            return false;
+        }
+        if (strpos($url, '//') === 0) {
+            return false;
+        }
+        if (strpos($url, '/employees/') === false) {
+            return false;
+        }
+        if (preg_match('#/employees/(login|register|send_forgot_password)(/|\?|$)#i', $url)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Return stored post-login redirect for employee panel, or default list URL.
+     */
+    protected function getAndClearEmployeeIntendedUrl(): string
+    {
+        $session = $this->request->getSession();
+        $default = '/employees/monthly_specs';
+        $url = (string)$session->read('Employee.intended_url');
+        $session->delete('Employee.intended_url');
+        if ($url !== '' && $this->isSafeEmployeeRedirectUrl($url)) {
+            return $url;
+        }
+
+        return $default;
     }
 
     //Function 'checkStaffession' for admin check in controller
