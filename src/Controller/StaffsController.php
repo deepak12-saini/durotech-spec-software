@@ -1937,9 +1937,11 @@ class StaffsController extends AppController {
 				$template_name = 'new_sendeasyspec';
 				$pdfFileName = $resolvedPdfFileName;
 				$pdfFilePath = WWW_ROOT . 'dompdf' . DS . $pdfFileName;
-				$toEmail = 'kal@durotechindustries.com.au';
-				$ccEmails = ['info@durotechindustries.com.au'];
-				$bccEmails = ['deepaksaini10036@gmail.com'];
+				$specEmailConfig = (array)\Cake\Core\Configure::read('SpecEmail');
+				$toEmail = (array)($specEmailConfig['to'] ?? ['kal@durotechindustries.com.au']);
+				$toEmailPrimary = (string)($toEmail[0] ?? 'kal@durotechindustries.com.au');
+				$ccEmails = (array)($specEmailConfig['cc'] ?? ['info@durotechindustries.com.au']);
+				$bccEmails = (array)($specEmailConfig['bcc'] ?? ['sales@durotechindustries.com.au']);
 				$variables = [
 					'subject' => $subject,
 					'pdfname' => base64_encode(base64_encode($pdfFileName)),
@@ -1952,8 +1954,9 @@ class StaffsController extends AppController {
 				];
 				try {
 					if (is_file($pdfFilePath)) {
-						$from = defined('EMAIL') ? EMAIL : 'deepaksaini10036@gmail.com';
-						$fromName = defined('SITENAME') ? SITENAME : 'Durotech';
+						$fromCfg = (array)($specEmailConfig['from'] ?? []);
+						$from = defined('EMAIL') ? EMAIL : (string)(array_key_first($fromCfg) ?: 'no-reply@durotechindustries.com.au');
+						$fromName = defined('SITENAME') ? SITENAME : (string)($fromCfg[$from] ?? 'Durotech');
 						$emailObj = new \Cake\Mailer\Email('default');
 						$emailObj->viewBuilder()
 							->setClassName('App\\View\\AppView')
@@ -1973,7 +1976,7 @@ class StaffsController extends AppController {
 							])
 							->send();
 					} else {
-						$this->sendemail($toEmail, $subject, $template_name, $variables);
+						$this->sendemail($toEmailPrimary, $subject, $template_name, $variables);
 					}
 				} catch (\Throwable $e) {
 					\Cake\Log\Log::error('Staff spec request email failed: ' . $e->getMessage());

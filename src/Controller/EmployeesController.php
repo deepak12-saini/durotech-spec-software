@@ -637,16 +637,11 @@ public function employee_send_v3() {
                 try {
                     $email = new Email('default');
 
-                    $email->setFrom([
-                        'info@durotechindustries.com.au' => 'Durotech Industries'
-                        //'deepaksaini10036@gmail.com' => 'Durotech Industries'
-                    ]);
-
-                    $emailConfig = Configure::read('SpecEmail');
-
-					$email->setTo('kal@durotechindustries.com.au')
-							->setCc('info@durotechindustries.com.au')
-							->setBcc('sales@durotechindustries.com.au');
+                    $emailConfig = (array)Configure::read('SpecEmail');
+                    $email->setFrom((array)($emailConfig['from'] ?? ['no-reply@durotechindustries.com.au' => 'Durotech Industries']));
+					$email->setTo((array)($emailConfig['to'] ?? ['kal@durotechindustries.com.au']))
+							->setCc((array)($emailConfig['cc'] ?? ['info@durotechindustries.com.au']))
+							->setBcc((array)($emailConfig['bcc'] ?? ['sales@durotechindustries.com.au']));
 
                     $email->setSubject(
                         'New Spec Created – ' . $inserty['Mailer']['tracknumber']
@@ -1202,15 +1197,11 @@ public function editsend_v3($id = null) {
             if (file_exists($pdfFilePath)) {
                 $email = new Email('default');
 
-                $email->setFrom([
-                    'no-reply@durotechindustries.com.au' => 'Durotech Industries'
-                ]);
-
-                // Recipient: Kal or others if needed
-                // $email->setTo('kal@durotechindustries.com.au');
-                $email->setTo('kal@durotechindustries.com.au')
-							->setCc('info@durotechindustries.com.au')
-							->setBcc('sales@durotechindustries.com.au');
+                $emailConfig = (array)Configure::read('SpecEmail');
+                $email->setFrom((array)($emailConfig['from'] ?? ['no-reply@durotechindustries.com.au' => 'Durotech Industries']));
+                $email->setTo((array)($emailConfig['to'] ?? ['kal@durotechindustries.com.au']))
+							->setCc((array)($emailConfig['cc'] ?? ['info@durotechindustries.com.au']))
+							->setBcc((array)($emailConfig['bcc'] ?? ['sales@durotechindustries.com.au']));
 
                 $email->setSubject('Specification Edited – ' . $inserty['Mailer']['tracknumber']);
                 $email->setEmailFormat('html');
