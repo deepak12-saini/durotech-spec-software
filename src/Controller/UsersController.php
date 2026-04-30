@@ -11,6 +11,34 @@ use Cake\Http\Response;
  */
 class UsersController extends AppController
 {
+    /**
+     * Hash admin password before storing in DB.
+     */
+    protected function hashAdminPassword(string $plainPassword): string
+    {
+        return password_hash($plainPassword, PASSWORD_BCRYPT);
+    }
+
+    /**
+     * Verify plain password against stored hash/plain legacy value.
+     */
+    protected function verifyAdminPassword(string $plainPassword, ?string $storedPassword): bool
+    {
+        $stored = (string)$storedPassword;
+        if ($stored === '') {
+            return false;
+        }
+
+        // New secure format (bcrypt/argon/etc)
+        $info = password_get_info($stored);
+        if (!empty($info['algo'])) {
+            return password_verify($plainPassword, $stored);
+        }
+
+        // Backward compatibility for legacy plain-text rows
+        return hash_equals($stored, $plainPassword);
+    }
+
     public function initialize(): void
     {
         parent::initialize();
@@ -237,13 +265,18 @@ class UsersController extends AppController
 		}		
 		if ($this->request->is('post') && !empty($this->request->getData())){
 			$data = $this->request->getData();
+            $username = (string)($data['User']['username'] ?? '');
+            $password = (string)($data['User']['password'] ?? '');
 			$admin_arr = $this->User->find()
-				->where([
-					'username' => $data['User']['username'] ?? '',
-					'password' => $data['User']['password'] ?? ''
-				])
+				->where(['username' => $username])
 				->first();
-			if ($admin_arr) {
+			if ($admin_arr && $this->verifyAdminPassword($password, (string)$admin_arr->get('password'))) {
+                // One-time transparent migration from legacy plain text to hash
+                $storedPassword = (string)$admin_arr->get('password');
+                if (password_get_info($storedPassword)['algo'] === 0) {
+                    $admin_arr->set('password', $this->hashAdminPassword($password));
+                    $this->User->save($admin_arr, ['validate' => false, 'checkRules' => false]);
+                }
 				$ent = $this->LoginHistory->newEntity([
 					'admin_id' => $admin_arr->get('id'),
 					'role' => 'Admin',
@@ -449,8 +482,10 @@ class UsersController extends AppController
 			if ($User) {
 				$data = $this->request->getData('User');
 				if (($data['new_password'] ?? '') === ($data['confirm_password'] ?? '')) {
-					if (($User->get('password') ?? '') === ($data['current_password'] ?? '')) {
-						$User->set('password', $data['new_password']);
+                    $currentPassword = (string)($data['current_password'] ?? '');
+                    $newPassword = (string)($data['new_password'] ?? '');
+					if ($this->verifyAdminPassword($currentPassword, (string)$User->get('password'))) {
+						$User->set('password', $this->hashAdminPassword($newPassword));
 						$this->User->save($User);
 						$this->Flash->success('Your password has been changed successfully.');
 					} else {
@@ -544,7 +579,7 @@ class UsersController extends AppController
 			if(!empty($User)){
 				$this->User->id=$User['User']['id'];
 				$password=$this->random_password(8);
-				$this->User->saveField("password",$password);
+				$this->User->saveField("password",$this->hashAdminPassword($password));
 				$to=$this->request->getData()['User']['email'];
 				$subject=SITENAME." Password reset";
 				// find template
