@@ -1717,7 +1717,10 @@ class MailersController extends AppController
 			$inserty['type'] = $type;
 			$inserty['subject'] = $subject;
 			$inserty['use_area'] = $use_area;
-			$inserty['created'] = date('Y-m-d H:i:s');
+			// Preserve original created datetime when reviewing/updating existing spec.
+			if ((int)$form_type !== 0) {
+				$inserty['created'] = date('Y-m-d H:i:s');
+			}
 
 			if($form_type == 0){
 				$mailerEntity = $this->Mailer->get((int)$id);
@@ -2437,13 +2440,21 @@ class MailersController extends AppController
 			$inserty['Mailer']['type'] = $type;
 			$inserty['Mailer']['subject'] = $subject;
 			$inserty['Mailer']['use_area'] = $use_area;			
-			$inserty['Mailer']['created'] = date('Y-m-d H:i:s');
+			// Preserve original created datetime when editing existing spec.
+			if ((int)$form_type !== 0) {
+				$inserty['Mailer']['created'] = date('Y-m-d H:i:s');
+			}
 
 			// CakePHP 3: save() requires an Entity, not an array
 			if ($form_type == 0) {
 				$inserty['Mailer']['id'] = $id;
 			}
-			$mailerEntity = $this->Mailer->newEntity($inserty['Mailer']);
+			if ((int)$form_type === 0) {
+				$mailerEntity = $this->Mailer->get((int)$id);
+				$mailerEntity = $this->Mailer->patchEntity($mailerEntity, $inserty['Mailer']);
+			} else {
+				$mailerEntity = $this->Mailer->newEntity($inserty['Mailer']);
+			}
 			if ($this->Mailer->save($mailerEntity)) {
 				$lastinsertId = ($form_type == 0) ? (int)$id : $mailerEntity->id;
 
