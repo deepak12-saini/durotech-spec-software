@@ -48,6 +48,7 @@
 							<th>Date</th>
 							<th>PDF Attachment</th>
 							<th>Created</th>
+							<th>Customer email</th>
 							<th>Action</th>
 						</tr>
 					</thead>
@@ -108,8 +109,30 @@
 								}
 							?></td>
 
+							<td>
+								<?php
+								$specSentAt = $mailer['Mailer']['spec_email_sent_at'] ?? null;
+								$specSentTo = $mailer['Mailer']['spec_email_sent_to'] ?? '';
+								if (!empty($specSentAt)) {
+									$at = $specSentAt instanceof \DateTimeInterface
+										? $specSentAt->format('d-M-Y h:i a')
+										: format_db_date('d-M-Y h:i a', (string)$specSentAt);
+									echo '<span class="label label-success">Sent</span><br><small>' . h($at) . '</small>';
+									if ($specSentTo !== '') {
+										echo '<br><small class="text-muted">to ' . h($specSentTo) . '</small>';
+									}
+								} else {
+									echo '<span class="label label-default">Not sent</span>';
+								}
+								?>
+							</td>
+
 							<!-- Action buttons -->
 							<td>
+								<?php
+								$specSentAtBtn = $mailer['Mailer']['spec_email_sent_at'] ?? null;
+								$sendBtnClass = !empty($specSentAtBtn) ? 'btn btn-mini btn-warning' : 'btn btn-mini btn-danger';
+								?>
 								<!-- Edit spec -->
 								<a class="btn btn-mini btn-primary js-edit-spec" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_editsend_v3', $mailer['Mailer']['id']]); ?>">Edit</a>
 								
@@ -117,7 +140,7 @@
 								<a class="btn btn-mini btn-info" href="<?php echo h($this->Url->build('/', true) . 'dompdf/' . $pdffilename); ?>" target="_blank">Download</a>
 								
 								<!-- Send Email -->
-								<a onclick="return confirm('Are you sure send email?')" class="btn btn-mini btn-danger" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_sendemail', $mailer['Mailer']['id']]); ?>">Send Mail</a>
+								<a onclick="return confirm('Are you sure send email?')" class="<?php echo h($sendBtnClass); ?>" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_sendemail', $mailer['Mailer']['id']]); ?>">Send Mail</a>
 								<a class="btn btn-mini btn-default" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_audit_log', $mailer['Mailer']['id']]); ?>">Audit</a>
 							</td>
 						</tr>

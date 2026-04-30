@@ -468,27 +468,40 @@ class MailersController extends AppController
 
 	public function admin_sendemail($id = null): ?Response
 	{
-		$this->checkAdminSession();
+		$redirect = $this->checkAdminSession();
+		if ($redirect instanceof Response) {
+			return $redirect;
+		}
+		$user_id = (int)$this->request->getSession()->read('User.id');
 		$id = (int)$id;
-		$mailer = $this->Mailer->get($id);
+
+		$mailer = $this->Mailer->find()
+			->where([
+				'Mailer.id' => $id,
+				'Mailer.admin_id' => $user_id,
+			])
+			->first();
 		if (!$mailer) {
 			$this->Flash->error('Record not found.');
-			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index'], true));
+			return $this->redirect(['controller' => 'Mailers', 'action' => 'admin_index']);
 		}
+
+		$listAction = ((int)($mailer->type ?? 0) === 3) ? 'admin_index_v3' : 'admin_index';
+		$listRedirect = ['controller' => 'Mailers', 'action' => $listAction];
 
 		// Validate email address - handle null, empty string, or whitespace
 		$to = isset($mailer->email) ? (string)$mailer->email : '';
 		$to = trim($to);
-		
-		if (empty($to) || $to === '') {
+
+		if ($to === '') {
 			$this->Flash->error('Cannot send email: No email address specified for this spec (ID: ' . $id . '). Please edit the spec and add an email address.');
-			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index'], true));
+			return $this->redirect($listRedirect);
 		}
 
 		// Validate email format
 		if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
 			$this->Flash->error('Cannot send email: Invalid email address format: "' . htmlspecialchars($to) . '". Please edit the spec and correct the email address.');
-			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index'], true));
+			return $this->redirect($listRedirect);
 		}
 
 		$pdfname = base64_encode(base64_encode($mailer->id . '-' . $mailer->tracknumber . '.pdf'));
@@ -507,22 +520,33 @@ class MailersController extends AppController
 			'date' => $mailer->date ?? '',
 		];
 
-		// Final validation check before sending
-		if (empty($to) || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
-			$this->Flash->error('Cannot send email: Email validation failed. Email: "' . htmlspecialchars($to) . '"');
-			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index'], true));
-		}
-
 		try {
 			$this->getMailer('Spec')->send('sendSpec', [$to, $subject, $vars]);
+			if ($this->Mailer->getSchema()->getColumn('spec_email_sent_at')) {
+				$mailer->spec_email_sent_at = date('Y-m-d H:i:s');
+				if ($this->Mailer->getSchema()->getColumn('spec_email_sent_to')) {
+					$mailer->spec_email_sent_to = $to;
+				}
+				$this->Mailer->save($mailer);
+			}
+			$this->logSpecAudit([
+				'mailer_id' => (int)$mailer->id,
+				'tracknumber' => (string)($mailer->tracknumber ?? ''),
+				'action' => 'spec_email_sent',
+				'actor_role' => 'admin',
+				'actor_id' => $user_id,
+				'source' => 'admin_panel',
+				'message' => 'Admin sent spec email to customer.',
+				'meta' => ['to' => $to],
+			]);
 			$this->Flash->success('Email sent successfully to ' . htmlspecialchars($to) . '.');
 		} catch (\InvalidArgumentException $e) {
-			// Handle validation errors from SpecMailer
 			$this->Flash->error('Email validation error: ' . $e->getMessage());
 		} catch (\Throwable $e) {
 			$this->Flash->error('Failed to send email: ' . $e->getMessage());
 		}
-		return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => 'admin_index'], true));
+
+		return $this->redirect($listRedirect);
 	}
 
 	public function download($id): ?Response

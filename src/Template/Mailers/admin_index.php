@@ -25,7 +25,7 @@
 					<th>PDF Attachment</th>
 					<th>Created</th>
 					<th>Status</th>
-
+					<th>Customer email</th>
 					<th>Action</th>
 				</tr>
 				</thead>
@@ -92,12 +92,34 @@
 					</td>
 
 					<td>
+						<?php
+						$specSentAt = $mailer['Mailer']['spec_email_sent_at'] ?? null;
+						$specSentTo = $mailer['Mailer']['spec_email_sent_to'] ?? '';
+						if (!empty($specSentAt)) {
+							$at = $specSentAt instanceof \DateTimeInterface
+								? $specSentAt->format('d-M-Y h:i a')
+								: format_db_date('d-M-Y h:i a', (string)$specSentAt);
+							echo '<span class="label label-success">Sent</span><br><small>' . h($at) . '</small>';
+							if ($specSentTo !== '') {
+								echo '<br><small class="text-muted">to ' . h($specSentTo) . '</small>';
+							}
+						} else {
+							echo '<span class="label label-default">Not sent</span>';
+						}
+						?>
+					</td>
+
+					<td>
+						<?php
+						$specSentAtBtn = $mailer['Mailer']['spec_email_sent_at'] ?? null;
+						$sendBtnClass = !empty($specSentAtBtn) ? 'btn btn-mini btn-warning' : 'btn btn-mini btn-danger';
+						?>
 						<a class="btn btn-mini btn-primary" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_editsend', $mailer['Mailer']['id']]); ?>">Edit</a>
 						
 						 <?php if ($saveStatus !== 'draft'): ?>
 							<a class="btn btn-mini btn-info" href="<?php echo h(\Cake\Routing\Router::url('/', true) . 'dompdf/' . $pdffilename); ?>" target="_blank">Download</a>
 						<?php endif; ?>
-							<a onclick="retrun confirm('Are you sure send email?')" class="btn btn-mini btn-danger" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_sendemail', $mailer['Mailer']['id']]); ?>">Send Mail</a>
+							<a onclick="return confirm('Are you sure send email?')" class="<?php echo h($sendBtnClass); ?>" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_sendemail', $mailer['Mailer']['id']]); ?>">Send Mail</a>
 					</td>
 					</tr>
 					<?php endforeach; ?>
