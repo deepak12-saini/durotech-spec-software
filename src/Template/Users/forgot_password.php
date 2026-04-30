@@ -21,7 +21,8 @@
 
 								<div class="space-6"></div>
 
-								<?= $this->Form->create(null, ['url' => ['action' => 'forgot_password'], 'method' => 'post']) ?>
+								<?= $this->Form->create(null, ['url' => ['action' => 'forgotPassword', $usersId ?? null], 'method' => 'post']) ?>
+                                <?= $this->Form->hidden('usersId', ['value' => $usersId ?? '']) ?>
 								<?= $this->Flash->render() ?>
 									<fieldset>
 										<label class="block clearfix">

@@ -500,72 +500,110 @@ class UsersController extends AppController
 		}
 		return null;
 	}
+
+    /**
+     * CakePHP 3 dashed route alias: /users/send-forgot-password
+     */
+    public function sendForgotPassword()
+    {
+        return $this->send_forgot_password();
+    }
 	
 	function send_forgot_password()
 	{
 		if($this->request->is('post')){
-			
-			$User = $this->NappUser->find()->where(['NappUser.email' => $this->request->getData()['User']['email']])->first();
-			if(!empty($User)){
-				
-				//$this->NappUser->id = $User['NappUser']['id'];
-				//$password=$this->random_password(8);
-				//$this->NappUser->saveField("password",md5($password));
-				
-				
-				$userId = base64_encode(base64_encode(base64_encode($User['NappUser']['id'])));
+            $email = (string)($this->request->getData('User.email') ?? '');
+            $User = $this->NappUser->find()->where(['NappUser.email' => $email])->first();
+			if(!empty($User) && !empty($User->id)){
+				$userId = base64_encode(base64_encode(base64_encode((string)$User->id)));
 				$url = SITEURL.'users/forgot_password/'.$userId;
-				//$to = 'web@xoroglobal.com';	
-				$to = $User['NappUser']['email'];	
-				$subject=SITENAME." :: Reset your password.";				
+				$to = (string)($User->email ?? '');
+				$subject=SITENAME." :: Reset your password.";
 				$template_name = 'setpassword';
-				$variables = array('url'=>$url,'name'=>$User['NappUser']['name'],'email'=>$this->request->getData()['User']['email']);		
+				$variables = array('url'=>$url,'name'=>(string)($User->name ?? ''),'email'=>$email);
 				try{
 					$this->sendemail($to,$subject,$template_name,$variables);
-				}catch (Exception $e){
-					
-				}				
-				$this->Flash->success('Please check your email and set your password. ');
+				    $this->Flash->success('Please check your email and set your password. ');
+				}catch (\Exception $e){
+                    \Cake\Log\Log::error('Forgot password email failed for ' . $email . ': ' . $e->getMessage());
+                    $this->Flash->error('Unable to send reset email right now. Please try again later.');
+				}
 			}else{
 				$this->Flash->error('The email entered is not found. Please, try again.');
 			}
-			$this->redirect('/login');
+			return $this->redirect('/login');
 		}
+        return null;
 	}
+
+    /**
+     * CakePHP 3 dashed route alias: /users/forgot-password/:usersId
+     */
+    public function forgotPassword($usersId = null)
+    {
+        return $this->forgot_password($usersId);
+    }
 	
 	function forgot_password($usersId=null)
 	{
 		$this->viewBuilder()->setLayout('admin_login');
-		
-		$userId = base64_decode(base64_decode(base64_decode($usersId)));
+
+        // Preserve token on POST (form can submit without route param).
+        if ($usersId === null || $usersId === '') {
+            $usersId = (string)($this->request->getData('usersId') ?? '');
+        }
+        $this->set('usersId', (string)$usersId);
+
+        if ($usersId === '') {
+            $this->Flash->error('Invalid or expired reset link.');
+            return $this->redirect('/login');
+        }
+
+        $decoded = base64_decode((string)$usersId, true);
+        $decoded = $decoded === false ? false : base64_decode($decoded, true);
+        $decoded = $decoded === false ? false : base64_decode($decoded, true);
+        $userId = ($decoded === false || $decoded === '') ? null : (int)$decoded;
+        if (empty($userId)) {
+            $this->Flash->error('Invalid or expired reset link.');
+            return $this->redirect('/login');
+        }
+
 		$usersArr = $this->NappUser->find()->where(['NappUser.id' => $userId])->first();
 		if(empty($usersArr)){
-			$this->Flash->error('This users is not exits. Please try again!');	
-			$this->redirect('/login');	
-		}	
-		if($this->request->is('post')){			
-			$password = $this->request->getData()['NappUser']['password'];
+			$this->Flash->error('This users is not exits. Please try again!');
+			return $this->redirect('/login');
+		}
+		if($this->request->is('post')){
+			$password = (string)($this->request->getData('NappUser.password') ?? '');
+            if ($password === '') {
+                $this->Flash->error('Please enter password.');
+                return null;
+            }
 			if(!empty($usersArr)){
-				$this->NappUser->id= $usersArr['NappUser']['id'];				
-				$this->NappUser->saveField("password",md5($password));
-				
-				$to = $usersArr['NappUser']['email'];				
-				//$to = 'web@xoroglobal.com';				
-				$subject = SITENAME." :: Your password changed successfully.";				
+                $usersArr->set('password', md5($password));
+				$this->NappUser->save($usersArr, ['validate' => false, 'checkRules' => false]);
+
+				$to = (string)($usersArr->email ?? '');
+				$subject = SITENAME." :: Your password changed successfully.";
 				$template_name = 'message';
-				$variables = array('password'=>$password,'name'=>$usersArr['NappUser']['name'],'email'=>$usersArr['NappUser']['email'],'type'=>'forgot');		
+				$variables = array(
+                    'password' => $password,
+                    'name' => (string)($usersArr->name ?? ''),
+                    'email' => (string)($usersArr->email ?? ''),
+                    'type' => 'forgot'
+                );
 				try{
 					$this->sendemail($to , $subject ,$template_name,$variables);
-				}catch (Exception $e){
-					
-				}	
-			
+				}catch (\Exception $e){
+				}
+
 				$this->Flash->success('Passowrd reset successfully.');
 			}else{
 				$this->Flash->error('The email entered is not found. Please, try again.');
 			}
-			$this->redirect('/login');
+			return $this->redirect('/login');
 		}
+        return null;
 	}
 	
 	/***
