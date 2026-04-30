@@ -60,6 +60,7 @@
 							<th>Approve Status</th>
 							<th>Revision</th>
 							<th>Created</th>
+							<th>Customer email</th>
 							<th>Action</th>
 						</tr>
 					</thead>
@@ -153,11 +154,30 @@
 								?>
 								</td>
 
+							<td>
+								<?php
+								$specSentAt = $mailerData['spec_email_sent_at'] ?? null;
+								$specSentTo = $mailerData['spec_email_sent_to'] ?? '';
+								if (!empty($specSentAt)) {
+									$at = $specSentAt instanceof \DateTimeInterface
+										? $specSentAt->format('d-M-Y h:i a')
+										: format_db_date('d-M-Y h:i a', (string)$specSentAt);
+									echo '<span class="label label-success">Sent</span><br><small>' . h($at) . '</small>';
+									if ($specSentTo !== '') {
+										echo '<br><small class="text-muted">to ' . h($specSentTo) . '</small>';
+									}
+								} else {
+									echo '<span class="label label-default">Not sent</span>';
+								}
+								?>
+							</td>
 
 							<!-- Action buttons -->
 							<td>
 								<?php
 									$is_review = (int)($mailerData['is_review'] ?? 0);
+									$specSentAtBtn = $mailerData['spec_email_sent_at'] ?? null;
+									$sendBtnClass = !empty($specSentAtBtn) ? 'btn btn-mini btn-warning' : 'btn btn-mini btn-danger';
 
 									// Allow edit, send, download if not submitted yet
 									if ($is_review === 0) {
@@ -176,7 +196,7 @@
 										// Only allow download once submitted
 										//echo $this->Html->link('Download', SITEURL . 'dompdf/' . $pdffilename, array('class' => 'btn btn-mini btn-info', 'target' => '_blank'));
 									}
-									echo $this->Html->link('Send Mail', array('controller' => 'employees', 'action' => 'emp_sendemail', $mailerId), array('class' => 'btn btn-mini btn-danger', 'onclick' => 'return confirm("Are you sure send email?")'));
+									echo $this->Html->link('Send Mail', ['controller' => 'employees', 'action' => 'emp_sendemail', $mailerId], ['class' => $sendBtnClass, 'onclick' => 'return confirm("Are you sure send email?")']);
 
 									echo $this->Html->link('History', array('controller' => 'employees', 'action' => 'audit_log', $mailerId), array('class' => 'btn btn-mini btn-default')) . '&nbsp;';
 

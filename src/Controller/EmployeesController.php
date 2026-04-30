@@ -1305,53 +1305,87 @@ public function editsendV3($id = null) {
     public function emp_sendemail($id = null) {
         $this->autoRender = false;
 
-        $this->loadModel('Mailer'); // ✅ Load model if not globally declared
+        $redirect = $this->checkEmployeeSession();
+        if ($redirect instanceof Response) {
+            return $redirect;
+        }
 
+        $employee_id = (int)$this->Session->read('Employee.id');
+        $id = (int)$id;
 
-        $MailerArr = $this->Mailer->find()
-            ->where(['Mailer.id' => $id])
-            ->enableHydration(false)
+        $this->loadModel('Mailer');
+
+        $mailer = $this->Mailer->find()
+            ->where([
+                'Mailer.id' => $id,
+                'Mailer.employee_id' => $employee_id,
+                'Mailer.type' => 3,
+            ])
             ->first();
 
-        if (!empty($MailerArr)) {
-            $mailerId = $MailerArr['id'] ?? null;
-            $trackNo = $MailerArr['tracknumber'] ?? '';
-            $email = $MailerArr['email'] ?? '';
-            $subject = $MailerArr['subject'] ?? 'Specification';
-            $pdfname = base64_encode(base64_encode($mailerId . '-' . $trackNo . '.pdf'));
-
-            $template_name = 'new_sendeasyspec';
-
-            $variables = array(
-                'subject' => $subject,
-                'pdf_attachment' => $MailerArr['pdf_attachment'] ?? '', // ✅ use this
-                'pdfname' => $pdfname,
-                'name' => $MailerArr['name'] ?? '',
-                'address' => $MailerArr['address'] ?? '',
-                'company' => $MailerArr['company'] ?? '',
-                'specification' => $MailerArr['specification'] ?? '',
-                'email' => $email,
-                'date' => $MailerArr['date'] ?? ''
-            );
-
-            if ($email === '') {
-                $this->Flash->error('Recipient email is missing for this record.');
-                return $this->redirect(array('action' => 'index'));
-            }
-
-            try {
-                $this->sendemail($email, $subject, $template_name, $variables);
-            } catch (Exception $e) {
-                $this->Flash->error('Unable to send email right now.');
-                return $this->redirect(array('action' => 'index'));
-            }
-
-            $this->Flash->success('Email sent successfully');
-            return $this->redirect(array('action' => 'index')); // <-- Employee dashboard
-        } else {
+        if (empty($mailer)) {
             $this->Flash->error('Record not found.');
-            return $this->redirect(array('action' => 'index'));
+            return $this->redirect(['action' => 'index']);
         }
+
+        $mailerId = (int)$mailer->id;
+        $trackNo = (string)($mailer->tracknumber ?? '');
+        $email = isset($mailer->email) ? trim((string)$mailer->email) : '';
+        $subject = (string)($mailer->subject ?? 'Specification');
+        $pdfname = base64_encode(base64_encode($mailerId . '-' . $trackNo . '.pdf'));
+
+        $template_name = 'new_sendeasyspec';
+
+        $variables = [
+            'subject' => $subject,
+            'pdf_attachment' => (string)($mailer->pdf_attachment ?? ''),
+            'pdfname' => $pdfname,
+            'name' => (string)($mailer->name ?? ''),
+            'address' => (string)($mailer->address ?? ''),
+            'company' => (string)($mailer->company ?? ''),
+            'specification' => (string)($mailer->specification ?? ''),
+            'email' => $email,
+            'date' => (string)($mailer->date ?? ''),
+        ];
+
+        if ($email === '') {
+            $this->Flash->error('Recipient email is missing for this record.');
+            return $this->redirect(['action' => 'index']);
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->Flash->error('Invalid recipient email address for this record.');
+            return $this->redirect(['action' => 'index']);
+        }
+
+        try {
+            $this->sendemail($email, $subject, $template_name, $variables);
+        } catch (Exception $e) {
+            $this->Flash->error('Unable to send email right now.');
+            return $this->redirect(['action' => 'index']);
+        }
+
+        if ($this->Mailer->getSchema()->getColumn('spec_email_sent_at')) {
+            $mailer->spec_email_sent_at = date('Y-m-d H:i:s');
+            if ($this->Mailer->getSchema()->getColumn('spec_email_sent_to')) {
+                $mailer->spec_email_sent_to = $email;
+            }
+            $this->Mailer->save($mailer);
+        }
+
+        $this->logSpecAudit([
+            'mailer_id' => $mailerId,
+            'tracknumber' => $trackNo,
+            'action' => 'spec_email_sent',
+            'actor_role' => 'employee',
+            'actor_id' => $employee_id,
+            'source' => 'employee_panel',
+            'message' => 'Employee sent spec email to customer.',
+            'meta' => ['to' => $email],
+        ]);
+
+        $this->Flash->success('Email sent successfully');
+        return $this->redirect(['action' => 'index']);
     }
 
     /**
