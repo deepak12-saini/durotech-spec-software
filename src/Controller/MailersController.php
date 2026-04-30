@@ -1926,7 +1926,10 @@ class MailersController extends AppController
 			$inserty['type'] = $type;
 			$inserty['subject'] = $subject;
 			$inserty['use_area'] = $use_area;
-			$inserty['created'] = date('Y-m-d H:i:s');
+			// Preserve original created datetime when reviewing/updating existing spec.
+			if ((int)$form_type !== 0) {
+				$inserty['created'] = date('Y-m-d H:i:s');
+			}
 			$reviewAction = (string)($this->request->getData('review_action') ?? 'save');
 			// Form uses legacy name "data[Mailer][is_review]" — not always under getData('Mailer').
 			$reqData = $this->request->getData();
