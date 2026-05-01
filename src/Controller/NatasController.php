@@ -219,7 +219,30 @@ class NatasController extends AppController
     {
         $this->checkAdminSession();
         $this->viewBuilder()->setLayout('admin_layout');
+        $this->_loadNataInstrumentCategoriesForView();
+    }
 
+    /**
+     * Staff: instrument / category list (same data as admin list, read-only in view).
+     * Used by /natas/clienttype (e.g. Back link from staff addevent).
+     */
+    public function clienttype(): ?Response
+    {
+        $this->viewBuilder()->setLayout('staff_inner_layout');
+        $this->set('title_for_layout', SITENAME . ' NATA Instrument List');
+        $deny = $this->checkSatffSession();
+        if ($deny instanceof Response) {
+            return $deny;
+        }
+        $this->_loadNataInstrumentCategoriesForView();
+        return null;
+    }
+
+    /**
+     * Shared variables for admin_clienttype + staff clienttype views.
+     */
+    private function _loadNataInstrumentCategoriesForView(): void
+    {
         $this->loadModel('NataCategories');
         $list = $this->NataCategories->find('all')->toArray();
         $ClientTypeArr = [];

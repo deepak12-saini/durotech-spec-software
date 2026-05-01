@@ -157,21 +157,27 @@ class MaterialsController extends AppController
                 'name' => $data['name'] ?? '',
             ]);
             if ($this->MaterialOrders->save($entity)) {
-                // $tomail = 'kal@durotechindustries.com.au';
-                $tomail = 'deepaksaini10036@gmail.com';
-                $toname = 'Kal';
+                $teamMails = [
+                    'deepaksaini10036@gmail.com',
+                    'kal@durotechindustries.com.au',
+                    'info@durotechindustries.com.au',
+                ];
                 $subject = SITENAME . ':- New Material Order Request #' . $orderid;
                 $template_name = 'martialorder';
                 $adminurl = \Cake\Routing\Router::url(['controller' => 'Materials', 'action' => 'admin_autologin', 2], true);
                 $variables = [
-                    'toname' => $toname, 'orderid' => $orderid,
-                    'material_type' => $entity->material_type, 'weight' => $entity->weight,
-                    'quantity' => $entity->quantity, 'requestedname' => $entity->name, 'url' => $adminurl,
+                    'toname' => 'Team',
+                    'orderid' => $orderid,
+                    'material_type' => $entity->material_type,
+                    'weight' => $entity->weight,
+                    'quantity' => $entity->quantity,
+                    'requestedname' => $entity->name,
+                    'url' => $adminurl,
                 ];
                 try {
-                    $this->sendemail($tomail, $subject, $template_name, $variables);
+                    $this->sendemail($teamMails, $subject, $template_name, $variables);
                 } catch (\Throwable $e) {
-                    Log::error('Material order email to Kal failed: ' . $e->getMessage());
+                    Log::error('Material order team email failed: ' . $e->getMessage());
                 }
                 $userper = $this->UserPermission->find('list', ['keyField' => 'id', 'valueField' => 'user_id'])
                     ->where(['UserPermission.meta_val' => 'material'])->toArray();

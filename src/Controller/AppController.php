@@ -418,8 +418,12 @@ class AppController extends Controller
         return $password;
     }
 	
-    // send message email to client
-    public function sendemail(string $to, string $subject, string $template_name, array $variables): void
+    /**
+     * Send HTML email using the default profile.
+     *
+     * @param string|string[] $to One address or a list of addresses (all in To).
+     */
+    public function sendemail($to, string $subject, string $template_name, array $variables): void
     {
         $this->autoRender = false;
         
@@ -449,13 +453,25 @@ class AppController extends Controller
                 $from = defined('EMAIL') ? (string)EMAIL : 'deepaksaini10036@gmail.com';
             }
             
+            $rawList = is_array($to) ? $to : [$to];
+            $toList = [];
+            foreach ($rawList as $addr) {
+                $addr = trim((string)$addr);
+                if ($addr !== '' && filter_var($addr, FILTER_VALIDATE_EMAIL)) {
+                    $toList[] = $addr;
+                }
+            }
+            if ($toList === []) {
+                throw new \InvalidArgumentException('sendemail: no valid recipient addresses');
+            }
+
             $email = new Email('default');
             // Use AppView so email templates use .php extension (e.g. Email/html/coapdf.php)
             $email->viewBuilder()
                 ->setClassName('App\View\AppView')
                 ->setTemplate($template_name);
             $email->setFrom([$from => $from_name])
-                ->setTo($to)
+                ->setTo(count($toList) === 1 ? $toList[0] : $toList)
                 ->setSubject($subject)
                 ->setEmailFormat('html')
                 ->setViewVars($variables)

@@ -359,6 +359,10 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/natas/addevent', ['controller' => 'Natas', 'action' => 'admin_addevent']);
     $routes->connect('/admin/natas/update/:id/:status', ['controller' => 'Natas', 'action' => 'admin_update'], ['pass' => ['id', 'status']]);
 
+    // Staff NATA: instrument list (URL used by staff addevent "Back", etc.)
+    $routes->connect('/natas/clienttype', ['controller' => 'Natas', 'action' => 'clienttype']);
+    $routes->connect('/natas/client-type', ['controller' => 'Natas', 'action' => 'clienttype']);
+
     // Admin Duro Orders (avoid "Controller Admin could not be found")
     $routes->connect('/admin/duro_orders', ['controller' => 'DuroOrders', 'action' => 'admin_index']);
     $routes->connect('/admin/duro_orders/index', ['controller' => 'DuroOrders', 'action' => 'admin_index']);

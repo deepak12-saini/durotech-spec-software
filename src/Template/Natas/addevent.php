@@ -1,7 +1,7 @@
 	
 	<div class="page-content">
 		<div class="page-header">
-			<div class="right_btn pull-right" ><a href="<?php echo SITEURL.'natas/clienttype'?>" class="btn btn-xs btn-inverse " >Back</a></div>
+			<div class="right_btn pull-right" ><a href="<?php echo $this->Url->build(['controller' => 'Natas', 'action' => 'clienttype']); ?>" class="btn btn-xs btn-inverse">Back</a></div>
 			<h1><small>Add New Calibration</small></h1>
 		</div>
 	
