@@ -1,0 +1,26 @@
+-- Method Statement public form submissions (run once on MySQL/MariaDB)
+CREATE TABLE IF NOT EXISTS `method_statements` (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `project_name` varchar(255) NOT NULL DEFAULT '',
+  `project_type` varchar(64) NOT NULL DEFAULT '',
+  `area` varchar(128) NOT NULL DEFAULT '',
+  `scope_of_work` text,
+  `system_used` varchar(255) NOT NULL DEFAULT '',
+  `substrate` varchar(255) NOT NULL DEFAULT '',
+  `project_address` varchar(512) NOT NULL DEFAULT '',
+  `start_date` varchar(64) NOT NULL DEFAULT '',
+  `name` varchar(255) NOT NULL DEFAULT '',
+  `email` varchar(255) NOT NULL DEFAULT '',
+  `phone` varchar(64) NOT NULL DEFAULT '',
+  `company` varchar(255) NOT NULL DEFAULT '',
+  `state` varchar(64) NOT NULL DEFAULT '',
+  `notes` text,
+  `status` varchar(16) NOT NULL DEFAULT 'new',
+  `ip_address` varchar(45) NOT NULL DEFAULT '',
+  `user_agent` varchar(512) NOT NULL DEFAULT '',
+  `created` datetime DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_method_statements_status` (`status`),
+  KEY `idx_method_statements_created` (`created`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

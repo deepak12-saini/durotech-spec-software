@@ -601,6 +601,10 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/quick-spec', ['controller' => 'Fronts', 'action' => 'quickSpec']);
     $routes->connect('/quick-spec/thanks', ['controller' => 'Fronts', 'action' => 'quickSpecThanks']);
     $routes->connect('/quick-spec/captcha', ['controller' => 'Fronts', 'action' => 'quickSpecCaptch']);
+    // Public Method Statement request form
+    $routes->connect('/method-statement', ['controller' => 'Fronts', 'action' => 'methodStatement']);
+    $routes->connect('/method-statement/thanks', ['controller' => 'Fronts', 'action' => 'methodStatementThanks']);
+    $routes->connect('/method-statement/captcha', ['controller' => 'Fronts', 'action' => 'methodStatementCaptch']);
     $routes->connect('/welcomevistor', ['controller' => 'Fronts', 'action' => 'welcomevistor']);
     $routes->connect('/fronts/welcomevistor', ['controller' => 'Fronts', 'action' => 'welcomevistor']);
     $routes->connect('/fronts/punchout/:id', ['controller' => 'Fronts', 'action' => 'punchout'], ['pass' => ['id']]);
@@ -650,6 +654,11 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/quick-specs', ['controller' => 'QuickSpecs', 'action' => 'admin_index']);
     $routes->connect('/admin/quick-specs/view/:id', ['controller' => 'QuickSpecs', 'action' => 'admin_view'], ['pass' => ['id'], 'id' => '\d+']);
     $routes->connect('/admin/quick-specs/delete/:id', ['controller' => 'QuickSpecs', 'action' => 'admin_delete'], ['pass' => ['id'], 'id' => '\d+']);
+
+    // Admin Method Statement website requests
+    $routes->connect('/admin/method-statements', ['controller' => 'MethodStatements', 'action' => 'admin_index']);
+    $routes->connect('/admin/method-statements/view/:id', ['controller' => 'MethodStatements', 'action' => 'admin_view'], ['pass' => ['id'], 'id' => '\d+']);
+    $routes->connect('/admin/method-statements/delete/:id', ['controller' => 'MethodStatements', 'action' => 'admin_delete'], ['pass' => ['id'], 'id' => '\d+']);
 
     // Admin Tasks (DuroLab)
     $routes->connect('/admin/tasks/type', ['controller' => 'Tasks', 'action' => 'admin_type']);

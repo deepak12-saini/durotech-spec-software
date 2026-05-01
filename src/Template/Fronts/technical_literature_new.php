@@ -420,6 +420,7 @@
 							  <div class='image'>							  
 								  <h3>Method Statement</h3>
 								  <a href="<?php echo SITEURL.'technical-literature'; ?>">Coming Soon</a>
+								  <!-- <a href="<?php // echo SITEURL.'method-statement'; ?>">Request Method Statement</a> -->
 							  </div>						 
 							</div>
 							</div>
@@ -440,7 +441,8 @@
 						
 							<?php if($page == 'method-statement'){ ?>
 								<div>
-									<h3>Coming Soon </h3>								
+									<p>Request a method statement using our online form.</p>
+									<p><a class="btn btn-primary" href="<?php echo SITEURL.'method-statement'; ?>">Request Method Statement</a></p>
 								</div>
 							<?php } ?>
 							<?php if($page == 'quick-spec'){ ?>
@@ -674,7 +676,7 @@
 								<li><a href="<?php echo SITEURL.'technical-literature'; ?>">Project Specification</a></li>
 								<li><a href="<?php echo SITEURL.'technical-literature/warranty'; ?>">Project Warranty Request</a></li>
 								<li><a href="<?php echo SITEURL.'quick-spec'; ?>">Quick Spec</a></li>
-								<li><a href="<?php echo SITEURL.'technical-literature'; ?>">Method Statement</a></li>
+								<li><a href="<?php echo SITEURL.'method-statement'; ?>">Method Statement</a></li>
 							</ul>
 						</div>
 					</div>

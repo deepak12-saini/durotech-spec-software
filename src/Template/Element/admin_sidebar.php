@@ -253,9 +253,9 @@
 					<!-- //new_code deepak 14 june 2025 -->
 
 					<li class="<?php
-						if ($reqController == 'mailers' || $reqController == 'quickspecs') {
+						if ($reqController == 'mailers' || $reqController == 'quickspecs' || $reqController == 'methodstatements') {
 							echo 'active';
-							if ($reqController == 'quickspecs') {
+							if ($reqController == 'quickspecs' || $reqController == 'methodstatements') {
 								echo ' open';
 							}
 						}
@@ -297,6 +297,14 @@
 								<a href="<?php echo $this->Url->build(['controller' => 'QuickSpecs', 'action' => 'admin_index']); ?>">
 									<i class="menu-icon fa fa-file-text-o"></i>
 									Quick Spec requests
+								</a>
+								<b class="arrow"></b>
+							</li>
+
+							<li class="<?php if ($reqController == 'methodstatements' && strpos($reqAction, 'admin_') === 0) {echo 'active';} ?>">
+								<a href="<?php echo $this->Url->build(['controller' => 'MethodStatements', 'action' => 'admin_index']); ?>">
+									<i class="menu-icon fa fa-file-o"></i>
+									Method Statement requests
 								</a>
 								<b class="arrow"></b>
 							</li>

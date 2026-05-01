@@ -42,6 +42,7 @@ class FrontsController extends AppController
         $this->loadModel('Contact');
         $this->loadModel('Visitor');
         $this->loadModel('QuickSpecs');
+        $this->loadModel('MethodStatements');
     }
 
     /**
@@ -53,7 +54,7 @@ class FrontsController extends AppController
         $this->callConstants();
 
         $action = $this->request->getParam('action');
-        if ($action === 'captch' || $action === 'quickSpecCaptch') {
+        if ($action === 'captch' || $action === 'quickSpecCaptch' || $action === 'methodStatementCaptch') {
             return null;
         }
 
@@ -901,6 +902,283 @@ class FrontsController extends AppController
         if ($code === null || $code === '') {
             $code = (string)rand(10000, 99999);
             $session->write('qs_cap_code', $code);
+        }
+
+        $width = 80;
+        $height = 30;
+        $image = imagecreatetruecolor($width, $height);
+        if ($image === false) {
+            return $this->response->withStatus(500);
+        }
+        $bg = imagecolorallocate($image, 240, 240, 240);
+        $text = imagecolorallocate($image, 0, 0, 0);
+        imagefill($image, 0, 0, $bg);
+        imagestring($image, 5, 10, 8, (string)$code, $text);
+
+        ob_start();
+        imagepng($image);
+        $png = ob_get_clean();
+        imagedestroy($image);
+
+        return $this->response
+            ->withType('image/png')
+            ->withStringBody($png === false ? '' : $png);
+    }
+
+    /**
+     * Public Method Statement request form. GET: form + captcha. POST: validate, save, email team + acknowledgement.
+     * Views: Fronts/method_statement.php, Fronts/method_statement_thanks.php
+     */
+    public function methodStatement(): ?Response
+    {
+        $this->set([
+            'title_for_layout' => (defined('SITENAME') ? SITENAME : 'Durotech') . ' | Method Statement Request',
+            'meta_title' => 'Method Statement Request | Technical Literature | Durotech',
+            'meta_description' => 'Request a method statement from Durotech. Project scope and contact details.',
+            'meta_keyword' => 'method statement, waterproofing, Durotech, technical literature',
+        ]);
+
+        if (!$this->request->is('post')) {
+            $session = $this->request->getSession();
+            $session->write('ms_cap_code', (string)rand(10000, 99999));
+            $session->write('ms_started_at', time());
+            $this->refreshMethodStatementFormView();
+
+            return null;
+        }
+
+        $data = $this->request->getData();
+        $session = $this->request->getSession();
+        $capStored = $session->read('ms_cap_code');
+        $userCap = $data['captcha'] ?? '';
+        $honeypot = trim((string)($data['website'] ?? ''));
+        $startedAt = (int)$session->read('ms_started_at');
+        $elapsed = time() - $startedAt;
+        $ip = (string)($this->request->clientIp() ?? 'unknown');
+
+        if ($honeypot !== '') {
+            Log::warning('Method Statement spam blocked by honeypot: ' . $ip);
+            $this->Flash->error(__('Unable to submit form. Please try again.'));
+            return $this->redirect(['action' => 'methodStatement']);
+        }
+
+        if ($startedAt <= 0 || $elapsed < 3) {
+            Log::warning('Method Statement spam blocked by timing check: ' . $ip);
+            $this->Flash->error(__('Please wait a few seconds and try again.'));
+            return $this->redirect(['action' => 'methodStatement']);
+        }
+
+        $rateKey = 'methodstmt_rate_' . sha1($ip);
+        $bucket = Cache::read($rateKey, 'default');
+        if (!is_array($bucket)) {
+            $bucket = [];
+        }
+        $nowTs = time();
+        $bucket = array_values(array_filter($bucket, function ($ts) use ($nowTs) {
+            return ($nowTs - (int)$ts) < 600;
+        }));
+        if (count($bucket) >= 3) {
+            Log::warning('Method Statement spam blocked by rate-limit: ' . $ip);
+            $this->Flash->error(__('Too many submissions. Please try again later.'));
+            return $this->redirect(['action' => 'methodStatement']);
+        }
+        $bucket[] = $nowTs;
+        Cache::write($rateKey, $bucket, 'default');
+
+        if (empty($capStored) || (string)$userCap !== (string)$capStored) {
+            $this->Flash->error(__('Wrong captcha code. Please try again.'));
+            $session->write('ms_cap_code', (string)rand(10000, 99999));
+            $this->refreshMethodStatementFormView();
+
+            return null;
+        }
+
+        $projectName = trim((string)($data['project_name'] ?? ''));
+        $projectType = trim((string)($data['project_type'] ?? ''));
+        $area = trim((string)($data['area'] ?? ''));
+        $scopeOfWork = trim((string)($data['scope_of_work'] ?? ''));
+        $systemUsed = trim((string)($data['system_used'] ?? ''));
+        $substrate = trim((string)($data['substrate'] ?? ''));
+        $projectAddress = trim((string)($data['project_address'] ?? ''));
+        $startDate = trim((string)($data['start_date'] ?? ''));
+        $name = trim((string)($data['name'] ?? ''));
+        $email = trim((string)($data['email'] ?? ''));
+        $phone = trim((string)($data['phone'] ?? ''));
+        $company = trim((string)($data['company'] ?? ''));
+        $state = trim((string)($data['state'] ?? ''));
+        $notes = trim((string)($data['notes'] ?? ''));
+
+        if ($projectName === '' || $projectType === '' || $area === '' || $scopeOfWork === '' || $name === '' || $email === '' || $phone === '') {
+            $this->Flash->error(__('Please fill in all required fields.'));
+            $this->refreshMethodStatementFormView();
+
+            return null;
+        }
+        if (mb_strlen($scopeOfWork) > 5000) {
+            $this->Flash->error(__('Scope of work must be at most 5000 characters.'));
+            $this->refreshMethodStatementFormView();
+
+            return null;
+        }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->Flash->error(__('Please enter a valid email address.'));
+            $this->refreshMethodStatementFormView();
+
+            return null;
+        }
+        if (!preg_match('/^[0-9\-\+\(\)\s]{7,20}$/', $phone)) {
+            $this->Flash->error(__('Please enter a valid phone number.'));
+            $this->refreshMethodStatementFormView();
+
+            return null;
+        }
+        if ($notes !== '') {
+            $notesDecoded = html_entity_decode($notes, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $notesDecoded = trim($notesDecoded);
+            if (mb_strlen($notesDecoded) > 2000) {
+                $this->Flash->error(__('Notes must be at most 2000 characters.'));
+                $this->refreshMethodStatementFormView();
+
+                return null;
+            }
+            $notes = $notesDecoded;
+        }
+
+        $entity = $this->MethodStatements->newEntity([
+            'project_name' => $projectName,
+            'project_type' => $projectType,
+            'area' => $area,
+            'scope_of_work' => $scopeOfWork,
+            'system_used' => $systemUsed,
+            'substrate' => $substrate,
+            'project_address' => $projectAddress,
+            'start_date' => $startDate,
+            'name' => $name,
+            'email' => $email,
+            'phone' => $phone,
+            'company' => $company,
+            'state' => $state,
+            'notes' => $notes !== '' ? $notes : null,
+            'status' => 'new',
+            'ip_address' => $ip,
+            'user_agent' => substr((string)$this->request->getHeaderLine('User-Agent'), 0, 512),
+        ]);
+
+        if (!$this->MethodStatements->save($entity)) {
+            Log::error('Method Statement save failed: ' . json_encode($entity->getErrors()));
+            $this->Flash->error(__('Could not save your request. Please check the form and try again.'));
+            $this->refreshMethodStatementFormView();
+
+            return null;
+        }
+
+        $emailFail = false;
+        $id = (int)$entity->id;
+        $adminViewUrl = \Cake\Routing\Router::url(['controller' => 'MethodStatements', 'action' => 'admin_view', $id], true);
+        $internalRecipients = $this->collectQuickSpecInternalRecipients();
+        $site = defined('SITENAME') ? SITENAME : 'Durotech';
+
+        $mailVars = [
+            'id' => $id,
+            'project_name' => $projectName,
+            'project_type' => $projectType,
+            'area' => $area,
+            'scope_of_work' => $scopeOfWork,
+            'system_used' => $systemUsed,
+            'substrate' => $substrate,
+            'project_address' => $projectAddress,
+            'start_date' => $startDate,
+            'name' => $name,
+            'email' => $email,
+            'phone' => $phone,
+            'company' => $company,
+            'state' => $state,
+            'notes' => $notes,
+            'admin_view_url' => $adminViewUrl,
+            'site_name' => $site,
+        ];
+
+        if (!empty($internalRecipients)) {
+            try {
+                $this->sendemail(
+                    $internalRecipients,
+                    $site . ' — Method Statement request #' . $id,
+                    'method_statement_internal',
+                    $mailVars
+                );
+            } catch (\Throwable $e) {
+                $emailFail = true;
+                Log::error('Method Statement internal email failed: ' . $e->getMessage());
+            }
+        } else {
+            $emailFail = true;
+            Log::warning('Method Statement: no internal recipients from SpecEmail config.');
+        }
+
+        try {
+            $this->sendemail(
+                $email,
+                'We received your Method Statement request | ' . $site,
+                'method_statement_ack',
+                $mailVars
+            );
+        } catch (\Throwable $e) {
+            $emailFail = true;
+            Log::error('Method Statement acknowledgement email failed: ' . $e->getMessage());
+        }
+
+        $session->delete('ms_cap_code');
+        $session->delete('ms_started_at');
+
+        if ($emailFail) {
+            $this->Flash->warning(__('Your request was saved. If you do not hear from us soon, please call Durotech.'));
+        } else {
+            $this->Flash->success(__('Thank you. Your Method Statement request has been submitted.'));
+        }
+
+        return $this->redirect(['action' => 'methodStatementThanks']);
+    }
+
+    /**
+     * Thank-you page after Method Statement submission.
+     */
+    public function methodStatementThanks(): ?Response
+    {
+        $this->set([
+            'title_for_layout' => (defined('SITENAME') ? SITENAME : 'Durotech') . ' | Method Statement Received',
+            'meta_title' => 'Method Statement Received | Durotech',
+            'meta_description' => 'Thank you for your method statement request.',
+            'meta_keyword' => 'method statement, Durotech',
+        ]);
+
+        return null;
+    }
+
+    /**
+     * Product dropdown + captcha when re-rendering the Method Statement form.
+     */
+    private function refreshMethodStatementFormView(): void
+    {
+        $productOptions = $this->Products->find()
+            ->select(['Products.id', 'Products.title'])
+            ->where(['Products.status' => 1])
+            ->orderAsc('Products.title')
+            ->all();
+        $this->set(compact('productOptions'));
+        $this->set('ms_cap_code', $this->request->getSession()->read('ms_cap_code'));
+    }
+
+    /**
+     * Captcha image for Method Statement form. Session key: ms_cap_code.
+     */
+    public function methodStatementCaptch(): Response
+    {
+        $this->viewBuilder()->setLayout(false);
+        $session = $this->request->getSession();
+        $code = $session->read('ms_cap_code');
+        if ($code === null || $code === '') {
+            $code = (string)rand(10000, 99999);
+            $session->write('ms_cap_code', $code);
         }
 
         $width = 80;
