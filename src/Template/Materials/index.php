@@ -32,7 +32,7 @@
 						$mcreated = $m->created ?? $material['Material']['created'] ?? '';
 					?>
 					<tr>
-					<td>#<?php echo h($mid); ?>&nbsp;</td>
+					<td data-order="<?php echo (int)$mid; ?>">#<?php echo h($mid); ?>&nbsp;</td>
 					<td><?php echo h($mtype); ?>&nbsp;</td>
 					<td><?php echo h($mweight); ?>&nbsp;</td>
 					<td><?php echo h($mqty); ?>&nbsp;</td>
@@ -70,7 +70,10 @@
 </div>
 <script>
 		$(document).ready(function() {
-		$('#example').DataTable();
+		$('#example').DataTable({
+			order: [[0, 'desc']],
+			columnDefs: [{ orderable: false, targets: 6 }]
+		});
 	} );
 	function qrcode(argu){
 		var baseUrl = '<?php echo $this->Url->build("/materials/readqrcode/", true); ?>';

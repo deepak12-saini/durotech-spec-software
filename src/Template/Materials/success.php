@@ -15,7 +15,7 @@
 					<div class="widget-body">
 						<div class="widget-main">
 							<h4 class="header blue lighter bigger">
-								<i class="ace-icon fa fa-thump-up"></i>
+								<i class="ace-icon fa fa-thumbs-up"></i>
 								Your material order request has been sent successfully.
 							</h4>
 

@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use Cake\Event\EventInterface;
 use Cake\Http\Response;
+use Cake\Log\Log;
 
 /**
  * Materials Controller (CakePHP 3.10) – Material types and material order requests
@@ -45,7 +46,9 @@ class MaterialsController extends AppController
         $this->viewBuilder()->setLayout('admin_layout');
         $this->set('title_for_layout', SITENAME . ' Material ');
         $this->checkAdminSession();
-        $materials = $this->Materials->find('all')->orderDesc('Materials.id')->all();
+        $materials = $this->Materials->find()
+            ->order(['Materials.id' => 'DESC'])
+            ->all();
         $this->set('materials', $materials);
     }
 
@@ -132,9 +135,13 @@ class MaterialsController extends AppController
     {
         $this->viewBuilder()->setLayout('admin_login');
         $this->set('title_for_layout', SITENAME . ' Place order');
-        $material = $this->Materials->get($qrcode);
+        $materialId = (int)($qrcode ?? 0);
+        $material = $materialId > 0
+            ? $this->Materials->find()->where(['Materials.id' => $materialId])->first()
+            : null;
         if (!$material) {
-            return $this->redirect(['action' => 'index']);
+            $this->Flash->error(__('This material link is invalid or no longer exists.'));
+            return $this->redirect('/');
         }
         if ($this->request->is('post')) {
             $data = $this->request->getData();
@@ -150,7 +157,8 @@ class MaterialsController extends AppController
                 'name' => $data['name'] ?? '',
             ]);
             if ($this->MaterialOrders->save($entity)) {
-                $tomail = 'kal@durotechindustries.com.au';
+                // $tomail = 'kal@durotechindustries.com.au';
+                $tomail = 'deepaksaini10036@gmail.com';
                 $toname = 'Kal';
                 $subject = SITENAME . ':- New Material Order Request #' . $orderid;
                 $template_name = 'martialorder';
@@ -162,26 +170,32 @@ class MaterialsController extends AppController
                 ];
                 try {
                     $this->sendemail($tomail, $subject, $template_name, $variables);
-                } catch (\Exception $e) {
+                } catch (\Throwable $e) {
+                    Log::error('Material order email to Kal failed: ' . $e->getMessage());
                 }
                 $userper = $this->UserPermission->find('list', ['keyField' => 'id', 'valueField' => 'user_id'])
                     ->where(['UserPermission.meta_val' => 'material'])->toArray();
                 $userIds = array_values($userper);
                 if (!empty($userIds)) {
-                    $napuser = $this->NappUser->find('all')->where(['NappUser.id IN' => $userIds])->all();
+                    $napuser = $this->NappUser->find()->where(['NappUser.id IN' => $userIds])->all();
                     foreach ($napuser as $nu) {
                         $userId = base64_encode(base64_encode((string)$nu->id));
-                        $adminurl = \Cake\Routing\Router::url(['controller' => 'Materials', 'action' => 'autologin', $userId], true);
+                        $staffurl = \Cake\Routing\Router::url(['controller' => 'Materials', 'action' => 'autologin', $userId], true);
                         $variables['toname'] = trim(($nu->name ?? '') . ' ' . ($nu->lname ?? ''));
-                        $variables['url'] = $adminurl;
-                        try {
-                            // $this->sendemail($nu->email, $subject, $template_name, $variables);
-                        } catch (\Exception $e) {
+                        $variables['url'] = $staffurl;
+                        $staffMail = trim((string)($nu->email ?? ''));
+                        if ($staffMail !== '' && filter_var($staffMail, FILTER_VALIDATE_EMAIL)) {
+                            try {
+                                $this->sendemail($staffMail, $subject, $template_name, $variables);
+                            } catch (\Throwable $e) {
+                                Log::error('Material order staff notify failed for ' . $staffMail . ': ' . $e->getMessage());
+                            }
                         }
                     }
                 }
                 return $this->redirect(['action' => 'success']);
             }
+            $this->Flash->error(__('Could not save your request. Please check the form and try again.'));
         }
         $MaterialArr = ['Material' => $material->toArray()];
         $this->set('MaterialArr', $MaterialArr);
@@ -257,7 +271,9 @@ class MaterialsController extends AppController
         $this->viewBuilder()->setLayout('staff_inner_layout');
         $this->set('title_for_layout', SITENAME . ' Material ');
         $this->checkSatffSession();
-        $materials = $this->Materials->find('all')->orderDesc('Materials.id')->all();
+        $materials = $this->Materials->find()
+            ->order(['Materials.id' => 'DESC'])
+            ->all();
         $this->set('materials', $materials);
     }
 
