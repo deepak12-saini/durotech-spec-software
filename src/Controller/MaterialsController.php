@@ -67,7 +67,7 @@ class MaterialsController extends AppController
             $status = 1;
         }
         $query = $this->MaterialOrders->find()
-            ->orderDesc('MaterialOrders.id')
+            ->order(['MaterialOrders.id' => 'DESC'])
             ->limit(25);
         if ($status !== null) {
             $query = $query->where(['MaterialOrders.status' => $status]);
@@ -220,7 +220,9 @@ class MaterialsController extends AppController
         } elseif (!empty($type) && $type === 'accepted') {
             $status = 1;
         }
-        $query = $this->MaterialOrders->find()->orderDesc('MaterialOrders.id')->limit(25);
+        $query = $this->MaterialOrders->find()
+            ->order(['MaterialOrders.id' => 'DESC'])
+            ->limit(25);
         if ($status !== null) {
             $query = $query->where(['MaterialOrders.status' => $status]);
         }

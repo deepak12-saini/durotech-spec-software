@@ -15,7 +15,7 @@
 	<div class="row">
 		<div class="col-xs-12">
 			<div class="table-responsive">
-			<table class="table table-striped table-bordered table-hover" id="example" >
+			<table class="table table-striped table-bordered table-hover" id="material-orders-completed" >
 				<thead>
 				<tr>				
 					<th>RequestId</th>					
@@ -47,7 +47,7 @@
 					$created = $o->created ?? $MaterialOrders['MaterialOrder']['created'] ?? '';
 				?>
 					<tr>
-					<td>#<?php echo h($orderId); ?>&nbsp;</td>
+					<td data-order="<?php echo (int)$oid; ?>">#<?php echo h($orderId); ?>&nbsp;</td>
 					<td><?php echo h($dtPo); ?>&nbsp;</td>
 					<td><?php echo h($mtype); ?>&nbsp;</td>
 					<td><?php echo h($weight); ?>&nbsp;</td>
@@ -72,7 +72,7 @@
 	<div class="row">
 		<div class="col-xs-12">
 			<div class="table-responsive">
-			<table class="table table-striped table-bordered table-hover" id="example" >
+			<table class="table table-striped table-bordered table-hover" id="material-orders-open" >
 				<thead>
 				<tr>
 					<th>RequestId</th>
@@ -102,7 +102,7 @@
 						$typeLower = is_string($type) ? strtolower($type) : '';
 					?>
 					<tr>
-					<td>#<?php echo h($orderId); ?>&nbsp;</td>
+					<td data-order="<?php echo (int)$oid; ?>">#<?php echo h($orderId); ?>&nbsp;</td>
 					<td><?php echo h($mtype); ?>&nbsp;</td>
 					<td><?php echo h($weight); ?>&nbsp;</td>
 					<td><?php echo h($qty); ?>&nbsp;</td>
@@ -132,8 +132,17 @@
 	<?php } ?>
 </div>		
 <script>
-		$(document).ready(function() {
-		$('#example').DataTable();
-	} );
-	
+	$(document).ready(function() {
+		if ($('#material-orders-completed').length) {
+			$('#material-orders-completed').DataTable({
+				order: [[0, 'desc']]
+			});
+		}
+		if ($('#material-orders-open').length) {
+			$('#material-orders-open').DataTable({
+				order: [[0, 'desc']],
+				columnDefs: [{ orderable: false, targets: 8 }]
+			});
+		}
+	});
 </script>	
