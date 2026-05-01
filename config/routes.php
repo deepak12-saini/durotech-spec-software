@@ -597,6 +597,10 @@ Router::scope('/', function (RouteBuilder $routes) {
     // ---------- MISC ----------
     $routes->connect('/tmclead', ['controller' => 'Fronts', 'action' => 'newlead']);
     $routes->connect('/technical-literature/*', ['controller' => 'Fronts', 'action' => 'technicalLiteratureNew']);
+    // Public Quick Spec request form
+    $routes->connect('/quick-spec', ['controller' => 'Fronts', 'action' => 'quickSpec']);
+    $routes->connect('/quick-spec/thanks', ['controller' => 'Fronts', 'action' => 'quickSpecThanks']);
+    $routes->connect('/quick-spec/captcha', ['controller' => 'Fronts', 'action' => 'quickSpecCaptch']);
     $routes->connect('/welcomevistor', ['controller' => 'Fronts', 'action' => 'welcomevistor']);
     $routes->connect('/fronts/welcomevistor', ['controller' => 'Fronts', 'action' => 'welcomevistor']);
     $routes->connect('/fronts/punchout/:id', ['controller' => 'Fronts', 'action' => 'punchout'], ['pass' => ['id']]);
@@ -641,6 +645,11 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/testimonials/edit/:id', ['controller' => 'Testimonials', 'action' => 'admin_edit'], ['pass' => ['id']]);
     $routes->connect('/admin/testimonials/delete/:id', ['controller' => 'Testimonials', 'action' => 'admin_delete'], ['pass' => ['id']]);
     $routes->connect('/admin/testimonials/toggle-status/:id', ['controller' => 'Testimonials', 'action' => 'admin_toggleStatus'], ['pass' => ['id']]);
+
+    // Admin Quick Spec website requests
+    $routes->connect('/admin/quick-specs', ['controller' => 'QuickSpecs', 'action' => 'admin_index']);
+    $routes->connect('/admin/quick-specs/view/:id', ['controller' => 'QuickSpecs', 'action' => 'admin_view'], ['pass' => ['id'], 'id' => '\d+']);
+    $routes->connect('/admin/quick-specs/delete/:id', ['controller' => 'QuickSpecs', 'action' => 'admin_delete'], ['pass' => ['id'], 'id' => '\d+']);
 
     // Admin Tasks (DuroLab)
     $routes->connect('/admin/tasks/type', ['controller' => 'Tasks', 'action' => 'admin_type']);

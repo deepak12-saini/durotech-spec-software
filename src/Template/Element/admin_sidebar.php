@@ -252,7 +252,14 @@
 
 					<!-- //new_code deepak 14 june 2025 -->
 
-					<li class="<?php if ($reqController == 'mailers') {echo 'active';} ?>">
+					<li class="<?php
+						if ($reqController == 'mailers' || $reqController == 'quickspecs') {
+							echo 'active';
+							if ($reqController == 'quickspecs') {
+								echo ' open';
+							}
+						}
+					?>">
 						<a href="#" class="dropdown-toggle">
 							<i class="menu-icon fa fa-image"></i>
 							<span class="menu-text">Easy Spec Request</span>
@@ -282,6 +289,14 @@
 								<a href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_specRequest_disapproved']); ?>">
 									<i class="menu-icon fa fa-times-circle"></i>
 									Disapproved Specs
+								</a>
+								<b class="arrow"></b>
+							</li>
+
+							<li class="<?php if ($reqController == 'quickspecs' && strpos($reqAction, 'admin_') === 0) {echo 'active';} ?>">
+								<a href="<?php echo $this->Url->build(['controller' => 'QuickSpecs', 'action' => 'admin_index']); ?>">
+									<i class="menu-icon fa fa-file-text-o"></i>
+									Quick Spec requests
 								</a>
 								<b class="arrow"></b>
 							</li>

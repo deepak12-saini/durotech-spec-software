@@ -405,7 +405,7 @@
 							<div class="card">								
 							  <div class='image'>							  
 								  <h3>Quick Spec</h3>
-								  <a href="<?php echo SITEURL.'technical-literature'; ?>">Coming Soon</a>
+								  <a href="<?php echo SITEURL.'quick-spec'; ?>">Request Quick Spec</a>
 							  </div>						 
 							</div>
 							</div>
@@ -445,7 +445,8 @@
 							<?php } ?>
 							<?php if($page == 'quick-spec'){ ?>
 								<div>
-									<h3>Coming Soon </h3>								
+									<p>Request a quick specification using our online form.</p>
+									<p><a class="btn btn-primary" href="<?php echo SITEURL.'quick-spec'; ?>">Request Quick Spec</a></p>
 								</div>
 							<?php } ?>
 							<?php if($page == 'specification'){ ?>
@@ -672,7 +673,7 @@
 								<li><a href="<?php echo SITEURL.'technical-literature/project'; ?>">Project Reference</a></li>
 								<li><a href="<?php echo SITEURL.'technical-literature'; ?>">Project Specification</a></li>
 								<li><a href="<?php echo SITEURL.'technical-literature/warranty'; ?>">Project Warranty Request</a></li>
-								<li><a href="<?php echo SITEURL.'technical-literature'; ?>">Quick Spec</a></li>
+								<li><a href="<?php echo SITEURL.'quick-spec'; ?>">Quick Spec</a></li>
 								<li><a href="<?php echo SITEURL.'technical-literature'; ?>">Method Statement</a></li>
 							</ul>
 						</div>

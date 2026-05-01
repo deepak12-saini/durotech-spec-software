@@ -41,6 +41,7 @@ class FrontsController extends AppController
         $this->loadModel('Notifications');
         $this->loadModel('Contact');
         $this->loadModel('Visitor');
+        $this->loadModel('QuickSpecs');
     }
 
     /**
@@ -52,7 +53,7 @@ class FrontsController extends AppController
         $this->callConstants();
 
         $action = $this->request->getParam('action');
-        if ($action === 'captch') {
+        if ($action === 'captch' || $action === 'quickSpecCaptch') {
             return null;
         }
 
@@ -631,6 +632,296 @@ class FrontsController extends AppController
             $this->Flash->error(__('Sorry, we could not send your message. Please try again later.'));
         }
         return null;
+    }
+
+    /**
+     * Public Quick Spec request form. GET: form + captcha. POST: validate, save, email team + acknowledgement.
+     * Views: Fronts/quick_spec.php, Fronts/quick_spec_thanks.php
+     */
+    public function quickSpec(): ?Response
+    {
+        $this->set([
+            'title_for_layout' => (defined('SITENAME') ? SITENAME : 'Durotech') . ' | Quick Spec Request',
+            'meta_title' => 'Quick Spec Request | Technical Literature | Durotech',
+            'meta_description' => 'Request a quick waterproofing specification from Durotech. Project details and contact information.',
+            'meta_keyword' => 'quick spec, waterproofing specification, Durotech, technical literature',
+        ]);
+
+        if (!$this->request->is('post')) {
+            $code = (string)rand(10000, 99999);
+            $session = $this->request->getSession();
+            $session->write('qs_cap_code', $code);
+            $session->write('qs_started_at', time());
+            $this->refreshQuickSpecFormView();
+
+            return null;
+        }
+
+        $data = $this->request->getData();
+        $session = $this->request->getSession();
+        $capStored = $session->read('qs_cap_code');
+        $userCap = $data['captcha'] ?? '';
+        $honeypot = trim((string)($data['website'] ?? ''));
+        $startedAt = (int)$session->read('qs_started_at');
+        $elapsed = time() - $startedAt;
+        $ip = (string)($this->request->clientIp() ?? 'unknown');
+
+        if ($honeypot !== '') {
+            Log::warning('Quick Spec spam blocked by honeypot: ' . $ip);
+            $this->Flash->error(__('Unable to submit form. Please try again.'));
+            return $this->redirect(['action' => 'quickSpec']);
+        }
+
+        if ($startedAt <= 0 || $elapsed < 3) {
+            Log::warning('Quick Spec spam blocked by timing check: ' . $ip);
+            $this->Flash->error(__('Please wait a few seconds and try again.'));
+            return $this->redirect(['action' => 'quickSpec']);
+        }
+
+        $rateKey = 'quickspec_rate_' . sha1($ip);
+        $bucket = Cache::read($rateKey, 'default');
+        if (!is_array($bucket)) {
+            $bucket = [];
+        }
+        $nowTs = time();
+        $bucket = array_values(array_filter($bucket, function ($ts) use ($nowTs) {
+            return ($nowTs - (int)$ts) < 600;
+        }));
+        if (count($bucket) >= 3) {
+            Log::warning('Quick Spec spam blocked by rate-limit: ' . $ip);
+            $this->Flash->error(__('Too many submissions. Please try again later.'));
+            return $this->redirect(['action' => 'quickSpec']);
+        }
+        $bucket[] = $nowTs;
+        Cache::write($rateKey, $bucket, 'default');
+
+        if (empty($capStored) || (string)$userCap !== (string)$capStored) {
+            $this->Flash->error(__('Wrong captcha code. Please try again.'));
+            $session->write('qs_cap_code', (string)rand(10000, 99999));
+            $this->refreshQuickSpecFormView();
+
+            return null;
+        }
+
+        $projectName = trim((string)($data['project_name'] ?? ''));
+        $projectType = trim((string)($data['project_type'] ?? ''));
+        $area = trim((string)($data['area'] ?? ''));
+        $systemInterest = trim((string)($data['system_interest'] ?? ''));
+        $quantityOrSize = trim((string)($data['quantity_or_size'] ?? ''));
+        $name = trim((string)($data['name'] ?? ''));
+        $email = trim((string)($data['email'] ?? ''));
+        $phone = trim((string)($data['phone'] ?? ''));
+        $company = trim((string)($data['company'] ?? ''));
+        $state = trim((string)($data['state'] ?? ''));
+        $notes = trim((string)($data['notes'] ?? ''));
+
+        if ($projectName === '' || $projectType === '' || $area === '' || $name === '' || $email === '' || $phone === '') {
+            $this->Flash->error(__('Please fill in all required fields.'));
+            $this->refreshQuickSpecFormView();
+
+            return null;
+        }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->Flash->error(__('Please enter a valid email address.'));
+            $this->refreshQuickSpecFormView();
+
+            return null;
+        }
+        if (!preg_match('/^[0-9\-\+\(\)\s]{7,20}$/', $phone)) {
+            $this->Flash->error(__('Please enter a valid phone number.'));
+            $this->refreshQuickSpecFormView();
+
+            return null;
+        }
+        if ($notes !== '') {
+            $notesDecoded = html_entity_decode($notes, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            $notesDecoded = trim($notesDecoded);
+            if (mb_strlen($notesDecoded) > 2000) {
+                $this->Flash->error(__('Notes must be at most 2000 characters.'));
+                $this->refreshQuickSpecFormView();
+
+                return null;
+            }
+            $notes = $notesDecoded;
+        }
+
+        $entity = $this->QuickSpecs->newEntity([
+            'project_name' => $projectName,
+            'project_type' => $projectType,
+            'area' => $area,
+            'system_interest' => $systemInterest,
+            'quantity_or_size' => $quantityOrSize,
+            'name' => $name,
+            'email' => $email,
+            'phone' => $phone,
+            'company' => $company,
+            'state' => $state,
+            'notes' => $notes !== '' ? $notes : null,
+            'status' => 'new',
+            'ip_address' => $ip,
+            'user_agent' => substr((string)$this->request->getHeaderLine('User-Agent'), 0, 512),
+        ]);
+
+        if (!$this->QuickSpecs->save($entity)) {
+            Log::error('Quick Spec save failed: ' . json_encode($entity->getErrors()));
+            $this->Flash->error(__('Could not save your request. Please check the form and try again.'));
+            $this->refreshQuickSpecFormView();
+
+            return null;
+        }
+
+        $emailFail = false;
+        $id = (int)$entity->id;
+        $adminViewUrl = \Cake\Routing\Router::url(['controller' => 'QuickSpecs', 'action' => 'admin_view', $id], true);
+        $internalRecipients = $this->collectQuickSpecInternalRecipients();
+        $site = defined('SITENAME') ? SITENAME : 'Durotech';
+
+        $mailVars = [
+            'id' => $id,
+            'project_name' => $projectName,
+            'project_type' => $projectType,
+            'area' => $area,
+            'system_interest' => $systemInterest,
+            'quantity_or_size' => $quantityOrSize,
+            'name' => $name,
+            'email' => $email,
+            'phone' => $phone,
+            'company' => $company,
+            'state' => $state,
+            'notes' => $notes,
+            'admin_view_url' => $adminViewUrl,
+            'site_name' => $site,
+        ];
+
+        if (!empty($internalRecipients)) {
+            try {
+                $this->sendemail(
+                    $internalRecipients,
+                    $site . ' — Quick Spec request #' . $id,
+                    'quick_spec_internal',
+                    $mailVars
+                );
+            } catch (\Throwable $e) {
+                $emailFail = true;
+                Log::error('Quick Spec internal email failed: ' . $e->getMessage());
+            }
+        } else {
+            $emailFail = true;
+            Log::warning('Quick Spec: no internal recipients from SpecEmail config.');
+        }
+
+        try {
+            $this->sendemail(
+                $email,
+                'We received your Quick Spec request | ' . $site,
+                'quick_spec_ack',
+                $mailVars
+            );
+        } catch (\Throwable $e) {
+            $emailFail = true;
+            Log::error('Quick Spec acknowledgement email failed: ' . $e->getMessage());
+        }
+
+        $session->delete('qs_cap_code');
+        $session->delete('qs_started_at');
+
+        if ($emailFail) {
+            $this->Flash->warning(__('Your request was saved. If you do not hear from us soon, please call Durotech.'));
+        } else {
+            $this->Flash->success(__('Thank you. Your Quick Spec request has been submitted.'));
+        }
+
+        return $this->redirect(['action' => 'quickSpecThanks']);
+    }
+
+    /**
+     * Thank-you page after Quick Spec submission.
+     */
+    public function quickSpecThanks(): ?Response
+    {
+        $this->set([
+            'title_for_layout' => (defined('SITENAME') ? SITENAME : 'Durotech') . ' | Quick Spec Received',
+            'meta_title' => 'Quick Spec Received | Durotech',
+            'meta_description' => 'Thank you for your specification request.',
+            'meta_keyword' => 'quick spec, Durotech',
+        ]);
+
+        return null;
+    }
+
+    /**
+     * Product dropdown + captcha display value when re-rendering the Quick Spec form.
+     */
+    private function refreshQuickSpecFormView(): void
+    {
+        $productOptions = $this->Products->find()
+            ->select(['Products.id', 'Products.title'])
+            ->where(['Products.status' => 1])
+            ->orderAsc('Products.title')
+            ->all();
+        $this->set(compact('productOptions'));
+        $this->set('qs_cap_code', $this->request->getSession()->read('qs_cap_code'));
+    }
+
+    /**
+     * Collect SpecEmail to/cc/bcc addresses for Quick Spec notifications.
+     *
+     * @return string[]
+     */
+    protected function collectQuickSpecInternalRecipients(): array
+    {
+        $cfg = (array)Configure::read('SpecEmail');
+        $seen = [];
+        foreach (['to', 'cc', 'bcc'] as $blockKey) {
+            $block = $cfg[$blockKey] ?? [];
+            if (!is_array($block)) {
+                continue;
+            }
+            foreach ($block as $key => $val) {
+                if (is_string($key) && filter_var($key, FILTER_VALIDATE_EMAIL)) {
+                    $seen[$key] = true;
+                }
+                if (is_int($key) && is_string($val) && filter_var($val, FILTER_VALIDATE_EMAIL)) {
+                    $seen[$val] = true;
+                }
+            }
+        }
+
+        return array_keys($seen);
+    }
+
+    /**
+     * Captcha image for Quick Spec form. Session key: qs_cap_code.
+     */
+    public function quickSpecCaptch(): Response
+    {
+        $this->viewBuilder()->setLayout(false);
+        $session = $this->request->getSession();
+        $code = $session->read('qs_cap_code');
+        if ($code === null || $code === '') {
+            $code = (string)rand(10000, 99999);
+            $session->write('qs_cap_code', $code);
+        }
+
+        $width = 80;
+        $height = 30;
+        $image = imagecreatetruecolor($width, $height);
+        if ($image === false) {
+            return $this->response->withStatus(500);
+        }
+        $bg = imagecolorallocate($image, 240, 240, 240);
+        $text = imagecolorallocate($image, 0, 0, 0);
+        imagefill($image, 0, 0, $bg);
+        imagestring($image, 5, 10, 8, (string)$code, $text);
+
+        ob_start();
+        imagepng($image);
+        $png = ob_get_clean();
+        imagedestroy($image);
+
+        return $this->response
+            ->withType('image/png')
+            ->withStringBody($png === false ? '' : $png);
     }
 
     /**
