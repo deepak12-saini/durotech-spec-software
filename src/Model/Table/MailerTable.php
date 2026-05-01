@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use Cake\Database\Driver\Mysql;
+use Cake\Log\Log;
 use Cake\ORM\Table;
 
 /**
@@ -80,5 +82,55 @@ class MailerTable extends Table
 
         $next = (int)($row['max_code'] ?? 0) + 1;
         return $prefix . str_pad((string)$next, 3, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Admin-style spec track number: "DTSPEC yy-mm-NNN" (e.g. DTSPEC 26-04-596).
+     * Uses MAX existing suffix for the current year-month plus MySQL advisory lock so
+     * two simultaneous creates cannot receive the same number (count()+1 race).
+     */
+    public function getNextAdminStyleSpecTrackNumber(): string
+    {
+        $yr = date('y');
+        $mm = date('m');
+        $prefix = 'DTSPEC ' . $yr . '-' . $mm . '-';
+        $like = $prefix . '%';
+        $conn = $this->getConnection();
+        $table = $this->getTable();
+
+        if ($conn->getDriver() instanceof Mysql) {
+            $lockName = 'cake3_dtspec_admin_track';
+            $acquired = 0;
+            $stmt = $conn->execute('SELECT GET_LOCK(?, 15) AS acquired', [$lockName]);
+            $acquired = (int)($stmt->fetch('assoc')['acquired'] ?? 0);
+            if ($acquired !== 1) {
+                Log::warning('getNextAdminStyleSpecTrackNumber: GET_LOCK failed; allocating without lock.');
+            }
+            try {
+                $sql = 'SELECT MAX(CAST(SUBSTRING_INDEX(TRIM(`tracknumber`), \'-\', -1) AS UNSIGNED)) AS max_code'
+                    . ' FROM `' . $table . '` WHERE `type` = 3 AND `tracknumber` LIKE ?';
+                $row = $conn->execute($sql, [$like])->fetch('assoc');
+                $next = (int)($row['max_code'] ?? 0) + 1;
+                $suffix = $next <= 999 ? str_pad((string)$next, 3, '0', STR_PAD_LEFT) : (string)$next;
+
+                return $prefix . $suffix;
+            } finally {
+                if ($acquired === 1) {
+                    $conn->execute('SELECT RELEASE_LOCK(?)', [$lockName]);
+                }
+            }
+        }
+
+        $sql = 'SELECT MAX(CAST(SUBSTRING_INDEX(TRIM(tracknumber), \'-\', -1) AS UNSIGNED)) AS max_code'
+            . ' FROM ' . $table . ' WHERE type = 3 AND tracknumber LIKE ?';
+        try {
+            $row = $conn->execute($sql, [$like])->fetch('assoc');
+        } catch (\Throwable $e) {
+            $row = ['max_code' => 0];
+        }
+        $next = (int)($row['max_code'] ?? 0) + 1;
+        $suffix = $next <= 999 ? str_pad((string)$next, 3, '0', STR_PAD_LEFT) : (string)$next;
+
+        return $prefix . $suffix;
     }
 }

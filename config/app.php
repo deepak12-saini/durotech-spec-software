@@ -262,6 +262,9 @@ return [
      */
     'SpecEmail' => [
         'from' => ['no-reply@durotechindustries.com.au' => 'Durotech Industries'],
+        // 'to' => ['deepaksaini10036@gmail.com'],
+        // 'cc' => ['deepaksaini10036@gmail.com'],
+        // 'bcc' => ['deepaksaini10036@gmail.com'],
         'to' => ['kal@durotechindustries.com.au'],
         'cc' => ['info@durotechindustries.com.au'],
         'bcc' => ['sales@durotechindustries.com.au'],

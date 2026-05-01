@@ -1095,21 +1095,7 @@ class MailersController extends AppController
 		}
 
 
-		$refrmon = array('01'=>'a','02'=>'b','03'=>'c','04'=>'d','05'=>'e','06'=>'f','07'=>'g','08'=>'h','09'=>'i','10'=>'j','11'=>'k','12'=>'l');
-		$mailerid = (int) $this->Mailer->find()->where(['type' => 3])->count();
-		$id = $mailerid + 1;
-		$idStr = (string) $id;
-
-		$yr = date('y');
-		$mm = date('m');
-		if (strlen($idStr) === 1) {
-			$code = '00' . $id;
-		} elseif (strlen($idStr) === 2) {
-			$code = '0' . $id;
-		} else {
-			$code = (string) $id;
-		}			
-		$refernce = 'DTSPEC '.$yr.'-'.$mm.'-'.$code; 
+		$refernce = $this->Mailer->getNextAdminStyleSpecTrackNumber();
 		$this->set('refernce',$refernce);
 	}
 	
@@ -1387,20 +1373,7 @@ class MailersController extends AppController
 				$inserty['Mailer']['id'] = $id;
 				$tracknumber = $this->request->getData()['tracknumber'];
 			}else{
-				$refrmon = array('01'=>'a','02'=>'b','03'=>'c','04'=>'d','05'=>'e','06'=>'f','07'=>'g','08'=>'h','09'=>'i','10'=>'j','11'=>'k','12'=>'l');
-				$mailerid = (int)$this->Mailer->find()->where(['type' => 3])->count();
-				$id = (string)($mailerid + 1);
-				
-				$yr = date('y');
-				$mm = date('m');
-				if(strlen($id) == 1){
-					$code = '00'.$id;
-				}else if(strlen($id) == 2){
-					$code = '0'.$id;
-				}else{
-					$code = $id;
-				}			
-				$tracknumber = 'DTSPEC '.$yr.'-'.$mm.'-'.$code; 
+				$tracknumber = $this->Mailer->getNextAdminStyleSpecTrackNumber();
 			}
 
 			//new_code deepak
@@ -1689,20 +1662,7 @@ class MailersController extends AppController
 				$inserty['Mailer']['id'] = $id;
 				$tracknumber = $this->request->getData()['tracknumber'];
 			}else{
-				$refrmon = array('01'=>'a','02'=>'b','03'=>'c','04'=>'d','05'=>'e','06'=>'f','07'=>'g','08'=>'h','09'=>'i','10'=>'j','11'=>'k','12'=>'l');
-				$mailerid = (int)$this->Mailer->find()->where(['type' => 3])->count();
-				$id = (string)($mailerid + 1);
-				
-				$yr = date('y');
-				$mm = date('m');
-				if(strlen($id) == 1){
-					$code = '00'.$id;
-				}else if(strlen($id) == 2){
-					$code = '0'.$id;
-				}else{
-					$code = $id;
-				}			
-				$tracknumber = 'DTSPEC '.$yr.'-'.$mm.'-'.$code; 
+				$tracknumber = $this->Mailer->getNextAdminStyleSpecTrackNumber();
 			}
 			
 			$inserty = [];
@@ -1898,20 +1858,7 @@ class MailersController extends AppController
 				$inserty['Mailer']['id'] = $id;
 				$tracknumber = $this->request->getData()['tracknumber'];
 			}else{
-				$refrmon = array('01'=>'a','02'=>'b','03'=>'c','04'=>'d','05'=>'e','06'=>'f','07'=>'g','08'=>'h','09'=>'i','10'=>'j','11'=>'k','12'=>'l');
-				$mailerid = (int)$this->Mailer->find()->where(['type' => 3])->count();
-				$id = (string)($mailerid + 1);
-				
-				$yr = date('y');
-				$mm = date('m');
-				if(strlen($id) == 1){
-					$code = '00'.$id;
-				}else if(strlen($id) == 2){
-					$code = '0'.$id;
-				}else{
-					$code = $id;
-				}			
-				$tracknumber = 'DTSPEC '.$yr.'-'.$mm.'-'.$code; 
+				$tracknumber = $this->Mailer->getNextAdminStyleSpecTrackNumber();
 			}
 			
 			$inserty = [];
@@ -2294,20 +2241,7 @@ class MailersController extends AppController
 				return $this->redirect(array('action' => 'spec_index'));
 			}
 		}
-		$refrmon = array('01'=>'a','02'=>'b','03'=>'c','04'=>'d','05'=>'e','06'=>'f','07'=>'g','08'=>'h','09'=>'i','10'=>'j','11'=>'k','12'=>'l');
-		$mailerid = (int)$this->Mailer->find()->where(['type' => 3])->count();
-		$id = (string)($mailerid + 1);
-		
-		$yr = date('y');
-		$mm = date('m');
-		if(strlen($id) == 1){
-			$code = '00'.$id;
-		}else if(strlen($id) == 2){
-			$code = '0'.$id;
-		}else{
-			$code = $id;
-		}			
-		$refernce = 'DTSPEC '.$yr.'-'.$mm.'-'.$code; 
+		$refernce = $this->Mailer->getNextAdminStyleSpecTrackNumber();
 		$this->set('refernce',$refernce);
 		
 		$SpecArr = $this->Spec->find('all');
@@ -2390,20 +2324,7 @@ class MailersController extends AppController
 				$inserty['Mailer']['id'] = $id;
 				$tracknumber = $this->request->getData()['tracknumber'];
 			}else{
-				$refrmon = array('01'=>'a','02'=>'b','03'=>'c','04'=>'d','05'=>'e','06'=>'f','07'=>'g','08'=>'h','09'=>'i','10'=>'j','11'=>'k','12'=>'l');
-				$mailerid = (int)$this->Mailer->find()->where(['type' => 3])->count();
-				$id = (string)($mailerid + 1);
-				
-				$yr = date('y');
-				$mm = date('m');
-				if(strlen($id) == 1){
-					$code = '00'.$id;
-				}else if(strlen($id) == 2){
-					$code = '0'.$id;
-				}else{
-					$code = $id;
-				}			
-				$tracknumber = 'DTSPEC '.$yr.'-'.$mm.'-'.$code; 
+				$tracknumber = $this->Mailer->getNextAdminStyleSpecTrackNumber();
 			}
 
 			//new_code deepak
@@ -2730,12 +2651,7 @@ class MailersController extends AppController
 		$newStatus = $currentApproved === 1 ? 0 : 1;
 
 		if ($newStatus === 1 && empty($mailer->tracknumber)) {
-			$count = (int)$this->Mailer->find()->where(['type' => 3])->count();
-			$serial = $count + 1;
-			$yr = date('y');
-			$mm = date('m');
-			$code = str_pad((string)$serial, 3, '0', STR_PAD_LEFT);
-			$tracknumber = 'DTSPEC ' . $yr . '-' . $mm . '-' . $code;
+			$tracknumber = $this->Mailer->getNextAdminStyleSpecTrackNumber();
 
 			$mailer->is_approved = $newStatus;
 			$mailer->admin_id = $user_id;

@@ -1045,14 +1045,7 @@ public function editsend_v3($id = null) {
 
         $tracknumber = ($form_type == 0) ? $this->request->data['tracknumber'] : '';
         if ($form_type != 0) {
-            $mailerid = $this->Mailer->find()
-                ->where(['type' => 3])
-                ->count();
-            $newid = $mailerid + 1;
-            $yr = date('y');
-            $mm = date('m');
-            $code = str_pad($newid, 3, '0', STR_PAD_LEFT);
-            $tracknumber = 'DTSPEC ' . $yr . '-' . $mm . '-' . $code;
+            $tracknumber = $this->Mailer->getNextAdminStyleSpecTrackNumber();
         }
         // Revision column is optional in some migrated databases.
         $hasRevisionColumn = $this->Mailer->getSchema()->hasColumn('revision');
