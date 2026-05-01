@@ -20,27 +20,28 @@ if (is_array($LabFile ?? null) && isset($LabFile['LabFile'])) {
 	<?php if($is_access == 0){ ?>
 	<div class="row">
 		<div class="col-xs-12">
-			
-			<form action="" method="post" >
-				<div class="box">
+			<div class="box">
 					<div class="box-header">				  
 					</div>					
 					<div class="box-body">
 						<?php if(!empty($lab['filename'])){ ?>
-							<iframe src="<?php echo h(SITEURL . ($lab['dir'] ?? '') . '/' . ($lab['filename'] ?? '')); ?>" style="width:100%; height:530px; border:none;" allowTransparency="true" scrolling="no" frameborder="0"  allow-top-navigation="no"></iframe>
+							<iframe src="<?php echo trim($this->element('price_pdf_public_url', ['dir' => $lab['dir'] ?? '', 'filename' => $lab['filename'] ?? ''], ['return' => true])); ?>" style="width:100%; height:530px; border:none;" allowTransparency="true" scrolling="no" frameborder="0"  allow-top-navigation="no"></iframe>
 						<?php }else{ ?>
 							<h3> Sorry, you don't have access to this folder. You can request the admin to give you access. <a href="<?php echo SITEURL.'users/access/1'; ?>">Click here</a></h3>
 						<?php }?>
 					</div>
 				</div>
-			</form>
 		</div>		
 	</div>
 	<?php }else{ ?>
 	<div class="row">
 		<div class="col-xs-12">
 		
-			<?php echo $this->Form->create(null, ['class' => 'form-horizontal', 'id' => 'labelpdffile-otp-form']); ?>
+			<?php echo $this->Form->create(null, [
+				'class' => 'form-horizontal',
+				'id' => 'labelpdffile-otp-form',
+				'url' => ['controller' => 'Users', 'action' => 'labelpdffile', '?' => ['lab_id' => (int)($lab_id ?? $lab['id'] ?? 0)]],
+			]); ?>
 				<div class="form-group">
 					<label class="col-sm-3 control-label no-padding-right" for="otp"> One Time Password (OTP): </label>
 					<div class="col-sm-9">
@@ -60,7 +61,7 @@ if (is_array($LabFile ?? null) && isset($LabFile['LabFile'])) {
 					</div>
 				</div>
 			<?php echo $this->Form->end(); ?>
-			<p class="alert alert-warning"><b>Please check your mail. Enter one time pssword received on your registered email address.</b> </p>
+			<p class="alert alert-warning"><b>Please check your mail (and spam). Enter the one-time password received on your registered email address.</b> </p>
 		</div>		
 	</div>
 	<?php } ?>

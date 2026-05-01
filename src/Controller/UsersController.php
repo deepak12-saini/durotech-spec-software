@@ -1075,11 +1075,49 @@ class UsersController extends AppController
 
 		$this->set('title_for_layout', SITENAME . ' | Price PDF File');
 
-		$customer_id = $this->request->getSession()->read('Customer.id');
-		$LabFile = $this->LabFile->find()->where(['LabFile.dir' => $dir])->first();
+		$customer_id = (int)$this->request->getSession()->read('Customer.id');
+		$labId = (int)($this->request->getQuery('lab_id') ?? 0);
+
+		$LabFile = null;
+		if ($labId > 0) {
+			$LabFile = $this->LabFile->find()->where(['LabFile.id' => $labId])->first();
+		}
+		if (!$LabFile && $dir !== null && $dir !== '') {
+			$LabFile = $this->LabFile->find()->where(['LabFile.dir' => $dir])->first();
+		}
 		if (empty($LabFile)) {
 			return $this->redirect(['action' => 'labfile']);
 		}
+
+		$assigned = $this->LabAssign->exists([
+			'LabAssign.customer_id' => $customer_id,
+			'LabAssign.lab_id' => (int)$LabFile->id,
+		]);
+		if (!$assigned) {
+			$this->Flash->error('You do not have access to this price list.');
+			return $this->redirect(['action' => 'labfile']);
+		}
+
+		$dir = (string)($LabFile->dir ?? '');
+		$labId = (int)$LabFile->id;
+
+		$fn = trim((string)($LabFile->filename ?? ''));
+		if ($fn === '' && $dir !== '') {
+			$relativeDir = preg_replace('#^webroot[/\\\\]+#i', '', trim($dir, '/\\'));
+			$scanDir = WWW_ROOT . str_replace(['/', '\\'], DS, $relativeDir);
+			if (is_dir($scanDir)) {
+				$pdfs = glob($scanDir . DS . '*.pdf');
+				if (is_array($pdfs) && $pdfs !== []) {
+					usort($pdfs, static function ($a, $b) {
+						return filemtime($b) <=> filemtime($a);
+					});
+					$LabFile->filename = basename($pdfs[0]);
+					$this->LabFile->save($LabFile, ['validate' => false, 'checkRules' => false]);
+				}
+			}
+		}
+
+		$labelPdfRedirect = ['controller' => 'Users', 'action' => 'labelpdffile', '?' => ['lab_id' => $labId]];
 
 		$this->set('is_access', 0);
 		$opt = $this->request->getSession()->read('opt');
@@ -1095,33 +1133,51 @@ class UsersController extends AppController
 				$this->request->getSession()->write('pdfaceess', 1);
 				$this->request->getSession()->delete('opt');
 				$this->Flash->success('Thank for verifying your account.');
-				return $this->redirect(['controller' => 'Users', 'action' => 'labelpdffile', $dir]);
+				return $this->redirect($labelPdfRedirect);
 			}
 			$this->Flash->error('Wrong otp password. Please try again.');
 		} elseif (!empty($opt)) {
 			$this->set('is_access', 1);
 		} elseif (empty($pdfaceess) && $customer_id) {
-			$rand = random_int(0, 999999);
+			// Price list PDF OTP: set to null for random OTP + email; non-null = fixed code (no email).
+			$staticPriceListOtp = '1234';
+			$rand = ($staticPriceListOtp !== null && $staticPriceListOtp !== '')
+				? (string)$staticPriceListOtp
+				: (string)random_int(0, 999999);
 			$userEntity = $this->NappUser->get($customer_id);
-			$userEntity = $this->NappUser->patchEntity($userEntity, ['otp' => (string)$rand]);
-			$this->NappUser->save($userEntity);
-
 			$name = trim(($userEntity->name ?? '') . ' ' . ($userEntity->lname ?? ''));
-			$to = $userEntity->email ?? '';
+			$to = trim((string)($userEntity->email ?? ''));
 			$subject = SITENAME . ' :: One Time Password (OTP) for Price List Access. OTP is ' . $rand;
 			$template_name = 'otp';
 			$variables = ['name' => $name, 'otp' => $rand];
 
-			try {
-				$this->sendemail($to, $subject, $template_name, $variables);
-			} catch (\Exception $e) {
+			if ($staticPriceListOtp === null || $staticPriceListOtp === '') {
+				if ($to === '' || !filter_var($to, FILTER_VALIDATE_EMAIL)) {
+					\Cake\Log\Log::error('Price list OTP skipped: invalid or empty customer email for user id ' . $customer_id);
+					$this->Flash->error('Your account has no valid email address. Please update your profile, then try again.');
+					return $this->redirect($labelPdfRedirect);
+				}
+				try {
+					$this->sendemail($to, $subject, $template_name, $variables);
+				} catch (\Throwable $e) {
+					\Cake\Log\Log::error('Price list OTP email failed for ' . $to . ': ' . $e->getMessage());
+					$this->Flash->error('Unable to send OTP email. Please try again later or contact support.');
+					return $this->redirect($labelPdfRedirect);
+				}
 			}
 
+			$userEntity = $this->NappUser->patchEntity($userEntity, ['otp' => (string)$rand]);
+			$this->NappUser->save($userEntity);
 			$this->request->getSession()->write('opt', $rand);
-			$this->Flash->success('OTP sent at email. Please check your mail and verify.');
-			return $this->redirect(['controller' => 'Users', 'action' => 'labelpdffile', $dir]);
+			if ($staticPriceListOtp !== null && $staticPriceListOtp !== '') {
+				$this->Flash->success('Enter OTP 1234 on the next screen to open your price PDF (temporary fixed code).');
+			} else {
+				$this->Flash->success('OTP sent to your email. Please check your inbox and spam folder.');
+			}
+			return $this->redirect($labelPdfRedirect);
 		}
 
+		$this->set('lab_id', $labId);
 		$this->set('LabFile', ['LabFile' => $LabFile->toArray()]);
 
 		return null;
@@ -1809,16 +1865,13 @@ class UsersController extends AppController
 		$customer_id=$this->request->getSession()->read('Customer.id');
 			
 		$user = $this->NappUser->find()->where(['NappUser.id' => $customer_id])->first();
-		if(!empty($this->request->getData())){
-			if(!empty($user)){
-				$data = $this->request->getData();
-				$data['NappUser']['id'] = $customer_id;
-				if ($this->NappUser->save($data)) {
-					$this->Flash->success('Your profile has been updated');
-					return $this->redirect(['action' => 'profile']);
-				}
-				$this->Flash->error('Your profile has not updated');
+		if ($this->request->is('post') && $user) {
+			$user = $this->NappUser->patchEntity($user, $this->request->getData());
+			if ($this->NappUser->save($user)) {
+				$this->Flash->success('Your profile has been updated');
+				return $this->redirect(['action' => 'profile']);
 			}
+			$this->Flash->error('Your profile has not updated');
 		}
 		$this->set('user', $user);
 	}

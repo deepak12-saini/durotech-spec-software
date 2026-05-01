@@ -15,6 +15,7 @@
 namespace App\Controller;
 
 use Cake\Controller\Controller;
+use Cake\Core\Configure;
 use Cake\Event\EventInterface;
 use Cake\Http\Response;
 use Cake\Mailer\Email;
@@ -423,8 +424,30 @@ class AppController extends Controller
         $this->autoRender = false;
         
         try {
-            $from = defined('EMAIL') ? EMAIL : 'deepaksaini10036@gmail.com';
+            // From must match the SMTP-authenticated mailbox (e.g. Gmail). The EMAIL
+            // constant can come from the DB and differ, which causes Gmail to reject or drop mail.
+            $fromProfile = Configure::read('Email.default.from');
+            $from = '';
             $from_name = defined('SITENAME') ? SITENAME : 'Site';
+            if (is_array($fromProfile) && $fromProfile !== []) {
+                $keys = array_keys($fromProfile);
+                $from = (string)($keys[0] ?? '');
+                $named = $from !== '' ? ($fromProfile[$from] ?? '') : '';
+                if (is_string($named) && $named !== '') {
+                    $from_name = $named;
+                }
+            } elseif (is_string($fromProfile) && strpos($fromProfile, '@') !== false) {
+                $from = $fromProfile;
+            }
+            if ($from === '') {
+                $gmailUser = Configure::read('EmailTransport.gmail.username');
+                if (is_string($gmailUser) && strpos($gmailUser, '@') !== false) {
+                    $from = $gmailUser;
+                }
+            }
+            if ($from === '') {
+                $from = defined('EMAIL') ? (string)EMAIL : 'deepaksaini10036@gmail.com';
+            }
             
             $email = new Email('default');
             // Use AppView so email templates use .php extension (e.g. Email/html/coapdf.php)
@@ -437,7 +460,7 @@ class AppController extends Controller
                 ->setEmailFormat('html')
                 ->setViewVars($variables)
                 ->send();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Log::write('error', 'Email sending failed: ' . $e->getMessage());
             throw $e; // rethrow to trigger catch in calling method
         }

@@ -28,7 +28,7 @@
 					<tr>
 					<td><?php echo h($labelArr['LabFile']['id']); ?></td>
 					<td><?php echo h($labelArr['LabFile']['label']); ?></td>
-					<td><a href="<?php echo h($this->Url->build(['controller' => 'Users', 'action' => 'labelpdffile', $labelArr['LabFile']['dir']])); ?>">Preview PDF <?php echo h($labelArr['LabFile']['label']); ?></a></td>
+					<td><a href="<?php echo h($this->Url->build(['controller' => 'Users', 'action' => 'labelpdffile', '?' => ['lab_id' => (int)($labelArr['LabFile']['id'] ?? 0)]])); ?>">Preview PDF <?php echo h($labelArr['LabFile']['label']); ?></a></td>
 					<!--td><?php echo h($labelArr['LabFile']['password']); ?></td-->
 								
                     				

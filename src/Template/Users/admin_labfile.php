@@ -30,7 +30,7 @@
 					<td><?php echo h($labelArr['LabFile']['label']); ?></td>
 					<td>
 					<?php if(!empty($labelArr['LabFile']['filename'])){ ?>
-						<a target="_blank" href="<?php echo SITEURL.$labelArr['LabFile']['dir'].'/'.$labelArr['LabFile']['filename'] ?>">Download <?php echo h($labelArr['LabFile']['label']); ?></a>
+						<a target="_blank" href="<?php echo trim($this->element('price_pdf_public_url', ['dir' => $labelArr['LabFile']['dir'] ?? '', 'filename' => $labelArr['LabFile']['filename'] ?? ''], ['return' => true])); ?>">Download <?php echo h($labelArr['LabFile']['label']); ?></a>
 					<?php }else{ ?>
 						N/A
 					<?php } ?>					
