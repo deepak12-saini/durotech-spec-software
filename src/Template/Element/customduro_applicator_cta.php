@@ -78,6 +78,13 @@ button.applicator-cta-btn {
 	cursor: pointer;
 	font-family: inherit;
 }
+/* Above .navbar-nav .dropdown-menu { z-index: 9999 } in site CSS; BS default modal is 1050 */
+.modal-duro-contact.modal {
+	z-index: 10050 !important;
+}
+body.modal-open .modal-backdrop.in {
+	z-index: 10045 !important;
+}
 .modal-duro-contact .modal-dialog {
 	width: 94%;
 	max-width: 760px;
@@ -114,6 +121,37 @@ button.applicator-cta-btn {
 .modal-duro-contact .modal-body {
 	padding: 8px 28px 28px;
 	color: #2e2a77;
+}
+/* Names: stacked on mobile; side-by-side from tablet — no Bootstrap grid (avoids float/clipping bugs) */
+.modal-duro-contact .applicator-contact-names .form-group {
+	margin-bottom: 14px;
+}
+@media (min-width: 768px) {
+	.modal-duro-contact .applicator-contact-names {
+		display: flex;
+		gap: 12px;
+		align-items: flex-start;
+	}
+	.modal-duro-contact .applicator-contact-names .form-group {
+		flex: 1 1 0;
+		min-width: 0;
+		margin-bottom: 14px;
+	}
+}
+@media (max-width: 767px) {
+	.modal-duro-contact .modal-dialog {
+		margin: 10px !important;
+		width: auto !important;
+		max-width: none !important;
+	}
+	/* Let Bootstrap .modal scroll the dialog; inner overflow was clipping the first field on some phones */
+	.modal-duro-contact .modal-content {
+		max-height: none;
+		overflow: visible;
+	}
+	.modal-duro-contact .modal-body {
+		padding: 12px 16px 20px;
+	}
 }
 .modal-duro-contact .form-control {
 	background: #dfe8f0;
@@ -243,18 +281,14 @@ $applicatorCsrf = (string)$this->request->getCookie('csrfToken');
 					<form id="applicator-contact-form" method="post" action="<?php echo h($applicatorContactUrl); ?>" autocomplete="on">
 						<input type="hidden" name="_csrfToken" value="<?php echo h($applicatorCsrf); ?>">
 						<input type="text" name="website" value="" tabindex="-1" autocomplete="off" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;" aria-hidden="true">
-						<div class="row">
-							<div class="col-xs-6">
-								<div class="form-group">
-									<label class="sr-only" for="applicator-first-name">First name</label>
-									<input type="text" class="form-control" id="applicator-first-name" name="first_name" placeholder="First name*" required maxlength="80">
-								</div>
+						<div class="applicator-contact-names">
+							<div class="form-group">
+								<label class="sr-only" for="applicator-first-name">First name</label>
+								<input type="text" class="form-control" id="applicator-first-name" name="first_name" placeholder="First name*" required maxlength="80" autocomplete="given-name">
 							</div>
-							<div class="col-xs-6">
-								<div class="form-group">
-									<label class="sr-only" for="applicator-last-name">Last name</label>
-									<input type="text" class="form-control" id="applicator-last-name" name="last_name" placeholder="Last name*" required maxlength="80">
-								</div>
+							<div class="form-group">
+								<label class="sr-only" for="applicator-last-name">Last name</label>
+								<input type="text" class="form-control" id="applicator-last-name" name="last_name" placeholder="Last name*" required maxlength="80" autocomplete="family-name">
 							</div>
 						</div>
 						<div class="form-group">
@@ -309,7 +343,14 @@ $applicatorCsrf = (string)$this->request->getCookie('csrfToken');
 			$btn.prop('disabled', false).text('Submit');
 		}, 3200);
 	}
+	$modal.on('show.bs.modal', function() {
+		if (!$modal.parent().is('body')) {
+			$modal.appendTo('body');
+		}
+	});
 	$modal.on('shown.bs.modal', function() {
+		$modal.scrollTop(0);
+		jQuery(document).scrollTop(0);
 		jQuery.getJSON(initUrl).always(function() {
 			refreshCaptcha();
 			armSubmitButton();
