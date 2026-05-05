@@ -2297,6 +2297,35 @@ class UsersController extends AppController
 		$this->set('title_for_layout', SITENAME . ' Login History');
 		$this->checkAdminSession();
 
+		if ($this->request->is('post')) {
+			$deleteScope = (string)$this->request->getData('delete_scope');
+			if ($deleteScope === 'all') {
+				$deleted = $this->LoginHistory->deleteAll([]);
+				if ($deleted) {
+					$this->Flash->success(__('All login history records have been deleted.'));
+				} else {
+					$this->Flash->error(__('Could not delete records. Please try again.'));
+				}
+				return $this->redirect(['action' => 'admin_loginhisotry']);
+			}
+
+			$selectedIds = (array)$this->request->getData('selected_ids');
+			$selectedIds = array_values(array_unique(array_filter(array_map('intval', $selectedIds), function ($id) {
+				return $id > 0;
+			})));
+			if (empty($selectedIds)) {
+				$this->Flash->error(__('Please select at least one login history record.'));
+			} else {
+				$deleted = $this->LoginHistory->deleteAll(['id IN' => $selectedIds]);
+				if ($deleted) {
+					$this->Flash->success(__('Selected login history records have been deleted.'));
+				} else {
+					$this->Flash->error(__('Could not delete selected records. Please try again.'));
+				}
+			}
+			return $this->redirect(['action' => 'admin_loginhisotry']);
+		}
+
 		$this->paginate = [
 			'limit' => 10,
 			'order' => ['LoginHistory.id' => 'DESC'],
