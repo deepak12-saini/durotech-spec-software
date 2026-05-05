@@ -276,6 +276,7 @@
 		}
 	}
 
+	/* === HOME TESTIMONIALS (hidden pending client approval) — remove this wrapper comment to restore CSS ===
 	.home-testimonials {
 		background: #f7f7f7;
 		padding: 50px 0;
@@ -362,6 +363,7 @@
 			margin-bottom: 0;
 		}
 	}
+	=== end testimonials CSS (remove opening/closing comment lines above to uncomment) === */
 </style>
 <div class="banner col-lg-12 col-md-12 col-sm-12">
 	 
@@ -689,6 +691,13 @@
 			</div>
         </div>
 
+		<?php
+		/**
+		 * Home testimonials block — hidden until client approval.
+		 * To restore: change `false` below to `true` (and uncomment testimonials CSS in the <style> block above).
+		 */
+		if (false):
+		?>
 		<div class="home-testimonials col-lg-12 col-md-12 col-sm-12">
 			<div class="container">
 				<h3>What Our Clients Say</h3>
@@ -760,6 +769,7 @@
 				<?php endif; ?>
 			</div>
 		</div>
+		<?php endif; ?>
         <script async src="//www.instagram.com/embed.js"></script>
 		<!-- <div class="client_logo col-lg-12 col-md-12 col-sm-12">		
 			<div class="container">
