@@ -17,7 +17,7 @@ use Cake\Mailer\MailerAwareTrait;
  * FrontsController – CakePHP 3.10
  *
  * Public front-end controller. Action names are camelCase; views are snake_case in templates/Fronts/.
- * Layout: customduro_layout (src/Template/Layout/customduro_layout.ctp).
+ * Layout: customduro_layout (src/Template/Layout/customduro_layout.php; AppView uses .php templates).
  */
 class FrontsController extends AppController
 {
@@ -54,7 +54,7 @@ class FrontsController extends AppController
         $this->callConstants();
 
         $action = $this->request->getParam('action');
-        if ($action === 'captch' || $action === 'quickSpecCaptch' || $action === 'methodStatementCaptch') {
+        if ($action === 'captch' || $action === 'quickSpecCaptch' || $action === 'methodStatementCaptch' || $action === 'contactModalInit') {
             return null;
         }
 
@@ -502,6 +502,23 @@ class FrontsController extends AppController
     // -------------------------------------------------------------------------
 
     /**
+     * JSON response for applicator modal when request is AJAX; otherwise null.
+     *
+     * @param array<string, mixed> $extra
+     */
+    protected function contactJsonIfAjax(bool $success, string $message, array $extra = []): ?Response
+    {
+        if (!$this->request->is('ajax')) {
+            return null;
+        }
+        $payload = array_merge(['success' => $success, 'message' => $message], $extra);
+
+        return $this->response
+            ->withType('application/json')
+            ->withStringBody(json_encode($payload, JSON_UNESCAPED_UNICODE));
+    }
+
+    /**
      * Contact page. GET: show form + set cap_code. POST: validate, send email.
      * View: Fronts/contact.php
      */
@@ -533,6 +550,10 @@ class FrontsController extends AppController
         // Spam bots usually fill hidden fields.
         if ($honeypot !== '') {
             Log::warning('Contact spam blocked by honeypot: ' . $ip);
+            $json = $this->contactJsonIfAjax(false, __('Unable to submit form. Please try again.'));
+            if ($json !== null) {
+                return $json;
+            }
             $this->Flash->error(__('Unable to submit form. Please try again.'));
             return $this->redirect(['action' => 'contact']);
         }
@@ -540,6 +561,10 @@ class FrontsController extends AppController
         // Bots often submit instantly; humans need a few seconds.
         if ($startedAt <= 0 || $elapsed < 3) {
             Log::warning('Contact spam blocked by timing check: ' . $ip);
+            $json = $this->contactJsonIfAjax(false, __('Please wait a few seconds after opening the form, then try again.'));
+            if ($json !== null) {
+                return $json;
+            }
             $this->Flash->error(__('Please wait a few seconds and try again.'));
             return $this->redirect(['action' => 'contact']);
         }
@@ -556,6 +581,10 @@ class FrontsController extends AppController
         }));
         if (count($bucket) >= 3) {
             Log::warning('Contact spam blocked by rate-limit: ' . $ip);
+            $json = $this->contactJsonIfAjax(false, __('Too many submissions. Please try again later.'));
+            if ($json !== null) {
+                return $json;
+            }
             $this->Flash->error(__('Too many submissions. Please try again later.'));
             return $this->redirect(['action' => 'contact']);
         }
@@ -563,43 +592,157 @@ class FrontsController extends AppController
         Cache::write($rateKey, $bucket, 'default');
 
         if (empty($capCode) || (string)$userCap !== (string)$capCode) {
-            $this->Flash->error(__('Wrong captcha code. Please try again.'));
             $session->write('cap_code', (string)rand(10000, 99999));
+            $json = $this->contactJsonIfAjax(false, __('Wrong captcha code. Please try again.'), ['refreshCaptcha' => true]);
+            if ($json !== null) {
+                return $json;
+            }
+            $this->Flash->error(__('Wrong captcha code. Please try again.'));
             return null;
         }
 
-        $name = trim($data['name'] ?? '');
-        $email = trim($data['email'] ?? '');
-        $phone = trim($data['phone'] ?? '');
-        $message = trim($data['message'] ?? '');
+        $first = trim((string)($data['first_name'] ?? ''));
+        $last = trim((string)($data['last_name'] ?? ''));
+        $isModalStyle = ($first !== '' || $last !== '');
+
+        if ($isModalStyle) {
+            $name = trim($first . ' ' . $last);
+            $company = trim((string)($data['company'] ?? ''));
+            $enquiryType = trim((string)($data['enquiry_type'] ?? ''));
+            $userMessage = trim((string)($data['message'] ?? ''));
+            if ($first === '' || $last === '') {
+                $msg = __('Please enter both first and last name.');
+                $json = $this->contactJsonIfAjax(false, $msg);
+                if ($json !== null) {
+                    return $json;
+                }
+                $this->Flash->error($msg);
+                return null;
+            }
+            if ($company === '') {
+                $msg = __('Please enter your company name.');
+                $json = $this->contactJsonIfAjax(false, $msg);
+                if ($json !== null) {
+                    return $json;
+                }
+                $this->Flash->error($msg);
+                return null;
+            }
+            if (!in_array($enquiryType, ['Sales', 'Technical'], true)) {
+                $msg = __('Please select Sales or Technical.');
+                $json = $this->contactJsonIfAjax(false, $msg);
+                if ($json !== null) {
+                    return $json;
+                }
+                $this->Flash->error($msg);
+                return null;
+            }
+            $message = 'Enquiry type: ' . $enquiryType . "\n\nCompany: " . $company . "\n\n" . $userMessage;
+        } else {
+            $name = trim((string)($data['name'] ?? ''));
+            $message = trim((string)($data['message'] ?? ''));
+        }
+
+        $email = trim((string)($data['email'] ?? ''));
+        $phone = trim((string)($data['phone'] ?? ''));
         $normalizedMessage = html_entity_decode((string)$message, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $normalizedMessage = trim($normalizedMessage);
 
         if ($name === '' || $email === '' || $phone === '' || $message === '') {
-            $this->Flash->error(__('Please fill in all fields.'));
+            $msg = __('Please fill in all fields.');
+            $json = $this->contactJsonIfAjax(false, $msg);
+            if ($json !== null) {
+                return $json;
+            }
+            $this->Flash->error($msg);
             return null;
         }
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $this->Flash->error(__('Please enter a valid email address.'));
+            $msg = __('Please enter a valid email address.');
+            $json = $this->contactJsonIfAjax(false, $msg);
+            if ($json !== null) {
+                return $json;
+            }
+            $this->Flash->error($msg);
             return null;
         }
         if (!preg_match('/^[0-9\-\+\(\)\s]{7,20}$/', $phone)) {
-            $this->Flash->error(__('Please enter a valid phone number.'));
+            $msg = __('Please enter a valid phone number.');
+            $json = $this->contactJsonIfAjax(false, $msg);
+            if ($json !== null) {
+                return $json;
+            }
+            $this->Flash->error($msg);
             return null;
         }
-        if (mb_strlen($normalizedMessage) < 10 || mb_strlen($normalizedMessage) > 2000) {
-            $this->Flash->error(__('Message must be between 10 and 2000 characters.'));
-            return null;
-        }
-        // Reject HTML/anchor injection and URL-like content in the message body.
-        if (preg_match('/<[^>]+>|href\s*=|https?:\/\/|www\.|(?:\b[a-z0-9-]+\.)+(?:ru|cn|tk|pw|xyz)\b/i', $normalizedMessage)) {
-            $this->Flash->error(__('Links/HTML are not allowed in message.'));
-            return null;
-        }
-        // Reject embedded email addresses inside the message body (common spam pattern).
-        if (preg_match('/[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}/i', $normalizedMessage)) {
-            $this->Flash->error(__('Please remove email addresses from message body.'));
-            return null;
+
+        if ($isModalStyle) {
+            $userPart = trim((string)($data['message'] ?? ''));
+            $userPartNorm = trim(html_entity_decode($userPart, ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+            if ($userPartNorm === '' || mb_strlen($userPartNorm) < 10 || mb_strlen($userPartNorm) > 2000) {
+                $msg = __('Message must be between 10 and 2000 characters.');
+                $json = $this->contactJsonIfAjax(false, $msg);
+                if ($json !== null) {
+                    return $json;
+                }
+                $this->Flash->error($msg);
+                return null;
+            }
+            if (preg_match('/<[^>]+>|href\s*=|https?:\/\/|www\.|(?:\b[a-z0-9-]+\.)+(?:ru|cn|tk|pw|xyz)\b/i', $userPartNorm)) {
+                $msg = __('Links/HTML are not allowed in message.');
+                $json = $this->contactJsonIfAjax(false, $msg);
+                if ($json !== null) {
+                    return $json;
+                }
+                $this->Flash->error($msg);
+                return null;
+            }
+            if (preg_match('/[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}/i', $userPartNorm)) {
+                $msg = __('Please remove email addresses from message body.');
+                $json = $this->contactJsonIfAjax(false, $msg);
+                if ($json !== null) {
+                    return $json;
+                }
+                $this->Flash->error($msg);
+                return null;
+            }
+            if (mb_strlen($normalizedMessage) > 3000) {
+                $msg = __('Message is too long.');
+                $json = $this->contactJsonIfAjax(false, $msg);
+                if ($json !== null) {
+                    return $json;
+                }
+                $this->Flash->error($msg);
+                return null;
+            }
+        } else {
+            if (mb_strlen($normalizedMessage) < 10 || mb_strlen($normalizedMessage) > 2000) {
+                $msg = __('Message must be between 10 and 2000 characters.');
+                $json = $this->contactJsonIfAjax(false, $msg);
+                if ($json !== null) {
+                    return $json;
+                }
+                $this->Flash->error($msg);
+                return null;
+            }
+            if (preg_match('/<[^>]+>|href\s*=|https?:\/\/|www\.|(?:\b[a-z0-9-]+\.)+(?:ru|cn|tk|pw|xyz)\b/i', $normalizedMessage)) {
+                $msg = __('Links/HTML are not allowed in message.');
+                $json = $this->contactJsonIfAjax(false, $msg);
+                if ($json !== null) {
+                    return $json;
+                }
+                $this->Flash->error($msg);
+                return null;
+            }
+            if (preg_match('/[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}/i', $normalizedMessage)) {
+                $msg = __('Please remove email addresses from message body.');
+                $json = $this->contactJsonIfAjax(false, $msg);
+                if ($json !== null) {
+                    return $json;
+                }
+                $this->Flash->error($msg);
+                return null;
+            }
         }
 
         try {
@@ -613,7 +756,12 @@ class FrontsController extends AppController
             ]);
             if (!$this->Contact->save($contactEntity)) {
                 Log::error('Contact form DB save failed: ' . json_encode($contactEntity->getErrors()));
-                $this->Flash->error(__('Could not save your message. Please try again later.'));
+                $msg = __('Could not save your message. Please try again later.');
+                $json = $this->contactJsonIfAjax(false, $msg);
+                if ($json !== null) {
+                    return $json;
+                }
+                $this->Flash->error($msg);
 
                 return null;
             }
@@ -626,11 +774,21 @@ class FrontsController extends AppController
             $this->getMailer('Contact')->send('contactForm', [$mailData]);
             $session->delete('cap_code');
             $session->delete('contact_form_started_at');
-            $this->Flash->success(__('Your message has been sent successfully.'));
+            $okMsg = __('Your message has been sent successfully.');
+            $json = $this->contactJsonIfAjax(true, $okMsg);
+            if ($json !== null) {
+                return $json;
+            }
+            $this->Flash->success($okMsg);
             return $this->redirect(['action' => 'contact']);
         } catch (\Throwable $e) {
             Log::error('Contact form failed: ' . $e->getMessage() . ' in ' . $e->getFile() . ':' . $e->getLine());
-            $this->Flash->error(__('Sorry, we could not send your message. Please try again later.'));
+            $msg = __('Sorry, we could not send your message. Please try again later.');
+            $json = $this->contactJsonIfAjax(false, $msg);
+            if ($json !== null) {
+                return $json;
+            }
+            $this->Flash->error($msg);
         }
         return null;
     }
@@ -1234,6 +1392,22 @@ class FrontsController extends AppController
         return $this->response
             ->withType('image/png')
             ->withStringBody($png);
+    }
+
+    /**
+     * GET: new captcha code + form timer for applicator CTA contact modal.
+     */
+    public function contactModalInit(): Response
+    {
+        $this->request->allowMethod(['get']);
+        $this->autoRender = false;
+        $session = $this->request->getSession();
+        $session->write('cap_code', (string)random_int(10000, 99999));
+        $session->write('contact_form_started_at', time());
+
+        return $this->response
+            ->withType('application/json')
+            ->withStringBody(json_encode(['ok' => true]));
     }
 
     // -------------------------------------------------------------------------

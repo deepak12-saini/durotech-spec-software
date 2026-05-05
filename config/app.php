@@ -271,6 +271,19 @@ return [
     ],
 
     /*
+     * Recipients for public contact form (page + applicator modal).
+     * Edit these addresses here — ContactMailer reads ContactEmail only.
+     */
+    'ContactEmail' => [
+        'to' => ['kal@durotechindustries.com.au'],
+        'cc' => ['info@durotechindustries.com.au'],
+        'bcc' => ['sales@durotechindustries.com.au'],
+        // 'to' => ['deepaksaini10036@gmail.com'],
+        // 'cc' => ['deepaksaini10036@gmail.com'],
+        // 'bcc' => ['deepaksaini10036@gmail.com'],
+    ],
+
+    /*
      * Connection information used by the ORM to connect
      * to your application's datastores.
      *

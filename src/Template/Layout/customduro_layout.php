@@ -103,6 +103,14 @@
 	<div class="durotech col-lg-12 col-md-12 col-sm-12">    
 		<?php echo $this->element('customduro_header'); ?>
 		<?php echo $this->fetch('content'); ?>
+		<?php
+		$ctaController = (string)$this->request->getParam('controller');
+		$ctaAction = (string)$this->request->getParam('action');
+		$isContactPage = (strcasecmp($ctaController, 'Fronts') === 0 && $ctaAction === 'contact');
+		if (!$isContactPage) {
+			echo $this->element('customduro_applicator_cta');
+		}
+		?>
 		<?php echo $this->element('customduro_footer'); ?>	
 		<?php //echo $this->element('sql_dump'); ?>
 	</div>

@@ -1,6 +1,7 @@
 <?php
 /**
- * Custom Duro layout (CakePHP 3 – .ctp so default View finds it).
+ * Custom Duro layout (duplicate of customduro_layout.php).
+ * AppView sets $_ext = '.php' — the live layout is customduro_layout.php.
  */
 ?>
 <!DOCTYPE html>
@@ -80,6 +81,14 @@
 	<div class="durotech col-lg-12 col-md-12 col-sm-12">
 		<?= $this->element('customduro_header') ?>
 		<?= $this->fetch('content') ?>
+		<?php
+		$ctaController = (string)$this->request->getParam('controller');
+		$ctaAction = (string)$this->request->getParam('action');
+		$isContactPage = (strcasecmp($ctaController, 'Fronts') === 0 && $ctaAction === 'contact');
+		if (!$isContactPage) {
+			echo $this->element('customduro_applicator_cta');
+		}
+		?>
 		<?= $this->element('customduro_footer') ?>
 	</div>
 	<!-- Global site tag (gtag.js) - Google Analytics -->

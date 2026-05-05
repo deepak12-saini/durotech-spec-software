@@ -524,6 +524,7 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/faqs', ['controller' => 'Fronts', 'action' => 'faq']);
     $routes->connect('/contact', ['controller' => 'Fronts', 'action' => 'contact']);
     $routes->connect('/fronts/captch', ['controller' => 'Fronts', 'action' => 'captch']);
+    $routes->connect('/fronts/contact-modal-init', ['controller' => 'Fronts', 'action' => 'contactModalInit']);
 
     // ---------- CASE STUDY ----------
     $routes->connect(
