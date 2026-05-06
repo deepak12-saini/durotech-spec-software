@@ -149,7 +149,7 @@
 		   
 		   <div class="product_text_section col-lg-8 col-md-8 col-sm-8">
 		       <p><?php echo strip_tags($products['Product']['description']) ?><a href="#myModal" class="btn btn-primary" data-toggle="modal">Read More</a></p>
-			   <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+			   <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="false">
 				<div class="modal-dialog">
 				  <div class="modal-content">
 					<div class="modal-header">

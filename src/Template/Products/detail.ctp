@@ -393,7 +393,7 @@
                 <p><?= strip_tags($products['Product']['description']); ?> <a href="#myModal" class="btn btn-primary" data-toggle="modal">Read More</a></p>
 
                 <!-- Modal for Description -->
-                <div class="modal fade" id="myModal" tabindex="-1" role="dialog">
+                <div class="modal fade" id="myModal" tabindex="-1" role="dialog" data-backdrop="false" aria-hidden="true">
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header"><button type="button" class="close" data-dismiss="modal">x</button></div>
