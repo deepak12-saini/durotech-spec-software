@@ -44,6 +44,10 @@ a:focus, a:hover {
 .product_image_section {
 	background: #e4edf4;
 }
+.products-bg-wrap {
+	background: #e4edf4;
+	padding: 12px 0 24px;
+}
 @media screen and (max-width: 768px) {
 	.product_image_section {
 		padding: 0px 1%;
@@ -95,6 +99,7 @@ a:focus, a:hover {
 	  </div>
 	</div>
 
+	<div class="products-bg-wrap">
 	<div class="container">
 		<div class="durotech_product col-lg-12 col-md-12 col-sm-12">     
 			<div class="row">
@@ -157,4 +162,5 @@ a:focus, a:hover {
 						
 				</div>
 	    </div>
+	</div>
 	</div>

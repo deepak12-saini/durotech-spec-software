@@ -35,6 +35,15 @@ a:focus, a:hover {
     text-decoration: none;
     font-weight: 600;
 }
+.durotech_product,
+.product_list,
+.product_image_section {
+	background: #e4edf4;
+}
+.products-bg-wrap {
+	background: #e4edf4;
+	padding: 12px 0 24px;
+}
 .borderleft{ border-left:1px solid #000; }
 @media screen and (max-width: 768px) {
 	.product_image_section {
@@ -87,6 +96,7 @@ a:focus, a:hover {
 	  </div>
 	</div>
 
+	<div class="products-bg-wrap">
 	<div class="container">
 		<div class="durotech_product col-lg-12 col-md-12 col-sm-12">     
       <div class="row">
@@ -148,5 +158,6 @@ a:focus, a:hover {
 		<?php  } ?>	
 				
 		</div>
+	</div>
 	</div>
 	</div>

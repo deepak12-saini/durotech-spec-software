@@ -6,7 +6,7 @@
 ?>
 <style>
 .applicator-cta-section {
-	background: #ffffff;
+	background: #e4edf4;
 	padding: 48px 15px 56px;
 	font-family: 'Raleway', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
