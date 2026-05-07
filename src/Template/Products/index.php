@@ -29,6 +29,22 @@ input[type="search"] {
     border: 1px solid #ddd;
     margin-top: 46px;
 }
+.product_page_list_section {
+	background: #ffffff;
+	border-radius: 14px;
+	box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+	padding: 12px 12px 18px;
+	margin-bottom: 20px;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.product_page_list_section:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 10px 26px rgba(0,0,0,0.14);
+}
+.product_page_list_section h2 {
+	font-size: 15px;
+	margin-top: 10px;
+}
 a{ color:#777797; }
 a:focus, a:hover {
     color: #23527c;

@@ -155,6 +155,9 @@
 		font-size: 16px;	
 		line-height: 26px;
 	}
+	.content {
+		background: #e4edf4;
+	}
 	.image a {
 		font-size: 16px;
 		color: #fff;
@@ -224,18 +227,75 @@
 	}
 	
 	.tab_service{ margin-bottom:30px; }
-	.images{ background:#fff;width: 100%;height: 194px; }
-	.div_right{ padding:20px; }
+	.images{
+		background:#fff;
+		width: 100%;
+		min-height: 194px;
+		border-radius: 14px;
+		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+		transition: transform 0.22s ease, box-shadow 0.22s ease;
+		position: relative;
+		overflow: hidden;
+	}
+	.images:before {
+		content: "";
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 0;
+		height: 3px;
+		background: linear-gradient(90deg, #2b98df, #1b78bf);
+		opacity: 0;
+		transition: opacity 0.22s ease;
+	}
+	.images:hover {
+		transform: translateY(-5px);
+		box-shadow: 0 14px 30px rgba(0, 0, 0, 0.14);
+	}
+	.images:hover:before {
+		opacity: 1;
+	}
+	.div_right{ padding:20px 20px 10px; }
 	.img_left{ padding:0px 20px; }
-	.h2_color{ padding:0px 20px; color: #2889c8; font-weight: 600; }
-	.p_color{ padding:0px 20px; }
-	.spn_right{ float:right; font-size: 17px; font-weight: 500;}
+	.img_left img {
+		width: 56px;
+		height: 56px;
+		object-fit: contain;
+	}
+	.h2_color{
+		padding:4px 20px 0;
+		color: #2889c8;
+		font-weight: 700;
+	}
+	.p_color{
+		padding:2px 20px 20px;
+		color: #556a82;
+	}
+	.spn_right{
+		float:right;
+		font-size: 17px;
+		font-weight: 500;
+	}
+	.spn_right a {
+		color: #586074 !important;
+		transition: color 0.2s ease;
+	}
+	.images:hover .spn_right a {
+		color: #2889c8 !important;
+	}
 
 
 
 	/* new css for reels */
 	.instagram-reels {
 		background: #e4edf4;
+	}
+	.instagram-reels .container > h3 {
+		color: #2889c8;
+		font-weight: 600;
+	}
+	.instagram-reels .container > p:first-of-type {
+		color: #585A5A;
 	}
 
 	.instagram-slider .slick-track {
