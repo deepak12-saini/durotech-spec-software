@@ -85,9 +85,11 @@
 					<div class="info">
 						<h3 class="title">MAIL & WEBSITE</h3>
 						<p>
-							<i class="fa fa-envelope" aria-hidden="true"></i> &nbsp <?= h(MAILTO) ?>
+							<i class="fa fa-envelope" aria-hidden="true"></i> &nbsp
+							<a href="mailto:<?= h(MAILTO) ?>"><?= h(MAILTO) ?></a>
 							<br><br>
-							<i class="fa fa-globe" aria-hidden="true"></i> &nbsp www.durotechindustries.com.au
+							<i class="fa fa-globe" aria-hidden="true"></i> &nbsp
+							<a href="https://www.durotechindustries.com.au" target="_blank" rel="noopener">www.durotechindustries.com.au</a>
 						</p>
 					</div>
 				</div>
@@ -102,7 +104,8 @@
 					<div class="info">
 						<h3 class="title">CONTACT</h3>
     					<p>
-							<i class="fa fa-mobile" aria-hidden="true"></i> &nbsp <?= h(PHONE) ?>
+							<i class="fa fa-mobile" aria-hidden="true"></i> &nbsp
+							<a href="tel:<?= h(preg_replace('/[^0-9+]/', '', (string)PHONE)) ?>"><?= h(PHONE) ?></a>
 						</p>
 					</div>
 				</div>
@@ -117,7 +120,8 @@
 					<div class="info">
 						<h3 class="title">ADDRESS</h3>
     					<p>
-							 <i class="fa fa-map-marker" aria-hidden="true"></i> &nbsp <?= h(ADDRESS) ?>
+							 <i class="fa fa-map-marker" aria-hidden="true"></i> &nbsp
+							 <a href="https://www.google.com/maps/search/?api=1&amp;query=<?= rawurlencode((string)ADDRESS) ?>" target="_blank" rel="noopener"><?= h(ADDRESS) ?></a>
 						</p>
 					</div>
 				</div>

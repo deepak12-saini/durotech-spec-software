@@ -83,10 +83,12 @@
 					<div class="info">
 						<h3 class="title">MAIL & WEBSITE</h3>
 						<p>
-							<i class="fa fa-envelope" aria-hidden="true"></i> &nbsp <?php echo MAILTO;  ?>
+							<i class="fa fa-envelope" aria-hidden="true"></i> &nbsp
+							<a href="mailto:<?php echo h(MAILTO); ?>"><?php echo h(MAILTO); ?></a>
 							<br>
 							<br>
-							<i class="fa fa-globe" aria-hidden="true"></i> &nbsp www.durotechindustries.com.au
+							<i class="fa fa-globe" aria-hidden="true"></i> &nbsp
+							<a href="https://www.durotechindustries.com.au" target="_blank" rel="noopener">www.durotechindustries.com.au</a>
 						</p>
 					
 					</div>
@@ -102,7 +104,8 @@
 					<div class="info">
 						<h3 class="title">CONTACT</h3>
     					<p>
-							<i class="fa fa-mobile" aria-hidden="true"></i> &nbsp  <?php echo PHONE;  ?>
+							<i class="fa fa-mobile" aria-hidden="true"></i> &nbsp
+							<a href="tel:<?php echo h(preg_replace('/[^0-9+]/', '', (string)PHONE)); ?>"><?php echo h(PHONE); ?></a>
 							<br>
 							
 						</p>
@@ -120,7 +123,7 @@
 						<h3 class="title">ADDRESS</h3>
     					<p>
 							 <i class="fa fa-map-marker" aria-hidden="true"></i> &nbsp 
-								<?php echo ADDRESS;  ?>
+								<a href="https://www.google.com/maps/search/?api=1&amp;query=<?php echo rawurlencode((string)ADDRESS); ?>" target="_blank" rel="noopener"><?php echo h(ADDRESS); ?></a>
 						</p>
 					</div>
 				</div>
