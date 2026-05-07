@@ -187,6 +187,7 @@ class ProductsController extends AppController
 	public function index(?string $slug = null)
 	{
 		$this->viewBuilder()->setLayout('customduro_layout');
+		$currentCategory = [];
 		// Slug from query string (?slug=... from /category/* redirect), route pass, or param
 		$slug = $this->request->getQuery('slug') ?? $slug ?? $this->request->getParam('pass.0') ?? $this->request->getParam('slug');
 		$slug = is_string($slug) ? trim($slug) : '';
@@ -251,6 +252,7 @@ class ProductsController extends AppController
 			}
 			if ($categoryArr) {
 				$categoryname = $categoryArr->get('category_name');
+				$currentCategory = ['Category' => $categoryArr->toArray()];
 				$catId = $categoryArr->get('id');
 				$productsQuery = $this->Product->find('all')
 					->where(['Product.status' => 1, 'Product.category_id' => $catId])
@@ -274,6 +276,7 @@ class ProductsController extends AppController
 			} else {
 				$categoryArr = $this->Category->find()->where(['Category.status' => 1])->first();
 				$categoryname = $categoryArr ? $categoryArr->get('category_name') : '';
+				$currentCategory = $categoryArr ? ['Category' => $categoryArr->toArray()] : [];
 				$catId = $categoryArr ? $categoryArr->get('id') : null;
 				$productsQuery = $this->Product->find('all')
 					->where(['Product.status' => 1, 'Product.category_id' => $catId])
@@ -287,6 +290,7 @@ class ProductsController extends AppController
 		} else {
 			$isProductListingHome = true;
 			$first = $category[0]['Category'] ?? null;
+			$currentCategory = $first ? ['Category' => $first] : [];
 			$slug = $first['slug'] ?? '';
 			$categoryname = $first['category_name'] ?? '';
 			$catId = $first['id'] ?? null;
@@ -315,7 +319,7 @@ class ProductsController extends AppController
 			$isBrand[] = ['Category' => $row->toArray()];
 		}
 
-		$this->set(compact('products', 'category', 'slug', 'categoryname', 'isBrand', 'category_name', 'isProductListingHome'));
+		$this->set(compact('products', 'category', 'slug', 'categoryname', 'isBrand', 'category_name', 'isProductListingHome', 'currentCategory'));
 		if (!empty($meta_title)) {
 			$this->set('meta_title', $meta_title);
 		}

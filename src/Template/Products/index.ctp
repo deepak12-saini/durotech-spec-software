@@ -9,14 +9,14 @@ footer {
 
 .product_search{ text-align:center; }
 .ptitle {   
-    color: #50d9b9;
+    color: #5a1ea8;
     text-align: center;
     font-size: 17px;
     font-weight: 600;
 }
 .ctitle{
 	padding: 0px 65px;
-	color: #000;   
+	color: #5a1ea8;   
     font-size: 17px;
     font-weight: 500;
 }
@@ -48,6 +48,41 @@ a:focus, a:hover {
 	background: #e4edf4;
 	padding: 12px 0 24px;
 }
+.category-hero {
+	background: #e4edf4;
+	border-radius: 10px;
+	padding: 22px;
+	margin-bottom: 18px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+.category-hero__content {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	min-height: 260px;
+}
+.category-hero__img-wrap {
+	text-align: center;
+}
+.category-hero__img {
+	width: 100%;
+	height: 260px;
+	object-fit: cover;
+	border-radius: 8px;
+	background: #f5f5f5;
+}
+.category-hero__title {
+	margin: 0 0 8px;
+	color: #5a1ea8;
+	font-size: 26px;
+	font-weight: 700;
+}
+.category-hero__desc {
+	margin: 0;
+	font-size: 15px;
+	line-height: 1.7;
+	color: #536f8c;
+}
 @media screen and (max-width: 768px) {
 	.product_image_section {
 		padding: 0px 1%;
@@ -69,6 +104,20 @@ a:focus, a:hover {
 	figure.snip0077{
 		margin:10px 0%;
 	}
+	.category-hero {
+		padding: 16px;
+	}
+	.category-hero__content {
+		min-height: 0;
+	}
+	.category-hero__title {
+		font-size: 21px;
+		margin-top: 0;
+	}
+	.category-hero__img {
+		height: 200px;
+		margin-top: 14px;
+	}
 }
 </style>
 <div class="banner_durolab col-lg-12 col-md-12 col-sm-12">
@@ -86,7 +135,7 @@ a:focus, a:hover {
 		  </div>
 		  <div class="modal-body">				
 				<div class="row">
-				<?php $i=0; foreach($category as $categorys){
+				<?php $categoryList = (isset($category) && is_array($category)) ? $category : []; $i=0; foreach($categoryList as $categorys){
 				
 				?>
 					<div class="col-lg-6 col-md-6 col-sm-6">
@@ -101,6 +150,35 @@ a:focus, a:hover {
 
 	<div class="products-bg-wrap">
 	<div class="container">
+		<?php
+			$currentCategoryData = $currentCategory['Category'] ?? [];
+			$categoryDescription = trim((string)($currentCategoryData['description'] ?? ''));
+			$categoryImage = trim((string)($currentCategoryData['image'] ?? ''));
+			$hasCategoryImage = $categoryImage !== '' && $categoryImage !== '250250-defult.png';
+		?>
+		<?php if (empty($isProductListingHome) && ($hasCategoryImage || $categoryDescription !== '')): ?>
+		<div class="row">
+			<div class="col-lg-12 col-md-12 col-sm-12">
+				<div class="category-hero">
+					<div class="row">
+						<?php if ($hasCategoryImage): ?>
+						<div class="col-lg-6 col-md-6 col-sm-12 category-hero__content">
+						<?php else: ?>
+						<div class="col-lg-12 col-md-12 col-sm-12 category-hero__content">
+						<?php endif; ?>
+							<h2 class="category-hero__title"><?= h($category_name ?? 'Products') ?></h2>
+							<p class="category-hero__desc"><?= nl2br(h($categoryDescription)) ?></p>
+						</div>
+						<?php if ($hasCategoryImage): ?>
+						<div class="col-lg-6 col-md-6 col-sm-12 category-hero__img-wrap">
+							<img src="<?= h($this->Url->build('/files/category/' . $categoryImage)) ?>" alt="<?= h($category_name ?? 'Category image') ?>" class="category-hero__img">
+						</div>
+						<?php endif; ?>
+					</div>
+				</div>
+			</div>
+		</div>
+		<?php endif; ?>
 		<div class="durotech_product col-lg-12 col-md-12 col-sm-12">     
 			<div class="row">
 			
