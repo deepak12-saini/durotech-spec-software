@@ -5,6 +5,27 @@
 
 	<div class="row">
 		<div class="col-xs-12">
+			<?= $this->Form->create(null, ['type' => 'get', 'class' => 'form-inline', 'style' => 'margin-bottom:15px;']) ?>
+				<div class="form-group">
+					<label for="cat-search" class="control-label" style="margin-right:5px;">Search</label>
+					<input type="text"
+						   name="q"
+						   id="cat-search"
+						   value="<?= h($search ?? '') ?>"
+						   class="form-control input-sm"
+						   placeholder="Name, slug or description">
+				</div>
+				<div class="form-group" style="margin-left:10px;">
+					<label for="cat-status" class="control-label" style="margin-right:5px;">Status</label>
+					<select name="status" id="cat-status" class="form-control input-sm">
+						<option value="">All</option>
+						<option value="1" <?= (isset($status) && $status === '1') ? 'selected' : '' ?>>Active</option>
+						<option value="0" <?= (isset($status) && $status === '0') ? 'selected' : '' ?>>Inactive</option>
+					</select>
+				</div>
+				<button type="submit" class="btn btn-sm btn-primary" style="margin-left:10px;">Filter</button>
+				<a href="<?= h(rtrim(SITEURL, '/') . '/admin/categories') ?>" class="btn btn-sm btn-default" style="margin-left:5px;">Reset</a>
+			<?= $this->Form->end() ?>
 			<div class="table-responsive">
 			<table class="table table-striped table-bordered table-hover" id="simple-table" >
 				<thead>

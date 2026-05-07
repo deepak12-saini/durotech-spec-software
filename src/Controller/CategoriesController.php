@@ -35,17 +35,38 @@ class CategoriesController extends AppController
         $this->set('title_for_layout', SITENAME . ' Categories');
         $this->checkAdminSession();
 
+        $query = $this->Categories->find();
+
+        // Simple search / filter: by name or slug text and active status
+        $search = trim((string)$this->request->getQuery('q', ''));
+        $status = $this->request->getQuery('status', '');
+
+        if ($search !== '') {
+            $like = '%' . $search . '%';
+            $query = $query->where([
+                'OR' => [
+                    'Categories.category_name LIKE' => $like,
+                    'Categories.slug LIKE' => $like,
+                    'Categories.description LIKE' => $like,
+                ],
+            ]);
+        }
+
+        if ($status !== '' && ($status === '1' || $status === '0')) {
+            $query = $query->where(['Categories.status' => (int)$status]);
+        }
+
         $this->paginate = [
             'limit' => 25,
             'order' => ['Categories.sort' => 'ASC', 'Categories.id' => 'DESC'],
         ];
-        $query = $this->Categories->find()->orderAsc('Categories.sort')->orderDesc('Categories.id');
+        $query = $query->orderAsc('Categories.sort')->orderDesc('Categories.id');
         $results = $this->paginate($query);
         $categories = [];
         foreach ($results as $row) {
             $categories[] = ['Category' => $row->toArray()];
         }
-        $this->set(compact('categories'));
+        $this->set(compact('categories', 'search', 'status'));
     }
 
     /**
