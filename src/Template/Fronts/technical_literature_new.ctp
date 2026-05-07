@@ -71,6 +71,16 @@
 .technical_literature {
 	background: #e4edf4;
 }
+/* Inner subpages (msds, datasheet, project, brochure, etc.): main column pane #e4edf4 */
+.technical_literature .tech-lit-subpage-main .tab,
+.technical_literature .tech-lit-subpage-main .tab-content.tabs,
+.technical_literature .tech-literature-project-gallery {
+	background-color: #e4edf4;
+}
+.technical_literature .tech-literature-project-gallery {
+	padding: 12px 0 28px;
+	box-sizing: border-box;
+}
 .technical_literature .container_service {
 	overflow-x: hidden;
 }
@@ -427,7 +437,7 @@
 			<div class="technical_literature col-lg-12 col-md-12 col-sm-12">
 		     <div class="container">
 				<div class="row">
-					<div class="col-lg-9 col-md-6 col-sm-12">
+					<div class="col-lg-9 col-md-6 col-sm-12 tech-lit-subpage-main">
 						<div class="tab" role="tabpanel">					
 							<div class="tab-content tabs">
 						
@@ -536,7 +546,7 @@
 									</div>
 							  <?php } ?>
 							  <?php if($page == 'project'){ ?>
-							  <div>					
+							  <div class="tech-literature-project-gallery">					
 								
 								<a class="fancybox" href="<?= h(SITEURL) ?>customdurotech/images/project_images/28158464_597730207233729_4450512397072859136_n.jpg" title="" >
 									<div class="item">
