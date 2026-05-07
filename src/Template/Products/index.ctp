@@ -87,6 +87,10 @@ a:focus, a:hover {
 	.product_image_section {
 		padding: 0px 1%;
 	}
+	/* Hide duplicate text heading on mobile – hero title already visible */
+	.ptitle {
+		display: none;
+	}
 	input[type="search"] { width: 78%; margin-left: 0px; }
 	.product_search{ text-align:center;  }
 	
