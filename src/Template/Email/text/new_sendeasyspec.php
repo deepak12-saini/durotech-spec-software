@@ -12,7 +12,7 @@ Hello <?= h($name) ?>,
 
 Please find your specification details below.
 
-<?php if ($company): ?>Company: <?= h($company) ?>
+<?php if ($company): ?>Project: <?= h($company) ?>
 
 <?php endif; ?>
 <?php if ($address): ?>Address: <?= h($address) ?>

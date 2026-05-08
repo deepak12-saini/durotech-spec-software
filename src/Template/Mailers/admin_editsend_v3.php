@@ -74,7 +74,7 @@
 				</div>
 			</div>	
 			<div class="form-group">
-				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Company:</label>
+				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Project:</label>
 				<div class="col-sm-9">
 					<input type="text" name="company" value="<?php echo $MailerArr['Mailer']['company']; ?>"  class = "col-xs-10 col-sm-8">
 				</div>

@@ -24,7 +24,7 @@
 							<!-- <th>Send Name</th> -->
 							<th>Name/Attn</th>
 							<th>Email</th>
-							<th>Company</th>
+							<th>Project</th>
 							<th>Address</th>
 							<th>Specification</th>
 							<th>Date</th>

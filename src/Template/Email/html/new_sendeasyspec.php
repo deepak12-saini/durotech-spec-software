@@ -54,7 +54,7 @@ $logoUrl = Router::url('/customdurotech/images/durotech_logo.png', true);
                             
                             <?php if ($company): ?>
                             <tr>
-                                <td style="background:#f1f1f1;"><strong>Company</strong></td>
+                                <td style="background:#f1f1f1;"><strong>Project</strong></td>
                                 <td><?= h($company) ?></td>
                             </tr>
                             <?php endif; ?>
