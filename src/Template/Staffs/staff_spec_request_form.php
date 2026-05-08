@@ -80,7 +80,7 @@
             </div>
 
             <div class="form-group">
-                <label class="col-sm-3 control-label no-padding-right">Company:</label>
+                <label class="col-sm-3 control-label no-padding-right">Project:</label>
                 <div class="col-sm-9">
                     <input type="text" name="company" class="col-xs-10 col-sm-8" value="<?php echo h($sourceMailer->company ?? ''); ?>">
                 </div>

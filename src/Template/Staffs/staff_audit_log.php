@@ -13,7 +13,7 @@
         <div class="col-xs-12">
             <div class="well well-sm">
                 <strong>Name:</strong> <?php echo h($mailer->name ?? ''); ?> |
-                <strong>Company:</strong> <?php echo h($mailer->company ?? ''); ?> |
+                <strong>Project:</strong> <?php echo h($mailer->company ?? ''); ?> |
                 <strong>Specification:</strong> <?php echo h($mailer->specification ?? ''); ?>
             </div>
 

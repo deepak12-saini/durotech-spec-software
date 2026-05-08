@@ -94,7 +94,7 @@
 				</div>
 			</div>	
 			<div class="form-group">
-				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Company:</label>
+				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Project:</label>
 				<div class="col-sm-9">
 					<input type="text" name="company" value="<?php echo $draftCompany; ?>"  class = "col-xs-10 col-sm-8">
 				</div>
@@ -330,7 +330,7 @@
 			message: "Please enter name/attn"
 		});; $("#company").validate({
 			 expression: "if (VAL) return true; else return false;",
-			message: "Please enter company"
+			message: "Please enter project"
 		}); $("#subject").validate({
 			 expression: "if (VAL) return true; else return false;",
 			message: "Please enter subject"
