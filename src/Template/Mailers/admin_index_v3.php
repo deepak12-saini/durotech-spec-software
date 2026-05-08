@@ -12,6 +12,7 @@
 			<?php if (!empty($hasDraft)): ?>
 				<?php echo $this->Html->link('Resume Draft', ['controller' => 'Mailers', 'action' => 'admin_send_v3', '?' => ['resume' => '1']], ['class' => 'btn btn-warning btn-xs top-button']); ?>
 			<?php endif; ?>
+			<?php echo $this->Html->link('Smart Spec (from Previous)', ['controller' => 'Mailers', 'action' => 'admin_send_v3', '?' => ['mode' => 'adaptive']], ['class' => 'btn btn-primary btn-xs top-button']); ?>
 		</h1>
 	</div>
 

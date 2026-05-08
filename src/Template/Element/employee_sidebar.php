@@ -27,6 +27,24 @@
 						<b class="arrow"></b>
 					</li>		
 
+					<li class="<?php if ($this->params['controller']=='employees' && ($this->params['action']=='employee_send_v3' || $this->params['action']=='employeeSendV3') && ((string)$this->request->getQuery('mode') === 'adaptive')) {echo 'active';}?>">
+						<a href="<?php echo SITEURL?>employees/employee_send_v3?mode=adaptive">
+							<i class="menu-icon fa fa-magic"></i>
+							<span class="menu-text">Smart Spec</span>
+						</a>
+						<b class="arrow"></b>
+					</li>
+
+					<?php /* Template Presets menu hidden for now. Uncomment if client approves.
+					<li class="<?php if ($this->params['controller']=='employees' && in_array($this->params['action'], ['template_presets', 'editTemplatePreset', 'edit_template_preset'])) {echo 'active';}?>">
+						<a href="<?php echo SITEURL?>employees/template_presets">
+							<i class="menu-icon fa fa-bookmark"></i>
+							<span class="menu-text">Template Presets</span>
+						</a>
+						<b class="arrow"></b>
+					</li>
+					*/ ?>
+
 
 					<li class="<?php if ($this->params['controller']=='case_studies' && $this->params['action']=='index') {echo 'active';}?>">
 						<a href="<?php echo SITEURL?>employees/case_studies">

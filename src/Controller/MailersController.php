@@ -584,9 +584,35 @@ class MailersController extends AppController
 		
 		$this->viewBuilder()->setLayout('admin_layout');
 		$this->set('title_for_layout',SITENAME.' DuroEzy Specification Mailer');
-		$this->checkAdminSession(); 
-		$user_id=$this->request->getSession()->read('User.id');
+		$redirect = $this->checkAdminSession();
+		if ($redirect instanceof Response) {
+			return $redirect;
+		}
+		$user_id = (int)$this->request->getSession()->read('User.id');
+		if ($user_id <= 0) {
+			$this->Flash->error('Session expired. Please login again.');
+			return $this->redirect(rtrim(SITEURL, '/') . '/admin');
+		}
 		$hasSaveStatusColumn = $this->Mailer->getSchema()->getColumn('save_status');
+		$adaptiveMode = ((string)$this->request->getQuery('mode') === 'adaptive');
+		if (!$this->request->is('post') && !$adaptiveMode && !$this->request->getQuery('resume') && $hasSaveStatusColumn) {
+			$existingDraft = $this->Mailer->find()
+				->select(['id'])
+				->where([
+					'Mailer.admin_id' => $user_id,
+					'Mailer.type' => 3,
+					'Mailer.save_status' => 'draft',
+				])
+				->orderDesc('Mailer.id')
+				->first();
+			if ($existingDraft) {
+				$this->Flash->set(
+					'Draft Found: continuing from Resume Draft to avoid duplicate draft entries.',
+					['element' => 'default', 'params' => ['class' => 'alert alert-warning']]
+				);
+				return $this->redirect(['action' => 'admin_send_v3', '?' => ['resume' => '1']]);
+			}
+		}
 		if (!empty($this->request->getData())) {
 			$draftIdFromForm = (int)$this->request->getData('draft_id');
 			
@@ -783,6 +809,7 @@ class MailersController extends AppController
 		$refernce = $this->Mailer->getNextSpecTrackNumber();
 		$draft = null;
 		$draftId = null;
+		$previousSpecList = [];
 		$resumeDraft = $this->request->getQuery('resume') && $hasSaveStatusColumn;
 		if ($resumeDraft) {
 			$draft = $this->Mailer->find()
@@ -799,7 +826,121 @@ class MailersController extends AppController
 				$draft->spec_useareas = $this->SpecUsearea->find()->where(['mailer_id' => $draftId])->orderAsc('id')->all();
 			}
 		}
-		$this->set(compact('refernce', 'draft', 'draftId'));
+		if ($adaptiveMode) {
+			$submittedConditions = [
+				'Mailer.admin_id' => $user_id,
+				'Mailer.type' => 3,
+			];
+			if ($hasSaveStatusColumn) {
+				$submittedConditions[] = [
+					'OR' => [
+						['Mailer.save_status' => 'submitted'],
+						['Mailer.save_status IS' => null],
+					],
+				];
+			}
+			$previousSpecList = $this->Mailer->find()
+				->select(['id', 'tracknumber', 'company', 'name', 'created'])
+				->where($submittedConditions)
+				->orderDesc('Mailer.id')
+				->limit(100)
+				->all();
+		}
+		$this->set(compact('refernce', 'draft', 'draftId', 'adaptiveMode', 'previousSpecList'));
+	}
+
+	/** Load a previous submitted admin spec as JSON for Smart Spec mode. */
+	public function adminPreviousSpecDataV3($id = null): ?Response
+	{
+		$this->request->allowMethod(['get']);
+		$this->viewBuilder()->setLayout(false);
+		$this->autoRender = false;
+		$this->checkAdminSession();
+
+		$user_id = (int)$this->request->getSession()->read('User.id');
+		$specId = (int)$id;
+		if ($specId <= 0) {
+			$this->response = $this->response->withType('application/json')
+				->withStringBody(json_encode(['success' => false, 'error' => 'Invalid spec id.']));
+			return $this->response;
+		}
+
+		$conditions = [
+			'Mailer.id' => $specId,
+			'Mailer.admin_id' => $user_id,
+			'Mailer.type' => 3,
+		];
+		$schema = $this->Mailer->getSchema();
+		if ($schema && $schema->getColumn('save_status')) {
+			$conditions[] = [
+				'OR' => [
+					['Mailer.save_status' => 'submitted'],
+					['Mailer.save_status IS' => null],
+				],
+			];
+		}
+		if ($schema && $schema->getColumn('deleted_at')) {
+			$conditions['Mailer.deleted_at IS'] = null;
+		}
+
+		$spec = $this->Mailer->find()->where($conditions)->first();
+		if (!$spec) {
+			$this->response = $this->response->withType('application/json')
+				->withStringBody(json_encode(['success' => false, 'error' => 'Spec not found.']));
+			return $this->response;
+		}
+
+		$comments = $this->MailerComment->find()
+			->where(['mailer_id' => (int)$spec->id])
+			->orderAsc('id')
+			->all();
+		$useareas = $this->SpecUsearea->find()
+			->where(['mailer_id' => (int)$spec->id])
+			->orderAsc('id')
+			->all();
+
+		$bySection = [];
+		foreach ($useareas as $row) {
+			$tid = (int)($row->types ?? 0);
+			if (!isset($bySection[$tid])) {
+				$bySection[$tid] = [
+					'title' => (string)($row->title ?? ''),
+					'rows' => [],
+				];
+			}
+			$bySection[$tid]['rows'][] = [
+				'serial' => (string)($row->serial ?? ''),
+				'coverage' => (string)($row->coverage ?? ''),
+				'product' => (string)($row->product ?? ''),
+				'coverage_by_pack' => (string)($row->coverage_by_pack ?? ''),
+				'Warranty' => (string)($row->Warranty ?? ''),
+			];
+		}
+
+		$this->response = $this->response->withType('application/json')
+			->withStringBody(json_encode([
+				'success' => true,
+				'data' => [
+					'name' => (string)($spec->name ?? ''),
+					'company' => (string)($spec->company ?? ''),
+					'address' => (string)($spec->address ?? ''),
+					'specification' => (string)($spec->specification ?? ''),
+					'email' => (string)($spec->email ?? ''),
+					'subject' => (string)($spec->subject ?? ''),
+					'type' => (string)($spec->type ?? '3'),
+					'sections' => array_values($bySection),
+					'comments' => array_map(function ($c) {
+						return (string)($c->comment ?? '');
+					}, $comments->toList()),
+				],
+			]));
+		return $this->response;
+	}
+
+	/** Underscore alias for route compatibility. */
+	public function admin_previous_spec_data_v3($id = null): ?Response
+	{
+		return $this->adminPreviousSpecDataV3($id);
 	}
 
 	/** AJAX autosave for admin spec v3 draft. */
@@ -808,9 +949,19 @@ class MailersController extends AppController
 		$this->request->allowMethod(['post']);
 		$this->viewBuilder()->setLayout(false);
 		$this->autoRender = false;
-		$this->checkAdminSession();
+		$redirect = $this->checkAdminSession();
+		if ($redirect instanceof Response) {
+			$this->response = $this->response->withType('application/json')
+				->withStringBody(json_encode(['success' => false, 'error' => 'Session expired. Please login again.']));
+			return $this->response;
+		}
 
 		$user_id = (int)$this->request->getSession()->read('User.id');
+		if ($user_id <= 0) {
+			$this->response = $this->response->withType('application/json')
+				->withStringBody(json_encode(['success' => false, 'error' => 'Session expired. Please login again.']));
+			return $this->response;
+		}
 		$hasSaveStatusColumn = $this->Mailer->getSchema()->getColumn('save_status');
 		if (!$hasSaveStatusColumn) {
 			$this->response = $this->response->withType('application/json')
@@ -832,6 +983,17 @@ class MailersController extends AppController
 					'Mailer.admin_id' => $user_id,
 					'Mailer.save_status' => 'draft',
 				])
+				->first();
+		}
+		if (!$entity) {
+			// Reuse latest admin draft when draft_id is missing to prevent duplicate draft rows.
+			$entity = $this->Mailer->find()
+				->where([
+					'Mailer.admin_id' => $user_id,
+					'Mailer.type' => 3,
+					'Mailer.save_status' => 'draft',
+				])
+				->orderDesc('Mailer.id')
 				->first();
 		}
 		if (!$entity) {
@@ -866,6 +1028,25 @@ class MailersController extends AppController
 		}
 
 		$draftId = (int)$entity->id;
+
+		// Keep only one active admin draft by removing older duplicates.
+		$otherDraftIds = $this->Mailer->find()
+			->select(['id'])
+			->where([
+				'Mailer.admin_id' => $user_id,
+				'Mailer.type' => 3,
+				'Mailer.save_status' => 'draft',
+				'Mailer.id !=' => $draftId,
+			])
+			->enableHydration(false)
+			->all()
+			->extract('id')
+			->toArray();
+		if (!empty($otherDraftIds)) {
+			$this->MailerComment->deleteAll(['mailer_id IN' => $otherDraftIds]);
+			$this->SpecUsearea->deleteAll(['mailer_id IN' => $otherDraftIds]);
+			$this->Mailer->deleteAll(['id IN' => $otherDraftIds]);
+		}
 		$this->MailerComment->deleteAll(['mailer_id' => $draftId]);
 		$this->SpecUsearea->deleteAll(['mailer_id' => $draftId]);
 

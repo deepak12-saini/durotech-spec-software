@@ -28,6 +28,94 @@
 	background-color: #f0f0f0;
 	}
 
+	/* Adaptive spec + form polish */
+	.spec-adaptive-box {
+		border: 1px solid #cfdff1;
+		border-radius: 12px;
+		background: linear-gradient(180deg, #f8fbff 0%, #eef5ff 100%);
+		box-shadow: 0 6px 18px rgba(36, 92, 154, 0.08);
+		padding: 12px 14px;
+		transition: all 0.25s ease;
+	}
+	.spec-adaptive-box:hover {
+		border-color: #7aa9e8;
+		box-shadow: 0 10px 22px rgba(36, 92, 154, 0.14);
+		transform: translateY(-1px);
+	}
+	.spec-adaptive-inline {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		flex-wrap: wrap;
+	}
+	.spec-adaptive-select {
+		width: 100%;
+		height: 42px;
+		border: 1px solid #8fb4e6;
+		border-radius: 10px;
+		background: #ffffff;
+		color: #1f4f86;
+		font-weight: 600;
+		padding: 8px 12px;
+		transition: border-color .2s ease, box-shadow .2s ease;
+	}
+	.spec-adaptive-select:focus {
+		border-color: #2f7bd7;
+		box-shadow: 0 0 0 4px rgba(47, 123, 215, 0.18);
+		outline: none;
+	}
+	#adaptive_previous_spec_id {
+		width: 100%;
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		appearance: none;
+	}
+	.spec-adaptive-load-btn {
+		min-width: 86px;
+		height: 36px;
+		border-radius: 6px;
+		font-weight: 600;
+	}
+	.adaptive-load-label {
+		height: 60px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.adaptive-load-col {
+		display: flex;
+		align-items: center;
+	}
+	.spec-adaptive-help {
+		display: block;
+		clear: both;
+		margin-top: 10px;
+		margin-bottom: 0;
+		color: #2f6cab;
+		font-size: 12px;
+		font-weight: 600;
+	}
+	#specForm input[type="text"],
+	#specForm input[type="file"],
+	#specForm select {
+		border-radius: 6px !important;
+		border: 1px solid #d2d9e6;
+		transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+	}
+	#specForm input[type="text"]:hover,
+	#specForm select:hover {
+		border-color: #b8c7df;
+	}
+	#specForm input[type="text"]:focus,
+	#specForm select:focus {
+		border-color: #4f88d3;
+		box-shadow: 0 0 0 3px rgba(79, 136, 211, 0.12);
+		outline: none;
+	}
+	#specForm .form-group {
+		margin-bottom: 14px;
+	}
+
 	</style>	
 	<div class="page-content">
 		<div class="page-header">
@@ -35,7 +123,8 @@
 		<h1>DuroEzy Specification<small><i class="ace-icon fa fa-angle-double-right"></i>Create New Spec</small>
 		</h1>
 		<div id="spec-draft-status" class="alert alert-info" style="margin-top:10px;margin-bottom:0;">
-			<strong>Status:</strong> <span id="spec-status-text"><?php echo !empty($draftId) ? 'Draft (restored)' : 'New'; ?></span>
+			<strong>Status:</strong> <span id="spec-status-text"><?php echo !empty($draftId) ? 'Draft (restored)' : (((string)$this->request->getQuery('mode') === 'adaptive') ? 'New (Smart Spec mode)' : ((((string)$this->request->getQuery('mode') === 'template') ? 'New (Template mode)' : 'New'))); ?></span>
+			<span id="spec-source-track" style="margin-left:15px;display:none;color:#2a88c8;font-weight:600;"></span>
 			<span id="spec-last-saved" style="margin-left:15px;"></span>
 			<?php if (!empty($draftId)): ?>
 				<span style="margin-left:15px;"><?php echo $this->Html->link('Start New Spec (discard this draft)', ['controller' => 'employees', 'action' => 'employee_send_v3'], ['class' => 'btn btn-default btn-xs']); ?></span>
@@ -47,6 +136,10 @@
 		<div class="col-xs-12">
 		<?php
 		$draftIdVal = isset($draftId) ? (int)$draftId : 0;
+		$isAdaptiveMode = !empty($adaptiveMode);
+		$isTemplateMode = !empty($templateMode);
+		$previousSpecList = (isset($previousSpecs) && is_iterable($previousSpecs)) ? $previousSpecs : [];
+		$templatePresetList = (isset($templatePresets) && is_iterable($templatePresets)) ? $templatePresets : [];
 		$draftName = isset($draft) ? h($draft->name) : '';
 		$draftCompany = isset($draft) ? h($draft->company) : '';
 		$draftAddress = isset($draft) ? h($draft->address) : '';
@@ -79,6 +172,51 @@
 		?>
 		<?php echo $this->Form->create('Employee',array('class'=>'form-horizontal','enctype'=>'multipart/form-data','id'=>'specForm')); ?>
 			<input type="hidden" name="draft_id" id="draft_id" value="<?php echo $draftIdVal; ?>">
+			<?php if ($isAdaptiveMode): ?>
+			<div class="form-group">
+				<label class="col-sm-3 control-label no-padding-right adaptive-load-label" for="adaptive_previous_spec_id">Smart Spec (from Previous):</label>
+				<div class="col-sm-9 adaptive-load-col">
+					<div class="spec-adaptive-inline spec-adaptive-box">
+						<div class="col-xs-12 col-sm-12" style="padding-left:0;">
+							<select id="adaptive_previous_spec_id" class="col-xs-12 col-sm-12 spec-adaptive-select">
+								<option value="">Select previous submitted spec...</option>
+								<?php foreach ($previousSpecList as $prev): ?>
+									<?php
+										$labelParts = [];
+										$labelParts[] = (string)($prev->tracknumber ?? ('#' . (int)$prev->id));
+										if (!empty($prev->company)) $labelParts[] = (string)$prev->company;
+										if (!empty($prev->name)) $labelParts[] = (string)$prev->name;
+										$label = implode(' | ', $labelParts);
+									?>
+									<option value="<?php echo (int)$prev->id; ?>"><?php echo h($label); ?></option>
+								<?php endforeach; ?>
+							</select>
+						</div>
+						<p class="help-block spec-adaptive-help">Loads previous submitted spec data into this form for faster creation.</p>
+					</div>
+				</div>
+			</div>
+			<?php endif; ?>
+			<?php /* Template Preset block hidden for now. Uncomment if client approves.
+			<?php if ($isTemplateMode): ?>
+			<div class="form-group">
+				<label class="col-sm-3 control-label no-padding-right adaptive-load-label" for="template_preset_id">Load Template Preset:</label>
+				<div class="col-sm-9 adaptive-load-col">
+					<div class="spec-adaptive-inline spec-adaptive-box">
+						<div class="col-xs-12 col-sm-12" style="padding-left:0;">
+							<select id="template_preset_id" class="col-xs-12 col-sm-12 spec-adaptive-select">
+								<option value="">Select template preset...</option>
+								<?php foreach ($templatePresetList as $tpl): ?>
+									<option value="<?php echo (int)$tpl->id; ?>"><?php echo h((string)($tpl->template_name ?? ('Template #' . (int)$tpl->id))); ?></option>
+								<?php endforeach; ?>
+							</select>
+						</div>
+						<p class="help-block spec-adaptive-help">Loads saved template preset into this form for faster creation.</p>
+					</div>
+				</div>
+			</div>
+			<?php endif; ?>
+			*/ ?>
 		
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Track Number:</label>
@@ -175,14 +313,6 @@
 				</div>
 			</div>
 
-			<div class="form-group">
-				    <label class="col-sm-3 control-label no-padding-right" for="form-field-1">Attach PDF Datasheet:</label>
-					<div class="col-sm-9">
-						<input type="file" name="datasheet_pdf" accept="application/pdf" class="col-xs-10 col-sm-8">
-						<p class="help-block">Select a PDF file (e.g., Duromastic ARW datasheet)</p>
-					</div>
-			</div>
-			
 			<div class="form-group">
 				<div class="col-md-offset-3 col-md-9">
 					<button type="submit" name="submit_spec" value="1" class="btn btn-mini btn-success" id="add_ser_prd_btn">Submit / Publish</button>&nbsp;
@@ -409,6 +539,49 @@
 		return newdiv;
 	}
 
+function clearAllSectionsAndComments() {
+	$('#addsection').empty();
+	nextSectionId = 0;
+	$('#addcommentnew').empty();
+	$('.commentdiv input[name="comment[]"]').eq(0).val('');
+}
+
+function loadSectionsFromData(sections) {
+	var secIdx, rowIdx, sec, rows, sectionId, $section;
+	if (!sections || !sections.length) return;
+	for (secIdx = 0; secIdx < sections.length; secIdx++) {
+		sec = sections[secIdx] || {};
+		rows = sec.rows || [];
+		if (!rows.length) continue;
+		sectionId = addnewsection();
+		$('#title_' + sectionId).val(sec.title || '');
+		$section = $('#section_' + sectionId);
+		$section.find('input[name="serial[]"]').first().val(rows[0].serial || sectionId);
+		$('#coverage_' + sectionId + '_0').val(rows[0].coverage || '');
+		$('#pro_' + sectionId + '_0').val(rows[0].product || '');
+		$('#coverage_by_pack_' + sectionId + '_0').val(rows[0].coverage_by_pack || '');
+		$('#warranty_' + sectionId + '_0').val(rows[0].Warranty || '');
+		for (rowIdx = 1; rowIdx < rows.length; rowIdx++) {
+			addmore(sectionId);
+			$section.find('input[name="serial[]"]').last().val(rows[rowIdx].serial || (sectionId + '.' + rowIdx));
+			$('#coverage_' + sectionId + '_' + rowIdx).val(rows[rowIdx].coverage || '');
+			$('#pro_' + sectionId + '_' + rowIdx).val(rows[rowIdx].product || '');
+			$('#coverage_by_pack_' + sectionId + '_' + rowIdx).val(rows[rowIdx].coverage_by_pack || '');
+			$('#warranty_' + sectionId + '_' + rowIdx).val(rows[rowIdx].Warranty || '');
+		}
+	}
+}
+
+function loadCommentsFromData(comments) {
+	var i;
+	if (!comments || !comments.length) return;
+	$('.commentdiv input[name="comment[]"]').eq(0).val(comments[0] || '');
+	for (i = 1; i < comments.length; i++) {
+		addmorecomment();
+		$('.commentdiv input[name="comment[]"]').eq(i).val(comments[i] || '');
+	}
+}
+
 
 	function debounce(func, delay) {
 	let timer;
@@ -548,34 +721,113 @@
 		});
 	});
 
+	<?php if ($isAdaptiveMode): ?>
+	jQuery(function() {
+		var adaptiveLoadBaseUrl = '<?php echo $this->Url->build(['controller' => 'Employees', 'action' => 'previousSpecData']); ?>';
+		function adaptiveLoadSelectedSpec() {
+			var selectedId = $('#adaptive_previous_spec_id').val();
+			if (!selectedId) {
+				$('#spec-source-track').hide().text('');
+				$('#spec-status-text').text('New (Smart Spec mode)');
+				return;
+			}
+			$.ajax({
+				type: 'GET',
+				url: adaptiveLoadBaseUrl.replace(/\/$/, '') + '/' + selectedId,
+				dataType: 'json',
+				success: function(res) {
+					if (!res || !res.success || !res.data) {
+						alert((res && res.error) ? res.error : 'Unable to load previous spec.');
+						return;
+					}
+					var data = res.data;
+					$('#name').val(data.name || '');
+					$('input[name="company"]').val(data.company || '');
+					$('input[name="address"]').val(data.address || '');
+					$('input[name="specification"]').val(data.specification || '');
+					$('#email').val(data.email || '');
+					$('input[name="date"]').val(data.date || '');
+					$('select[name="type"]').val(data.type || '3');
+					$('#subject').val(data.subject || '');
+
+					clearAllSectionsAndComments();
+					loadSectionsFromData(data.sections || []);
+					loadCommentsFromData(data.comments || []);
+					$('#spec-status-text').text('Loaded from previous spec');
+					var selectedText = $('#adaptive_previous_spec_id option:selected').text() || '';
+					var sourceTrack = selectedText.split('|')[0].trim();
+					if (sourceTrack) {
+						$('#spec-source-track').text('Source: ' + sourceTrack).show();
+					} else {
+						$('#spec-source-track').hide().text('');
+					}
+				},
+				error: function() {
+					alert('Unable to load previous spec right now.');
+				}
+			});
+		}
+
+		// Works on dropdown change (auto-fill immediately).
+		$('#adaptive_previous_spec_id').on('change', adaptiveLoadSelectedSpec);
+	});
+	<?php endif; ?>
+
+	<?php /* Template Preset script hidden for now. Uncomment if client approves.
+	<?php if ($isTemplateMode): ?>
+	jQuery(function() {
+		var templateLoadBaseUrl = '<?php echo $this->Url->build(['controller' => 'Employees', 'action' => 'templatePresetData']); ?>';
+		function loadTemplatePreset() {
+			var selectedId = $('#template_preset_id').val();
+			if (!selectedId) {
+				$('#spec-source-track').hide().text('');
+				$('#spec-status-text').text('New (Template mode)');
+				return;
+			}
+			$.ajax({
+				type: 'GET',
+				url: templateLoadBaseUrl.replace(/\/$/, '') + '/' + selectedId,
+				dataType: 'json',
+				success: function(res) {
+					if (!res || !res.success || !res.data) {
+						alert((res && res.error) ? res.error : 'Unable to load template.');
+						return;
+					}
+					var data = res.data;
+					$('select[name="type"]').val(data.type || '3');
+					$('#subject').val(data.subject || '');
+					$('input[name="specification"]').val(data.specification || '');
+					clearAllSectionsAndComments();
+					loadSectionsFromData(data.sections || []);
+					loadCommentsFromData(data.comments || []);
+					$('#spec-status-text').text('Loaded from template preset');
+					var sourceLabel = $('#template_preset_id option:selected').text() || '';
+					if (sourceLabel) {
+						$('#spec-source-track').text('Source: ' + sourceLabel).show();
+					} else {
+						$('#spec-source-track').hide().text('');
+					}
+				},
+				error: function() {
+					alert('Unable to load template right now.');
+				}
+			});
+		}
+
+		$('#template_preset_id').on('change', loadTemplatePreset);
+		var preselectedTemplateId = '<?php echo (int)$this->request->getQuery('preset_id'); ?>';
+		if (preselectedTemplateId) {
+			$('#template_preset_id').val(preselectedTemplateId).trigger('change');
+		}
+	});
+	<?php endif; ?>
+	*/ ?>
+
 	// Restore draft product sections (title + Product Type, Product, MFT, Warranty rows)
 	var draftSections = <?php echo $draftSectionsJson; ?>;
 	if (draftSections && draftSections.length > 0) {
 		jQuery(function() {
-			var secIdx, rowIdx, sec, rows, sectionId, $section;
-			for (secIdx = 0; secIdx < draftSections.length; secIdx++) {
-				sec = draftSections[secIdx];
-				rows = sec.rows || [];
-				if (rows.length === 0) continue;
-				sectionId = addnewsection();
-				$('#title_' + sectionId).val(sec.title || '');
-
-				$section = $('#section_' + sectionId);
-				$section.find('input[name="serial[]"]').first().val(rows[0].serial || sectionId);
-				$('#coverage_' + sectionId + '_0').val(rows[0].coverage || '');
-				$('#pro_' + sectionId + '_0').val(rows[0].product || '');
-				$('#coverage_by_pack_' + sectionId + '_0').val(rows[0].coverage_by_pack || '');
-				$('#warranty_' + sectionId + '_0').val(rows[0].Warranty || '');
-
-				for (rowIdx = 1; rowIdx < rows.length; rowIdx++) {
-					addmore(sectionId);
-					$section.find('input[name="serial[]"]').last().val(rows[rowIdx].serial || (sectionId + '.' + rowIdx));
-					$('#coverage_' + sectionId + '_' + rowIdx).val(rows[rowIdx].coverage || '');
-					$('#pro_' + sectionId + '_' + rowIdx).val(rows[rowIdx].product || '');
-					$('#coverage_by_pack_' + sectionId + '_' + rowIdx).val(rows[rowIdx].coverage_by_pack || '');
-					$('#warranty_' + sectionId + '_' + rowIdx).val(rows[rowIdx].Warranty || '');
-				}
-			}
+			loadSectionsFromData(draftSections);
 		});
 	}
 
@@ -583,12 +835,7 @@
 	var draftComments = <?php echo $draftCommentsJson; ?>;
 	if (draftComments && draftComments.length > 0) {
 		jQuery(function() {
-			var i;
-			$('.commentdiv input[name="comment[]"]').eq(0).val(draftComments[0] || '');
-			for (i = 1; i < draftComments.length; i++) {
-				addmorecomment();
-				$('.commentdiv input[name="comment[]"]').eq(i).val(draftComments[i] || '');
-			}
+			loadCommentsFromData(draftComments);
 		});
 	}
 

@@ -52,6 +52,9 @@ class EmployeesController extends AppController {
 		$this->loadModel('Mailer');
 		$this->loadModel('MailerComment');
 		$this->loadModel('SpecUsearea');
+		$this->loadModel('SpecTemplate');
+		$this->loadModel('SpecTemplateItem');
+		$this->loadModel('SpecTemplateComment');
 		$this->loadModel('CaseStudy');
 		$this->loadModel('CaseImage');
 		$this->loadModel('Product');
@@ -445,14 +448,44 @@ public function auditLog($id = null)
 public function employee_send_v3() {
     $this->viewBuilder()->setLayout('employee_layout');
     $this->set('title_for_layout', SITENAME . ' DuroEzy Specification Mailer');
-    $this->checkEmployeeSession(); 
+    $redirect = $this->checkEmployeeSession();
+    if ($redirect instanceof Response) {
+        return $redirect;
+    }
     $this->loadModel('Mailer'); // ✅ Required to use Mailer in this controller
     $this->loadModel('MailerComment');
     $this->loadModel('SpecUsearea');
 
 
 
-    $employee_id = $this->Session->read('Employee.id');
+    $employee_id = (int)$this->Session->read('Employee.id');
+    if ($employee_id <= 0) {
+        $this->Flash->error('Session expired. Please login again.');
+        return $this->redirect(rtrim(SITEURL, '/') . '/employees/login');
+    }
+    $mode = (string)$this->request->getQuery('mode');
+    $adaptiveMode = $mode === 'adaptive';
+    $templateMode = $mode === 'template';
+
+    $hasSaveStatusColumn = $this->Mailer->getSchema()->getColumn('save_status');
+    if (!$this->request->is('post') && !$adaptiveMode && !$templateMode && !$this->request->getQuery('resume') && $hasSaveStatusColumn) {
+        $existingDraft = $this->Mailer->find()
+            ->select(['id'])
+            ->where([
+                'Mailer.employee_id' => $employee_id,
+                'Mailer.save_status' => 'draft',
+                'Mailer.type' => 3,
+            ])
+            ->orderDesc('Mailer.id')
+            ->first();
+        if ($existingDraft) {
+            $this->Flash->set(
+                'Draft Found: continuing from Resume Draft to avoid duplicate draft entries.',
+                ['element' => 'default', 'params' => ['class' => 'alert alert-warning']]
+            );
+            return $this->redirect(['action' => 'employee_send_v3', '?' => ['resume' => '1']]);
+        }
+    }
 
     if ($this->request->is('post')) {
         $formData = (array)$this->request->getData();
@@ -708,7 +741,405 @@ public function employee_send_v3() {
             $draft->spec_useareas = $this->SpecUsearea->find()->where(['mailer_id' => $draftId])->orderAsc('id')->all();
         }
     }
-    $this->set(compact('refernce', 'draft', 'draftId'));
+    $previousSpecs = [];
+    $templatePresets = [];
+    if ($adaptiveMode) {
+        $previousSpecsQuery = $this->Mailer->find()
+            ->select(['id', 'tracknumber', 'name', 'company', 'specification', 'date'])
+            ->where([
+                'Mailer.employee_id' => $employee_id,
+                'Mailer.type' => 3,
+            ])
+            ->orderDesc('Mailer.id')
+            ->limit(100);
+
+        if ($this->Mailer->getSchema()->getColumn('save_status')) {
+            $previousSpecsQuery->andWhere([
+                'OR' => [
+                    ['Mailer.save_status' => 'submitted'],
+                    ['Mailer.save_status IS' => null],
+                ],
+            ]);
+        }
+
+        $previousSpecs = $previousSpecsQuery->all()->toArray();
+    }
+    if ($templateMode) {
+        $templatePresets = $this->SpecTemplate->find()
+            ->select(['id', 'template_name', 'created'])
+            ->where([
+                'SpecTemplate.employee_id' => $employee_id,
+                'SpecTemplate.deleted_at IS' => null,
+            ])
+            ->orderDesc('SpecTemplate.id')
+            ->all()
+            ->toArray();
+    }
+
+    $this->set(compact('refernce', 'draft', 'draftId', 'adaptiveMode', 'templateMode', 'previousSpecs', 'templatePresets'));
+}
+
+/**
+ * Return previous submitted spec payload as JSON for adaptive mode.
+ */
+public function previousSpecData($id = null)
+{
+    $this->request->allowMethod(['get']);
+    $this->viewBuilder()->setLayout(false);
+    $this->viewBuilder()->disableAutoLayout();
+    $this->viewBuilder()->setClassName('Cake\View\View');
+    $this->checkEmployeeSession();
+
+    $employee_id = (int)$this->Session->read('Employee.id');
+    $id = (int)$id;
+    if ($id <= 0) {
+        return $this->_specDraftJsonResponse(['success' => false, 'error' => 'Invalid spec id.']);
+    }
+
+    $query = $this->Mailer->find()
+        ->where([
+            'Mailer.id' => $id,
+            'Mailer.employee_id' => $employee_id,
+            'Mailer.type' => 3,
+        ]);
+
+    if ($this->Mailer->getSchema()->getColumn('save_status')) {
+        $query->andWhere([
+            'OR' => [
+                ['Mailer.save_status' => 'submitted'],
+                ['Mailer.save_status IS' => null],
+            ],
+        ]);
+    }
+
+    $spec = $query->first();
+    if (!$spec) {
+        return $this->_specDraftJsonResponse(['success' => false, 'error' => 'Spec not found.']);
+    }
+
+    $comments = $this->MailerComment->find()
+        ->select(['comment'])
+        ->where(['mailer_id' => $id])
+        ->all()
+        ->toArray();
+
+    $useareas = $this->SpecUsearea->find()
+        ->where(['mailer_id' => $id])
+        ->orderAsc('id')
+        ->all()
+        ->toArray();
+
+    $bySection = [];
+    foreach ($useareas as $row) {
+        $tid = (int)($row->types ?? 0);
+        if (!isset($bySection[$tid])) {
+            $bySection[$tid] = [
+                'title' => (string)($row->title ?? ''),
+                'rows' => [],
+            ];
+        }
+        $bySection[$tid]['rows'][] = [
+            'serial' => (string)($row->serial ?? ''),
+            'coverage' => (string)($row->coverage ?? ''),
+            'product' => (string)($row->product ?? ''),
+            'coverage_by_pack' => (string)($row->coverage_by_pack ?? ''),
+            'Warranty' => (string)($row->Warranty ?? ''),
+        ];
+    }
+
+    return $this->_specDraftJsonResponse([
+        'success' => true,
+        'data' => [
+            'name' => (string)($spec->name ?? ''),
+            'company' => (string)($spec->company ?? ''),
+            'address' => (string)($spec->address ?? ''),
+            'specification' => (string)($spec->specification ?? ''),
+            'email' => (string)($spec->email ?? ''),
+            'date' => !empty($spec->date) ? format_db_date('d/m/Y', $spec->date) : date('d/m/Y'),
+            'type' => (string)($spec->type ?? '3'),
+            'subject' => (string)($spec->subject ?? ''),
+            'sections' => array_values($bySection),
+            'comments' => array_map(function ($c) { return (string)($c->comment ?? ''); }, $comments),
+        ],
+    ]);
+}
+
+/**
+ * Backward-compatible alias for legacy underscored route.
+ */
+public function previous_spec_data($id = null)
+{
+    return $this->previousSpecData($id);
+}
+
+/**
+ * Manage employee template presets.
+ */
+public function template_presets()
+{
+    $this->viewBuilder()->setLayout('employee_layout');
+    $this->set('title_for_layout', SITENAME . ' Template Presets');
+    $this->checkEmployeeSession();
+
+    $employee_id = (int)$this->Session->read('Employee.id');
+    $templates = $this->SpecTemplate->find()
+        ->where([
+            'SpecTemplate.employee_id' => $employee_id,
+            'SpecTemplate.deleted_at IS' => null,
+        ])
+        ->orderDesc('SpecTemplate.id')
+        ->all();
+
+    $this->set(compact('templates'));
+}
+
+/**
+ * Save a submitted spec as template preset.
+ */
+public function saveTemplateFromSpec($id = null)
+{
+    $this->request->allowMethod(['post']);
+    $this->checkEmployeeSession();
+
+    $employee_id = (int)$this->Session->read('Employee.id');
+    $id = (int)$id;
+    if ($id <= 0) {
+        $this->Flash->error('Invalid spec id.');
+        return $this->redirect(['action' => 'index']);
+    }
+
+    $query = $this->Mailer->find()
+        ->where([
+            'Mailer.id' => $id,
+            'Mailer.employee_id' => $employee_id,
+            'Mailer.type' => 3,
+        ]);
+    if ($this->Mailer->getSchema()->getColumn('save_status')) {
+        $query->andWhere([
+            'OR' => [
+                ['Mailer.save_status' => 'submitted'],
+                ['Mailer.save_status IS' => null],
+            ],
+        ]);
+    }
+    $spec = $query->first();
+    if (!$spec) {
+        $this->Flash->error('Submitted spec not found.');
+        return $this->redirect(['action' => 'index']);
+    }
+
+    $track = (string)($spec->tracknumber ?? ('#' . $spec->id));
+    $templateName = 'Template - ' . $track;
+    $template = $this->SpecTemplate->newEntity([
+        'employee_id' => $employee_id,
+        'template_name' => $templateName,
+        'type' => (int)($spec->type ?? 3),
+        'subject' => (string)($spec->subject ?? ''),
+        'specification' => (string)($spec->specification ?? ''),
+        'deleted_at' => null,
+        'created' => date('Y-m-d H:i:s'),
+    ]);
+    if (!$this->SpecTemplate->save($template)) {
+        $this->Flash->error('Unable to save template.');
+        return $this->redirect(['action' => 'index']);
+    }
+
+    $templateId = (int)$template->id;
+    $comments = $this->MailerComment->find()->where(['mailer_id' => $id])->orderAsc('id')->all();
+    foreach ($comments as $idx => $comment) {
+        $this->SpecTemplateComment->save($this->SpecTemplateComment->newEntity([
+            'template_id' => $templateId,
+            'sort_order' => $idx + 1,
+            'comment' => (string)($comment->comment ?? ''),
+        ]));
+    }
+
+    $useareas = $this->SpecUsearea->find()->where(['mailer_id' => $id])->orderAsc('id')->all();
+    foreach ($useareas as $row) {
+        $this->SpecTemplateItem->save($this->SpecTemplateItem->newEntity([
+            'template_id' => $templateId,
+            'section_no' => (int)($row->types ?? 0),
+            'section_title' => (string)($row->title ?? ''),
+            'serial' => (string)($row->serial ?? ''),
+            'coverage' => (string)($row->coverage ?? ''),
+            'product' => (string)($row->product ?? ''),
+            'coverage_by_pack' => (string)($row->coverage_by_pack ?? ''),
+            'warranty' => (string)($row->Warranty ?? ''),
+        ]));
+    }
+
+    $this->Flash->success('Template preset saved successfully.');
+    return $this->redirect(['action' => 'template_presets']);
+}
+
+/**
+ * Rename template preset.
+ */
+public function editTemplatePreset($id = null)
+{
+    $this->viewBuilder()->setLayout('employee_layout');
+    $this->set('title_for_layout', SITENAME . ' Edit Template Preset');
+    $this->checkEmployeeSession();
+
+    $employee_id = (int)$this->Session->read('Employee.id');
+    $id = (int)$id;
+    if ($id <= 0) {
+        $this->Flash->error('Invalid template id.');
+        return $this->redirect(['action' => 'template_presets']);
+    }
+
+    $template = $this->SpecTemplate->find()
+        ->where([
+            'SpecTemplate.id' => $id,
+            'SpecTemplate.employee_id' => $employee_id,
+            'SpecTemplate.deleted_at IS' => null,
+        ])
+        ->first();
+    if (!$template) {
+        $this->Flash->error('Template not found.');
+        return $this->redirect(['action' => 'template_presets']);
+    }
+
+    if ($this->request->is(['post', 'put'])) {
+        $name = trim((string)$this->request->getData('template_name'));
+        if ($name === '') {
+            $this->Flash->error('Template name is required.');
+        } else {
+            $template->template_name = $name;
+            $template->modified = date('Y-m-d H:i:s');
+            if ($this->SpecTemplate->save($template)) {
+                $this->Flash->success('Template updated successfully.');
+                return $this->redirect(['action' => 'template_presets']);
+            }
+            $this->Flash->error('Unable to update template.');
+        }
+    }
+
+    $this->set(compact('template'));
+}
+
+/**
+ * Soft-delete template preset.
+ */
+public function deleteTemplatePreset($id = null)
+{
+    $this->request->allowMethod(['post']);
+    $this->checkEmployeeSession();
+    $employee_id = (int)$this->Session->read('Employee.id');
+    $id = (int)$id;
+
+    $template = $this->SpecTemplate->find()
+        ->where([
+            'SpecTemplate.id' => $id,
+            'SpecTemplate.employee_id' => $employee_id,
+            'SpecTemplate.deleted_at IS' => null,
+        ])
+        ->first();
+    if (!$template) {
+        $this->Flash->error('Template not found.');
+        return $this->redirect(['action' => 'template_presets']);
+    }
+
+    $template->deleted_at = date('Y-m-d H:i:s');
+    $template->modified = date('Y-m-d H:i:s');
+    if ($this->SpecTemplate->save($template)) {
+        $this->Flash->success('Template removed.');
+    } else {
+        $this->Flash->error('Unable to remove template.');
+    }
+    return $this->redirect(['action' => 'template_presets']);
+}
+
+/**
+ * Return template payload as JSON for create-spec autofill.
+ */
+public function templatePresetData($id = null)
+{
+    $this->request->allowMethod(['get']);
+    $this->viewBuilder()->setLayout(false);
+    $this->viewBuilder()->disableAutoLayout();
+    $this->viewBuilder()->setClassName('Cake\View\View');
+    $this->checkEmployeeSession();
+
+    $employee_id = (int)$this->Session->read('Employee.id');
+    $id = (int)$id;
+    if ($id <= 0) {
+        return $this->_specDraftJsonResponse(['success' => false, 'error' => 'Invalid template id.']);
+    }
+
+    $template = $this->SpecTemplate->find()
+        ->where([
+            'SpecTemplate.id' => $id,
+            'SpecTemplate.employee_id' => $employee_id,
+            'SpecTemplate.deleted_at IS' => null,
+        ])
+        ->first();
+    if (!$template) {
+        return $this->_specDraftJsonResponse(['success' => false, 'error' => 'Template not found.']);
+    }
+
+    $items = $this->SpecTemplateItem->find()
+        ->where(['template_id' => $id])
+        ->orderAsc('id')
+        ->all()
+        ->toArray();
+    $comments = $this->SpecTemplateComment->find()
+        ->where(['template_id' => $id])
+        ->orderAsc('sort_order')
+        ->all()
+        ->toArray();
+
+    $bySection = [];
+    foreach ($items as $row) {
+        $tid = (int)($row->section_no ?? 0);
+        if (!isset($bySection[$tid])) {
+            $bySection[$tid] = [
+                'title' => (string)($row->section_title ?? ''),
+                'rows' => [],
+            ];
+        }
+        $bySection[$tid]['rows'][] = [
+            'serial' => (string)($row->serial ?? ''),
+            'coverage' => (string)($row->coverage ?? ''),
+            'product' => (string)($row->product ?? ''),
+            'coverage_by_pack' => (string)($row->coverage_by_pack ?? ''),
+            'Warranty' => (string)($row->warranty ?? ''),
+        ];
+    }
+
+    return $this->_specDraftJsonResponse([
+        'success' => true,
+        'data' => [
+            'type' => (string)($template->type ?? '3'),
+            'subject' => (string)($template->subject ?? ''),
+            'specification' => (string)($template->specification ?? ''),
+            'sections' => array_values($bySection),
+            'comments' => array_map(function ($c) {
+                return (string)($c->comment ?? '');
+            }, $comments),
+        ],
+    ]);
+}
+
+public function template_preset_data($id = null)
+{
+    return $this->templatePresetData($id);
+}
+
+/**
+ * CamelCase alias for URL/action compatibility.
+ */
+public function templatePresets()
+{
+    return $this->template_presets();
+}
+
+/**
+ * CamelCase alias for URL/action compatibility.
+ */
+public function edit_template_preset($id = null)
+{
+    return $this->editTemplatePreset($id);
 }
 
 /**
@@ -861,12 +1292,18 @@ public function specDraftAutosave()
     $this->viewBuilder()->disableAutoLayout();
     $this->viewBuilder()->setClassName('Cake\View\View');
 
-    $this->checkEmployeeSession();
+    $redirect = $this->checkEmployeeSession();
+    if ($redirect instanceof Response) {
+        return $this->_specDraftJsonResponse(['success' => false, 'error' => 'Session expired. Please login again.']);
+    }
     $this->loadModel('Mailer');
     $this->loadModel('MailerComment');
     $this->loadModel('SpecUsearea');
 
-    $employee_id = $this->request->getSession()->read('Employee.id');
+    $employee_id = (int)$this->request->getSession()->read('Employee.id');
+    if ($employee_id <= 0) {
+        return $this->_specDraftJsonResponse(['success' => false, 'error' => 'Session expired. Please login again.']);
+    }
 
     $hasSaveStatusColumn = $this->Mailer->getSchema()->getColumn('save_status');
     if (!$hasSaveStatusColumn) {
@@ -882,6 +1319,17 @@ public function specDraftAutosave()
         if (!$mailer || (int)$mailer->employee_id !== (int)$employee_id || $mailer->save_status !== 'draft') {
             $mailer = null;
         }
+    }
+    if (!$mailer) {
+        // Reuse latest existing employee draft when draft_id is missing to prevent duplicate draft rows.
+        $mailer = $this->Mailer->find()
+            ->where([
+                'Mailer.employee_id' => $employee_id,
+                'Mailer.save_status' => 'draft',
+                'Mailer.type' => 3,
+            ])
+            ->orderDesc('Mailer.id')
+            ->first();
     }
 
     $dateInput = (string)($data['date'] ?? date('d/m/Y'));
@@ -933,6 +1381,25 @@ public function specDraftAutosave()
         } else {
             return $this->_specDraftJsonResponse(['success' => false, 'error' => 'Save failed.']);
         }
+    }
+
+    // Keep only one active draft per employee/type by removing older duplicate drafts.
+    $otherDraftIds = $this->Mailer->find()
+        ->select(['id'])
+        ->where([
+            'Mailer.employee_id' => $employee_id,
+            'Mailer.save_status' => 'draft',
+            'Mailer.type' => 3,
+            'Mailer.id !=' => (int)$draftId,
+        ])
+        ->enableHydration(false)
+        ->all()
+        ->extract('id')
+        ->toArray();
+    if (!empty($otherDraftIds)) {
+        $this->MailerComment->deleteAll(['mailer_id IN' => $otherDraftIds]);
+        $this->SpecUsearea->deleteAll(['mailer_id IN' => $otherDraftIds]);
+        $this->Mailer->deleteAll(['id IN' => $otherDraftIds]);
     }
 
     $this->MailerComment->deleteAll(['mailer_id' => $draftId]);

@@ -15,6 +15,11 @@
 				echo ' ';
 				echo $this->Html->link('Resume Draft', ['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['resume' => '1']], ['class' => 'btn btn-warning btn-xs top-button']);
 			}
+			echo ' ';
+			echo $this->Html->link('Smart Spec (from Previous)', ['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'adaptive']], ['class' => 'btn btn-primary btn-xs top-button']);
+			// Template Preset entry hidden for now. Uncomment if client approves.
+			// echo ' ';
+			// echo $this->Html->link('Template Spec', ['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'template']], ['class' => 'btn btn-success btn-xs top-button']);
 			?>
 		</h1>
 	</div>
@@ -201,6 +206,13 @@
 									echo $this->Html->link('History', array('controller' => 'employees', 'action' => 'audit_log', $mailerId), array('class' => 'btn btn-mini btn-default')) . '&nbsp;';
 
 									echo $this->Html->link('Download', SITEURL . 'dompdf/' . $pdffilename, array('class' => 'btn btn-mini btn-info', 'target' => '_blank')) . '&nbsp;';
+
+									// Template Preset action hidden for now. Uncomment if client approves.
+									// echo $this->Form->postLink(
+									// 	'Save Template',
+									// 	['controller' => 'employees', 'action' => 'saveTemplateFromSpec', $mailerId],
+									// 	['class' => 'btn btn-mini btn-success', 'confirm' => 'Save this spec as template preset?']
+									// ) . '&nbsp;';
 
 									echo $this->Form->postLink('Delete', array('controller' => 'employees', 'action' => 'deleteSpec', $mailerId), array('class' => 'btn btn-mini btn-xs btn-default', 'confirm' => 'Delete this spec? This cannot be undone.', 'escape' => false));
 

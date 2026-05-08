@@ -27,6 +27,19 @@
 	.title-dropdown li:hover {
 	background-color: #f0f0f0;
 	}
+	.spec-adaptive-help {
+		display: block;
+		clear: both;
+		color: #2c6aa0;
+		margin-top: 8px;
+		font-size: 12px;
+	}
+	#spec-source-track {
+		display: none;
+		margin-left: 15px;
+		color: #2c6aa0;
+		font-weight: 600;
+	}
 
 	</style>	
 	<div class="page-content">
@@ -48,6 +61,7 @@
 		$draftDate = isset($draft) && $draft->date ? format_db_date('d/m/Y', $draft->date) : date('d/m/Y');
 		$draftType = isset($draft) ? (string)$draft->type : '3';
 		$draftSubject = isset($draft) ? h($draft->subject) : 'Durotech: External Liquid WPM';
+		$isAdaptiveMode = !empty($adaptiveMode);
 		$draftSectionsJson = '[]';
 		$draftCommentsJson = '[]';
 		if (!empty($draft) && isset($draft->spec_useareas)) {
@@ -72,12 +86,34 @@
 		<?php echo $this->Form->create('Mailer',array('class'=>'form-horizontal','enctype'=>'multipart/form-data','id'=>'specForm')); ?>
 		<input type="hidden" name="draft_id" id="draft_id" value="<?php echo $draftIdVal; ?>">
 		<div id="spec-draft-status" class="alert alert-info" style="margin-top:10px;margin-bottom:10px;">
-			<strong>Status:</strong> <span id="spec-status-text"><?php echo !empty($draftId) ? 'Draft (restored)' : 'New'; ?></span>
+			<strong>Status:</strong> <span id="spec-status-text"><?php echo !empty($draftId) ? 'Draft (restored)' : ($isAdaptiveMode ? 'New (Smart Spec mode)' : 'New'); ?></span>
 			<span id="spec-last-saved" style="margin-left:15px;"></span>
+			<span id="spec-source-track"></span>
 			<?php if (!empty($draftId)): ?>
 				<span style="margin-left:15px;"><?php echo $this->Html->link('Start New Spec (discard this draft)', ['controller' => 'mailers', 'action' => 'admin_send_v3'], ['class' => 'btn btn-default btn-xs']); ?></span>
 			<?php endif; ?>
 		</div>
+		<?php if ($isAdaptiveMode): ?>
+			<div class="form-group">
+				<label class="col-sm-3 control-label no-padding-right" for="adaptive_previous_spec_id">Load Previous Spec:</label>
+				<div class="col-sm-9">
+					<select id="adaptive_previous_spec_id" class="col-xs-10 col-sm-8">
+						<option value="">Select previous submitted spec...</option>
+						<?php foreach (($previousSpecList ?? []) as $prev): ?>
+							<?php
+								$parts = [];
+								$parts[] = (string)($prev->tracknumber ?? ('#' . (int)$prev->id));
+								if (!empty($prev->company)) { $parts[] = (string)$prev->company; }
+								if (!empty($prev->name)) { $parts[] = (string)$prev->name; }
+								$optionLabel = implode(' | ', $parts);
+							?>
+							<option value="<?php echo (int)$prev->id; ?>"><?php echo h($optionLabel); ?></option>
+						<?php endforeach; ?>
+					</select>
+					<p class="spec-adaptive-help">Loads previous submitted spec data into this form for faster creation.</p>
+				</div>
+			</div>
+		<?php endif; ?>
 		
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Track Number:</label>
@@ -195,14 +231,6 @@
 				</div>
 			</div>
 
-			<div class="form-group">
-				    <label class="col-sm-3 control-label no-padding-right" for="form-field-1">Attach PDF Datasheet:</label>
-					<div class="col-sm-9">
-						<input type="file" name="datasheet_pdf" accept="application/pdf" class="col-xs-10 col-sm-8">
-						<p class="help-block">Select a PDF file (e.g., Duromastic ARW datasheet)</p>
-					</div>
-			</div>
-			
 			<div class="form-group">
 				<div class="col-md-offset-3 col-md-9">
 					<button type="submit" name="submit_spec" value="1" class="btn btn-mini btn-success" id="add_ser_prd_btn">Submit / Publish</button>&nbsp;
@@ -479,6 +507,44 @@
 		$("#title_" + id).val(title);
 		$("#title-suggestion-box_" + id).hide().html('');
 	}
+	function clearAllSectionsAndComments() {
+		$('#addsection').empty();
+		$('#addcommentnew').empty();
+		$('.commentdiv input[name="comment[]"]').eq(0).val('');
+	}
+	function loadSectionsFromData(sections) {
+		if (!sections || !sections.length) return;
+		var secIdx, rowIdx, sec, rows, sectionId;
+		for (secIdx = 0; secIdx < sections.length; secIdx++) {
+			sec = sections[secIdx] || {};
+			rows = sec.rows || [];
+			if (!rows.length) continue;
+			addnewsection();
+			sectionId = $('.addsection').length;
+			$('#title_' + sectionId).val(sec.title || '');
+			$('#section_' + sectionId).find('input[name="serial[]"]').first().val(rows[0].serial || sectionId);
+			$('#coverage_' + sectionId + '_0').val(rows[0].coverage || '');
+			$('#pro_' + sectionId + '_0').val(rows[0].product || '');
+			$('#coverage_by_pack_' + sectionId + '_0').val(rows[0].coverage_by_pack || '');
+			$('#warranty_' + sectionId + '_0').val(rows[0].Warranty || '');
+			for (rowIdx = 1; rowIdx < rows.length; rowIdx++) {
+				addmore(sectionId);
+				$('#section_' + sectionId).find('input[name="serial[]"]').last().val(rows[rowIdx].serial || (sectionId + '.' + rowIdx));
+				$('#coverage_' + sectionId + '_' + rowIdx).val(rows[rowIdx].coverage || '');
+				$('#pro_' + sectionId + '_' + rowIdx).val(rows[rowIdx].product || '');
+				$('#coverage_by_pack_' + sectionId + '_' + rowIdx).val(rows[rowIdx].coverage_by_pack || '');
+				$('#warranty_' + sectionId + '_' + rowIdx).val(rows[rowIdx].Warranty || '');
+			}
+		}
+	}
+	function loadCommentsFromData(comments) {
+		if (!comments || !comments.length) return;
+		$('.commentdiv input[name="comment[]"]').eq(0).val(comments[0] || '');
+		for (var i = 1; i < comments.length; i++) {
+			addmorecomment();
+			$('.commentdiv input[name="comment[]"]').eq(i).val(comments[i] || '');
+		}
+	}
 
 	// Draft auto-save every 45 seconds
 	var specAutosaveInterval = 45000;
@@ -588,6 +654,51 @@
 		});
 	}
 
+	<?php if ($isAdaptiveMode): ?>
+	var adaptiveLoadBaseUrl = '<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'adminPreviousSpecDataV3']); ?>';
+	function adaptiveLoadSelectedSpec() {
+		var selectedId = $('#adaptive_previous_spec_id').val();
+		if (!selectedId) {
+			$('#spec-source-track').hide().text('');
+			$('#spec-status-text').text('New (Smart Spec mode)');
+			return;
+		}
+		$.ajax({
+			type: 'GET',
+			url: adaptiveLoadBaseUrl.replace(/\/$/, '') + '/' + selectedId,
+			dataType: 'json',
+			success: function(res) {
+				if (!res || !res.success || !res.data) {
+					alert((res && res.error) ? res.error : 'Unable to load previous spec.');
+					return;
+				}
+				var data = res.data;
+				$('#name').val(data.name || '');
+				$('input[name="company"]').val(data.company || '');
+				$('input[name="address"]').val(data.address || '');
+				$('input[name="specification"]').val(data.specification || '');
+				$('#email').val(data.email || '');
+				$('#subject').val(data.subject || '');
+				$('select[name="type"]').val(data.type || '3');
+				clearAllSectionsAndComments();
+				loadSectionsFromData(data.sections || []);
+				loadCommentsFromData(data.comments || []);
+				$('#spec-status-text').text('Loaded from previous spec');
+				var selectedText = $('#adaptive_previous_spec_id option:selected').text() || '';
+				var sourceTrack = selectedText.split('|')[0].trim();
+				if (sourceTrack) {
+					$('#spec-source-track').text('Source: ' + sourceTrack).show();
+				} else {
+					$('#spec-source-track').hide().text('');
+				}
+			},
+			error: function() {
+				alert('Unable to load previous spec right now.');
+			}
+		});
+	}
+	$('#adaptive_previous_spec_id').on('change', adaptiveLoadSelectedSpec);
+	<?php endif; ?>
 
 
 
