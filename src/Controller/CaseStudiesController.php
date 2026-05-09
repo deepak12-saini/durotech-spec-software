@@ -109,7 +109,9 @@ class CaseStudiesController extends AppController
         $products = $this->Products->find('list', [
             'keyField' => 'id',
             'valueField' => 'title',
-        ]);
+        ])
+            ->where(['Products.status' => 1])
+            ->orderAsc('Products.title');
         $this->set(compact('products', 'caseStudy'));
         return null;
     }
@@ -130,7 +132,7 @@ class CaseStudiesController extends AppController
         }
 
         $caseStudy = $this->CaseStudies->get($id, [
-            'contain' => ['CaseImages'],
+            'contain' => ['CaseImages', 'Products'],
         ]);
 
         if ($this->request->is(['post', 'put', 'patch'])) {
@@ -153,14 +155,26 @@ class CaseStudiesController extends AppController
 
             $this->Flash->error('Save failed');
         } else {
-            $this->request = $this->request->withParsedBody($caseStudy->toArray());
+            $preselectedProductIds = [];
+            if (!empty($caseStudy->products)) {
+                foreach ($caseStudy->products as $prod) {
+                    if (isset($prod->id)) {
+                        $preselectedProductIds[] = (int)$prod->id;
+                    }
+                }
+            }
+            $seed = $caseStudy->toArray();
+            $seed['products'] = ['_ids' => $preselectedProductIds];
+            $this->request = $this->request->withParsedBody($seed);
         }
 
         $this->loadModel('Products');
         $products = $this->Products->find('list', [
             'keyField' => 'id',
             'valueField' => 'title',
-        ]);
+        ])
+            ->where(['Products.status' => 1])
+            ->orderAsc('Products.title');
         $this->set(compact('caseStudy', 'products'));
         return null;
     }

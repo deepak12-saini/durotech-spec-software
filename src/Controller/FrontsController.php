@@ -205,7 +205,12 @@ class FrontsController extends AppController
 
         $caseStudy = $this->CaseStudies->find()
             ->where(['CaseStudies.slug' => $slug])
-            ->contain(['CaseImages'])
+            ->contain([
+                'CaseImages',
+                'Products' => function ($q) {
+                    return $q->where(['Products.status' => 1])->orderAsc('Products.title');
+                }
+            ])
             ->first();
 
         if (!$caseStudy) {
@@ -220,6 +225,12 @@ class FrontsController extends AppController
         if (!empty($caseStudy->case_images)) {
             foreach ($caseStudy->case_images as $img) {
                 $case['CaseImage'][] = $img->toArray();
+            }
+        }
+        $case['CaseProduct'] = [];
+        if (!empty($caseStudy->products)) {
+            foreach ($caseStudy->products as $prod) {
+                $case['CaseProduct'][] = $prod->toArray();
             }
         }
 

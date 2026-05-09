@@ -179,6 +179,92 @@ $featuredImage = !empty($caseData['featured_image']) ? SITEURL . $caseData['feat
     background: #fff;
 }
 
+.products-used-section {
+    margin: 30px 0 10px;
+}
+
+.products-used-grid {
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: -8px;
+    margin-right: -8px;
+}
+
+.products-used-col {
+    width: 33.3333%;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin-bottom: 16px;
+}
+
+.products-used-card {
+    height: 100%;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 16px rgba(20, 33, 61, 0.1);
+    border: 1px solid rgba(40, 137, 201, 0.1);
+    transition: transform 0.24s ease, box-shadow 0.24s ease;
+}
+
+.products-used-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px rgba(20, 33, 61, 0.14);
+}
+
+.products-used-card__img-wrap {
+    background: #f4f8fc;
+    text-align: center;
+    padding: 14px 12px 8px;
+    min-height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.products-used-card__img-wrap img {
+    max-width: 100%;
+    max-height: 150px;
+    object-fit: contain;
+}
+
+.products-used-card__body {
+    padding: 12px 14px 14px;
+}
+
+.products-used-card__title {
+    font-size: 1.04rem;
+    margin: 0 0 8px;
+    color: #4a1d6a;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.products-used-card__desc {
+    margin: 0;
+    color: #4b6073;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.products-used-card__link {
+    display: inline-block;
+    margin-top: 10px;
+    color: #2e8b57;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.products-used-card__link:hover {
+    color: #236c43;
+    text-decoration: none;
+}
+
 .case-actions {
     display: flex;
     flex-wrap: wrap;
@@ -260,6 +346,15 @@ $featuredImage = !empty($caseData['featured_image']) ? SITEURL . $caseData['feat
     .datasheet-section iframe {
         height: 420px;
     }
+    .products-used-col {
+        width: 50%;
+    }
+}
+
+@media (max-width: 575px) {
+    .products-used-col {
+        width: 100%;
+    }
 }
 </style>
 
@@ -288,6 +383,7 @@ $featuredImage = !empty($caseData['featured_image']) ? SITEURL . $caseData['feat
                 <?php if (!empty($caseData['solution'])): ?><li><a href="#solution">Solution</a></li><?php endif; ?>
                 <?php if (!empty($caseData['outcome'])): ?><li><a href="#outcome">Outcome</a></li><?php endif; ?>
                 <?php if (!empty($case['CaseImage'])): ?><li><a href="#gallery">Gallery</a></li><?php endif; ?>
+                <?php if (!empty($case['CaseProduct'])): ?><li><a href="#products-used">Products Used</a></li><?php endif; ?>
                 <?php if (!empty($caseData['datasheet'])): ?><li><a href="#datasheet">Datasheet</a></li><?php endif; ?>
             </ul>
         </nav>
@@ -329,6 +425,40 @@ $featuredImage = !empty($caseData['featured_image']) ? SITEURL . $caseData['feat
                             <a href="<?= h(SITEURL . $img['filename']) ?>" class="gallery-item" data-lightbox="case-gallery">
                                 <img src="<?= h(SITEURL . $img['filename']) ?>" alt="Project Image" loading="lazy">
                             </a>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </section>
+        <?php endif; ?>
+
+        <?php if (!empty($case['CaseProduct'])): ?>
+            <section id="products-used" class="products-used-section">
+                <h4 class="gallery-title">Products Used</h4>
+                <div class="products-used-grid">
+                    <?php foreach ($case['CaseProduct'] as $prod): ?>
+                        <?php
+                        $prodSlug = $prod['slug'] ?? '';
+                        $prodUrl = $prodSlug !== '' ? $this->Url->build('/product/' . $prodSlug) : $this->Url->build('/product');
+                        $prodTitle = $prod['title'] ?? 'Product';
+                        $prodDesc = trim(strip_tags((string)($prod['brief_description'] ?? '')));
+                        $prodImage = trim((string)($prod['image'] ?? ''));
+                        $imgUrl = ($prodImage !== '' && $prodImage !== '250250-defult.png')
+                            ? rtrim(SITEURL, '/') . '/productimg/' . $prodImage
+                            : rtrim(SITEURL, '/') . '/productimg/250250-defult.png';
+                        ?>
+                        <div class="products-used-col">
+                            <div class="products-used-card">
+                                <a href="<?= h($prodUrl) ?>" class="products-used-card__img-wrap">
+                                    <img src="<?= h($imgUrl) ?>" alt="<?= h($prodTitle) ?>" loading="lazy">
+                                </a>
+                                <div class="products-used-card__body">
+                                    <h5 class="products-used-card__title"><?= h($prodTitle) ?></h5>
+                                    <?php if ($prodDesc !== ''): ?>
+                                        <p class="products-used-card__desc"><?= h($prodDesc) ?></p>
+                                    <?php endif; ?>
+                                    <a href="<?= h($prodUrl) ?>" class="products-used-card__link">View Product →</a>
+                                </div>
+                            </div>
                         </div>
                     <?php endforeach; ?>
                 </div>
