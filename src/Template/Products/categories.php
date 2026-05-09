@@ -15,9 +15,13 @@
     margin-top: 20px;
     padding-left: 18px;
     padding-right: 18px;
-    background: #edf3f8;
+    background: linear-gradient(165deg, #f4f8fc 0%, #e8f0f8 48%, #eef4fa 100%);
     border-radius: 16px;
-    box-shadow: 0 10px 32px rgba(20, 33, 61, 0.08);
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.85) inset,
+        0 10px 40px rgba(20, 33, 61, 0.07),
+        0 2px 8px rgba(20, 33, 61, 0.04);
+    border: 1px solid rgba(40, 137, 201, 0.12);
     padding-top: 8px;
     padding-bottom: 10px;
 }
@@ -34,12 +38,23 @@
     font-size: 36px;
     font-weight: 700;
     margin: 0;
-    padding: 0;
+    padding: 0 0 14px;
     letter-spacing: 0.02em;
     line-height: 1.3;
     text-shadow: none;
     display: block;
     visibility: visible;
+    position: relative;
+}
+.category-heading .page-title::after {
+    content: "";
+    display: block;
+    width: 56px;
+    height: 4px;
+    margin: 12px auto 0;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #2889c9 0%, #f2c23a 100%);
+    opacity: 0.9;
 }
 
 /* FLEX ROW FIX */
@@ -64,11 +79,47 @@
     height: 280px;
     overflow: hidden;
     margin-bottom: 0;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(20, 33, 61, 0.12);
+    border-radius: 14px;
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.35) inset,
+        0 10px 28px rgba(20, 33, 61, 0.11),
+        0 2px 6px rgba(20, 33, 61, 0.06);
     background: #fff;
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
-    animation: tileFadeIn 0.55s ease both;
+    transition:
+        transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    animation: tileFadeIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+    isolation: isolate;
+}
+
+/* Soft bottom vignette on photo (under overlay) — better contrast without crushing the whole image */
+.category-box.image-tile::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 58%;
+    z-index: 1;
+    pointer-events: none;
+    border-bottom-left-radius: inherit;
+    border-bottom-right-radius: inherit;
+    background: linear-gradient(
+        to top,
+        rgba(15, 28, 48, 0.62) 0%,
+        rgba(15, 28, 48, 0.22) 42%,
+        rgba(15, 28, 48, 0) 100%
+    );
+}
+
+.category-box.image-tile::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12) inset;
+    pointer-events: none;
+    z-index: 3;
 }
 
 @keyframes tileFadeIn {
@@ -87,20 +138,22 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    transform: scale(1.001);
 }
 
 /* OVERLAY */
 .category-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.36);
+    z-index: 2;
+    background: rgba(0, 0, 0, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
     padding: 15px;
-    transition: background 0.3s ease;
+    transition: background 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* CATEGORY NAME ON TILES */
@@ -111,26 +164,39 @@
     letter-spacing: 0.6px;
     line-height: 1.25;
     margin: 0;
-    opacity: 0.95;
-    transition: all 0.3s ease;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.6);
-    background: rgba(0, 0, 0, 0.28);
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    border-radius: 10px;
-    backdrop-filter: blur(2px);
-    padding: 10px 14px;
+    opacity: 0.96;
+    transition:
+        transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.32s ease,
+        box-shadow 0.32s ease;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+    background: rgba(0, 0, 0, 0.32);
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    border-radius: 12px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    padding: 12px 16px;
     display: inline-block;
+    max-width: 92%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
 }
 
 /* HOVER - IMAGE ZOOM */
 .category-box.image-tile:hover img {
-    transform: scale(1.05);
+    transform: scale(1.06);
 }
 
 /* Keep same color theme on all tiles */
 .category-box.image-tile:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 14px 28px rgba(20, 33, 61, 0.18);
+    transform: translateY(-6px);
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.4) inset,
+        0 20px 40px rgba(20, 33, 61, 0.14),
+        0 6px 14px rgba(20, 33, 61, 0.08);
+}
+.category-box.image-tile:hover .category-overlay h2 {
+    transform: translateY(-2px) scale(1.02);
+    opacity: 1;
 }
 /* ODD boxes -> blue hover overlay */
 .category-grid .row > div:nth-child(odd) .category-box.image-tile:hover .category-overlay {
@@ -163,11 +229,41 @@
     animation-delay: 0.24s;
 }
 
-/* LINK RESET */
+/* LINK RESET + accessibility */
 .category-link {
     text-decoration: none;
     color: inherit;
     display: block;
+    border-radius: 14px;
+    outline: none;
+}
+.category-link:focus-visible {
+    outline: 3px solid #2889c9;
+    outline-offset: 4px;
+}
+.category-link:focus-visible .category-box.image-tile {
+    box-shadow:
+        0 0 0 3px rgba(40, 137, 201, 0.35),
+        0 14px 32px rgba(20, 33, 61, 0.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .category-box.image-tile,
+    .category-box.image-tile img,
+    .category-overlay,
+    .category-overlay h2 {
+        transition: none !important;
+        animation: none !important;
+    }
+    .category-box.image-tile:hover {
+        transform: none;
+    }
+    .category-box.image-tile:hover img {
+        transform: none;
+    }
+    .category-box.image-tile:hover .category-overlay h2 {
+        transform: none;
+    }
 }
 
 /* ===== RESPONSIVE - TABLET ===== */
@@ -206,9 +302,12 @@
         padding-right: 7px;
         margin-bottom: 30px;
     }
+    .category-link:focus-visible {
+        outline-offset: 2px;
+    }
     .category-box.image-tile {
         height: 220px;
-        border-radius: 10px;
+        border-radius: 12px;
     }
     .category-overlay h2 {
         font-size: 16px;
@@ -261,7 +360,9 @@
 
                         <?php if (!empty($cat->image)): ?>
                             <img src="<?= h(SITEURL . 'category/' . $cat->image) ?>"
-                                 alt="<?= h($cat->category_name ?? '') ?>">
+                                 alt="<?= h($cat->category_name ?? '') ?>"
+                                 loading="lazy"
+                                 decoding="async">
                         <?php endif; ?>
 
                         <!-- CENTER TEXT -->

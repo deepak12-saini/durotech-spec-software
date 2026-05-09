@@ -14,42 +14,61 @@
             </h2>
         </div>
 
-        <div class="row justify-content-center g-4">
+        <div class="row projects-cards-row">
             <?php if (!empty($projects)) : ?>
-                <?php foreach ($projects as $project) :
+                <?php
+                $cardIndex = 0;
+                foreach ($projects as $project) :
                     $data = $project['CaseStudy'];
+                    $cardIndex++;
+                    $imgSrc = 'https://www.durotechindustries.com.au/customdurotech/images/project_images/28156943_1851826481503969_6097429456538828800_n.jpg';
+                    if (!empty($data['featured_image'])) {
+                        $fi = (string)$data['featured_image'];
+                        $imgSrc = (strpos($fi, 'http') === 0) ? $fi : rtrim(SITEURL, '/') . '/' . ltrim($fi, '/');
+                    }
+                    $excerpt = '';
+                    if (!empty($data['short_summary'])) {
+                        $excerpt = strip_tags((string)$data['short_summary']);
+                        $excerpt = preg_replace('/\s+/u', ' ', trim($excerpt));
+                        if (function_exists('mb_strlen') && mb_strlen($excerpt) > 180) {
+                            $excerpt = mb_substr($excerpt, 0, 177) . '…';
+                        } elseif (strlen($excerpt) > 180) {
+                            $excerpt = substr($excerpt, 0, 177) . '…';
+                        }
+                    }
+                    $badges = ['Case Study', 'Project'];
+                    $badgeLabel = $badges[($cardIndex - 1) % 2];
                 ?>
-                    <div class="col-xl-4 col-lg-4 col-md-6 col-12 d-flex">
+                    <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 d-flex">
                         <div class="card project-case-card border-0 flex-fill">
-                            <?php if (!empty($data['featured_image'])): ?>
-                                <img src="<?= h(SITEURL . $data['featured_image']) ?>"
-                                     class="card-img-top project-case-card__img"
-                                     alt="<?= h($data['title']) ?>">
-                            <?php else: ?>
-                                <img src="https://www.durotechindustries.com.au/customdurotech/images/project_images/28156943_1851826481503969_6097429456538828800_n.jpg"
-                                     class="card-img-top project-case-card__img"
-                                     alt="Project Default Image">
-                            <?php endif; ?>
+                            <div class="project-case-card__media">
+                                <span class="project-case-card__badge"><?= h($badgeLabel) ?></span>
+                                <img src="<?= h($imgSrc) ?>"
+                                     class="project-case-card__img"
+                                     alt="<?= h($data['title'] ?? '') ?>">
+                            </div>
 
                             <div class="card-body d-flex flex-column project-case-card__body">
-                                <div class="card-content flex-grow-1">
-                                    <h5 class="card-title project-case-card__title text-primary mb-2">
-                                        <?= h($data['title']) ?>
-                                    </h5>
-                                    <p class="text-muted small mb-0 project-case-card__location">
-                                        <i class="fa fa-map-marker text-danger" aria-hidden="true"></i>
+                                <h5 class="card-title project-case-card__title mb-2">
+                                    <?= h($data['title'] ?? '') ?>
+                                </h5>
+                                <?php if ($excerpt !== '') : ?>
+                                    <p class="project-case-card__excerpt mb-2"><?= h($excerpt) ?></p>
+                                <?php endif; ?>
+                                <?php if (!empty($data['location'])) : ?>
+                                    <p class="project-case-card__location mb-0">
+                                        <i class="fa fa-map-marker" aria-hidden="true"></i>
                                         <?= h($data['location']) ?>
                                     </p>
-                                </div>
+                                <?php endif; ?>
 
-                                <div class="mt-auto pt-3 text-center">
-                                    <a href="<?= h(SITEURL . 'case-study/' . $data['slug']) ?>"
-                                       class="btn btn-primary project-case-card__btn w-100">
-                                        View Details
+                                <div class="project-case-card__footer mt-auto pt-3">
+                                    <a href="<?= h(rtrim(SITEURL, '/') . '/case-study/' . ($data['slug'] ?? '')) ?>"
+                                       class="project-case-card__link">
+                                        View Project <span class="project-case-card__arrow" aria-hidden="true">→</span>
                                     </a>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -85,60 +104,146 @@
     object-position: center;
 }
 
+/* 2 columns, tight horizontal gap, equal-height cards (works with BS3/BS4 mix) */
+.projects-cards-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: -8px;
+    margin-right: -8px;
+}
+.projects-cards-row > [class*="col-"] {
+    display: flex;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin-bottom: 22px;
+}
+.projects-case-studies-page .project-case-card.flex-fill {
+    flex: 1 1 auto;
+    width: 100%;
+}
+
 .projects-case-studies-page .project-case-card {
     display: flex;
     flex-direction: column;
     height: 100%;
-    border-radius: 10px;
+    border-radius: 0 0 14px 14px;
     overflow: hidden;
     background: #fff;
-    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 6px 22px rgba(20, 33, 61, 0.1);
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
 }
 
 .projects-case-studies-page .project-case-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+    transform: translateY(-5px);
+    box-shadow: 0 14px 36px rgba(20, 33, 61, 0.14);
+}
+
+.projects-case-studies-page .project-case-card__media {
+    position: relative;
+    flex-shrink: 0;
+    border-radius: 14px 14px 0 0;
+    overflow: hidden;
+}
+
+.projects-case-studies-page .project-case-card__badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 2;
+    background: #22a06b;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 999px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .projects-case-studies-page .project-case-card__img {
     width: 100%;
-    height: 240px;
+    height: 280px;
     object-fit: cover;
-    flex-shrink: 0;
+    display: block;
+    border-radius: 14px 14px 0 0;
 }
 
 .projects-case-studies-page .project-case-card__body {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    background: #fff;
-    padding: 1.1rem 1.15rem 1.15rem;
+    flex: 1 1 auto;
+    background: #eef2f7;
+    padding: 1.25rem 1.35rem 1.2rem;
+    border-radius: 0 0 14px 14px;
 }
 
 .projects-case-studies-page .project-case-card__title {
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: 1.05rem;
+    font-weight: 700;
     line-height: 1.35;
+    color: #4a1d6a;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
 
-.projects-case-studies-page .project-case-card__location {
-    line-height: 1.4;
-}
-
-.projects-case-studies-page .project-case-card__btn {
-    padding: 0.5rem 1rem;
+.projects-case-studies-page .project-case-card__excerpt {
     font-size: 0.9rem;
-    font-weight: 600;
-    border-radius: 6px;
+    line-height: 1.55;
+    color: #5a6d7e;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
-.projects-case-studies-page .project-case-card .btn {
+.projects-case-studies-page .project-case-card__location {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    font-weight: 700;
+    color: #1a2b3c;
+    margin-top: 1rem;
+    padding-top: 0.35rem;
+    letter-spacing: 0.01em;
+}
+
+.projects-case-studies-page .project-case-card__location .fa-map-marker {
+    color: #c62828;
+    margin-right: 6px;
+}
+
+.projects-case-studies-page .project-case-card__footer {
+    text-align: right;
     margin-top: auto;
+}
+
+.projects-case-studies-page .project-case-card__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #3d8b3d;
+    text-decoration: none;
+    transition: color 0.2s ease, gap 0.2s ease;
+}
+
+.projects-case-studies-page .project-case-card__link:hover,
+.projects-case-studies-page .project-case-card__link:focus {
+    color: #449d44;
+    text-decoration: none;
+}
+
+.projects-case-studies-page .project-case-card__link:hover .project-case-card__arrow {
+    transform: translateX(3px);
+}
+
+.projects-case-studies-page .project-case-card__arrow {
+    display: inline-block;
+    transition: transform 0.2s ease;
 }
 
 @media (max-width: 768px) {
@@ -147,17 +252,15 @@
     }
 
     .projects-case-studies-page .project-case-card__img {
-        height: 200px;
+        height: 220px;
     }
 
     .projects-case-studies-page .project-case-card__body {
         text-align: left;
-        align-items: stretch;
     }
 
-    .projects-case-studies-page .project-case-card__body .btn {
-        align-self: stretch;
-        text-align: center;
+    .projects-case-studies-page .project-case-card__footer {
+        text-align: left;
     }
 }
 </style>
