@@ -25,7 +25,7 @@
 /* PAGE HEADING - clearly visible, never clipped */
 .category-heading {
     text-align: center;
-    margin: 30px 0 35px;
+    margin: 34px 0 22px;
     padding: 0 10px;
     min-height: 1px;
 }
@@ -40,14 +40,6 @@
     text-shadow: none;
     display: block;
     visibility: visible;
-}
-.category-heading .page-subtitle {
-    margin: 8px auto 0;
-    color: #5f7d99;
-    font-size: 15px;
-    font-weight: 500;
-    max-width: 780px;
-    line-height: 1.6;
 }
 
 /* FLEX ROW FIX */
@@ -199,15 +191,11 @@
         padding-right: 10px;
     }
     .category-heading {
-        margin: 20px 0 25px;
+        margin: 24px 0 16px;
     }
     .category-heading .page-title {
         font-size: 28px;
         font-weight: 700;
-    }
-    .category-heading .page-subtitle {
-        font-size: 14px;
-        line-height: 1.5;
     }
     .category-grid .row {
         margin-left: -7px;
@@ -240,9 +228,6 @@
     .category-heading .page-title {
         font-size: 24px;
     }
-    .category-heading .page-subtitle {
-        font-size: 13px;
-    }
     .category-box.image-tile {
         height: 200px;
     }
@@ -260,7 +245,6 @@
 
     <div class="category-heading product_text_section">
         <h1 class="page-title">Categories</h1>
-        <p class="page-subtitle">Explore our complete range of engineered waterproofing and construction chemical solutions.</p>
     </div>
 
     <div class="row">
