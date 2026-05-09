@@ -56,6 +56,13 @@
 				</div>
 			</div>
 			<div class="form-group">
+				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Category Page Image: </label>
+				<div class="col-sm-9">
+					<input type="file" name="category_page_image" id="category_page_image" >
+					<br><small>Used on category detail page hero section.</small>
+				</div>
+			</div>
+			<div class="form-group">
 				<label for="form-field-2" class="col-sm-3 control-label no-padding-right"> Status: </label>
 				<div class="col-sm-9">
 

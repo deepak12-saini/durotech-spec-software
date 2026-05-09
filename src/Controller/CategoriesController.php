@@ -114,6 +114,25 @@ class CategoriesController extends AppController
                 $categoryData['image'] = '250250-defult.png';
             }
 
+            if (!empty($data['category_page_image']['name'])) {
+                $file = $data['category_page_image'];
+                $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                $arrExt = ['jpg', 'jpeg', 'gif', 'png'];
+                if (in_array($ext, $arrExt)) {
+                    $uploadPath = WWW_ROOT . 'category' . DS;
+                    if (!is_dir($uploadPath)) {
+                        mkdir($uploadPath, 0755, true);
+                    }
+                    $dest = $uploadPath . $file['name'];
+                    if (move_uploaded_file($file['tmp_name'], $dest)) {
+                        $categoryData['category_page_image'] = $file['name'];
+                    }
+                } else {
+                    $this->Flash->error('Please upload a valid category page image extension (jpg, jpeg, gif, png).');
+                    return $this->redirect(rtrim(SITEURL, '/') . '/admin/categories/add');
+                }
+            }
+
             $entity = $this->Categories->newEntity($categoryData);
             if ($this->Categories->save($entity)) {
                 $this->Flash->success('The Category has been saved');
@@ -151,13 +170,13 @@ class CategoriesController extends AppController
             }
             if (empty($categoryData) && !empty($data)) {
                 $categoryData = array_intersect_key($data, array_flip([
-                    'category_name', 'description', 'slug', 'image', 'meta_title', 'meta_keyword',
+                    'category_name', 'description', 'slug', 'image', 'category_page_image', 'meta_title', 'meta_keyword',
                     'meta_description', 'status', 'is_brand', 'id', 'sort'
                 ]));
             }
             if (!empty($data) && is_array($data)) {
                 $categoryData = array_merge($categoryData, array_intersect_key($data, array_flip([
-                    'category_name', 'description', 'meta_title', 'meta_keyword', 'meta_description', 'status', 'is_brand', 'sort'
+                    'category_name', 'description', 'meta_title', 'meta_keyword', 'meta_description', 'status', 'is_brand', 'sort', 'category_page_image'
                 ])));
             }
 
@@ -187,6 +206,27 @@ class CategoriesController extends AppController
                 $categoryData['image'] = $category->get('image') ?? '250250-defult.png';
             }
 
+            if (!empty($data['category_page_image']['name'])) {
+                $file = $data['category_page_image'];
+                $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+                $arrExt = ['jpg', 'jpeg', 'gif', 'png'];
+                if (in_array($ext, $arrExt)) {
+                    $uploadPath = WWW_ROOT . 'category' . DS;
+                    if (!is_dir($uploadPath)) {
+                        mkdir($uploadPath, 0755, true);
+                    }
+                    $dest = $uploadPath . $file['name'];
+                    if (move_uploaded_file($file['tmp_name'], $dest)) {
+                        $categoryData['category_page_image'] = $file['name'];
+                    }
+                } else {
+                    $this->Flash->error('Please upload a valid category page image extension.');
+                    return $this->redirect(rtrim(SITEURL, '/') . '/admin/categories/edit/' . $id);
+                }
+            } else {
+                $categoryData['category_page_image'] = $category->get('category_page_image') ?? '';
+            }
+
             if (!array_key_exists('status', $categoryData)) {
                 $categoryData['status'] = $category->get('status');
             }
@@ -195,7 +235,7 @@ class CategoriesController extends AppController
             }
 
             // Build SET clause for UPDATE - use table's connection for explicit UPDATE on 'categories'
-            $allowed = ['category_name', 'description', 'slug', 'image', 'meta_title', 'meta_keyword', 'meta_description', 'status', 'is_brand', 'sort'];
+            $allowed = ['category_name', 'description', 'slug', 'image', 'category_page_image', 'meta_title', 'meta_keyword', 'meta_description', 'status', 'is_brand', 'sort'];
             $toUpdate = [];
             foreach ($allowed as $field) {
                 if (array_key_exists($field, $categoryData)) {

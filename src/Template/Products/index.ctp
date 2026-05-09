@@ -173,7 +173,10 @@ a:focus, a:hover {
 		<?php
 			$currentCategoryData = $currentCategory['Category'] ?? [];
 			$categoryDescription = trim((string)($currentCategoryData['description'] ?? ''));
-			$categoryImage = trim((string)($currentCategoryData['image'] ?? ''));
+			$categoryImage = trim((string)($currentCategoryData['category_page_image'] ?? ''));
+			if ($categoryImage === '') {
+				$categoryImage = trim((string)($currentCategoryData['image'] ?? ''));
+			}
 			$hasCategoryImage = $categoryImage !== '' && $categoryImage !== '250250-defult.png';
 		?>
 		<?php if (empty($isProductListingHome) && ($hasCategoryImage || $categoryDescription !== '')): ?>

@@ -5,9 +5,10 @@
 			</h1>
 		</div>
 
+	<?php $editCategory = $category ?? null; ?>
 	<div class="row">
 		<div class="col-xs-12">
-			<?= $this->Form->create($category, ['class' => 'form-horizontal', 'type' => 'file', 'method' => 'post', 'url' => rtrim(SITEURL, '/') . '/admin/categories/edit/' . (int)$category->id]) ?>
+			<?= $this->Form->create($editCategory, ['class' => 'form-horizontal', 'type' => 'file', 'method' => 'post', 'url' => rtrim(SITEURL, '/') . '/admin/categories/edit/' . (int)($editCategory->id ?? 0)]) ?>
 			<?= $this->Form->control('id', ['type' => 'hidden']) ?>
 				<div class="form-group">
 					<label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Category name: <br> <small>The name is how it appears on your site.</small></label>
@@ -52,6 +53,15 @@
 						<input type="file" name="image" id="image" >
 						<br/>
 						<?php $img = $Category['Category']['image'] ?? ''; if ($img): ?><p><img src="<?= h(rtrim(SITEURL, '/') . '/files/category/' . $img) ?>" alt=""/></p><?php endif; ?>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Category Page Image: </label>
+					<div class="col-sm-9">
+						<input type="file" name="category_page_image" id="category_page_image" >
+						<br/>
+						<?php $pageImg = $Category['Category']['category_page_image'] ?? ''; if ($pageImg): ?><p><img src="<?= h(rtrim(SITEURL, '/') . '/files/category/' . $pageImg) ?>" alt=""/></p><?php endif; ?>
+						<small>Used on category detail page hero section.</small>
 					</div>
 				</div>
 				<div class="form-group">
