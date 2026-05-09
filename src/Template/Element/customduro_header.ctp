@@ -184,15 +184,25 @@ $searchtitle = $isSearchPage ? ($this->request->getSession()->read('searchtitle'
 		display: block !important;
 	}
 
+	/* Main nav: no border/shadow until hover (JS adds .hover-blue / .hover-yellow) */
+	#navbar5 .navbar-nav > li > a {
+		border: 1px solid transparent;
+		box-shadow: none;
+		border-radius: 10px;
+		transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+	}
+
 	.navbar-nav > li > a.hover-blue {
 		background-color: rgba(0, 86, 179, 0.15) !important;
 		border: 1px solid rgba(0, 86, 179, 0.4);
+		box-shadow: 0 4px 14px rgba(20, 33, 61, 0.12);
 		color: #0056b3 !important;
 	}
 
 	.navbar-nav > li > a.hover-yellow {
 		background-color: rgba(244, 196, 0, 0.15) !important;
 		border: 1px solid rgba(244, 196, 0, 0.4);
+		box-shadow: 0 4px 14px rgba(20, 33, 61, 0.12);
 		color: #f4c400 !important;
 	}
 
