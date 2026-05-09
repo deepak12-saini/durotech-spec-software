@@ -21,6 +21,7 @@
                 foreach ($projects as $project) :
                     $data = $project['CaseStudy'];
                     $cardIndex++;
+                    $detailUrl = rtrim(SITEURL, '/') . '/case-study/' . ($data['slug'] ?? '');
                     $imgSrc = 'https://www.durotechindustries.com.au/customdurotech/images/project_images/28156943_1851826481503969_6097429456538828800_n.jpg';
                     if (!empty($data['featured_image'])) {
                         $fi = (string)$data['featured_image'];
@@ -41,6 +42,9 @@
                 ?>
                     <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 d-flex">
                         <div class="card project-case-card border-0 flex-fill">
+                            <a href="<?= h($detailUrl) ?>"
+                               class="project-case-card__full-link"
+                               aria-label="Open project: <?= h($data['title'] ?? 'Project') ?>"></a>
                             <div class="project-case-card__media">
                                 <span class="project-case-card__badge"><?= h($badgeLabel) ?></span>
                                 <img src="<?= h($imgSrc) ?>"
@@ -63,7 +67,7 @@
                                 <?php endif; ?>
 
                                 <div class="project-case-card__footer mt-auto pt-3">
-                                    <a href="<?= h(rtrim(SITEURL, '/') . '/case-study/' . ($data['slug'] ?? '')) ?>"
+                                    <a href="<?= h($detailUrl) ?>"
                                        class="project-case-card__link">
                                         View Project <span class="project-case-card__arrow" aria-hidden="true">→</span>
                                     </a>
@@ -125,6 +129,7 @@
 .projects-case-studies-page .project-case-card {
     display: flex;
     flex-direction: column;
+    position: relative;
     height: 100%;
     border-radius: 0 0 14px 14px;
     overflow: hidden;
@@ -136,6 +141,18 @@
 .projects-case-studies-page .project-case-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 14px 36px rgba(20, 33, 61, 0.14);
+}
+
+.projects-case-studies-page .project-case-card__full-link {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: inherit;
+}
+
+.projects-case-studies-page .project-case-card__full-link:focus {
+    outline: 3px solid rgba(40, 137, 201, 0.45);
+    outline-offset: -3px;
 }
 
 .projects-case-studies-page .project-case-card__media {
@@ -216,6 +233,8 @@
 }
 
 .projects-case-studies-page .project-case-card__footer {
+    position: relative;
+    z-index: 3;
     text-align: right;
     margin-top: auto;
 }
