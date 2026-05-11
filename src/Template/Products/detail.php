@@ -1,21 +1,15 @@
-<script type="text/javascript" src="<?php echo SITEURL; ?>fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
 <link rel="stylesheet" type="text/css" href="<?php echo SITEURL; ?>fancybox/source/jquery.fancybox.css?v=2.1.5" media="screen" />
+<script type="text/javascript" src="<?php echo SITEURL; ?>fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
 <script type="text/javascript" src="<?php echo SITEURL; ?>fancybox/source/helpers/jquery.fancybox-media.js?v=1.0.6"></script>
+<?php /* jQuery, Slick JS, and Bootstrap are already in customduro_layout head — do not load jQuery again here or plugins break. */ ?>
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick.min.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick-theme.min.css"/>
 
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Slick CSS -->
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
-<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css"/>
-
-<!-- Slick JS -->
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
-
- 
 <script type="text/javascript">
 	$(document).ready(function() {
-		$('.fancybox').fancybox();
+		if ($.fn.fancybox) {
+			$('.fancybox').fancybox();
+		}
 	});
 </script>
 
@@ -145,6 +139,21 @@
 		}
 		.heading-related {
 			color: #009688 !important;
+		}
+		.related_product_detail_page .related-slider {
+			margin: 0 -8px;
+		}
+		.related_product_detail_page .related-slide {
+			padding: 0 8px;
+			box-sizing: border-box;
+		}
+		.related_product_detail_page .slick-prev {
+			left: -12px;
+			z-index: 2;
+		}
+		.related_product_detail_page .slick-next {
+			right: -12px;
+			z-index: 2;
 		}
 				.text-highlight {
 			color: #009688; /* Teal - better contrast */
@@ -686,9 +695,10 @@
         <div class="related_product_detail_page col-12 mt-5">
             <div class="container">
 				<h3 class="heading-related">Related Products</h3>
-                <div class="row">
+                <div class="related-slider">
                     <?php foreach ($random as $randoms) { ?>
-                        <div class="col-md-3 text-center mb-3">
+                        <div class="related-slide">
+                            <div class="text-center mb-3">
                             <a href="<?= $this->Url->build('/product/' . ($randoms['Product']['slug'] ?? '')); ?>">
                                 <figure class="snip0077 blue">
                                     <img src="<?= SITEURL . 'productimg/' . ($randoms['Product']['image'] ?? ''); ?>" class="img-fluid" alt="<?= h($randoms['Product']['title'] ?? ''); ?>">
@@ -698,6 +708,7 @@
                                     <p class="text-highlight"><?= h($randoms['Product']['title'] ?? ''); ?></p>
                                 </figure>
                             </a>
+                            </div>
                         </div>
                     <?php } ?>
                 </div>
@@ -714,17 +725,20 @@
 
 
 <script>
-	document.getElementById('downloadButton').addEventListener('click', function() {
-		window.location.href = '/col-chart.jpg';
-
-	});
-</script>
-
-<script>
-	document.getElementById('downloadButton1').addEventListener('click', function() {
-		window.location.href = '/col-chartds.jpg';
-
-	});
+(function () {
+	var b = document.getElementById('downloadButton');
+	if (b) {
+		b.addEventListener('click', function() {
+			window.location.href = '/col-chart.jpg';
+		});
+	}
+	var b1 = document.getElementById('downloadButton1');
+	if (b1) {
+		b1.addEventListener('click', function() {
+			window.location.href = '/col-chartds.jpg';
+		});
+	}
+})();
 </script>
 <script>
 	$(document).ready(function() {
@@ -784,7 +798,9 @@
 
 		})(window, jQuery);
 
-		$('.thumbnails-carousel').thumbnailsCarousel();
+		if ($('.thumbnails-carousel').length) {
+			$('.thumbnails-carousel').thumbnailsCarousel();
+		}
 
 	});
 </script>
@@ -818,46 +834,72 @@
 
 <script type="text/javascript">
 	$(document).ready(function() {
-		$('.fancybox').fancybox();
+		if ($.fn.fancybox) {
+			$('.fancybox').fancybox();
+		}
 	});
 
 	$(document).ready(function() {
-		$('#productTab a:first').tab('show'); // ensure first tab is visible
+		if ($('#productTab a:first').length) {
+			$('#productTab a:first').tab('show');
+		}
 	});
 
 </script>
 
 <script>
 $(document).ready(function(){
-    $('.related-slider').slick({
-        slidesToShow: 4,
+    var $section = $('.related_product_detail_page');
+    var $slider = $('.related-slider');
+    if (!$slider.length || !$slider.children('.related-slide').length) {
+        return;
+    }
+    if (!$.fn.slick) {
+        return;
+    }
+    $slider.slick({
+        /* If slidesToShow >= number of slides, nothing visibly moves — keep below slide count. */
+        slidesToShow: 3,
         slidesToScroll: 1,
         arrows: true,
         dots: false,
-        infinite: true,     // keep arrows & drag working
+        infinite: true,
         draggable: true,
         swipeToSlide: true,
-        autoplay: false,    // no auto sliding
+        autoplay: true,
+        autoplaySpeed: 3500,
+        speed: 500,
+        pauseOnHover: true,
         responsive: [
             {
                 breakpoint: 992,
                 settings: {
-                    slidesToShow: 3
+                    slidesToShow: 2,
+                    slidesToScroll: 1
                 }
             },
             {
                 breakpoint: 768,
                 settings: {
-                    slidesToShow: 2
+                    slidesToShow: 2,
+                    slidesToScroll: 1
                 }
             },
             {
                 breakpoint: 576,
                 settings: {
-                    slidesToShow: 1
+                    slidesToShow: 1,
+                    slidesToScroll: 1
                 }
             }
         ]
+    });
+    $slider.slick('slickPlay');
+    $section.on('mouseenter', function() {
+        $slider.slick('slickPause');
+    });
+    $section.on('mouseleave', function() {
+        $slider.slick('slickPlay');
     });
 });
 </script>

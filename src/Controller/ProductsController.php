@@ -473,16 +473,6 @@ class ProductsController extends AppController
 		$produc_slug = $slug ?? $this->request->getParam('pass.0') ?? $this->request->getParam('slug');
 		$this->set('title_for_layout', SITENAME . ' Product Detail Page');
 
-		$randomQuery = $this->Product->find()
-			->where(['Product.status' => 1])
-			->select(['title', 'slug', 'image'])
-			->order('RAND()')
-			->limit(4);
-		$random = [];
-		foreach ($randomQuery as $row) {
-			$random[] = ['Product' => $row->toArray()];
-		}
-
 		$productEntity = $this->Product->find()
 			->contain(['Category', 'Project'])
 			->where(['Product.status' => 1, 'Product.slug' => $produc_slug])
@@ -495,6 +485,19 @@ class ProductsController extends AppController
 			'Product' => $productEntity->toArray(),
 			'Category' => $productEntity->get('Category') ? $productEntity->get('Category')->toArray() : [],
 		];
+
+		$randomQuery = $this->Product->find()
+			->where([
+				'Product.status' => 1,
+				'Product.id !=' => $productEntity->id,
+			])
+			->select(['title', 'slug', 'image'])
+			->order('RAND()')
+			->limit(8);
+		$random = [];
+		foreach ($randomQuery as $row) {
+			$random[] = ['Product' => $row->toArray()];
+		}
 		// Resolve legacy /files/view/123 datasheet URL to real file URL so iframe doesn't hit missing FilesController
 		if (!empty($products['Product']['datasheet']) && preg_match('#/files/view/(\d+)#', $products['Product']['datasheet'], $m)) {
 			try {
