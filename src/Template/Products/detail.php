@@ -171,10 +171,17 @@
 		.product-tabs .nav-tabs {
 			position: relative;
 			display: flex;
-			flex-wrap: wrap; /* allow wrapping */
+			flex-wrap: wrap;
+			align-items: flex-end;
+			gap: 12px;
 			background-color: #f8f9fa;
 			border-radius: 5px;
-			padding: 5px;
+			padding: 8px 10px;
+		}
+
+		.product-tabs .nav-tabs > li {
+			float: none;
+			margin-bottom: 0;
 		}
 
 	   .product-tabs .nav-tabs .nav-link {
@@ -185,7 +192,7 @@
 			border: none;
 			position: relative;
 			text-align: center;
-			margin: 2px;
+			margin: 0;
 			border-radius: 5px 5px 0 0;
 			transition: all 0.3s ease;
 		}
@@ -196,10 +203,14 @@
 		}
 
 		/* Active underline effect */
+		.product-tabs .nav-tabs > li.active > a,
+		.product-tabs .nav-tabs > li.active > a:hover,
+		.product-tabs .nav-tabs > li.active > a:focus,
 		.product-tabs .nav-tabs .nav-link.active {
 			color: #003366; /* Keep blue text */
 		}
 
+		.product-tabs .nav-tabs > li.active > a::after,
 		.product-tabs .nav-tabs .nav-link.active::after {
 			content: "";
 			position: absolute;
@@ -220,6 +231,23 @@
 			border: 1px solid #ddd;
 			border-top: none;
 			border-radius: 0 0 8px 8px;
+		}
+
+		/* BS3 tabs: only one pane visible; fade + missing .in caused invisible-but-tall panes */
+		#productTabContent.tab-content > .tab-pane {
+			display: none !important;
+		}
+		#productTabContent.tab-content > .tab-pane.active {
+			display: block !important;
+			opacity: 1 !important;
+		}
+		#productTabContent.tab-content > .tab-pane.fade:not(.active) {
+			opacity: 0;
+		}
+
+		.product-tabs .datasheet-tab-heading {
+			margin: 0 0 14px;
+			padding: 0;
 		}
 
 
@@ -266,13 +294,17 @@
 
 		/* Optional: full width on very small screens */
 		@media (max-width: 576px) {
+			.product-tabs .nav-tabs {
+				gap: 8px;
+			}
 			.product-tabs .nav-tabs .nav-link {
 				width: 100%; /* full width */
 				padding: 8px 10px;
-				margin: 2px 0;
+				margin: 0;
 				font-size: 14px;
 			}
 
+			.product-tabs .nav-tabs > li.active > a::after,
 			.product-tabs .nav-tabs .nav-link.active::after {
 				left: 10px;
 				right: 10px;
@@ -478,17 +510,17 @@
 				<!-- Product Detail Tabs -->
 		<div class="product-tabs mt-5">
 			<ul class="nav nav-tabs" id="productTab" role="tablist">
-				<li class="nav-item">
-					<a class="nav-link active text-dark" id="outline-tab" data-toggle="tab" href="#outline" role="tab" aria-controls="outline" aria-selected="true">
+				<li class="active">
+					<a class="nav-link text-dark" id="outline-tab" data-toggle="tab" href="#outline" role="tab" aria-controls="outline" aria-selected="true">
 						Product Outline
 					</a>
 				</li>
-				<li class="nav-item">
+				<li>
 					<a class="nav-link text-dark" id="datasheet-tab" data-toggle="tab" href="#datasheet" role="tab" aria-controls="datasheet" aria-selected="false">
 						Data Sheets
 					</a>
 				</li>
-				<li class="nav-item">
+				<li>
 					<a class="nav-link text-dark" id="certificates-tab" data-toggle="tab" href="#certificates" role="tab" aria-controls="certificates" aria-selected="false">
 						Certificates
 					</a>
@@ -504,7 +536,7 @@
 			<div class="tab-content p-4 border border-top-0" id="productTabContent">
 				<!-- Product Outline -->
 				<!-- Product Outline -->
-				<div class="tab-pane fade show in active" id="outline" role="tabpanel" aria-labelledby="outline-tab">
+				<div class="tab-pane fade in active" id="outline" role="tabpanel" aria-labelledby="outline-tab">
 					<div class="row mb-3">
 						<div class="col-md-6 product_text_section">
 							  <h5 class="text-purple">Description</h5>
@@ -566,7 +598,7 @@
 
 				<!-- Data Sheets -->
 				<div class="tab-pane fade" id="datasheet" role="tabpanel" aria-labelledby="datasheet-tab">
-					<h4 class="text-highlight mb-3">Downloadable Files</h4>
+					<h4 class="text-highlight datasheet-tab-heading">Downloadable Files</h4>
 
 					<?php
 					$msds = [];
@@ -840,8 +872,8 @@
 	});
 
 	$(document).ready(function() {
-		if ($('#productTab a:first').length) {
-			$('#productTab a:first').tab('show');
+		if ($('#outline-tab').length && typeof $.fn.tab === 'function') {
+			$('#outline-tab').tab('show');
 		}
 	});
 
