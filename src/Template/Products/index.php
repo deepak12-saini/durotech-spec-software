@@ -187,11 +187,14 @@ a:focus, a:hover {
 			</div>
 		</div>
 		<?php else: ?>
+		<?php /* Title lives in .category-hero__title when hero exists — skip duplicate h1 above the card */ ?>
+		<?php if (!($hasCategoryImage || $categoryDescription !== '')): ?>
 		<div class="row" style="margin-bottom:12px;">
 			<div class="col-lg-12 col-md-12 col-sm-12">
 				<h1 class="ptitle" style="margin-top:24px; margin-bottom:8px;"><?= h($category_name ?? 'Products') ?></h1>
 			</div>
 		</div>
+		<?php endif; ?>
 		<?php if ($hasCategoryImage || $categoryDescription !== ''): ?>
 		<div class="row">
 			<div class="col-lg-12 col-md-12 col-sm-12">
