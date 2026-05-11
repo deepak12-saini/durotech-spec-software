@@ -101,11 +101,28 @@ class AppController extends Controller
                     }, $products),
                 ];
             }
+
+            $footerCategoriesQuery = $this->Category->find()
+                ->where(['Category.status' => 1])
+                ->select(['category_name', 'slug'])
+                ->order(['Category.sort' => 'ASC', 'Category.category_name' => 'ASC']);
+            $footerCategories = [];
+            foreach ($footerCategoriesQuery as $catRow) {
+                $footerCategories[] = [
+                    'Category' => [
+                        'category_name' => $catRow->category_name ?? '',
+                        'slug' => $catRow->slug ?? '',
+                    ],
+                ];
+            }
+
             $this->set('getCategories', $categories);
             $this->set('category', $categories);
+            $this->set('footerCategories', $footerCategories);
         } catch (\Throwable $e) {
             $this->set('getCategories', []);
             $this->set('category', []);
+            $this->set('footerCategories', []);
         }
         return null;
     }

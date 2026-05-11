@@ -35,16 +35,21 @@
 			<div class="footer_links col-lg-3 col-md-3 col-sm-3">
 				<h4>Product Categories</h4>
 				<ul style="color: white; list-style-type: none; padding-left: 0;">
-					<li><a target="_blank" href="<?= h(SITEURL) ?>category/duroprime-primers">Primers</a></li>
-					<li><a target="_blank" href="<?= h(SITEURL) ?>category/cementitious-membranes">Cementitious Membranes</a></li>
-					<li><a target="_blank" href="<?= h(SITEURL) ?>category/tapes-reinforcement-fabric">Tapes / Reinforcement Fabric</a></li>
-					<li><a target="_blank" href="<?= h(SITEURL) ?>category/thinners">Thinners</a></li>
-					<li><a target="_blank" href="<?= h(SITEURL) ?>category/sealer">Sealer</a></li>
-					<li><a target="_blank" href="<?= h(SITEURL) ?>category/water-based-waterproofing-membranes">Water based Waterproofing Membranes</a></li>
-					<li><a target="_blank" href="<?= h(SITEURL) ?>category/polyurethane-waterproofing-membrane">Polyurethane Waterproofing Membranes</a></li>
-					<li><a target="_blank" href="<?= h(SITEURL) ?>category/sealants-and-silicone">Sealants & Silicone</a></li>
-					<li><a target="_blank" href="<?= h(SITEURL) ?>category/duropoxy-epoxy-flooring">Epoxy Flooring Sheet Membranes</a></li>
-					<li><a target="_blank" href="<?= h(SITEURL) ?>category/sheet-membranes-1">Sheet Membranes</a></li>
+					<?php
+					$_footerCats = isset($footerCategories) ? $footerCategories : [];
+					foreach ($_footerCats as $_fc) :
+						$_c = $_fc['Category'] ?? [];
+						$_slug = $_c['slug'] ?? '';
+						if ($_slug === '') {
+							continue;
+						}
+						?>
+					<li>
+						<a href="<?= h($this->Url->build('/category/' . $_slug)) ?>" style="color: white;">
+							<?= h($_c['category_name'] ?? '') ?>
+						</a>
+					</li>
+					<?php endforeach; ?>
 				</ul>
 			</div>
 

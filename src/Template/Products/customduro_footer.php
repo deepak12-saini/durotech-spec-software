@@ -23,16 +23,20 @@
 			<div class="footer_links col-lg-3 col-md-3 col-sm-3">
 				<h4>Product Categories</h4>
 				<div class="row">
-				<?php $i = 0; foreach (($category ?? []) as $categorys) {
-				
-				?>
+				<?php
+				$_footerCats = isset($footerCategories) ? $footerCategories : [];
+				foreach ($_footerCats as $_fc) :
+					$_c = $_fc['Category'] ?? [];
+					$_slug = $_c['slug'] ?? '';
+					if ($_slug === '') {
+						continue;
+					}
+					?>
 					<div class="col-lg-6 col-md-6 col-sm-6">
-						<p><a href="<?php echo SITEURL.'category/'.$categorys['Category']['slug'];?>"><?php echo $categorys['Category']['category_name'];?> <span>(<?php echo COUNT($categorys['Product']);?>)</span></a></p>	
-					</div>		       
-				<?php $i++;  } ?>
+						<p><a href="<?php echo h($this->Url->build('/category/' . $_slug)); ?>"><?php echo h($_c['category_name'] ?? ''); ?></a></p>
+					</div>
+				<?php endforeach; ?>
 			   </div>
-
-
 			</div>
 
 			<div class="footer_info col-lg-3 col-md-3 col-sm-3">
