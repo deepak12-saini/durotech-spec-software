@@ -7,6 +7,28 @@
 	});
 </script>
 <style>
+/* Hub: no hero in .banner_durolab — strip phantom padding but keep room for fixed #header_top (style.css) */
+.banner_durolab-techhub-no-hero {
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+	min-height: 0 !important;
+}
+/* Fixed header is out of document flow; old banner padding was the only offset — push first row below header */
+.banner_durolab-techhub-no-hero + .technical_search {
+	box-sizing: border-box;
+	padding-top: 150px;
+	background-color: #e4edf4;
+}
+@media (max-width: 991px) {
+	.banner_durolab-techhub-no-hero + .technical_search {
+		padding-top: 170px;
+	}
+}
+@media (max-width: 767px) {
+	.banner_durolab-techhub-no-hero + .technical_search {
+		padding-top: 185px;
+	}
+}
 .sidebar_cate{
 	width:100%;
 	background:#efefef;
@@ -289,7 +311,7 @@
 	}
 }
 </style>		
-		<div class="banner_durolab col-lg-12 col-md-12 col-sm-12">
+		<div class="banner_durolab col-lg-12 col-md-12 col-sm-12<?php echo empty($page) ? ' banner_durolab-techhub-no-hero' : ''; ?>">
 		<?php if($page == 'datasheet'){ ?>
 
 		    <img src="<?php echo SITEURL ;?>banner/TDS BANNER.jpg">

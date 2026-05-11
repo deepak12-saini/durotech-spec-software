@@ -103,7 +103,7 @@ $headerPhoneTel = preg_replace('/\D+/', '', PHONE);
 		.mobilemenu { display: block !important; }
 		.desktop { display: none !important; }
 	}
-	.header_top_contact { padding: 0 30px 0 6px; text-align: right; }
+	/* .header_top_contact { padding: 0 30px 0 6px; text-align: right; } */
 	.header_top_contact ul { list-style: none; margin: 0 0 0 auto; padding: 0; max-width: 100%; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 3px 8px; }
 	.header_top_contact li { margin: 0; padding: 0; list-style: none; line-height: 1.2; }
 	.header_top_contact a { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 600; color: #2672EC !important; text-decoration: none !important; white-space: nowrap; }

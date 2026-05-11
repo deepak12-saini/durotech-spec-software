@@ -7,6 +7,27 @@
 	});
 </script>
 <style>
+/* Empty banner: remove global phantom padding; offset fixed header via next section */
+.banner_durolab-techhub-no-hero {
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+	min-height: 0 !important;
+}
+.banner_durolab-techhub-no-hero + .technical_search {
+	box-sizing: border-box;
+	padding-top: 150px;
+	background-color: #e4edf4;
+}
+@media (max-width: 991px) {
+	.banner_durolab-techhub-no-hero + .technical_search {
+		padding-top: 170px;
+	}
+}
+@media (max-width: 767px) {
+	.banner_durolab-techhub-no-hero + .technical_search {
+		padding-top: 185px;
+	}
+}
 .technical_search .form-control {
 	border: 1px solid #ccc !important;
 }
@@ -39,7 +60,7 @@
 	transition: all 0.3s ease 0s;
 }
 </style>		
-		<div class="banner_durolab col-lg-12 col-md-12 col-sm-12">
+		<div class="banner_durolab col-lg-12 col-md-12 col-sm-12 banner_durolab-techhub-no-hero">
 		    <!--img src="<?php echo SITEURL ;?>customdurotech/images/technical_banner_2.jpg"-->
 		</div>
 		<div class="technical_search col-lg-12 col-md-12 col-sm-12">

@@ -1,8 +1,10 @@
+<div class="projects-page-wrap">
 <div class="banner-section col-12 px-0">
     <div class="banner-container">
-        <img src="https://www.durotechindustries.com.au/banner/casestudy_banner.jpg"
+        <img src="<?= h(rtrim(SITEURL, '/') . '/banner/casestudy_banner.jpg'); ?>"
              alt="Case Study Banner"
-             class="img-fluid w-100 d-block banner-img">
+             class="img-fluid w-100 d-block banner-img"
+             onerror="this.onerror=null;this.src='https://www.durotechindustries.com.au/banner/casestudy_banner.jpg';">
     </div>
 </div>
 
@@ -86,8 +88,42 @@
         </div>
     </div>
 </div>
+</div>
 
 <style>
+/* Fixed #header_top — same pattern as about.php: offset so hero/cards are not under the header */
+.projects-page-wrap {
+    padding-top: 135px;
+    background: #e4edf4;
+}
+@media (max-width: 991px) {
+    .projects-page-wrap {
+        padding-top: 155px;
+    }
+}
+@media (max-width: 767px) {
+    .projects-page-wrap {
+        padding-top: 175px;
+    }
+}
+.projects-page-wrap .banner-section {
+    margin: 0;
+    padding: 0;
+    display: block;
+    width: 100%;
+    background: #e4edf4;
+}
+.projects-page-wrap .banner-container {
+    margin: 0;
+    padding: 0;
+    line-height: 0;
+}
+.projects-page-wrap .banner-img {
+    display: block;
+    width: 100%;
+    vertical-align: top;
+}
+
 .projects-case-studies-page.content_projects {
     background: #e4edf4;
     padding-bottom: 48px;
