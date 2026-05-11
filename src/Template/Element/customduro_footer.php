@@ -7,14 +7,84 @@
 	line-height: 26px;
 	margin-top: 40px;
 }
+.footer-about-social {
+	margin-top: 20px;
+	padding-top: 18px;
+	border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+/* Beat .footer_section ul / a / .fa from theme (padding-right on icons, line-height on links) */
+.footer_section .footer-about-social ul {
+	list-style: none !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	align-items: center;
+}
+.footer_section .footer-about-social li {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	line-height: 1;
+}
+.footer_section .footer-about-social a {
+	display: flex !important;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	border-radius: 10px;
+	box-sizing: border-box;
+	color: #fff !important;
+	background: rgba(255, 255, 255, 0.1);
+	text-decoration: none !important;
+	line-height: 1 !important;
+	letter-spacing: normal !important;
+	font-size: 18px;
+	padding: 0 !important;
+	transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
+}
+.footer_section .footer-about-social a:hover,
+.footer_section .footer-about-social a:focus {
+	background: #2889c9;
+	color: #fff !important;
+	transform: translateY(-2px);
+	outline: none;
+}
+.footer_section .footer-about-social .fa {
+	color: #fff !important;
+	padding: 0 !important;
+	margin: 0 !important;
+	font-size: 20px !important;
+	line-height: 1 !important;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1em;
+	height: 1em;
+	text-align: center;
+	vertical-align: middle;
+}
+.footer_section .footer-about-social .fa::before {
+	line-height: 1;
+}
 
 </style>
 <footer>
 	<div class="footer_section col-lg-12 col-md-12 col-sm-12">
 		<div class="row">
 			<div class="footer_about col-lg-3 col-md-3 col-sm-3 para-gr">
-				<img src="<?php echo SITEURL; ?>customdurotech/images/durotech_logo.png">
+				<img src="<?php echo SITEURL; ?>customdurotech/images/durotech_logo.png" alt="Durotech">
 				<h5>Durotech industries is a leading manufacturer and supplier of waterproofing and coating solutions. Durotech Systems have been widely used in the construction industry for the sealing of wet areas, decks, roofs and other substrates providing protection against moisture and weather damage for over 48 years.</h5>
+				<nav class="footer-about-social" aria-label="Social media">
+					<ul>
+						<li><a target="_blank" rel="noopener noreferrer" href="<?php echo h(FACEBOOK); ?>" aria-label="Facebook"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
+						<li><a target="_blank" rel="noopener noreferrer" href="<?php echo h(TWITER); ?>" aria-label="Twitter"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
+						<li><a target="_blank" rel="noopener noreferrer" href="<?php echo h(LINKDIN); ?>" aria-label="LinkedIn"><i class="fa fa-linkedin" aria-hidden="true"></i></a></li>
+						<li><a target="_blank" rel="noopener noreferrer" href="https://www.instagram.com/durotechindustries.com.au" aria-label="Instagram"><i class="fa fa-instagram" aria-hidden="true"></i></a></li>
+					</ul>
+				</nav>
 			</div>
 
 			<div class="footer_company col-lg-3 col-md-3 col-sm-3">

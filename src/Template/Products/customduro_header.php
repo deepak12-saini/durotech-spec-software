@@ -6,6 +6,7 @@
 $getCategories = $getCategories ?? [];
 $isSearchPage = ($this->request->getParam('controller') === 'Products' && $this->request->getParam('action') === 'search');
 $searchtitle = $isSearchPage ? ($this->request->getSession()->read('searchtitle') ?? '') : '';
+$headerPhoneTel = preg_replace('/\D+/', '', PHONE);
 ?>
 <script>
 	function search() {
@@ -102,6 +103,28 @@ $searchtitle = $isSearchPage ? ($this->request->getSession()->read('searchtitle'
 		.mobilemenu { display: block !important; }
 		.desktop { display: none !important; }
 	}
+	.header_top_contact { padding: 0 30px 0 6px; text-align: right; }
+	.header_top_contact ul { list-style: none; margin: 0 0 0 auto; padding: 0; max-width: 100%; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 3px 8px; }
+	.header_top_contact li { margin: 0; padding: 0; list-style: none; line-height: 1.2; }
+	.header_top_contact a { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 600; color: #2672EC !important; text-decoration: none !important; white-space: nowrap; }
+	.header_top_contact .fa-phone, .header_top_contact .fa-envelope { color: #1a1a1a; font-size: 10px; flex-shrink: 0; }
+	@media (min-width: 768px) {
+		.header_top_social_search { display: flex; align-items: center; justify-content: flex-end; padding-right: 4px; }
+		.header_top_social_search form { display: flex; align-items: center; justify-content: flex-end; width: 100%; max-width: 180px; margin-left: 0; margin-right: 0; }
+		.header_top_social_search #searchPro { width: auto !important; max-width: 130px; min-width: 88px; flex: 1 1 auto; }
+		.header_top_contact ul { justify-content: flex-end; }
+	}
+	@media (min-width: 992px) {
+		.header_top_social_search form { max-width: 200px; }
+		.header_top_social_search #searchPro { max-width: 150px; }
+	}
+	@media (max-width: 767px) {
+		.header_top_contact { text-align: center; padding: 10px 10px 0; }
+		.header_top_contact ul { align-items: center; justify-content: center; }
+		.header_top_contact a { white-space: normal; justify-content: center; }
+		.header_top_social_search form { max-width: none; justify-content: center; }
+		.header_top_social_search #searchPro { max-width: none !important; width: 90% !important; }
+	}
 </style>
 <script>
 	jQuery(document).on('click', '.mega-dropdown', function(e) {
@@ -116,7 +139,7 @@ if (empty($getCategories) || !is_array($getCategories)) {
 ?>
 <div class="header_fixed col-lg-12 col-md-12 col-sm-12" id="header_top">
 	<div class="header_top col-lg-12 col-md-12 col-sm-12">
-		<div class="header_top_address col-lg-6 colmd-6 col-sm-6">
+		<div class="header_top_address col-lg-6 col-md-6 col-sm-12 col-xs-12">
 			<ul>
 				<li>
 					<i class="fa fa-map-marker" aria-hidden="true"></i>
@@ -126,25 +149,30 @@ if (empty($getCategories) || !is_array($getCategories)) {
 					<i class="fa fa-map-marker" aria-hidden="true"></i>
 					<a href="<?php echo SITEURL . 'contact'; ?>" target="_blank">Campbellfield11</a>
 				</li>
-				<li><Strong>Phone:</strong> <?php echo PHONE;  ?></li>
 			</ul>
 		</div>
-		<div class="header_top_social_search col-lg-2 col-md-2 col-sm-2">
+		<div class="header_top_social_search col-lg-2 col-md-2 col-sm-12 col-xs-12">
 <form action="<?php echo SITEURL . 'products/search' ?>" method="get" id="formsubmit">
 					<input type="text" name="search" value="<?php echo $searchtitle; ?>" id="searchPro" placeholder="Search Product" required>
 				<a href="javascript:void(0)" onclick="search()"><i class="fa fa-search" aria-hidden="true"></i></a>
 			</form>
 		</div>
-		<div class="header_top_social col-lg-2 col-md-2 col-sm-2">
+		<div class="header_top_contact col-lg-4 col-md-4 col-sm-12 col-xs-12">
 			<ul>
-				<li><a target="_blank" href="<?php echo FACEBOOK ?>"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
-				<li><a target="_blank" href="<?php echo TWITER ?>"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
-				<li><a target="_blank" href="<?php echo GOOGLE_PLUS ?>"><i class="fa fa-google-plus" aria-hidden="true"></i></a></li>
-				<li><a target="_blank" href="https://www.instagram.com/durotechindustries.com.au"><i class="fa fa-instagram" aria-hidden="true"></i></a></li>
+				<li>
+					<a href="tel:<?php echo h($headerPhoneTel); ?>">
+						<i class="fa fa-phone" aria-hidden="true"></i>
+						<span class="sr-only">Phone: </span>
+						<?php echo h(PHONE); ?>
+					</a>
+				</li>
+				<li>
+					<a href="mailto:sales@durotechindustries.com.au">
+						<i class="fa fa-envelope" aria-hidden="true"></i>
+						<span>sales@durotechindustries.com.au</span>
+					</a>
+				</li>
 			</ul>
-		</div>
-		<div class="header_top_social_login col-lg-2 col-md-2 col-sm-2">
-			<?php /* User login/register logic removed for brevity */ ?>
 		</div>
 	</div>
 	<div class="container example5">

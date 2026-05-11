@@ -253,16 +253,16 @@
 	/* Address section – same white as logo section so header looks consistent */
 	.header_top {
 		overflow: visible !important;
-		padding-left: 15px;
-		padding-right: 15px;
+		padding-left: 12px;
+		padding-right: 12px;
 		background: #f4f4f4;
 	}
+	/* Counteract Bootstrap .row negative margins so the first map pin is not clipped */
 	.header_top .row {
 		overflow: visible !important;
 	}
 	.header_top_address {
-		padding: 0;
-		padding-left: 5px;
+		padding: 0 10px 0 6px;
 		background: transparent;
 		margin: 0;
 		overflow: visible;
@@ -270,25 +270,25 @@
 	.header_top_address ul {
 		list-style: none;
 		padding: 0;
-		padding-left: 12px;
+		padding-left: 6px;
 		margin: 0;
 		display: flex;
 		flex-wrap: wrap;
-		gap: 10px 16px;
+		gap: 4px 8px;
 		align-items: center;
 		overflow: visible;
 	}
 	.header_top_address li {
 		display: inline-flex;
 		align-items: center;
-		font-size: 13px;
+		font-size: 11px;
 	}
 	/* Icons: black/dark like in reference */
 	.header_top_address li i.fa-map-marker,
 	.header_top_address li i.fa-envelope {
-		margin-right: 6px;
+		margin-right: 3px;
 		color: #1a1a1a;
-		font-size: 14px;
+		font-size: 11px;
 	}
 	/* Links & text: vibrant blue like in reference */
 	.header_top_address a {
@@ -306,14 +306,108 @@
 		font-weight: 700;
 		margin-right: 4px;
 	}
-	/* Prevent phone row from being cut off */
-	.header_top_address li.header_phone_item {
-		flex-shrink: 0;
+	.header_top_contact {
+		padding: 0 2px 0 6px;
+		text-align: right;
+	}
+	.header_top_contact ul {
+		list-style: none;
+		margin: 0 0 0 auto;
+		padding: 0;
+		max-width: 100%;
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+		align-items: center;
+		gap: 3px 8px;
+	}
+	.header_top_contact li {
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		line-height: 1.2;
+	}
+	.header_top_contact a {
+		display: inline-flex;
+		align-items: center;
+		gap: 3px;
+		font-size: 10px;
+		font-weight: 600;
+		color: #2672EC !important;
+		text-decoration: none !important;
 		white-space: nowrap;
 	}
-	.header_top_address li.header_phone_item Strong,
-	.header_top_address li.header_phone_item a {
-		white-space: nowrap;
+	.header_top_contact a:hover {
+		color: #1a5bc4 !important;
+	}
+	.header_top_contact .fa-phone,
+	.header_top_contact .fa-envelope {
+		color: #1a1a1a;
+		font-size: 10px;
+		flex-shrink: 0;
+	}
+	/* Full state names: one row from tablet up (wider location column + compact search) */
+	@media (min-width: 768px) {
+		.header_top_address ul {
+			flex-wrap: nowrap;
+			gap: 2px 6px;
+			padding-left: 8px;
+		}
+		.header_top_address li {
+			flex-shrink: 0;
+			white-space: nowrap;
+		}
+		.header_top_contact ul {
+			justify-content: flex-end;
+		}
+	}
+	@media (min-width: 1200px) {
+		.header_top_address li {
+			font-size: 12px;
+		}
+		.header_top_address li i.fa-map-marker {
+			font-size: 12px;
+		}
+		.header_top_contact a {
+			font-size: 11px;
+		}
+		.header_top_contact .fa-phone,
+		.header_top_contact .fa-envelope {
+			font-size: 11px;
+		}
+	}
+	/* Narrower search so phone + email fit one line on the right */
+	@media (min-width: 768px) {
+		.header_top_social_search {
+			display: flex;
+			align-items: center;
+			justify-content: flex-end;
+			padding-right: 4px;
+		}
+		.header_top_social_search form {
+			display: flex;
+			align-items: center;
+			justify-content: flex-end;
+			width: 100%;
+			max-width: 180px;
+			margin-left: 0;
+			margin-right: 0;
+		}
+		.header_top_social_search #searchPro {
+			width: auto !important;
+			max-width: 130px;
+			min-width: 88px;
+			flex: 1 1 auto;
+		}
+	}
+	@media (min-width: 992px) {
+		.header_top_social_search form {
+			max-width: 200px;
+		}
+		.header_top_social_search #searchPro {
+			max-width: 150px;
+		}
 	}
 	@media (max-width: 767px) {
 		.header_top_address {
@@ -329,6 +423,30 @@
 		}
 		.header_top_address li {
 			font-size: 12px;
+		}
+		.header_top_contact {
+			text-align: center;
+			padding: 10px 10px 0;
+		}
+		.header_top_contact ul {
+			align-items: center;
+			justify-content: center;
+		}
+		.header_top_address {
+			padding-left: 12px;
+			padding-right: 12px;
+		}
+		.header_top_contact a {
+			white-space: normal;
+			justify-content: center;
+		}
+		.header_top_social_search form {
+			max-width: none;
+			justify-content: center;
+		}
+		.header_top_social_search #searchPro {
+			max-width: none !important;
+			width: 90% !important;
 		}
 	}
 
@@ -435,8 +553,8 @@
 
 
 	.state-link {
-    padding: 4px 10px;
-    border-radius: 14px;
+    padding: 1px 4px;
+    border-radius: 8px;
     transition: all 0.25s ease;
 	}
 
@@ -469,78 +587,56 @@ if (!isset($getCategories)) {
 }
 $isSearchPage = ($this->request->getParam('controller') === 'Products' && $this->request->getParam('action') === 'search');
 $searchtitle = $isSearchPage ? ($this->request->getSession()->read('searchtitle') ?? '') : '';
+$headerPhoneTel = preg_replace('/\D+/', '', PHONE);
 
 ?>
 <div class="header_fixed col-lg-12 col-md-12 col-sm-12" id="header_top">
 	<div class="header_top col-lg-12 col-md-12 col-sm-12">
        <div class="row">
-			<div class="header_top_address col-lg-6 col-md-6 col-sm-6 col-xs-12">
+			<div class="header_top_address col-lg-6 col-md-6 col-sm-12 col-xs-12">
 				<ul>
-				
 						<li>
 							<i class="fa fa-map-marker" aria-hidden="true"></i>
-									<a href="https://www.google.com/maps?q=14+Essex+st,+Minto,+Sydney+NSW+2566" class="state-link" data-state="NSW" target="_blank">
-										NSW
-									</a>
+							<a href="https://www.google.com/maps?q=14+Essex+st,+Minto,+Sydney+NSW+2566" class="state-link" data-state="NSW" target="_blank" rel="noopener noreferrer" aria-label="New South Wales office map">New South Wales</a>
 						</li>
 						<li>
 							<i class="fa fa-map-marker" aria-hidden="true"></i>
-									<a href="https://www.google.com/maps?q=34+Indian+Drive,+Keysborough,+Victoria+3173" class="state-link" data-state="VIC" target="_blank">
-											VICTORIA
-										</a>
+							<a href="https://www.google.com/maps?q=34+Indian+Drive,+Keysborough,+Victoria+3173" class="state-link" data-state="VIC" target="_blank" rel="noopener noreferrer" aria-label="Victoria office map">Victoria</a>
 						</li>
 						<li>
 							<i class="fa fa-map-marker" aria-hidden="true"></i>
-							<a href="https://www.google.com/maps?q=16+Export+Drive,+Molendinar,+Gold+Coast+4214" class="state-link" data-state="QLD" target="_blank">
-								QUEENSLAND
-							</a>
+							<a href="https://www.google.com/maps?q=16+Export+Drive,+Molendinar,+Gold+Coast+4214" class="state-link" data-state="QLD" target="_blank" rel="noopener noreferrer" aria-label="Queensland office map">Queensland</a>
 						</li>
-					
 						<li>
 							<i class="fa fa-map-marker" aria-hidden="true"></i>
-							<a href="https://www.google.com/maps?q=30C+Richard+Street,+Hindmarsh,+SA+5007" class="state-link" data-state="SA" target="_blank">
-								SOUTH AUSTRALIA
-							</a>
+							<a href="https://www.google.com/maps?q=30C+Richard+Street,+Hindmarsh,+SA+5007" class="state-link" data-state="SA" target="_blank" rel="noopener noreferrer" aria-label="South Australia office map">South Australia</a>
 						</li>
-
-					<li class="header_phone_item"><Strong>Phone:</Strong> <a href="tel:<?php echo PHONE; ?>"><?php echo PHONE; ?></a></li>
-
-					<li>
-						<i class="fa fa-envelope" aria-hidden="true"></i>
-						<a href="mailto:sales@durotechindustries.com.au">sales@durotechindustries.com.au</a>
-					</li>
-
 				</ul>
 			</div>
 
-			<div class="header_top_social_search col-lg-2 col-md-2 col-sm-2 col-xs-12">
+			<div class="header_top_social_search col-lg-2 col-md-2 col-sm-12 col-xs-12">
 				<form action="<?php echo SITEURL . 'products/search' ?>" method="get" id="formsubmit">
 					<input type="text" name="search" value="<?php echo $searchtitle; ?>" id="searchPro" placeholder="Search Product" required>
 					<a href="javascript:void(0)" onclick="search()"><i onclick="search()" class="fa fa-search" aria-hidden="true"></i></a>
 				</form>
 			</div>
 
-			<div class="header_top_social col-lg-2 col-md-2 col-sm-2 col-xs-12">
+			<div class="header_top_contact col-lg-4 col-md-4 col-sm-12 col-xs-12">
 				<ul>
-					<li><a target="_blank" href="<?php echo FACEBOOK ?>"><i class="fa fa-facebook" aria-hidden="true"></a></i></li>
-					<li><a target="_blank" href="<?php echo TWITER ?>"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
-					<li><a target="_blank" href="<?php echo GOOGLE_PLUS ?>"><i class="fa fa-google-plus" aria-hidden="true"></i></a></li>
-					<li><a target="_blank" href="https://www.instagram.com/durotechindustries.com.au"><i class="fa fa-instagram" aria-hidden="true"></i></a></li>
+					<li>
+						<a href="tel:<?php echo h($headerPhoneTel); ?>">
+							<i class="fa fa-phone" aria-hidden="true"></i>
+							<span class="sr-only">Phone: </span>
+							<?php echo h(PHONE); ?>
+						</a>
+					</li>
+					<li>
+						<a href="mailto:sales@durotechindustries.com.au">
+							<i class="fa fa-envelope" aria-hidden="true"></i>
+							<span>sales@durotechindustries.com.au</span>
+						</a>
+					</li>
 				</ul>
-			</div>
-
-			<div class="header_top_social_login col-lg-2 col-md-2 col-sm-2 col-xs-12">
-				<?php
-				/*
-				$is_customer = $this->Session->read('is_customer'); 
-				if(empty($is_customer)){		
-				?>
-					<a href="<?php echo SITEURL.'login'; ?>" class="login">Login </a>					
-				
-					<a href="<?php echo SITEURL.'register'; ?>" class="login">Register</a>					
-				<?php }else{ ?>
-					<a href="<?php echo SITEURL.'users/dashboard'; ?>" class="login">Account</a>	
-				<?php } */ ?>
 			</div>
 	    </div>
 	</div>
@@ -555,7 +651,7 @@ $searchtitle = $isSearchPage ? ($this->request->getSession()->read('searchtitle'
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
 					</button>
-					<a class="navbar-brand" href="<?php echo SITEURL; ?>"><img src="<?php echo SITEURL; ?>customdurotech/images/durotech_logo.png" alt="Dispute Bills">
+					<a class="navbar-brand" href="<?php echo SITEURL; ?>"><img src="<?php echo SITEURL; ?>customdurotech/images/durotech_logo.png" alt="Durotech">
 					</a>
 				</div>
 				<div id="navbar5" class="navbar-collapse collapse">
