@@ -51,7 +51,7 @@
                     <td> <?php echo format_db_date('d-M-Y', $VocCertificates['VocCertificate']['created']); ?></td>
 					 <td class="actions">
 						<?php echo $this->Html->link(__('Edit'), array('action' => 'vocedit', $VocCertificates['VocCertificate']['id']),array('class'=>'btn btn-mini btn-info')); ?>						
-						<a target="_blank" href="<?php echo SITEURL.'pdf/FPDI/Voc Certificate.php?id='.base64_encode($VocCertificates['VocCertificate']['id']); ?>" class='btn btn-mini btn-primary'>Voc Certificate</a>						
+						<a target="_blank" href="<?php echo SITEURL.'pdf/FPDI/voc-certificate.php?id='.base64_encode($VocCertificates['VocCertificate']['id']); ?>" class='btn btn-mini btn-primary'>Voc Certificate</a>						
 						</td>
 					</tr>
 					<?php endforeach; }else{ ?>
