@@ -307,7 +307,7 @@
 		margin-right: 4px;
 	}
 	.header_top_contact {
-		padding: 0 2px 0 6px;
+		padding: 0 35px 0 6px;
 		text-align: right;
 	}
 	.header_top_contact ul {
