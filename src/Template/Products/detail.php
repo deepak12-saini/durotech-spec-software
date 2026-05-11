@@ -166,6 +166,14 @@
 
 
      /* tab section style start here */
+		/* Whole block: depth + yellow accent ties tab strip to panel */
+		.product-tabs {
+			border-radius: 10px;
+			overflow: hidden;
+			box-shadow:
+				0 4px 6px rgba(0, 51, 102, 0.06),
+				0 12px 28px rgba(0, 51, 102, 0.12);
+		}
 
 		/* Base nav style */
 		.product-tabs .nav-tabs {
@@ -175,8 +183,11 @@
 			align-items: flex-end;
 			gap: 12px;
 			background-color: #f8f9fa;
-			border-radius: 5px;
+			border-radius: 10px 10px 0 0;
 			padding: 8px 10px;
+			box-shadow:
+				inset 0 -1px 0 rgba(255, 204, 0, 0.35),
+				0 2px 8px rgba(0, 0, 0, 0.05);
 		}
 
 		.product-tabs .nav-tabs > li {
@@ -194,12 +205,14 @@
 			text-align: center;
 			margin: 0;
 			border-radius: 5px 5px 0 0;
-			transition: all 0.3s ease;
+			transition: color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, background 0.2s ease;
 		}
 
 		/* Hover effect */
 		.product-tabs .nav-tabs .nav-link:hover {
-			color: #ffcc00; /* Duro yellow */
+			color: #003366;
+			transform: translateY(-1px);
+			box-shadow: 0 4px 12px rgba(0, 51, 102, 0.12);
 		}
 
 		/* Active underline effect */
@@ -208,6 +221,7 @@
 		.product-tabs .nav-tabs > li.active > a:focus,
 		.product-tabs .nav-tabs .nav-link.active {
 			color: #003366; /* Keep blue text */
+			box-shadow: 0 3px 12px rgba(255, 204, 0, 0.45);
 		}
 
 		.product-tabs .nav-tabs > li.active > a::after,
@@ -224,13 +238,18 @@
 
 
 
-	/* Content box styling */
-		.product-tabs .tab-content {
+	/* Content box — border matches active tab yellow (#ffcc00), panel shadow */
+		.product-tabs .tab-content,
+		#productTabContent.tab-content.product-tab-panel {
 			background: #fff;
-			padding: 20px;
-			border: 1px solid #ddd;
-			border-top: none;
-			border-radius: 0 0 8px 8px;
+			padding: 22px 24px;
+			border: 1px solid rgba(255, 204, 0, 0.85);
+			border-top: 3px solid #ffcc00;
+			border-radius: 0 0 10px 10px;
+			box-shadow:
+				0 4px 14px rgba(0, 51, 102, 0.08),
+				0 8px 24px rgba(0, 51, 102, 0.06),
+				inset 0 1px 0 rgba(255, 255, 255, 0.95);
 		}
 
 		/* BS3 tabs: only one pane visible; fade + missing .in caused invisible-but-tall panes */
@@ -533,7 +552,7 @@
 				</li> -->
 			</ul>
 
-			<div class="tab-content p-4 border border-top-0" id="productTabContent">
+			<div class="tab-content product-tab-panel" id="productTabContent">
 				<!-- Product Outline -->
 				<!-- Product Outline -->
 				<div class="tab-pane fade in active" id="outline" role="tabpanel" aria-labelledby="outline-tab">
