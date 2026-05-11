@@ -27,11 +27,23 @@ $headerPhoneTel = preg_replace('/\D+/', '', PHONE);
 		margin-right: 10px !important;
 	}
 	.mega-dropdown-menu {
-		padding: 20px 0px;
+		padding: 18px 16px 22px;
 		width: 100%;
-		box-shadow: none;
-		-webkit-box-shadow: none;
+		background: linear-gradient(135deg, #f3f9ff 0%, #eaf4fb 100%);
+		border: 1px solid rgba(40, 137, 201, 0.22);
+		border-top: 3px solid #2889c9;
+		border-radius: 0 0 18px 18px;
+		box-shadow: 0 14px 36px rgba(40, 137, 201, 0.18), 0 4px 12px rgba(0, 51, 102, 0.08);
+		-webkit-box-shadow: 0 14px 36px rgba(40, 137, 201, 0.18), 0 4px 12px rgba(0, 51, 102, 0.08);
+		box-sizing: border-box;
+		max-height: calc(100vh - 170px);
+		overflow-y: auto;
+		scrollbar-width: thin;
+		scrollbar-color: rgba(40, 137, 201, 0.55) rgba(255, 255, 255, 0.65);
 	}
+	.mega-dropdown-menu::-webkit-scrollbar { width: 8px; }
+	.mega-dropdown-menu::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.65); border-radius: 10px; }
+	.mega-dropdown-menu::-webkit-scrollbar-thumb { background: rgba(40, 137, 201, 0.55); border-radius: 10px; }
 	.mega-dropdown-menu:before {
 		content: "";
 		border-bottom: 15px solid #fff;
@@ -76,10 +88,43 @@ $headerPhoneTel = preg_replace('/\D+/', '', PHONE);
 	}
 	.mega-dropdown-menu form { margin: 3px 20px; }
 	.mega-dropdown-menu .form-group { margin-bottom: 3px; }
+	/* Match the dropdown panel accent with the current Products nav text color */
+	.mega-dropdown > a.hover-blue + .mega-dropdown-menu {
+		border-top-color: #2889c9;
+		box-shadow: 0 14px 36px rgba(40, 137, 201, 0.18), 0 4px 12px rgba(0, 51, 102, 0.08);
+		-webkit-box-shadow: 0 14px 36px rgba(40, 137, 201, 0.18), 0 4px 12px rgba(0, 51, 102, 0.08);
+	}
+	.mega-dropdown > a.hover-yellow + .mega-dropdown-menu {
+		border-color: rgba(244, 196, 0, 0.28);
+		border-top-color: #f4c400;
+		box-shadow: 0 14px 36px rgba(244, 196, 0, 0.22), 0 4px 12px rgba(0, 51, 102, 0.08);
+		-webkit-box-shadow: 0 14px 36px rgba(244, 196, 0, 0.22), 0 4px 12px rgba(0, 51, 102, 0.08);
+	}
+	.mega-dropdown-menu > li.col-sm-3 {
+		border: 1px solid rgba(40, 137, 201, 0.14);
+		border-radius: 14px;
+		background: rgba(255, 255, 255, 0.82);
+		box-shadow: 0 4px 12px rgba(0, 51, 102, 0.06);
+		padding: 14px 16px;
+		transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+	}
+	.mega-dropdown-menu > li.col-sm-3:hover {
+		border-color: rgba(40, 137, 201, 0.42);
+		box-shadow: 0 10px 24px rgba(40, 137, 201, 0.16);
+		transform: translateY(-2px);
+	}
+	.mega-dropdown > a.hover-yellow + .mega-dropdown-menu > li.col-sm-3:hover {
+		border-color: rgba(244, 196, 0, 0.48);
+		box-shadow: 0 10px 24px rgba(244, 196, 0, 0.18);
+	}
+	.mega-dropdown > a.hover-blue + .mega-dropdown-menu > li.col-sm-3:hover {
+		border-color: rgba(40, 137, 201, 0.42);
+		box-shadow: 0 10px 24px rgba(40, 137, 201, 0.16);
+	}
 	@media (min-width: 768px) {
 		.navbar-right .dropdown-menu {
-			width: 1003px !important;
-			margin-right: -414px;
+			width: min(1280px, calc(100vw - 32px)) !important;
+			margin-right: 0;
 		}
 	}
 	.mega-dropdown-menu>li>ul>li>a {
@@ -92,9 +137,97 @@ $headerPhoneTel = preg_replace('/\D+/', '', PHONE);
 	}
 	.mega-dropdown-menu .dropdown-header {
 		color: #2889c9;
-		font-size: 11px;
-		font-weight: bold;
+		font-size: 12px;
+		font-weight: 700;
+		letter-spacing: 0.02em;
+		padding-bottom: 7px;
+		margin: 4px 0 6px;
+		border-bottom: 1px solid rgba(40, 137, 201, 0.16);
 		cursor: pointer;
+		position: relative;
+		padding-left: 14px;
+	}
+	.mega-dropdown-menu .dropdown-header::before {
+		content: "";
+		position: absolute;
+		left: 0;
+		top: 8px;
+		width: 4px;
+		height: 18px;
+		border-radius: 999px;
+		background: linear-gradient(180deg, #2889c9 0%, #f4c400 100%);
+	}
+	.mega-dropdown-menu li a,
+	.mega-dropdown-menu .dropdown-header {
+		border: 1px solid transparent;
+		border-radius: 10px;
+		transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease, background-color 0.22s ease;
+	}
+	.mega-dropdown-menu li a {
+		font-size: 11px;
+		line-height: 1.55;
+		position: relative;
+		padding-left: 18px;
+	}
+	.mega-dropdown-menu li a::before {
+		content: "\203A";
+		position: absolute;
+		left: 7px;
+		top: 50%;
+		transform: translateY(-50%) translateX(-4px);
+		opacity: 0;
+		transition: opacity 0.22s ease, transform 0.22s ease;
+	}
+	.mega-dropdown-menu li a:hover::before,
+	.mega-dropdown-menu li a:focus::before {
+		opacity: 1;
+		transform: translateY(-50%) translateX(0);
+	}
+	.mega-dropdown-menu li a:hover,
+	.mega-dropdown-menu li a:focus,
+	.mega-dropdown-menu .dropdown-header:hover,
+	.mega-dropdown-menu .dropdown-header:focus {
+		background: rgba(255, 255, 255, 0.72) !important;
+		border-color: rgba(40, 137, 201, 0.25);
+		box-shadow: 0 6px 16px rgba(0, 51, 102, 0.12);
+		transform: translateX(3px);
+		text-decoration: none;
+	}
+	.mega-dropdown-menu .dropdown-header:hover,
+	.mega-dropdown-menu .dropdown-header:focus {
+		color: #2889c9;
+	}
+	.mega-dropdown-menu > li.col-sm-3 {
+		background: linear-gradient(180deg, #fff 0%, #f8fbff 100%);
+	}
+	.navbar-nav > li.dropdown.mega-dropdown:hover > .mega-dropdown-menu {
+		animation: megaMenuFadeIn 0.22s ease both;
+	}
+	@keyframes megaMenuFadeIn {
+		from { opacity: 0; transform: translateY(8px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+	@media (min-width: 768px) {
+		.navbar-nav > li.dropdown.mega-dropdown:hover > .mega-dropdown-menu {
+			display: flex !important;
+		}
+		.mega-dropdown-menu.row {
+			margin-left: 0 !important;
+			margin-right: 0 !important;
+		}
+		.mega-dropdown-menu {
+			flex-wrap: wrap;
+			align-items: flex-start;
+			gap: 22px;
+			padding-left: 22px;
+			padding-right: 34px;
+		}
+		.mega-dropdown-menu > li.col-sm-3 {
+			float: none !important;
+			width: calc(25% - 17px) !important;
+			box-sizing: border-box;
+			min-width: 0;
+		}
 	}
 	.dropdown-menu { font-size: 11px; }
 	.durotech_product { padding-top: 4%; }
@@ -194,7 +327,7 @@ if (empty($getCategories) || !is_array($getCategories)) {
 						<li class="mobilemenu"><a href="<?= $this->Url->build('/product') ?>">Products</a></li>
 						<li class="dropdown mega-dropdown desktop">
 							<a class="dropdown-toggle" data-toggle="dropdown" href="#null">Products</a>
-							<ul class="dropdown-menu mega-dropdown-menu row" style="overflow-y: scroll; height:430px; scrollbar-width: thin;">
+							<ul class="dropdown-menu mega-dropdown-menu row">
 								<?php
 								// Dynamically generate category columns, 4 columns in grid (col-sm-3), fallback if data not set or not enough
 								if (!empty($getCategories) && is_array($getCategories)) {
@@ -243,4 +376,27 @@ if (empty($getCategories) || !is_array($getCategories)) {
 	function openlink(slug) {
 		window.location.href = '<?php echo SITEURL . 'category/' ?>' + slug;
 	}
+</script>
+<script>
+jQuery(function ($) {
+	function fitProductsMegaMenu() {
+		var $menuItem = $('.mega-dropdown.desktop').first();
+		var $menu = $menuItem.children('.mega-dropdown-menu');
+		if (!$menuItem.length || !$menu.length) {
+			return;
+		}
+		var viewportWidth = $(window).width();
+		var menuWidth = Math.min(1280, viewportWidth - 32);
+		var menuLeft = Math.max(16 - $menuItem.offset().left, (viewportWidth - menuWidth) / 2 - $menuItem.offset().left);
+		$menu.css({
+			width: menuWidth + 'px',
+			left: menuLeft + 'px',
+			right: 'auto',
+			marginRight: 0
+		});
+	}
+	$('.mega-dropdown.desktop').on('mouseenter', fitProductsMegaMenu);
+	$(window).on('resize', fitProductsMegaMenu);
+	fitProductsMegaMenu();
+});
 </script>
