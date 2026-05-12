@@ -7,6 +7,13 @@ $getCategories = $getCategories ?? [];
 $isSearchPage = ($this->request->getParam('controller') === 'Products' && $this->request->getParam('action') === 'search');
 $searchtitle = $isSearchPage ? ($this->request->getSession()->read('searchtitle') ?? '') : '';
 $headerPhoneTel = preg_replace('/\D+/', '', PHONE);
+$currentMenuPass = $this->request->getParam('pass') ?: [];
+$currentMenuSlug = $this->request->getQuery('slug') ?? $this->request->getParam('slug') ?? ($currentMenuPass[0] ?? '');
+$currentMenuSlug = is_string($currentMenuSlug) ? trim(rawurldecode($currentMenuSlug)) : '';
+$currentMenuController = $this->request->getParam('controller');
+$currentMenuAction = $this->request->getParam('action');
+$currentMenuIsCategory = ($currentMenuController === 'Products' && $currentMenuAction === 'index' && $currentMenuSlug !== '');
+$currentMenuIsProduct = ($currentMenuController === 'Products' && $currentMenuAction === 'detail' && $currentMenuSlug !== '');
 ?>
 <script>
 	function search() {
@@ -197,6 +204,18 @@ $headerPhoneTel = preg_replace('/\D+/', '', PHONE);
 	.mega-dropdown-menu .dropdown-header:focus {
 		color: #2889c9;
 	}
+	.mega-dropdown-menu li a.is-current,
+	.mega-dropdown-menu .dropdown-header.is-current {
+		background: linear-gradient(90deg, rgba(40, 137, 201, 0.14), rgba(244, 196, 0, 0.12)) !important;
+		border-color: rgba(40, 137, 201, 0.38);
+		box-shadow: 0 6px 16px rgba(40, 137, 201, 0.14);
+		color: #0056b3 !important;
+		font-weight: 700;
+	}
+	.mega-dropdown-menu li a.is-current::before {
+		opacity: 1;
+		transform: translateY(-50%) translateX(0);
+	}
 	.mega-dropdown-menu > li.col-sm-3 {
 		background: linear-gradient(180deg, #fff 0%, #f8fbff 100%);
 	}
@@ -232,7 +251,110 @@ $headerPhoneTel = preg_replace('/\D+/', '', PHONE);
 	.dropdown-menu { font-size: 11px; }
 	.durotech_product { padding-top: 4%; }
 	.mobilemenu { display: none !important; }
-	@media (max-width: 500px) {
+	.mobile-products-accordion {
+		display: none;
+		margin: 0 10px 12px;
+		padding: 8px;
+		list-style: none;
+		background: linear-gradient(135deg, #f3f9ff 0%, #fff 100%);
+		border: 1px solid rgba(40, 137, 201, 0.18);
+		border-radius: 14px;
+		box-shadow: 0 8px 22px rgba(0, 51, 102, 0.08);
+		max-height: 65vh;
+		overflow-y: auto;
+	}
+	.mobilemenu.is-open .mobile-products-accordion {
+		display: block;
+	}
+	.mobile-products-toggle {
+		display: flex !important;
+		align-items: center;
+		justify-content: space-between;
+	}
+	.mobile-products-icon {
+		width: 22px;
+		height: 22px;
+		border-radius: 50%;
+		background: rgba(40, 137, 201, 0.12);
+		color: #2889c9;
+		font-weight: 700;
+		line-height: 22px;
+		text-align: center;
+		transition: transform 0.22s ease, background-color 0.22s ease;
+	}
+	.mobilemenu.is-open .mobile-products-icon {
+		background: rgba(244, 196, 0, 0.2);
+		transform: rotate(45deg);
+	}
+	.mobile-product-category {
+		list-style: none;
+		border-bottom: 1px solid rgba(40, 137, 201, 0.1);
+	}
+	.mobile-product-category:last-child {
+		border-bottom: 0;
+	}
+	.mobile-product-category-toggle {
+		width: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+		padding: 10px 8px 10px 12px;
+		background: transparent;
+		border: 0;
+		color: #2889c9;
+		font-size: 12px;
+		font-weight: 700;
+		text-align: left;
+	}
+	.mobile-product-category-toggle:after {
+		content: "+";
+		width: 20px;
+		height: 20px;
+		flex: 0 0 20px;
+		border-radius: 50%;
+		background: rgba(40, 137, 201, 0.1);
+		color: #2889c9;
+		line-height: 20px;
+		text-align: center;
+	}
+	.mobile-product-category.is-open > .mobile-product-category-toggle:after {
+		content: "-";
+		background: rgba(244, 196, 0, 0.22);
+		color: #b58a00;
+	}
+	.mobile-product-list {
+		display: none;
+		margin: 0;
+		padding: 0 0 8px;
+		list-style: none;
+	}
+	.mobile-product-category.is-open > .mobile-product-list {
+		display: block;
+	}
+	.mobile-product-list a {
+		display: block;
+		margin: 2px 0;
+		padding: 7px 10px 7px 22px;
+		border-radius: 10px;
+		color: #333;
+		font-size: 12px;
+		line-height: 1.35;
+		text-decoration: none !important;
+	}
+	.mobile-product-list a:hover,
+	.mobile-product-list a:focus,
+	.mobile-product-list a.is-current,
+	.mobile-product-category-toggle.is-current {
+		background: linear-gradient(90deg, rgba(40, 137, 201, 0.14), rgba(244, 196, 0, 0.12));
+		color: #0056b3 !important;
+		font-weight: 700;
+	}
+	.mobile-view-category {
+		color: #2889c9 !important;
+		font-weight: 700;
+	}
+	@media (max-width: 767px) {
 		.mobilemenu { display: block !important; }
 		.desktop { display: none !important; }
 	}
@@ -324,7 +446,52 @@ if (empty($getCategories) || !is_array($getCategories)) {
 					<ul class="nav navbar-nav navbar-right">
 						<li><a href="<?php echo SITEURL ?>">Home</a></li>
 						<li><a href="<?php echo SITEURL ?>about">About Us</a></li>
-						<li class="mobilemenu"><a href="<?= $this->Url->build('/product') ?>">Products</a></li>
+						<li class="mobilemenu<?php echo ($currentMenuIsCategory || $currentMenuIsProduct) ? ' is-open' : ''; ?>">
+							<a href="javascript:void(0)" class="mobile-products-toggle" aria-expanded="<?php echo ($currentMenuIsCategory || $currentMenuIsProduct) ? 'true' : 'false'; ?>">
+								Products <span class="mobile-products-icon">+</span>
+							</a>
+							<ul class="mobile-products-accordion">
+								<?php if (!empty($getCategories) && is_array($getCategories)): ?>
+									<?php foreach ($getCategories as $cat): ?>
+										<?php
+										if (empty($cat['Category']['category_name'])) {
+											continue;
+										}
+										$categorySlug = $cat['Category']['slug'] ?? '';
+										$hasCurrentProduct = false;
+										if ($currentMenuIsProduct && !empty($cat['Product']) && is_array($cat['Product'])) {
+											foreach ($cat['Product'] as $prodForActive) {
+												if (($prodForActive['slug'] ?? '') === $currentMenuSlug) {
+													$hasCurrentProduct = true;
+													break;
+												}
+											}
+										}
+										$categoryIsCurrent = ($currentMenuIsCategory && $categorySlug === $currentMenuSlug) || $hasCurrentProduct;
+										?>
+										<li class="mobile-product-category<?php echo $categoryIsCurrent ? ' is-open' : ''; ?>">
+											<button type="button" class="mobile-product-category-toggle<?php echo $categoryIsCurrent ? ' is-current' : ''; ?>" aria-expanded="<?php echo $categoryIsCurrent ? 'true' : 'false'; ?>">
+												<?php echo h($cat['Category']['category_name']); ?>
+											</button>
+											<ul class="mobile-product-list">
+												<li><a class="mobile-view-category<?php echo $currentMenuIsCategory && $categorySlug === $currentMenuSlug ? ' is-current' : ''; ?>" href="<?php echo $this->Url->build('/category/' . $categorySlug); ?>">View Category</a></li>
+												<?php if (!empty($cat['Product']) && is_array($cat['Product'])): ?>
+													<?php foreach ($cat['Product'] as $prod): ?>
+														<?php if (!empty($prod['slug'])): ?>
+															<li>
+																<a class="<?php echo $currentMenuIsProduct && $prod['slug'] === $currentMenuSlug ? 'is-current' : ''; ?>" href="<?php echo $this->Url->build(['controller' => 'Products', 'action' => 'detail', $prod['slug']]); ?>">
+																	<?php echo h($prod['title']); ?>
+																</a>
+															</li>
+														<?php endif; ?>
+													<?php endforeach; ?>
+												<?php endif; ?>
+											</ul>
+										</li>
+									<?php endforeach; ?>
+								<?php endif; ?>
+							</ul>
+						</li>
 						<li class="dropdown mega-dropdown desktop">
 							<a class="dropdown-toggle" data-toggle="dropdown" href="#null">Products</a>
 							<ul class="dropdown-menu mega-dropdown-menu row">
@@ -341,13 +508,25 @@ if (empty($getCategories) || !is_array($getCategories)) {
 										foreach ($chunk as $cat) {
 											// Skip empty or invalid category
 											if (empty($cat['Category']['category_name'])) continue;
+											$categorySlug = $cat['Category']['slug'] ?? '';
+											$hasCurrentProduct = false;
+											if ($currentMenuIsProduct && !empty($cat['Product']) && is_array($cat['Product'])) {
+												foreach ($cat['Product'] as $prodForActive) {
+													if (($prodForActive['slug'] ?? '') === $currentMenuSlug) {
+														$hasCurrentProduct = true;
+														break;
+													}
+												}
+											}
+											$categoryCurrentClass = ($currentMenuIsCategory && $categorySlug === $currentMenuSlug) || $hasCurrentProduct ? ' is-current' : '';
 											// Category header w/ link
-											echo '<li class="dropdown-header" onclick="openlink(\'' . htmlspecialchars($cat['Category']['slug']) . '\')">' . htmlspecialchars($cat['Category']['category_name']) . '</li>';
+											echo '<li class="dropdown-header' . $categoryCurrentClass . '" onclick="openlink(\'' . htmlspecialchars($categorySlug) . '\')">' . htmlspecialchars($cat['Category']['category_name']) . '</li>';
 											// List products
 											if (!empty($cat['Product']) && is_array($cat['Product'])) {
 												foreach ($cat['Product'] as $prod) {
 													if (!empty($prod['slug'])) {
-														echo '<li><a href="' . $this->Url->build(['controller' => 'Products', 'action' => 'detail', $prod['slug']]) . '">' . htmlspecialchars($prod['title']) . '</a></li>';
+														$productCurrentClass = $currentMenuIsProduct && $prod['slug'] === $currentMenuSlug ? ' class="is-current"' : '';
+														echo '<li><a' . $productCurrentClass . ' href="' . $this->Url->build(['controller' => 'Products', 'action' => 'detail', $prod['slug']]) . '">' . htmlspecialchars($prod['title']) . '</a></li>';
 													}
 												}
 											} else {
@@ -376,6 +555,22 @@ if (empty($getCategories) || !is_array($getCategories)) {
 	function openlink(slug) {
 		window.location.href = '<?php echo SITEURL . 'category/' ?>' + slug;
 	}
+</script>
+<script>
+jQuery(function ($) {
+	$('.mobile-products-toggle').on('click', function (e) {
+		e.preventDefault();
+		var $menu = $(this).closest('.mobilemenu');
+		$menu.toggleClass('is-open');
+		$(this).attr('aria-expanded', $menu.hasClass('is-open') ? 'true' : 'false');
+	});
+
+	$('.mobile-product-category-toggle').on('click', function () {
+		var $category = $(this).closest('.mobile-product-category');
+		$category.toggleClass('is-open').siblings('.mobile-product-category').removeClass('is-open').children('.mobile-product-category-toggle').attr('aria-expanded', 'false');
+		$(this).attr('aria-expanded', $category.hasClass('is-open') ? 'true' : 'false');
+	});
+});
 </script>
 <script>
 jQuery(function ($) {
