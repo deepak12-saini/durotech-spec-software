@@ -17,13 +17,20 @@ $currentMenuIsProduct = ($currentMenuController === 'Products' && $currentMenuAc
 ?>
 <script>
 	function search() {
-		var searchPro = $("#searchPro").val();
-		if (searchPro != '') {
-			$("#formsubmit").submit();
-		} else {
-			return false;
+		var searchPro = $.trim($("#searchPro").val());
+		if (searchPro.length >= 3) {
+			document.getElementById("formsubmit").submit();
+			return true;
 		}
+
+		return false;
 	}
+
+	jQuery(function ($) {
+		$("#formsubmit").on("submit", function () {
+			return $.trim($("#searchPro").val()).length >= 3;
+		});
+	});
 </script>
 <style>
 	.login {
@@ -361,8 +368,8 @@ $currentMenuIsProduct = ($currentMenuController === 'Products' && $currentMenuAc
 	.header_top_contact { padding: 0 35px 0 6px; text-align: right; }
 	.header_top_contact ul { list-style: none; margin: 0 0 0 auto; padding: 0; max-width: 100%; display: flex; flex-direction: row; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 3px 8px; }
 	.header_top_contact li { margin: 0; padding: 0; list-style: none; line-height: 1.2; }
-	.header_top_contact a { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 600; color: #2672EC !important; text-decoration: none !important; white-space: nowrap; }
-	.header_top_contact .fa-phone, .header_top_contact .fa-envelope { color: #1a1a1a; font-size: 10px; flex-shrink: 0; }
+	.header_top_contact a { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 600; color: #2672EC !important; text-decoration: none !important; white-space: nowrap; }
+	.header_top_contact .fa-phone, .header_top_contact .fa-envelope { color: #1a1a1a; font-size: 12px; flex-shrink: 0; }
 	@media (min-width: 768px) {
 		.header_top_social_search { display: flex; align-items: center; justify-content: flex-end; padding-right: 4px; }
 		.header_top_social_search form { display: flex; align-items: center; justify-content: flex-end; width: 100%; max-width: 180px; margin-left: 0; margin-right: 0; }
@@ -377,8 +384,9 @@ $currentMenuIsProduct = ($currentMenuController === 'Products' && $currentMenuAc
 		.header_top_contact { text-align: center; padding: 10px 10px 0; }
 		.header_top_contact ul { align-items: center; justify-content: center; }
 		.header_top_contact a { white-space: normal; justify-content: center; }
-		.header_top_social_search form { max-width: none; justify-content: center; }
-		.header_top_social_search #searchPro { max-width: none !important; width: 90% !important; }
+		.header_top_social_search { display: flex; justify-content: center; padding: 6px 12px 0; }
+		.header_top_social_search form { display: flex; align-items: center; justify-content: center; width: 100%; max-width: 245px; margin: 0 auto; }
+		.header_top_social_search #searchPro { max-width: none !important; width: calc(100% - 28px) !important; flex: 1 1 auto; }
 	}
 </style>
 <script>

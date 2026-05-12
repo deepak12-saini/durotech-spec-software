@@ -293,6 +293,43 @@
 	.instagram-reels .container > h3 {
 		color: #2889c8;
 		font-weight: 600;
+		display: inline-block;
+		position: relative;
+		transition: color 0.25s ease, text-shadow 0.25s ease, transform 0.25s ease;
+		animation: instagramTitleFadeUp 0.7s ease both;
+	}
+	.instagram-reels .container > h3:after {
+		content: "";
+		position: absolute;
+		left: 50%;
+		bottom: -8px;
+		width: 70px;
+		height: 3px;
+		border-radius: 999px;
+		background: linear-gradient(90deg, #2889c8 0%, #f4c400 100%);
+		transform: translateX(-50%) scaleX(0.55);
+		transform-origin: center;
+		transition: width 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+	}
+	.instagram-reels:hover .container > h3 {
+		color: #0056b3;
+		text-shadow: 0 6px 16px rgba(40, 137, 200, 0.18);
+		transform: translateY(-3px);
+	}
+	.instagram-reels:hover .container > h3:after {
+		width: 120px;
+		transform: translateX(-50%) scaleX(1);
+		box-shadow: 0 4px 12px rgba(40, 137, 200, 0.22);
+	}
+	@keyframes instagramTitleFadeUp {
+		from {
+			opacity: 0;
+			transform: translateY(12px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
 	}
 	.instagram-reels .container > p:first-of-type {
 		color: #585A5A;
@@ -310,29 +347,34 @@
 	}
 
 	.insta-reel-wrapper {
+		--insta-crop-top: 58px;
+		--insta-crop-bottom: 80px;
 		width: 100%;
 		position: relative;
-		height: 420px;
+		height: 330px;
 		overflow: hidden;
 		background: #fff;
 		border: 1px solid #e4e4e4;
+		border-radius: 12px;
 	}
 
-	.insta-reel-wrapper blockquote {
+	.insta-reel-wrapper > blockquote,
+	.insta-reel-wrapper > iframe {
 		position: static;
 		width: 100% !important;
-		height: 100% !important;
+		height: calc(100% + var(--insta-crop-top) + var(--insta-crop-bottom)) !important;
+		min-height: calc(100% + var(--insta-crop-top) + var(--insta-crop-bottom)) !important;
 		min-width: 100% !important;
-		margin: 0 !important;
+		margin: calc(0px - var(--insta-crop-top)) 0 0 !important;
 	}
 	@media (max-width: 991px) {
 		.insta-reel-wrapper {
-			height: 390px;
+			height: 320px;
 		}
 	}
 	@media (max-width: 576px) {
 		.insta-reel-wrapper {
-			height: 360px;
+			height: 300px;
 		}
 	}
 
@@ -622,7 +664,6 @@
 		<div class="instagram-reels col-lg-12 col-md-12 col-sm-12">
 			<div class="container">
 				<h3>Our Latest Instagram Posts</h3>
-				<p>Check out our latest activities and projects.</p>
 				<section class="instagram-slider">
 
 					<div class="slide">

@@ -179,9 +179,9 @@
 		.product-tabs .nav-tabs {
 			position: relative;
 			display: flex;
-			flex-wrap: wrap;
+			flex-wrap: nowrap;
 			align-items: flex-end;
-			gap: 12px;
+			gap: 0;
 			background-color: #f8f9fa;
 			border-radius: 10px 10px 0 0;
 			padding: 8px 10px;
@@ -192,10 +192,21 @@
 
 		.product-tabs .nav-tabs > li {
 			float: none;
+			flex: 1 1 0;
 			margin-bottom: 0;
+		}
+		.product-tabs .nav-tabs > li:nth-child(1) {
+			text-align: left;
+		}
+		.product-tabs .nav-tabs > li:nth-child(2) {
+			text-align: center;
+		}
+		.product-tabs .nav-tabs > li:nth-child(3) {
+			text-align: right;
 		}
 
 	   .product-tabs .nav-tabs .nav-link {
+			display: inline-block;
 			color: #003366;
 			font-weight: 600;
 			padding: 12px 20px;
@@ -314,7 +325,12 @@
 		/* Optional: full width on very small screens */
 		@media (max-width: 576px) {
 			.product-tabs .nav-tabs {
+				flex-wrap: wrap;
 				gap: 8px;
+			}
+			.product-tabs .nav-tabs > li {
+				flex: 1 1 100%;
+				text-align: center;
 			}
 			.product-tabs .nav-tabs .nav-link {
 				width: 100%; /* full width */

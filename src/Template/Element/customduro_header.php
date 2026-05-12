@@ -1,13 +1,19 @@
 <script>
 	function search() {
-		var searchPro = $("#searchPro").val();
-		if (searchPro != '') {
-			$("#formsubmit").submit();
-		} else {
-			//$("#formsubmit").submit();
-			return false;
+		var searchPro = $.trim($("#searchPro").val());
+		if (searchPro.length >= 3) {
+			document.getElementById("formsubmit").submit();
+			return true;
 		}
+
+		return false;
 	}
+
+	jQuery(function ($) {
+		$("#formsubmit").on("submit", function () {
+			return $.trim($("#searchPro").val()).length >= 3;
+		});
+	});
 </script>
 <style>
 	.login {
@@ -448,14 +454,14 @@
 	.header_top_address li {
 		display: inline-flex;
 		align-items: center;
-		font-size: 11px;
+		font-size: 12px;
 	}
 	/* Icons: black/dark like in reference */
 	.header_top_address li i.fa-map-marker,
 	.header_top_address li i.fa-envelope {
 		margin-right: 3px;
 		color: #1a1a1a;
-		font-size: 11px;
+		font-size: 12px;
 	}
 	/* Links & text: vibrant blue like in reference */
 	.header_top_address a {
@@ -499,7 +505,7 @@
 		display: inline-flex;
 		align-items: center;
 		gap: 3px;
-		font-size: 10px;
+		font-size: 12px;
 		font-weight: 600;
 		color: #2672EC !important;
 		text-decoration: none !important;
@@ -511,7 +517,7 @@
 	.header_top_contact .fa-phone,
 	.header_top_contact .fa-envelope {
 		color: #1a1a1a;
-		font-size: 10px;
+		font-size: 12px;
 		flex-shrink: 0;
 	}
 	/* Full state names: one row from tablet up (wider location column + compact search) */
@@ -537,11 +543,11 @@
 			font-size: 12px;
 		}
 		.header_top_contact a {
-			font-size: 11px;
+			font-size: 12px;
 		}
 		.header_top_contact .fa-phone,
 		.header_top_contact .fa-envelope {
-			font-size: 11px;
+			font-size: 12px;
 		}
 	}
 	/* Narrower search so phone + email fit one line on the right */
@@ -607,13 +613,23 @@
 			white-space: normal;
 			justify-content: center;
 		}
-		.header_top_social_search form {
-			max-width: none;
+		.header_top_social_search {
+			display: flex;
 			justify-content: center;
+			padding: 6px 12px 0;
+		}
+		.header_top_social_search form {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 100%;
+			max-width: 245px;
+			margin: 0 auto;
 		}
 		.header_top_social_search #searchPro {
 			max-width: none !important;
-			width: 90% !important;
+			width: calc(100% - 28px) !important;
+			flex: 1 1 auto;
 		}
 	}
 
@@ -873,19 +889,19 @@ $currentMenuIsProduct = ($currentMenuController === 'Products' && $currentMenuAc
 				<ul>
 						<li>
 							<i class="fa fa-map-marker" aria-hidden="true"></i>
-							<a href="https://www.google.com/maps?q=14+Essex+st,+Minto,+Sydney+NSW+2566" class="state-link" data-state="NSW" target="_blank" rel="noopener noreferrer" aria-label="New South Wales office map">New South Wales</a>
+							<a href="https://www.google.com/maps?q=14+Essex+st,+Minto,+Sydney+NSW+2566" class="state-link" data-state="NSW" target="_blank" rel="noopener noreferrer" aria-label="New South Wales office map">NSW</a>
 						</li>
 						<li>
 							<i class="fa fa-map-marker" aria-hidden="true"></i>
-							<a href="https://www.google.com/maps?q=34+Indian+Drive,+Keysborough,+Victoria+3173" class="state-link" data-state="VIC" target="_blank" rel="noopener noreferrer" aria-label="Victoria office map">Victoria</a>
+							<a href="https://www.google.com/maps?q=34+Indian+Drive,+Keysborough,+Victoria+3173" class="state-link" data-state="VIC" target="_blank" rel="noopener noreferrer" aria-label="Victoria office map">VICTORIA</a>
 						</li>
 						<li>
 							<i class="fa fa-map-marker" aria-hidden="true"></i>
-							<a href="https://www.google.com/maps?q=16+Export+Drive,+Molendinar,+Gold+Coast+4214" class="state-link" data-state="QLD" target="_blank" rel="noopener noreferrer" aria-label="Queensland office map">Queensland</a>
+							<a href="https://www.google.com/maps?q=16+Export+Drive,+Molendinar,+Gold+Coast+4214" class="state-link" data-state="QLD" target="_blank" rel="noopener noreferrer" aria-label="Queensland office map">QUEENSLAND</a>
 						</li>
 						<li>
 							<i class="fa fa-map-marker" aria-hidden="true"></i>
-							<a href="https://www.google.com/maps?q=30C+Richard+Street,+Hindmarsh,+SA+5007" class="state-link" data-state="SA" target="_blank" rel="noopener noreferrer" aria-label="South Australia office map">South Australia</a>
+							<a href="https://www.google.com/maps?q=30C+Richard+Street,+Hindmarsh,+SA+5007" class="state-link" data-state="SA" target="_blank" rel="noopener noreferrer" aria-label="South Australia office map">SOUTH AUSTRALIA</a>
 						</li>
 				</ul>
 			</div>
