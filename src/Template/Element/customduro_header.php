@@ -716,13 +716,13 @@
 		.mega-dropdown-menu {
 			flex-wrap: wrap;
 			align-items: flex-start;
-			gap: 22px;
-			padding-left: 22px;
-			padding-right: 34px;
+			gap: 20px;
+			padding-left: 24px;
+			padding-right: 24px;
 		}
 		.mega-dropdown-menu > li.col-sm-3 {
 			float: none !important;
-			width: calc(25% - 17px) !important;
+			width: calc(20% - 16px) !important;
 			box-sizing: border-box;
 			min-width: 0;
 		}
@@ -834,9 +834,9 @@ $headerPhoneTel = preg_replace('/\D+/', '', PHONE);
 
 
 							<?php
-							// Split all categories into 4 columns
+							// Split all categories into 5 columns so the right side is filled
 							$totalCategories = count($getCategories);
-							$categoriesPerColumn = ceil($totalCategories / 4);
+							$categoriesPerColumn = max(1, (int)ceil($totalCategories / 5));
 							$categoryChunks = array_chunk($getCategories, $categoriesPerColumn);
 							?>
 

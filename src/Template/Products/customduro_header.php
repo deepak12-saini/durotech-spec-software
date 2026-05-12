@@ -218,13 +218,13 @@ $headerPhoneTel = preg_replace('/\D+/', '', PHONE);
 		.mega-dropdown-menu {
 			flex-wrap: wrap;
 			align-items: flex-start;
-			gap: 22px;
-			padding-left: 22px;
-			padding-right: 34px;
+			gap: 20px;
+			padding-left: 24px;
+			padding-right: 24px;
 		}
 		.mega-dropdown-menu > li.col-sm-3 {
 			float: none !important;
-			width: calc(25% - 17px) !important;
+			width: calc(20% - 16px) !important;
 			box-sizing: border-box;
 			min-width: 0;
 		}
@@ -329,11 +329,11 @@ if (empty($getCategories) || !is_array($getCategories)) {
 							<a class="dropdown-toggle" data-toggle="dropdown" href="#null">Products</a>
 							<ul class="dropdown-menu mega-dropdown-menu row">
 								<?php
-								// Dynamically generate category columns, 4 columns in grid (col-sm-3), fallback if data not set or not enough
+								// Dynamically generate category columns, 5 columns to use the right-side space
 								if (!empty($getCategories) && is_array($getCategories)) {
-									// Split $getCategories into 4 almost even chunks for columns
+									// Split $getCategories into 5 almost even chunks for columns
 									$totalCats = count($getCategories);
-									$perCol = ceil($totalCats / 4);
+									$perCol = max(1, (int)ceil($totalCats / 5));
 									$chunks = array_chunk($getCategories, $perCol);
 
 									foreach ($chunks as $colIdx => $chunk) {
