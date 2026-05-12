@@ -117,15 +117,26 @@ $currentMenuIsProduct = ($currentMenuController === 'Products' && $currentMenuAc
 	.mega-dropdown-menu > li.col-sm-3 {
 		border: 1px solid rgba(40, 137, 201, 0.14);
 		border-radius: 14px;
-		background: rgba(255, 255, 255, 0.82);
 		box-shadow: 0 4px 12px rgba(0, 51, 102, 0.06);
 		padding: 14px 16px;
-		transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+		transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease, background 0.22s ease;
+	}
+	.mega-dropdown-menu > li.col-sm-3:nth-child(odd) {
+		background: linear-gradient(180deg, #ffffff 0%, #f1f8ff 100%);
+		border-color: rgba(40, 137, 201, 0.24);
+	}
+	.mega-dropdown-menu > li.col-sm-3:nth-child(even) {
+		background: linear-gradient(180deg, #ffffff 0%, #fff9df 100%);
+		border-color: rgba(244, 196, 0, 0.34);
 	}
 	.mega-dropdown-menu > li.col-sm-3:hover {
 		border-color: rgba(40, 137, 201, 0.42);
 		box-shadow: 0 10px 24px rgba(40, 137, 201, 0.16);
 		transform: translateY(-2px);
+	}
+	.mega-dropdown-menu > li.col-sm-3:nth-child(even):hover {
+		border-color: rgba(244, 196, 0, 0.48);
+		box-shadow: 0 10px 24px rgba(244, 196, 0, 0.18);
 	}
 	.mega-dropdown > a.hover-yellow + .mega-dropdown-menu > li.col-sm-3:hover {
 		border-color: rgba(244, 196, 0, 0.48);
@@ -222,9 +233,6 @@ $currentMenuIsProduct = ($currentMenuController === 'Products' && $currentMenuAc
 	.mega-dropdown-menu li a.is-current::before {
 		opacity: 1;
 		transform: translateY(-50%) translateX(0);
-	}
-	.mega-dropdown-menu > li.col-sm-3 {
-		background: linear-gradient(180deg, #fff 0%, #f8fbff 100%);
 	}
 	.navbar-nav > li.dropdown.mega-dropdown:hover > .mega-dropdown-menu {
 		animation: megaMenuFadeIn 0.22s ease both;
