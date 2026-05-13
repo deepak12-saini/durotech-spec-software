@@ -333,7 +333,7 @@ class MailersController extends AppController
 					],
 				],
 			])
-			->orderDesc('Mailer.id')
+			->order(['Mailer.created' => 'DESC', 'Mailer.id' => 'DESC'])
 			;
 		$filters = [
 			'tracknumber' => trim((string)$this->request->getQuery('tracknumber')),
@@ -595,6 +595,25 @@ class MailersController extends AppController
 		}
 		$hasSaveStatusColumn = $this->Mailer->getSchema()->getColumn('save_status');
 		$adaptiveMode = ((string)$this->request->getQuery('mode') === 'adaptive');
+		// Discard draft before auto-resume, same as employee_send_v3 (link used to reload draft forever).
+		if (!$this->request->is('post') && $hasSaveStatusColumn && $this->request->getQuery('discard_draft')) {
+			$draftIds = $this->Mailer->find()
+				->where([
+					'Mailer.admin_id' => $user_id,
+					'Mailer.type' => 3,
+					'Mailer.save_status' => 'draft',
+				])
+				->all()
+				->extract('id')
+				->toArray();
+			if (!empty($draftIds)) {
+				$this->MailerComment->deleteAll(['mailer_id IN' => $draftIds]);
+				$this->SpecUsearea->deleteAll(['mailer_id IN' => $draftIds]);
+				$this->Mailer->deleteAll(['id IN' => $draftIds]);
+			}
+			$this->Flash->success('Draft discarded. You can start a new spec.');
+			return $this->redirect(['action' => 'admin_send_v3']);
+		}
 		if (!$this->request->is('post') && !$adaptiveMode && !$this->request->getQuery('resume') && $hasSaveStatusColumn) {
 			$existingDraft = $this->Mailer->find()
 				->select(['id'])
@@ -2892,6 +2911,56 @@ class MailersController extends AppController
 			$this->Flash->error('Unable to delete spec request.');
 		}
 		return $this->redirect($this->referer());
+	}
+
+	/** CamelCase alias for route /admin/mailers/delete_spec_v3/:id */
+	public function adminDeleteSpecV3($id = null): ?Response
+	{
+		return $this->admin_delete_spec_v3($id);
+	}
+
+	/**
+	 * Admin: delete one DuroEzy Spec v3 row owned by the logged-in admin (mailer + related rows).
+	 */
+	public function admin_delete_spec_v3($id = null): ?Response
+	{
+		$this->request->allowMethod(['post', 'delete']);
+		$redirect = $this->checkAdminSession();
+		if ($redirect instanceof Response) {
+			return $redirect;
+		}
+		$user_id = (int)$this->request->getSession()->read('User.id');
+		$id = (int)$id;
+		$listRedirect = ['controller' => 'Mailers', 'action' => 'admin_index_v3'];
+		if ($id <= 0) {
+			$this->Flash->error('Invalid spec id.');
+			return $this->redirect($listRedirect);
+		}
+
+		$mailer = $this->Mailer->find()
+			->where([
+				'Mailer.id' => $id,
+				'Mailer.type' => 3,
+				'Mailer.admin_id' => $user_id,
+			])
+			->first();
+		if (!$mailer) {
+			$this->Flash->error('Spec not found or you do not have permission to delete it.');
+			return $this->redirect($this->referer($listRedirect));
+		}
+
+		$this->MailerComment->deleteAll(['mailer_id' => $id]);
+		$this->SpecUsearea->deleteAll(['mailer_id' => $id]);
+		$this->loadModel('SpecAuditLogs');
+		$this->SpecAuditLogs->deleteAll(['mailer_id' => $id]);
+		$ok = $this->Mailer->delete($mailer);
+		if ($ok) {
+			$this->Flash->success('Spec deleted successfully.');
+		} else {
+			$this->Flash->error('Unable to delete spec.');
+		}
+
+		return $this->redirect($this->referer($listRedirect));
 	}
 
 

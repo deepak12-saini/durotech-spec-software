@@ -325,6 +325,7 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/mailers/spec-draft-autosave-v3', ['controller' => 'Mailers', 'action' => 'admin_specDraftAutosaveV3']);
     $routes->connect('/admin/mailers/editsend_v3/:id', ['controller' => 'Mailers', 'action' => 'admin_editsend_v3'], ['pass' => ['id']]);
     $routes->connect('/admin/mailers/audit_log/:id', ['controller' => 'Mailers', 'action' => 'admin_audit_log'], ['pass' => ['id']]);
+    $routes->connect('/admin/mailers/delete_spec_v3/:id', ['controller' => 'Mailers', 'action' => 'admin_delete_spec_v3'], ['pass' => ['id']]);
     $routes->connect('/admin/mailers/send', ['controller' => 'Mailers', 'action' => 'admin_send']);
     $routes->connect('/admin/mailers/create_dwps', ['controller' => 'Mailers', 'action' => 'admin_create_dwps']);
     $routes->connect('/admin/mailers/create-dwps', ['controller' => 'Mailers', 'action' => 'admin_create_dwps']);

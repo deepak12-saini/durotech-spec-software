@@ -99,8 +99,16 @@
 								<?php endif; ?>
 							</td>
 
-							<td><?php
+							<td data-order="<?php
 								$created = $mailer['Mailer']['created'] ?? null;
+								$createdTs = 0;
+								if ($created instanceof \DateTimeInterface) {
+									$createdTs = $created->getTimestamp();
+								} elseif (!empty($created)) {
+									$createdTs = (int)strtotime((string)$created);
+								}
+								echo (int)$createdTs;
+							?>"><?php
 								if ($created instanceof \DateTimeInterface) {
 									echo h($created->format('d-M-Y h:i a'));
 								} elseif (!empty($created)) {
@@ -143,6 +151,7 @@
 								<!-- Send Email -->
 								<a onclick="return confirm('Are you sure send email?')" class="<?php echo h($sendBtnClass); ?>" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_sendemail', $mailer['Mailer']['id']]); ?>">Send Mail</a>
 								<a class="btn btn-mini btn-default" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_audit_log', $mailer['Mailer']['id']]); ?>">Audit</a>
+								<?php echo $this->Form->postLink('Delete', ['controller' => 'Mailers', 'action' => 'admin_delete_spec_v3', $mailer['Mailer']['id']], ['class' => 'btn btn-mini btn-danger', 'confirm' => 'Delete this spec permanently? This cannot be undone.']); ?>
 							</td>
 						</tr>
 						<?php endforeach; ?>
@@ -157,7 +166,9 @@
 <script>
 $(document).ready(function() {
 	var dt = $('#example').DataTable({
-		"order": [[ 1, "desc" ]] // Sort by second column (Send Name) descending
+		// Newest submissions first (Created column); was [[1,"desc"]] which sorted by Send Name only.
+		"order": [[9, "desc"]],
+		"columnDefs": [{ "targets": 11, "orderable": false }]
 	});
 
 	// Restore DataTables page from URL query (?page=N).

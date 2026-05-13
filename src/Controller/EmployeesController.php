@@ -468,6 +468,27 @@ public function employee_send_v3() {
     $templateMode = $mode === 'template';
 
     $hasSaveStatusColumn = $this->Mailer->getSchema()->getColumn('save_status');
+    // "Start New Spec (discard this draft)" must delete drafts first; otherwise the next block
+    // auto-redirects to ?resume=1 and the user can never leave draft mode.
+    if (!$this->request->is('post') && $hasSaveStatusColumn && $this->request->getQuery('discard_draft')) {
+        $draftIds = $this->Mailer->find()
+            ->where([
+                'Mailer.employee_id' => $employee_id,
+                'Mailer.save_status' => 'draft',
+                'Mailer.type' => 3,
+            ])
+            ->all()
+            ->extract('id')
+            ->toArray();
+        if (!empty($draftIds)) {
+            $this->MailerComment->deleteAll(['mailer_id IN' => $draftIds]);
+            $this->SpecUsearea->deleteAll(['mailer_id IN' => $draftIds]);
+            $this->Mailer->deleteAll(['id IN' => $draftIds]);
+        }
+        $this->Flash->success('Draft discarded. You can start a new spec.');
+        return $this->redirect(['action' => 'employee_send_v3']);
+    }
+
     if (!$this->request->is('post') && !$adaptiveMode && !$templateMode && !$this->request->getQuery('resume') && $hasSaveStatusColumn) {
         $existingDraft = $this->Mailer->find()
             ->select(['id'])

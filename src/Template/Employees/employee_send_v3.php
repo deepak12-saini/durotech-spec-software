@@ -127,7 +127,7 @@
 			<span id="spec-source-track" style="margin-left:15px;display:none;color:#2a88c8;font-weight:600;"></span>
 			<span id="spec-last-saved" style="margin-left:15px;"></span>
 			<?php if (!empty($draftId)): ?>
-				<span style="margin-left:15px;"><?php echo $this->Html->link('Start New Spec (discard this draft)', ['controller' => 'employees', 'action' => 'employee_send_v3'], ['class' => 'btn btn-default btn-xs']); ?></span>
+				<span style="margin-left:15px;"><?php echo $this->Html->link('Start New Spec (discard this draft)', ['controller' => 'Employees', 'action' => 'employee_send_v3', '?' => ['discard_draft' => '1']], ['class' => 'btn btn-default btn-xs']); ?></span>
 			<?php endif; ?>
 		</div>
 	</div>
