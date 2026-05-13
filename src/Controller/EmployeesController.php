@@ -2029,8 +2029,7 @@ public function editsendV3($id = null) {
 
         $employee_id = $this->Session->read('Employee.id');
 
-        $query = $this->CaseStudy->find()
-            ->orderDesc('CaseStudy.id');
+        $query = $this->CaseStudy->find();
 
         $hasCreatedBy = $this->CaseStudy->getSchema()->hasColumn('created_by');
         if ($hasCreatedBy) {
@@ -2038,8 +2037,44 @@ public function editsendV3($id = null) {
                 ->contain(['Employee']);
         }
 
+        $schema = $this->CaseStudy->getSchema();
+        $filters = [
+            'keyword' => trim((string)$this->request->getQuery('keyword')),
+            'status' => trim((string)$this->request->getQuery('status')),
+            'date_from' => trim((string)$this->request->getQuery('date_from')),
+            'date_to' => trim((string)$this->request->getQuery('date_to')),
+        ];
+
+        if ($filters['keyword'] !== '') {
+            $keywordLike = '%' . $filters['keyword'] . '%';
+            $searchFields = [];
+            foreach (['title', 'location', 'short_summary', 'challenge', 'solution', 'outcome'] as $field) {
+                if ($schema->hasColumn($field)) {
+                    $searchFields['CaseStudy.' . $field . ' LIKE'] = $keywordLike;
+                }
+            }
+            if (!empty($searchFields)) {
+                $query->andWhere(['OR' => $searchFields]);
+            }
+        }
+
+        if ($filters['status'] !== '' && $schema->hasColumn('status')) {
+            $query->andWhere(['CaseStudy.status' => (int)$filters['status']]);
+        }
+
+        if ($filters['date_from'] !== '' && $schema->hasColumn('project_date')) {
+            $query->andWhere(['CaseStudy.project_date >=' => $filters['date_from']]);
+        }
+
+        if ($filters['date_to'] !== '' && $schema->hasColumn('project_date')) {
+            $query->andWhere(['CaseStudy.project_date <=' => $filters['date_to']]);
+        }
+
+        // LIFO: newest case studies first.
+        $query->orderDesc('CaseStudy.id');
+
         $caseStudies = $this->paginate($query, ['limit' => 10]);
-        $this->set(compact('caseStudies'));
+        $this->set(compact('caseStudies', 'filters'));
     }
 
     /**
