@@ -786,11 +786,21 @@ public function employee_send_v3() {
     $previousSpecs = [];
     $templatePresets = [];
     if ($adaptiveMode) {
+        // Own submitted specs + admin-created v3 templates (no employee owner) for Smart Spec.
         $previousSpecsQuery = $this->Mailer->find()
-            ->select(['id', 'tracknumber', 'name', 'company', 'specification', 'date'])
-            ->where([
-                'Mailer.employee_id' => $employee_id,
-                'Mailer.type' => 3,
+            ->select(['id', 'tracknumber', 'name', 'company', 'specification', 'date', 'admin_id', 'employee_id'])
+            ->where(['Mailer.type' => 3])
+            ->andWhere([
+                'OR' => [
+                    ['Mailer.employee_id' => $employee_id],
+                    [
+                        'Mailer.admin_id >' => 0,
+                        'OR' => [
+                            ['Mailer.employee_id IS' => null],
+                            ['Mailer.employee_id <=' => 0],
+                        ],
+                    ],
+                ],
             ])
             ->orderDesc('Mailer.id')
             ->limit(100);
@@ -843,8 +853,19 @@ public function previousSpecData($id = null)
     $query = $this->Mailer->find()
         ->where([
             'Mailer.id' => $id,
-            'Mailer.employee_id' => $employee_id,
             'Mailer.type' => 3,
+        ])
+        ->andWhere([
+            'OR' => [
+                ['Mailer.employee_id' => $employee_id],
+                [
+                    'Mailer.admin_id >' => 0,
+                    'OR' => [
+                        ['Mailer.employee_id IS' => null],
+                        ['Mailer.employee_id <=' => 0],
+                    ],
+                ],
+            ],
         ]);
 
     if ($this->Mailer->getSchema()->getColumn('save_status')) {

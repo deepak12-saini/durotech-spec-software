@@ -184,8 +184,17 @@
 									<?php
 										$labelParts = [];
 										$labelParts[] = (string)($prev->tracknumber ?? ('#' . (int)$prev->id));
-										if (!empty($prev->company)) $labelParts[] = (string)$prev->company;
-										if (!empty($prev->name)) $labelParts[] = (string)$prev->name;
+										if (!empty($prev->company)) {
+											$labelParts[] = (string)$prev->company;
+										}
+										if (!empty($prev->name)) {
+											$labelParts[] = (string)$prev->name;
+										}
+										$isAdminTemplate = (int)($prev->admin_id ?? 0) > 0
+											&& ((int)($prev->employee_id ?? 0) <= 0);
+										if ($isAdminTemplate) {
+											$labelParts[] = 'Admin template';
+										}
 										$label = implode(' | ', $labelParts);
 									?>
 									<option value="<?php echo (int)$prev->id; ?>"><?php echo h($label); ?></option>
