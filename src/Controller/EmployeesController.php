@@ -1341,8 +1341,8 @@ protected function _saveEmployeeSpecAsSubmitted(int $mailerId, array $formData, 
     $pdfFilePath = WWW_ROOT . 'dompdf' . DS . $generatedPdfFileName;
     if (file_exists($pdfFilePath)) {
         $email = new Email('default');
-        $email->setFrom(['deepaksaini10036@gmail.com' => 'Durotech Industries']);
-        $email->setTo('deepaksaini10036@gmail.com');
+        $email->setFrom(['kal@durotechindustries.com.au' => 'Durotech Industries']);
+        $email->setTo('kal@durotechindustries.com.au');
         $email->setSubject('New Spec Created – ' . $tracknumber);
         $email->setEmailFormat('html');
         $email->setAttachments([

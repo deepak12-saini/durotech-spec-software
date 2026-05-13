@@ -247,7 +247,7 @@ return [
         'default' => [
             'transport' => 'gmail',
             // 'from' => 'you@localhost',
-            'from' => ['deepaksaini10036@gmail.com' => 'Durotech Industries'],
+            'from' => ['kal@durotechindustries.com.au' => 'Durotech Industries'],
 
             /*
              * Will by default be set to config value of App.encoding, if that exists otherwise to UTF-8.
