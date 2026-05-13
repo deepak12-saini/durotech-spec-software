@@ -173,38 +173,58 @@
 		<?php echo $this->Form->create('Employee',array('class'=>'form-horizontal','enctype'=>'multipart/form-data','id'=>'specForm')); ?>
 			<input type="hidden" name="draft_id" id="draft_id" value="<?php echo $draftIdVal; ?>">
 			<?php if ($isAdaptiveMode): ?>
+			<?php
+				$adaptiveSpecChoices = [];
+				foreach ($previousSpecList as $prev) {
+					$labelParts = [];
+					$labelParts[] = (string)($prev->tracknumber ?? ('#' . (int)$prev->id));
+					if (!empty($prev->company)) {
+						$labelParts[] = (string)$prev->company;
+					}
+					if (!empty($prev->name)) {
+						$labelParts[] = (string)$prev->name;
+					}
+					$isAdminTemplate = (int)($prev->admin_id ?? 0) > 0
+						&& ((int)($prev->employee_id ?? 0) <= 0);
+					if ($isAdminTemplate) {
+						$labelParts[] = 'Admin template';
+					}
+					$label = implode(' | ', $labelParts);
+					$searchHay = strtolower(
+						(string)($prev->tracknumber ?? '') . ' '
+						. (string)($prev->company ?? '') . ' '
+						. (string)($prev->name ?? '') . ' '
+						. (string)($prev->specification ?? '') . ' '
+						. (int)$prev->id
+					);
+					$adaptiveSpecChoices[] = [
+						'id' => (int)$prev->id,
+						'label' => $label,
+						'search' => $searchHay,
+					];
+				}
+				$adaptiveYearNote = ((int)date('Y') - 1) . '–' . (int)date('Y');
+			?>
 			<div class="form-group">
-				<label class="col-sm-3 control-label no-padding-right adaptive-load-label" for="adaptive_previous_spec_id">Smart Spec (from Previous):</label>
+				<label class="col-sm-3 control-label no-padding-right adaptive-load-label" for="adaptive_previous_spec_filter">Smart Spec (from Previous):</label>
 				<div class="col-sm-9 adaptive-load-col">
 					<div class="spec-adaptive-inline spec-adaptive-box">
+						<div class="col-xs-12 col-sm-12" style="padding-left:0;margin-bottom:8px;">
+							<input type="search" id="adaptive_previous_spec_filter" class="form-control input-sm" placeholder="Filter list (track #, company, name, id…)" autocomplete="off">
+						</div>
 						<div class="col-xs-12 col-sm-12" style="padding-left:0;">
 							<select id="adaptive_previous_spec_id" class="col-xs-12 col-sm-12 spec-adaptive-select">
 								<option value="">Select previous submitted spec...</option>
-								<?php foreach ($previousSpecList as $prev): ?>
-									<?php
-										$labelParts = [];
-										$labelParts[] = (string)($prev->tracknumber ?? ('#' . (int)$prev->id));
-										if (!empty($prev->company)) {
-											$labelParts[] = (string)$prev->company;
-										}
-										if (!empty($prev->name)) {
-											$labelParts[] = (string)$prev->name;
-										}
-										$isAdminTemplate = (int)($prev->admin_id ?? 0) > 0
-											&& ((int)($prev->employee_id ?? 0) <= 0);
-										if ($isAdminTemplate) {
-											$labelParts[] = 'Admin template';
-										}
-										$label = implode(' | ', $labelParts);
-									?>
-									<option value="<?php echo (int)$prev->id; ?>"><?php echo h($label); ?></option>
+								<?php foreach ($adaptiveSpecChoices as $choice): ?>
+									<option value="<?php echo (int)$choice['id']; ?>"><?php echo h($choice['label']); ?></option>
 								<?php endforeach; ?>
 							</select>
 						</div>
-						<p class="help-block spec-adaptive-help">Loads previous submitted spec data into this form for faster creation.</p>
+						<p class="help-block spec-adaptive-help">Shows submitted specs from <strong><?php echo h($adaptiveYearNote); ?></strong> (your own + admin templates). Type in the box to narrow the list. Choosing a row loads it into this form.</p>
 					</div>
 				</div>
 			</div>
+			<script type="application/json" id="adaptive-spec-choices-data"><?php echo json_encode($adaptiveSpecChoices, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE); ?></script>
 			<?php endif; ?>
 			<?php /* Template Preset block hidden for now. Uncomment if client approves.
 			<?php if ($isTemplateMode): ?>
@@ -733,6 +753,39 @@ function loadCommentsFromData(comments) {
 	<?php if ($isAdaptiveMode): ?>
 	jQuery(function() {
 		var adaptiveLoadBaseUrl = '<?php echo $this->Url->build(['controller' => 'Employees', 'action' => 'previousSpecData']); ?>';
+		var adaptiveChoices = [];
+		try {
+			var raw = document.getElementById('adaptive-spec-choices-data');
+			if (raw && raw.textContent) {
+				adaptiveChoices = JSON.parse(raw.textContent);
+			}
+		} catch (e) {
+			adaptiveChoices = [];
+		}
+
+		function adaptiveRebuildSelect(filterText) {
+			var $sel = $('#adaptive_previous_spec_id');
+			var prevVal = $sel.val();
+			var q = (filterText || '').toLowerCase().trim();
+			$sel.empty();
+			$sel.append($('<option></option>').attr('value', '').text('Select previous submitted spec...'));
+			for (var i = 0; i < adaptiveChoices.length; i++) {
+				var row = adaptiveChoices[i];
+				if (!q || (row.search && row.search.indexOf(q) !== -1) || (row.label && row.label.toLowerCase().indexOf(q) !== -1)) {
+					$sel.append($('<option></option>').attr('value', row.id).text(row.label || ('#' + row.id)));
+				}
+			}
+			if (prevVal && $sel.find('option[value="' + prevVal + '"]').length) {
+				$sel.val(prevVal);
+			} else {
+				$sel.val('');
+			}
+		}
+
+		$('#adaptive_previous_spec_filter').on('input', function() {
+			adaptiveRebuildSelect($(this).val());
+		});
+
 		function adaptiveLoadSelectedSpec() {
 			var selectedId = $('#adaptive_previous_spec_id').val();
 			if (!selectedId) {

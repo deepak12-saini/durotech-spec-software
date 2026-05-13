@@ -787,9 +787,19 @@ public function employee_send_v3() {
     $templatePresets = [];
     if ($adaptiveMode) {
         // Own submitted specs + admin-created v3 templates (no employee owner) for Smart Spec.
+        // Only current and previous calendar year on `created` (e.g. 2025 + 2026 in 2026).
+        $yearNow = (int)date('Y');
+        $yearPrev = $yearNow - 1;
+        $createdFrom = sprintf('%d-01-01 00:00:00', $yearPrev);
+        $createdTo = sprintf('%d-12-31 23:59:59', $yearNow);
+
         $previousSpecsQuery = $this->Mailer->find()
-            ->select(['id', 'tracknumber', 'name', 'company', 'specification', 'date', 'admin_id', 'employee_id'])
+            ->select(['id', 'tracknumber', 'name', 'company', 'specification', 'date', 'admin_id', 'employee_id', 'created'])
             ->where(['Mailer.type' => 3])
+            ->andWhere([
+                'Mailer.created >=' => $createdFrom,
+                'Mailer.created <=' => $createdTo,
+            ])
             ->andWhere([
                 'OR' => [
                     ['Mailer.employee_id' => $employee_id],
@@ -803,7 +813,7 @@ public function employee_send_v3() {
                 ],
             ])
             ->orderDesc('Mailer.id')
-            ->limit(100);
+            ->limit(500);
 
         $this->_applyMailerNotDeletedToQuery($previousSpecsQuery);
 
@@ -850,10 +860,17 @@ public function previousSpecData($id = null)
         return $this->_specDraftJsonResponse(['success' => false, 'error' => 'Invalid spec id.']);
     }
 
+    $yearNow = (int)date('Y');
+    $yearPrev = $yearNow - 1;
+    $createdFrom = sprintf('%d-01-01 00:00:00', $yearPrev);
+    $createdTo = sprintf('%d-12-31 23:59:59', $yearNow);
+
     $query = $this->Mailer->find()
         ->where([
             'Mailer.id' => $id,
             'Mailer.type' => 3,
+            'Mailer.created >=' => $createdFrom,
+            'Mailer.created <=' => $createdTo,
         ])
         ->andWhere([
             'OR' => [
