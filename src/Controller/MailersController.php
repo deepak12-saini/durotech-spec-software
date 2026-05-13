@@ -33,6 +33,16 @@ class MailersController extends AppController
         $this->viewBuilder()->setOptions(['ext' => 'php']);
     }
 
+    /**
+     * Exclude soft-deleted mailers when mailers.deleted_at exists.
+     */
+    protected function _applyMailerNotDeletedToQuery($query): void
+    {
+        if ($this->Mailer->getSchema()->getColumn('deleted_at')) {
+            $query->andWhere(['Mailer.deleted_at IS' => null]);
+        }
+    }
+
     public function beforeFilter(EventInterface $event): ?Response
     {
         parent::beforeFilter($event);
@@ -373,6 +383,9 @@ class MailersController extends AppController
 				],
 			]);
 		}
+		if ($this->Mailer->getSchema()->getColumn('deleted_at')) {
+			$results->andWhere(['Mailer.deleted_at IS' => null]);
+		}
 		$results = $results->all();
 
 		$mailers = [];
@@ -385,13 +398,18 @@ class MailersController extends AppController
 		}
 		$hasDraft = false;
 		if ($this->Mailer->getSchema()->getColumn('save_status')) {
-			$hasDraft = $this->Mailer->exists([
+			$draftCond = [
 				'Mailer.admin_id' => $user_id,
 				'Mailer.type' => 3,
 				'Mailer.save_status' => 'draft',
-			]);
+			];
+			if ($this->Mailer->getSchema()->getColumn('deleted_at')) {
+				$draftCond['Mailer.deleted_at IS'] = null;
+			}
+			$hasDraft = $this->Mailer->exists($draftCond);
 		}
-		$this->set(compact('mailers', 'hasDraft', 'filters'));
+		$specSoftDelete = (bool)$this->Mailer->getSchema()->getColumn('deleted_at');
+		$this->set(compact('mailers', 'hasDraft', 'filters', 'specSoftDelete'));
 		return null;
 	}
 
@@ -417,8 +435,9 @@ class MailersController extends AppController
 		}
 
 		$mailer = $this->Mailer->find()
-			->where(['Mailer.id' => $id, 'Mailer.type' => 3, 'Mailer.admin_id' => $user_id])
-			->first();
+			->where(['Mailer.id' => $id, 'Mailer.type' => 3, 'Mailer.admin_id' => $user_id]);
+		$this->_applyMailerNotDeletedToQuery($mailer);
+		$mailer = $mailer->first();
 		if (!$mailer) {
 			$this->Flash->error('Spec not found.');
 			return $this->redirect(['action' => 'admin_index_v3']);
@@ -490,8 +509,9 @@ class MailersController extends AppController
 			->where([
 				'Mailer.id' => $id,
 				'Mailer.admin_id' => $user_id,
-			])
-			->first();
+			]);
+		$this->_applyMailerNotDeletedToQuery($mailer);
+		$mailer = $mailer->first();
 		if (!$mailer) {
 			$this->Flash->error('Record not found.');
 			return $this->redirect(['controller' => 'Mailers', 'action' => 'admin_index']);
@@ -597,13 +617,14 @@ class MailersController extends AppController
 		$adaptiveMode = ((string)$this->request->getQuery('mode') === 'adaptive');
 		// Discard draft before auto-resume, same as employee_send_v3 (link used to reload draft forever).
 		if (!$this->request->is('post') && $hasSaveStatusColumn && $this->request->getQuery('discard_draft')) {
-			$draftIds = $this->Mailer->find()
+			$draftQ = $this->Mailer->find()
 				->where([
 					'Mailer.admin_id' => $user_id,
 					'Mailer.type' => 3,
 					'Mailer.save_status' => 'draft',
-				])
-				->all()
+				]);
+			$this->_applyMailerNotDeletedToQuery($draftQ);
+			$draftIds = $draftQ->all()
 				->extract('id')
 				->toArray();
 			if (!empty($draftIds)) {
@@ -615,15 +636,16 @@ class MailersController extends AppController
 			return $this->redirect(['action' => 'admin_send_v3']);
 		}
 		if (!$this->request->is('post') && !$adaptiveMode && !$this->request->getQuery('resume') && $hasSaveStatusColumn) {
-			$existingDraft = $this->Mailer->find()
+			$existingDraftQ = $this->Mailer->find()
 				->select(['id'])
 				->where([
 					'Mailer.admin_id' => $user_id,
 					'Mailer.type' => 3,
 					'Mailer.save_status' => 'draft',
 				])
-				->orderDesc('Mailer.id')
-				->first();
+				->orderDesc('Mailer.id');
+			$this->_applyMailerNotDeletedToQuery($existingDraftQ);
+			$existingDraft = $existingDraftQ->first();
 			if ($existingDraft) {
 				$this->Flash->set(
 					'Draft Found: continuing from Resume Draft to avoid duplicate draft entries.',
@@ -691,13 +713,14 @@ class MailersController extends AppController
 			}
 
 			if ($hasSaveStatusColumn && $draftIdFromForm > 0) {
-				$existingDraft = $this->Mailer->find()
+				$existingDraftQ = $this->Mailer->find()
 					->where([
 						'Mailer.id' => $draftIdFromForm,
 						'Mailer.admin_id' => $user_id,
 						'Mailer.save_status' => 'draft',
-					])
-					->first();
+					]);
+				$this->_applyMailerNotDeletedToQuery($existingDraftQ);
+				$existingDraft = $existingDraftQ->first();
 				if ($existingDraft) {
 					$mailerEntity = $this->Mailer->patchEntity($existingDraft, $mailerData);
 				} else {
@@ -706,14 +729,15 @@ class MailersController extends AppController
 			} else {
 				// Keep one active admin draft only; remove stale draft when submitting new one.
 				if ($hasSaveStatusColumn) {
-					$oldDraftIds = $this->Mailer->find()
+					$oldDraftQ = $this->Mailer->find()
 						->select(['id'])
 						->where([
 							'Mailer.admin_id' => $user_id,
 							'Mailer.type' => 3,
 							'Mailer.save_status' => 'draft',
-						])
-						->enableHydration(false)
+						]);
+					$this->_applyMailerNotDeletedToQuery($oldDraftQ);
+					$oldDraftIds = $oldDraftQ->enableHydration(false)
 						->all()
 						->extract('id')
 						->toArray();
@@ -831,14 +855,15 @@ class MailersController extends AppController
 		$previousSpecList = [];
 		$resumeDraft = $this->request->getQuery('resume') && $hasSaveStatusColumn;
 		if ($resumeDraft) {
-			$draft = $this->Mailer->find()
+			$draftQ = $this->Mailer->find()
 				->where([
 					'Mailer.admin_id' => $user_id,
 					'Mailer.type' => 3,
 					'Mailer.save_status' => 'draft',
 				])
-				->orderDesc('Mailer.id')
-				->first();
+				->orderDesc('Mailer.id');
+			$this->_applyMailerNotDeletedToQuery($draftQ);
+			$draft = $draftQ->first();
 			if ($draft) {
 				$draftId = (int)$draft->id;
 				$draft->comments = $this->MailerComment->find()->where(['mailer_id' => $draftId])->all();
@@ -862,8 +887,9 @@ class MailersController extends AppController
 				->select(['id', 'tracknumber', 'company', 'name', 'created'])
 				->where($submittedConditions)
 				->orderDesc('Mailer.id')
-				->limit(100)
-				->all();
+				->limit(100);
+			$this->_applyMailerNotDeletedToQuery($previousSpecList);
+			$previousSpecList = $previousSpecList->all();
 		}
 		$this->set(compact('refernce', 'draft', 'draftId', 'adaptiveMode', 'previousSpecList'));
 	}
@@ -996,24 +1022,26 @@ class MailersController extends AppController
 
 		$entity = null;
 		if ($draftIdFromForm > 0) {
-			$entity = $this->Mailer->find()
+			$entityQ = $this->Mailer->find()
 				->where([
 					'Mailer.id' => $draftIdFromForm,
 					'Mailer.admin_id' => $user_id,
 					'Mailer.save_status' => 'draft',
-				])
-				->first();
+				]);
+			$this->_applyMailerNotDeletedToQuery($entityQ);
+			$entity = $entityQ->first();
 		}
 		if (!$entity) {
 			// Reuse latest admin draft when draft_id is missing to prevent duplicate draft rows.
-			$entity = $this->Mailer->find()
+			$latestQ = $this->Mailer->find()
 				->where([
 					'Mailer.admin_id' => $user_id,
 					'Mailer.type' => 3,
 					'Mailer.save_status' => 'draft',
 				])
-				->orderDesc('Mailer.id')
-				->first();
+				->orderDesc('Mailer.id');
+			$this->_applyMailerNotDeletedToQuery($latestQ);
+			$entity = $latestQ->first();
 		}
 		if (!$entity) {
 			$entity = $this->Mailer->newEntity([
@@ -1049,15 +1077,16 @@ class MailersController extends AppController
 		$draftId = (int)$entity->id;
 
 		// Keep only one active admin draft by removing older duplicates.
-		$otherDraftIds = $this->Mailer->find()
+		$otherDraftQ = $this->Mailer->find()
 			->select(['id'])
 			->where([
 				'Mailer.admin_id' => $user_id,
 				'Mailer.type' => 3,
 				'Mailer.save_status' => 'draft',
 				'Mailer.id !=' => $draftId,
-			])
-			->enableHydration(false)
+			]);
+		$this->_applyMailerNotDeletedToQuery($otherDraftQ);
+		$otherDraftIds = $otherDraftQ->enableHydration(false)
 			->all()
 			->extract('id')
 			->toArray();
@@ -2468,8 +2497,10 @@ class MailersController extends AppController
 		$returnPage = (int)$this->request->getQuery('page');
 		$id = (int)$id;
 		$existingMailer = null;
-		if ($id > 0 && $this->Mailer->exists(['Mailer.id' => $id])) {
-			$existingMailer = $this->Mailer->get($id);
+		if ($id > 0) {
+			$emQ = $this->Mailer->find()->where(['Mailer.id' => $id]);
+			$this->_applyMailerNotDeletedToQuery($emQ);
+			$existingMailer = $emQ->first();
 		}
 		$isStaffSpec = $existingMailer ? ((int)($existingMailer->user_id ?? 0) > 0) : false;
 		$backAction = 'admin_index_v3';
@@ -2488,13 +2519,17 @@ class MailersController extends AppController
 			
 			$form_type = $this->request->getData()['form_type'];
 			if ((int)$form_type === 0 && $id !== null && $id !== '') {
-				if (!$this->Mailer->exists([
+				$existCond = [
 					'Mailer.id' => (int)$id,
 					'OR' => [
 						['Mailer.admin_id' => $user_id],
 						['Mailer.user_id !=' => 0],
 					],
-				])) {
+				];
+				if ($this->Mailer->getSchema()->getColumn('deleted_at')) {
+					$existCond['Mailer.deleted_at IS'] = null;
+				}
+				if (!$this->Mailer->exists($existCond)) {
 					$this->Flash->error('You do not have access to this specification.');
 					return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => $backAction, '?' => ['page' => max(1, $returnPage)]], true));
 				}
@@ -2583,7 +2618,13 @@ class MailersController extends AppController
 				$inserty['Mailer']['id'] = $id;
 			}
 			if ((int)$form_type === 0) {
-				$mailerEntity = $this->Mailer->get((int)$id);
+				$mailerEntityQ = $this->Mailer->find()->where(['Mailer.id' => (int)$id]);
+				$this->_applyMailerNotDeletedToQuery($mailerEntityQ);
+				$mailerEntity = $mailerEntityQ->first();
+				if (!$mailerEntity) {
+					$this->Flash->error('Spec not found or no longer available.');
+					return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => $backAction, '?' => ['page' => max(1, $returnPage)]], true));
+				}
 				$mailerEntity = $this->Mailer->patchEntity($mailerEntity, $inserty['Mailer']);
 			} else {
 				$mailerEntity = $this->Mailer->newEntity($inserty['Mailer']);
@@ -2679,8 +2720,21 @@ class MailersController extends AppController
 			}
 		}		
 		
+		if ($id <= 0) {
+			$this->Flash->error('Invalid specification.');
+			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => $backAction, '?' => ['page' => max(1, $returnPage)]], true));
+		}
+
 		// CakePHP 3: associations defined in MailerTable; load with contain (no bindModel)
-		$mailer = $this->Mailer->get((int)$id, ['contain' => ['MailerComment', 'SpecUsearea']]);
+		$mailer = $this->Mailer->find()
+			->where(['Mailer.id' => (int)$id])
+			->contain(['MailerComment', 'SpecUsearea']);
+		$this->_applyMailerNotDeletedToQuery($mailer);
+		$mailer = $mailer->first();
+		if (!$mailer) {
+			$this->Flash->error('Spec not found or no longer available.');
+			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => $backAction, '?' => ['page' => max(1, $returnPage)]], true));
+		}
 		if ((int)$mailer->admin_id !== $user_id && (int)($mailer->user_id ?? 0) === 0) {
 			$this->Flash->error('You do not have access to this specification.');
 			return $this->redirect(\Cake\Routing\Router::url(['controller' => 'Mailers', 'action' => $backAction, '?' => ['page' => max(1, $returnPage)]], true));
@@ -2946,6 +3000,30 @@ class MailersController extends AppController
 			->first();
 		if (!$mailer) {
 			$this->Flash->error('Spec not found or you do not have permission to delete it.');
+			return $this->redirect($this->referer($listRedirect));
+		}
+
+		$hasDeletedAt = (bool)$this->Mailer->getSchema()->getColumn('deleted_at');
+		if ($hasDeletedAt) {
+			if ($mailer->get('deleted_at') !== null) {
+				$this->Flash->error('This spec was already removed from the list.');
+				return $this->redirect($this->referer($listRedirect));
+			}
+			$mailer->deleted_at = date('Y-m-d H:i:s');
+			if ($this->Mailer->save($mailer)) {
+				$this->logSpecAudit([
+					'mailer_id' => $id,
+					'tracknumber' => (string)($mailer->tracknumber ?? ''),
+					'action' => 'spec_soft_deleted',
+					'actor_role' => 'admin',
+					'actor_id' => $user_id,
+					'source' => 'admin_panel',
+					'message' => 'Admin removed spec from list (soft delete).',
+				]);
+				$this->Flash->success('Spec removed from the list. Contact support if you need it restored.');
+			} else {
+				$this->Flash->error('Unable to remove spec.');
+			}
 			return $this->redirect($this->referer($listRedirect));
 		}
 

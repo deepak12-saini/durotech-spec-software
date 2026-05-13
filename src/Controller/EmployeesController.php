@@ -373,6 +373,8 @@ public function index()
         $query->andWhere(['Mailer.date <=' => $filters['date_to']]);
     }
 
+    $this->_applyMailerNotDeletedToQuery($query);
+
     // Exclude drafts from list so only submitted specs show (no duplicate-looking rows)
     if ($this->Mailer->getSchema()->getColumn('save_status')) {
         $query->andWhere([
@@ -390,14 +392,20 @@ public function index()
     // Check if employee has a draft so we can show "Resume Draft" vs "Create New Spec"
     $hasDraft = false;
     if ($this->Mailer->getSchema()->getColumn('save_status')) {
-        $hasDraft = $this->Mailer->exists([
+        $draftExists = [
             'Mailer.employee_id' => $employee_id,
             'Mailer.save_status' => 'draft',
             'Mailer.type' => 3,
-        ]);
+        ];
+        if ($this->Mailer->getSchema()->getColumn('deleted_at')) {
+            $draftExists['Mailer.deleted_at IS'] = null;
+        }
+        $hasDraft = $this->Mailer->exists($draftExists);
     }
 
-    $this->set(compact('mailers', 'hasDraft', 'filters'));
+    $specSoftDelete = (bool)$this->Mailer->getSchema()->getColumn('deleted_at');
+
+    $this->set(compact('mailers', 'hasDraft', 'filters', 'specSoftDelete'));
 }
 
 public function audit_log($id = null)
@@ -419,8 +427,9 @@ public function audit_log($id = null)
             'Mailer.id' => $id,
             'Mailer.employee_id' => $employee_id,
             'Mailer.type' => 3,
-        ])
-        ->first();
+        ]);
+    $this->_applyMailerNotDeletedToQuery($mailer);
+    $mailer = $mailer->first();
     if (!$mailer) {
         $this->Flash->error('Spec not found.');
         return $this->redirect(['action' => 'index']);
@@ -441,9 +450,15 @@ public function auditLog($id = null)
     return $this->audit_log($id);
 }
 
-
-
-
+/**
+ * Hide soft-deleted mailer rows when mailers.deleted_at column exists.
+ */
+protected function _applyMailerNotDeletedToQuery($query): void
+{
+    if ($this->Mailer->getSchema()->getColumn('deleted_at')) {
+        $query->andWhere(['Mailer.deleted_at IS' => null]);
+    }
+}
 
 public function employee_send_v3() {
     $this->viewBuilder()->setLayout('employee_layout');
@@ -471,13 +486,14 @@ public function employee_send_v3() {
     // "Start New Spec (discard this draft)" must delete drafts first; otherwise the next block
     // auto-redirects to ?resume=1 and the user can never leave draft mode.
     if (!$this->request->is('post') && $hasSaveStatusColumn && $this->request->getQuery('discard_draft')) {
-        $draftIds = $this->Mailer->find()
+        $draftQuery = $this->Mailer->find()
             ->where([
                 'Mailer.employee_id' => $employee_id,
                 'Mailer.save_status' => 'draft',
                 'Mailer.type' => 3,
-            ])
-            ->all()
+            ]);
+        $this->_applyMailerNotDeletedToQuery($draftQuery);
+        $draftIds = $draftQuery->all()
             ->extract('id')
             ->toArray();
         if (!empty($draftIds)) {
@@ -497,8 +513,9 @@ public function employee_send_v3() {
                 'Mailer.save_status' => 'draft',
                 'Mailer.type' => 3,
             ])
-            ->orderDesc('Mailer.id')
-            ->first();
+            ->orderDesc('Mailer.id');
+        $this->_applyMailerNotDeletedToQuery($existingDraft);
+        $existingDraft = $existingDraft->first();
         if ($existingDraft) {
             $this->Flash->set(
                 'Draft Found: continuing from Resume Draft to avoid duplicate draft entries.',
@@ -520,8 +537,10 @@ public function employee_send_v3() {
 
         // If final submit with valid draft: update that record to submitted (no duplicate)
         if ($isFinalSubmit && $draftIdFromForm > 0 && $hasSaveStatusColumn) {
-            $existing = $this->Mailer->get($draftIdFromForm);
-            if ($existing && (int)$existing->employee_id === (int)$employee_id && $existing->save_status === 'draft') {
+            $existing = $this->Mailer->find()->where(['Mailer.id' => $draftIdFromForm])->first();
+            $notDeleted = !$this->Mailer->getSchema()->getColumn('deleted_at')
+                || ($existing && $existing->get('deleted_at') === null);
+            if ($existing && $notDeleted && (int)$existing->employee_id === (int)$employee_id && $existing->save_status === 'draft') {
                 $this->_saveEmployeeSpecAsSubmitted($draftIdFromForm, $formData, $employee_id);
                 $this->Flash->success('Spec generated successfully.');
                 return $this->redirect(['action' => 'index']);
@@ -530,13 +549,14 @@ public function employee_send_v3() {
 
         // When creating a new submitted spec, remove any leftover draft for this employee so we don't get two entries
         if ($hasSaveStatusColumn && $isFinalSubmit) {
-            $draftIds = $this->Mailer->find()
+            $draftCleanup = $this->Mailer->find()
                 ->where([
                     'Mailer.employee_id' => $employee_id,
                     'Mailer.save_status' => 'draft',
                     'Mailer.type' => 3,
-                ])
-                ->all()
+                ]);
+            $this->_applyMailerNotDeletedToQuery($draftCleanup);
+            $draftIds = $draftCleanup->all()
                 ->extract('id')
                 ->toArray();
             if (!empty($draftIds)) {
@@ -752,10 +772,11 @@ public function employee_send_v3() {
     $draftId = null;
     $resumeDraft = $this->request->getQuery('resume') && $this->Mailer->getSchema()->getColumn('save_status');
     if ($resumeDraft) {
-        $draft = $this->Mailer->find()
+        $draftLoad = $this->Mailer->find()
             ->where(['Mailer.employee_id' => $employee_id, 'Mailer.save_status' => 'draft', 'Mailer.type' => 3])
-            ->orderDesc('Mailer.id')
-            ->first();
+            ->orderDesc('Mailer.id');
+        $this->_applyMailerNotDeletedToQuery($draftLoad);
+        $draft = $draftLoad->first();
         if ($draft) {
             $draftId = $draft->id;
             $draft->comments = $this->MailerComment->find()->where(['mailer_id' => $draftId])->all();
@@ -773,6 +794,8 @@ public function employee_send_v3() {
             ])
             ->orderDesc('Mailer.id')
             ->limit(100);
+
+        $this->_applyMailerNotDeletedToQuery($previousSpecsQuery);
 
         if ($this->Mailer->getSchema()->getColumn('save_status')) {
             $previousSpecsQuery->andWhere([
@@ -832,6 +855,8 @@ public function previousSpecData($id = null)
             ],
         ]);
     }
+
+    $this->_applyMailerNotDeletedToQuery($query);
 
     $spec = $query->first();
     if (!$spec) {
@@ -943,6 +968,7 @@ public function saveTemplateFromSpec($id = null)
             ],
         ]);
     }
+    $this->_applyMailerNotDeletedToQuery($query);
     $spec = $query->first();
     if (!$spec) {
         $this->Flash->error('Submitted spec not found.');
@@ -1168,7 +1194,18 @@ public function edit_template_preset($id = null)
  */
 protected function _saveEmployeeSpecAsSubmitted(int $mailerId, array $formData, $employee_id): void
 {
-    $mailer = $this->Mailer->get($mailerId);
+    $mailerQuery = $this->Mailer->find()
+        ->where([
+            'Mailer.id' => $mailerId,
+            'Mailer.employee_id' => $employee_id,
+            'Mailer.save_status' => 'draft',
+            'Mailer.type' => 3,
+        ]);
+    $this->_applyMailerNotDeletedToQuery($mailerQuery);
+    $mailer = $mailerQuery->first();
+    if (!$mailer) {
+        return;
+    }
     $tracknumber = $this->Mailer->getNextSpecTrackNumber();
 
     $dateInput = (string)($formData['date'] ?? date('d/m/Y'));
@@ -1336,21 +1373,24 @@ public function specDraftAutosave()
 
     $mailer = null;
     if ($draftIdFromForm > 0) {
-        $mailer = $this->Mailer->get($draftIdFromForm);
+        $draftById = $this->Mailer->find()->where(['Mailer.id' => $draftIdFromForm]);
+        $this->_applyMailerNotDeletedToQuery($draftById);
+        $mailer = $draftById->first();
         if (!$mailer || (int)$mailer->employee_id !== (int)$employee_id || $mailer->save_status !== 'draft') {
             $mailer = null;
         }
     }
     if (!$mailer) {
         // Reuse latest existing employee draft when draft_id is missing to prevent duplicate draft rows.
-        $mailer = $this->Mailer->find()
+        $latestDraft = $this->Mailer->find()
             ->where([
                 'Mailer.employee_id' => $employee_id,
                 'Mailer.save_status' => 'draft',
                 'Mailer.type' => 3,
             ])
-            ->orderDesc('Mailer.id')
-            ->first();
+            ->orderDesc('Mailer.id');
+        $this->_applyMailerNotDeletedToQuery($latestDraft);
+        $mailer = $latestDraft->first();
     }
 
     $dateInput = (string)($data['date'] ?? date('d/m/Y'));
@@ -1405,15 +1445,16 @@ public function specDraftAutosave()
     }
 
     // Keep only one active draft per employee/type by removing older duplicate drafts.
-    $otherDraftIds = $this->Mailer->find()
+    $otherDrafts = $this->Mailer->find()
         ->select(['id'])
         ->where([
             'Mailer.employee_id' => $employee_id,
             'Mailer.save_status' => 'draft',
             'Mailer.type' => 3,
             'Mailer.id !=' => (int)$draftId,
-        ])
-        ->enableHydration(false)
+        ]);
+    $this->_applyMailerNotDeletedToQuery($otherDrafts);
+    $otherDraftIds = $otherDrafts->enableHydration(false)
         ->all()
         ->extract('id')
         ->toArray();
@@ -1488,9 +1529,40 @@ public function deleteSpec($id = null)
     $this->loadModel('MailerComment');
     $this->loadModel('SpecUsearea');
 
-    $mailer = $this->Mailer->get($id);
-    if (!$mailer || (int)$mailer->employee_id !== (int)$employee_id) {
+    $id = (int)$id;
+    $mailer = $this->Mailer->find()
+        ->where([
+            'Mailer.id' => $id,
+            'Mailer.employee_id' => $employee_id,
+            'Mailer.type' => 3,
+        ])
+        ->first();
+    if (!$mailer) {
         $this->Flash->error('Spec not found or you cannot delete it.');
+        return $this->redirect(['action' => 'index']);
+    }
+
+    $hasDeletedAt = (bool)$this->Mailer->getSchema()->getColumn('deleted_at');
+    if ($hasDeletedAt) {
+        if ($mailer->get('deleted_at') !== null) {
+            $this->Flash->error('This spec was already removed from your list.');
+            return $this->redirect(['action' => 'index']);
+        }
+        $mailer->deleted_at = date('Y-m-d H:i:s');
+        if ($this->Mailer->save($mailer)) {
+            $this->logSpecAudit([
+                'mailer_id' => $id,
+                'tracknumber' => (string)($mailer->tracknumber ?? ''),
+                'action' => 'spec_soft_deleted',
+                'actor_role' => 'employee',
+                'actor_id' => (int)$employee_id,
+                'source' => 'employee_panel',
+                'message' => 'Employee removed spec from list (soft delete).',
+            ]);
+            $this->Flash->success('Spec removed from your list. Contact support if you need it restored.');
+        } else {
+            $this->Flash->error('Could not remove spec. Please try again.');
+        }
         return $this->redirect(['action' => 'index']);
     }
 
@@ -1522,6 +1594,19 @@ public function editsend_v3($id = null) {
     $this->loadModel('SpecUsearea');
 
     $employee_id = $this->Session->read('Employee.id');
+    $id = (int)$id;
+    if ($id <= 0) {
+        $this->Flash->error('Invalid spec.');
+        return $this->redirect(['action' => 'index']);
+    }
+    $ownedActive = $this->Mailer->find()
+        ->where(['Mailer.id' => $id, 'Mailer.employee_id' => $employee_id, 'Mailer.type' => 3]);
+    $this->_applyMailerNotDeletedToQuery($ownedActive);
+    if (!$ownedActive->first()) {
+        $this->Flash->error('Spec not found or no longer available.');
+        return $this->redirect(['action' => 'index']);
+    }
+
     $returnPage = max(1, (int)($this->request->getQuery('page') ?? 1));
 
     if (!empty($this->request->data)) {
@@ -1739,9 +1824,10 @@ public function editsend_v3($id = null) {
     }
 
     $MailerArr = $this->Mailer->find()
-        ->where(['Mailer.id' => $id])
-        ->contain(['MailerComment', 'SpecUsearea'])
-        ->first();
+        ->where(['Mailer.id' => $id, 'Mailer.employee_id' => $employee_id, 'Mailer.type' => 3])
+        ->contain(['MailerComment', 'SpecUsearea']);
+    $this->_applyMailerNotDeletedToQuery($MailerArr);
+    $MailerArr = $MailerArr->first();
     $product = [];
     if ($MailerArr) {
         $mailerData = method_exists($MailerArr, 'toArray') ? $MailerArr->toArray() : (array)$MailerArr;
@@ -1792,8 +1878,9 @@ public function editsendV3($id = null) {
                 'Mailer.id' => $id,
                 'Mailer.employee_id' => $employee_id,
                 'Mailer.type' => 3,
-            ])
-            ->first();
+            ]);
+        $this->_applyMailerNotDeletedToQuery($mailer);
+        $mailer = $mailer->first();
 
         if (empty($mailer)) {
             $this->Flash->error('Record not found.');
@@ -2632,6 +2719,7 @@ public function monthlySpecs() {
             ],
         ]);
     }
+    $this->_applyMailerNotDeletedToQuery($baseQuery);
 
     if ($filter === 'today') {
         // Count specs using the same date field as EmployeesController::index()

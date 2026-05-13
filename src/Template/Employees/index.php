@@ -214,7 +214,13 @@
 									// 	['class' => 'btn btn-mini btn-success', 'confirm' => 'Save this spec as template preset?']
 									// ) . '&nbsp;';
 
-									echo $this->Form->postLink('Delete', array('controller' => 'employees', 'action' => 'deleteSpec', $mailerId), array('class' => 'btn btn-mini btn-xs btn-default', 'confirm' => 'Delete this spec? This cannot be undone.', 'escape' => false));
+									echo $this->Form->postLink('Delete', array('controller' => 'employees', 'action' => 'deleteSpec', $mailerId), array(
+										'class' => 'btn btn-mini btn-xs btn-default',
+										'confirm' => !empty($specSoftDelete)
+											? 'Remove this spec from your list? It will be hidden from your dashboard; contact support if you need it restored.'
+											: 'Delete this spec? This cannot be undone.',
+										'escape' => false,
+									));
 
 								?>
 							</td>

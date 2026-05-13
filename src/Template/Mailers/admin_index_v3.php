@@ -151,7 +151,12 @@
 								<!-- Send Email -->
 								<a onclick="return confirm('Are you sure send email?')" class="<?php echo h($sendBtnClass); ?>" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_sendemail', $mailer['Mailer']['id']]); ?>">Send Mail</a>
 								<a class="btn btn-mini btn-default" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_audit_log', $mailer['Mailer']['id']]); ?>">Audit</a>
-								<?php echo $this->Form->postLink('Delete', ['controller' => 'Mailers', 'action' => 'admin_delete_spec_v3', $mailer['Mailer']['id']], ['class' => 'btn btn-mini btn-danger', 'confirm' => 'Delete this spec permanently? This cannot be undone.']); ?>
+								<?php echo $this->Form->postLink('Delete', ['controller' => 'Mailers', 'action' => 'admin_delete_spec_v3', $mailer['Mailer']['id']], [
+									'class' => 'btn btn-mini btn-danger',
+									'confirm' => !empty($specSoftDelete)
+										? 'Remove this spec from the list? It will be hidden; contact support if you need it restored.'
+										: 'Delete this spec permanently? This cannot be undone.',
+								]); ?>
 							</td>
 						</tr>
 						<?php endforeach; ?>
