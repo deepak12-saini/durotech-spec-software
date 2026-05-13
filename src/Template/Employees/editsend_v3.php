@@ -1,5 +1,5 @@
 	<style>
-	.frmSearch {}
+	.frmSearch { position: relative; }
 	#country-list{float:left;list-style:none;margin-top:-3px;padding:0;width:190px;position: absolute;z-index: 99;}
 	#country-list li{padding: 10px; background: #e6fddd; border-bottom: #bbb9b9 1px solid; }
 	#country-list li:hover{background:#ece3d2;cursor: pointer;}
@@ -29,6 +29,145 @@
 		}
 
 		.suggesstion-box{ display:block; }
+		.addsection > .col-sm-9{
+			background:#fff;
+			border:1px solid #dbe5f1;
+			border-radius:12px;
+			box-shadow:0 6px 18px rgba(36, 92, 154, 0.08);
+			padding:15px;
+			margin-bottom:18px;
+		}
+		.addsection table{
+			width:100%;
+			border-collapse:separate;
+			border-spacing:0 8px;
+		}
+		.addsection th{
+			color:#4f5f6f;
+			font-size:12px;
+			font-weight:600;
+			padding:0 6px;
+		}
+		.addsection td{
+			padding:0 6px;
+			vertical-align:top;
+		}
+		.addsection td:last-child{
+			padding-left:2px;
+			vertical-align:middle;
+			width:18px;
+		}
+		.addsection .remove-row-link{
+			color:red;
+			display:inline-block;
+			font-size:11px;
+			font-weight:700;
+			line-height:34px;
+			margin-left:0;
+			text-decoration:none;
+		}
+		.addsection input[type="text"]{
+			background:#fff;
+			border:1px solid #cfd8e3 !important;
+			border-radius:7px !important;
+			box-shadow:none !important;
+			height:34px;
+			line-height:20px;
+			padding:6px 8px;
+		}
+		.addsection input[name^="title"]{
+			background:#fff;
+			border-color:#cfd8e3;
+			font-weight:600;
+		}
+		.addsection input[type="text"]:focus{
+			border-color:#9fb5ce;
+			box-shadow:0 0 0 2px rgba(159, 181, 206, 0.18) !important;
+			outline:none;
+		}
+		.ui-datepicker{
+			background:#fff;
+			border:1px solid #cfd8e3;
+			border-radius:8px;
+			box-shadow:0 8px 24px rgba(0, 0, 0, 0.14);
+			padding:10px;
+			width:245px;
+			z-index:9999 !important;
+		}
+		.ui-datepicker .ui-datepicker-header{
+			background:#f5f8fc;
+			border:0;
+			border-radius:6px;
+			color:#2f4d6b;
+			font-weight:700;
+			margin-bottom:8px;
+			padding:7px 30px;
+			position:relative;
+			text-align:center;
+		}
+		.ui-datepicker .ui-datepicker-prev,
+		.ui-datepicker .ui-datepicker-next{
+			color:#2f80c9;
+			cursor:pointer;
+			font-size:0;
+			height:24px;
+			line-height:24px;
+			position:absolute;
+			text-align:center;
+			top:5px;
+			width:24px;
+		}
+		.ui-datepicker .ui-datepicker-prev{ left:6px; }
+		.ui-datepicker .ui-datepicker-next{ right:6px; }
+		.ui-datepicker .ui-datepicker-prev:before,
+		.ui-datepicker .ui-datepicker-next:before{
+			font-family:FontAwesome;
+			font-size:13px;
+			font-weight:normal;
+		}
+		.ui-datepicker .ui-datepicker-prev:before{ content:"\f053"; }
+		.ui-datepicker .ui-datepicker-next:before{ content:"\f054"; }
+		.ui-datepicker table{
+			margin:0;
+			width:100%;
+		}
+		.ui-datepicker th{
+			color:#5d7186;
+			font-size:12px;
+			font-weight:700;
+			padding:5px 0;
+			text-align:center;
+		}
+		.ui-datepicker td{
+			padding:2px;
+		}
+		.ui-datepicker td a,
+		.ui-datepicker td span{
+			border-radius:5px;
+			color:#35475a;
+			display:block;
+			font-size:12px;
+			padding:5px 0;
+			text-align:center;
+			text-decoration:none;
+		}
+		.ui-datepicker td a:hover{
+			background:#eaf3ff;
+			color:#2f80c9;
+		}
+		.ui-datepicker .ui-datepicker-today a{
+			background:#eef5ff;
+			color:#2f80c9;
+			font-weight:700;
+		}
+		.ui-datepicker .ui-datepicker-current-day a{
+			background:#428bca;
+			color:#fff;
+			font-weight:700;
+		}
+		.ui-datepicker .ui-state-disabled span{
+			color:#b6c1cd;
+		}
 
 	</style>
 	<div class="page-content">
@@ -40,6 +179,24 @@
 	
 	<div class="row">
 		<div class="col-xs-12">
+		<?php
+		$refernce = isset($refernce) ? $refernce : '';
+		$product = isset($product) ? $product : [];
+		$MailerArr = isset($MailerArr) && is_array($MailerArr) ? $MailerArr : [];
+		$MailerArr += ['Mailer' => [], 'MailerComment' => [], 'SpecUsearea' => []];
+		$MailerArr['Mailer'] += [
+			'name' => '',
+			'company' => '',
+			'address' => '',
+			'specification' => '',
+			'email' => '',
+			'date' => '',
+			'subject' => '',
+			'mft' => '',
+			'warranty_period' => '',
+			'use_area' => 0,
+		];
+		?>
 		<?php echo $this->Form->create('Employee',array('class'=>'form-horizontal','enctype'=>'multipart/form-data')); ?>
 		<input type="hidden" name="return_page" value="<?php echo isset($returnPage) ? (int)$returnPage : 1; ?>">
 		
@@ -195,9 +352,9 @@
 							<td><input type="text" style="width:100px;" name="Warranty[]" value="<?php echo $pro['Warranty'];  ?>" id="warranty_<?php echo $i; ?>_<?php echo $key; ?>"></td>
 							<td>
 								<?php if($k == 0){ ?> 
-									<a href="javascript:void(0);" style="color:red;" onclick="removesection('<?php echo $i; ?>')">&nbsp;&nbsp; X </a>
+									<a href="javascript:void(0);" class="remove-row-link" onclick="removesection('<?php echo $i; ?>')">X</a>
 								<?php }else if($k > 0){ ?>
-									<a href="javascript:void(0);" style="color:red;" onclick="remove('<?php echo $i; ?>','<?php echo $k; ?>')">&nbsp;&nbsp; X </a>
+									<a href="javascript:void(0);" class="remove-row-link" onclick="remove('<?php echo $i; ?>','<?php echo $k; ?>')">X</a>
 								<?php } ?>
 							</td>
 						</tr>
@@ -210,6 +367,13 @@
 			</div>
 			<?php $i++; } }?>
 			<div id="addsection"></div>
+
+			<div class="form-group">
+				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
+				<div class="col-sm-9">
+					<a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addnewsection()"><i class="fa fa-plus"></i> Add Section</a>
+				</div>
+			</div>
 			
 			<div class="form-group" style="margin-top:40px;">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
@@ -242,13 +406,6 @@
 					<?php } ?>
 					<div id="addcommentnew"></div>
 					<a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addmorecomment()"><i class="fa fa-plus"></i> Add More Comment</a>
-				</div>
-			</div>
-			
-			<div class="form-group">
-				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
-				<div class="col-sm-1">
-					<a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addnewsection()"><i class="fa fa-plus"></i> Add Section</a>
 				</div>
 			</div>
 
@@ -364,7 +521,7 @@
 		var newdiv = 	numItems + 1;
 		var dtserial = id+'.'+newdiv;
 			
-		var addnew ='<table class="newitem_'+id+'"  id="div_'+id+'_'+newdiv+'"><tr><td><input type="hidden" style="width:30px;" name="types[]" value="'+id+'"><input type="text" style="width:63px;" name="serial[]" value="'+dtserial+'"></td><td><input type="text" style="width:225px;" name="coverage[]" value=""  id="coverage_'+id+'_'+newdiv+'"></td><td><div class="frmSearch"><input autocomplete="off" type="text" style="width:225px;" name="product[]" value="" id="pro_'+id+'_'+newdiv+'" onkeyup="onkeyups('+id+','+newdiv+')"><div id="suggesstion-box_'+id+'_'+newdiv+'"></div></div></td><td><input type="text" style="width:100px;" name="coverage_by_pack[]" value=""  id="coverage_by_pack_'+id+'_'+newdiv+'"></td><td><input type="text" style="width:100px;" name="Warranty[]" value=""  id="warranty_'+id+'_'+newdiv+'"></td><td><a href="javascript:void(0);" style="color:red;" onclick="remove('+id+','+newdiv+')">&nbsp;&nbsp; X </a></td></tr></table>';
+		var addnew ='<table class="newitem_'+id+'"  id="div_'+id+'_'+newdiv+'"><tr><td><input type="hidden" style="width:30px;" name="types[]" value="'+id+'"><input type="text" style="width:63px;" name="serial[]" value="'+dtserial+'"></td><td><input type="text" style="width:225px;" name="coverage[]" value=""  id="coverage_'+id+'_'+newdiv+'"></td><td><div class="frmSearch"><input autocomplete="off" type="text" style="width:225px;" name="product[]" value="" id="pro_'+id+'_'+newdiv+'" onkeyup="onkeyups('+id+','+newdiv+')"><div id="suggesstion-box_'+id+'_'+newdiv+'"></div></div></td><td><input type="text" style="width:100px;" name="coverage_by_pack[]" value=""  id="coverage_by_pack_'+id+'_'+newdiv+'"></td><td><input type="text" style="width:100px;" name="Warranty[]" value=""  id="warranty_'+id+'_'+newdiv+'"></td><td><a href="javascript:void(0);" class="remove-row-link" onclick="remove('+id+','+newdiv+')">X</a></td></tr></table>';
 		$("#addnew_"+id).append(addnew);
 	}	
 	function remove(id,newdiv){	
@@ -500,7 +657,7 @@
 							'<td><div class="frmSearch"><input type="text" autocomplete="off" style="width:225px;" name="product[]" id="pro_'+newdiv+'_0" value="" onkeyup="onkeyups('+newdiv+',0)" ><div id="suggesstion-box_'+newdiv+'_0"></div></div></td>' +
 							'<td><input type="text" style="width:100px;" name="coverage_by_pack[]" value="" id="coverage_by_pack_'+newdiv+'_0"></td>' +
 							'<td><input type="text" style="width:100px;" name="Warranty[]" value="" id="warranty_'+newdiv+'_0"></td>' +
-							'<td><a href="javascript:void(0);" style="color:red;" onclick="removesection('+newdiv+')">&nbsp;&nbsp; X </a></td>' +
+							'<td><a href="javascript:void(0);" class="remove-row-link" onclick="removesection('+newdiv+')">X</a></td>' +
 						'</tr>' +
 					'</table>' +
 					'<div id="addnew_'+newdiv+'"></div>' +

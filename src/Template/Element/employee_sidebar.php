@@ -10,8 +10,32 @@
 
 				
 
+				<?php
+				$activeController = strtolower((string)$this->request->getParam('controller'));
+				$activeAction = strtolower((string)$this->request->getParam('action'));
+				$activeMode = (string)$this->request->getQuery('mode');
+
+				$isDashboardActive = $activeController === 'employees'
+					&& in_array($activeAction, ['dashboard', 'monthly_specs', 'monthlyspecs'], true);
+				$isSmartSpecActive = $activeController === 'employees'
+					&& in_array($activeAction, ['employee_send_v3', 'employeesendv3'], true)
+					&& $activeMode === 'adaptive';
+				$isDuroEzySpecActive = $activeController === 'employees'
+					&& (
+						in_array($activeAction, ['index', 'audit_log', 'auditlog'], true)
+						|| (
+							in_array($activeAction, ['employee_send_v3', 'employeesendv3'], true)
+							&& $activeMode !== 'adaptive'
+						)
+					);
+				$isCaseStudiesActive = $activeController === 'employees'
+					&& in_array($activeAction, ['case_studies', 'casestudies', 'case_add', 'caseadd', 'case_edit', 'caseedit', 'case_delete', 'casedelete'], true);
+				$isTestimonialsActive = $activeController === 'testimonials'
+					&& in_array($activeAction, ['employee_index', 'employeeindex', 'employee_add', 'employeeadd', 'employee_edit', 'employeeedit', 'employee_delete', 'employeedelete'], true);
+				?>
+
 				<ul class="nav nav-list">
-					<li class="<?php if ($this->params['action']=='monthly_specs') echo 'active'; ?>">
+					<li class="<?php echo $isDashboardActive ? 'active' : ''; ?>">
 						<a href="<?php echo SITEURL ?>employees/monthly_specs">
 							<i class="menu-icon fa fa-tachometer"></i>
 							<span class="menu-text"> Dashboard </span>
@@ -19,15 +43,15 @@
 						<b class="arrow"></b>
 					</li>
 					
-				   <li class="<?php if ($this->params['controller']=='employees' && $this->params['action']=='presentation') {echo 'active';}?>">
+				   <li class="<?php echo $isDuroEzySpecActive ? 'active' : ''; ?>">
 						<a href="<?php echo SITEURL?>employees/index">
-							<i class="menu-icon fa fa-tachometer"></i>
+							<i class="menu-icon fa fa-file-text-o"></i>
 							<span class="menu-text">DuroEzy Spec</span>
 						</a>
 						<b class="arrow"></b>
 					</li>		
 
-					<li class="<?php if ($this->params['controller']=='employees' && ($this->params['action']=='employee_send_v3' || $this->params['action']=='employeeSendV3') && ((string)$this->request->getQuery('mode') === 'adaptive')) {echo 'active';}?>">
+					<li class="<?php echo $isSmartSpecActive ? 'active' : ''; ?>">
 						<a href="<?php echo SITEURL?>employees/employee_send_v3?mode=adaptive">
 							<i class="menu-icon fa fa-magic"></i>
 							<span class="menu-text">Smart Spec</span>
@@ -46,7 +70,7 @@
 					*/ ?>
 
 
-					<li class="<?php if ($this->params['controller']=='case_studies' && $this->params['action']=='index') {echo 'active';}?>">
+					<li class="<?php echo $isCaseStudiesActive ? 'active' : ''; ?>">
 						<a href="<?php echo SITEURL?>employees/case_studies">
 							<i class="menu-icon fa fa-briefcase"></i>
 							<span class="menu-text">Case Studies</span>
@@ -54,7 +78,7 @@
 					</li>
 
 
-					<li class="<?php if ($this->params['controller']=='testimonials' && $this->params['action']=='employee_index') {echo 'active';}?>">
+					<li class="<?php echo $isTestimonialsActive ? 'active' : ''; ?>">
 						<a href="<?php echo $this->Url->build(['controller' => 'Testimonials', 'action' => 'employee_index']); ?>">
 							<i class="menu-icon fa fa-comment"></i>
 							<span class="menu-text">Testimonials</span>

@@ -1,5 +1,4 @@
 	<style>
-	.frmSearch { }
 	#country-list{float:left;list-style:none;margin-top:0px;padding:0;width:225px;position: absolute;z-index: 999;margin-left:0px; }
 	#country-list li{padding: 10px; background: #e6fddd; border-bottom: #bbb9b9 1px solid; }
 	#country-list li:hover{background:#ece3d2;cursor: pointer;}
@@ -115,13 +114,117 @@
 	#specForm .form-group {
 		margin-bottom: 14px;
 	}
+	.spec-page-heading {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 15px;
+	}
+	.spec-page-heading h1 {
+		margin: 0;
+	}
+	.spec-back-btn {
+		border-radius: 4px;
+		padding: 6px 16px;
+	}
+	@media (max-width: 767px) {
+		.spec-page-heading {
+			align-items: flex-start;
+			flex-direction: column;
+		}
+	}
+	.ui-datepicker{
+		background:#fff;
+		border:1px solid #cfd8e3;
+		border-radius:8px;
+		box-shadow:0 8px 24px rgba(0, 0, 0, 0.14);
+		padding:10px;
+		width:245px;
+		z-index:9999 !important;
+	}
+	.ui-datepicker .ui-datepicker-header{
+		background:#f5f8fc;
+		border:0;
+		border-radius:6px;
+		color:#2f4d6b;
+		font-weight:700;
+		margin-bottom:8px;
+		padding:7px 30px;
+		position:relative;
+		text-align:center;
+	}
+	.ui-datepicker .ui-datepicker-prev,
+	.ui-datepicker .ui-datepicker-next{
+		color:#2f80c9;
+		cursor:pointer;
+		font-size:0;
+		height:24px;
+		line-height:24px;
+		position:absolute;
+		text-align:center;
+		top:5px;
+		width:24px;
+	}
+	.ui-datepicker .ui-datepicker-prev{ left:6px; }
+	.ui-datepicker .ui-datepicker-next{ right:6px; }
+	.ui-datepicker .ui-datepicker-prev:before,
+	.ui-datepicker .ui-datepicker-next:before{
+		font-family:FontAwesome;
+		font-size:13px;
+		font-weight:normal;
+	}
+	.ui-datepicker .ui-datepicker-prev:before{ content:"\f053"; }
+	.ui-datepicker .ui-datepicker-next:before{ content:"\f054"; }
+	.ui-datepicker table{
+		margin:0;
+		width:100%;
+	}
+	.ui-datepicker th{
+		color:#5d7186;
+		font-size:12px;
+		font-weight:700;
+		padding:5px 0;
+		text-align:center;
+	}
+	.ui-datepicker td{
+		padding:2px;
+	}
+	.ui-datepicker td a,
+	.ui-datepicker td span{
+		border-radius:5px;
+		color:#35475a;
+		display:block;
+		font-size:12px;
+		padding:5px 0;
+		text-align:center;
+		text-decoration:none;
+	}
+	.ui-datepicker td a:hover{
+		background:#eaf3ff;
+		color:#2f80c9;
+	}
+	.ui-datepicker .ui-datepicker-today a{
+		background:#eef5ff;
+		color:#2f80c9;
+		font-weight:700;
+	}
+	.ui-datepicker .ui-datepicker-current-day a{
+		background:#428bca;
+		color:#fff;
+		font-weight:700;
+	}
+	.ui-datepicker .ui-state-disabled span{
+		color:#b6c1cd;
+	}
 
 	</style>	
 	<div class="page-content">
 		<div class="page-header">
-		<div class="right_btn pull-right" ><a href="javascript:window.history.back();" class="btn btn-inverse" >Back</a></div>
-		<h1>DuroEzy Specification<small><i class="ace-icon fa fa-angle-double-right"></i>Create New Spec</small>
-		</h1>
+		<div class="spec-page-heading">
+			<h1>DuroEzy Specification<small><i class="ace-icon fa fa-angle-double-right"></i>Create New Spec</small>
+			</h1>
+			<a href="javascript:window.history.back();" class="btn btn-inverse spec-back-btn">Back</a>
+		</div>
 		<div id="spec-draft-status" class="alert alert-info" style="margin-top:10px;margin-bottom:0;">
 			<strong>Status:</strong> <span id="spec-status-text"><?php echo !empty($draftId) ? 'Draft (restored)' : (((string)$this->request->getQuery('mode') === 'adaptive') ? 'New (Smart Spec mode)' : ((((string)$this->request->getQuery('mode') === 'template') ? 'New (Template mode)' : 'New'))); ?></span>
 			<span id="spec-source-track" style="margin-left:15px;display:none;color:#2a88c8;font-weight:600;"></span>
@@ -148,6 +251,7 @@
 		$draftDate = isset($draft) && $draft->date ? format_db_date('d/m/Y', $draft->date) : date('d/m/Y');
 		$draftType = isset($draft) ? (string)$draft->type : '3';
 		$draftSubject = isset($draft) ? h($draft->subject) : 'Durotech: External Liquid WPM';
+		$refernce = isset($refernce) ? $refernce : '';
 		$draftSpectype = '1'; // not stored in DB, default
 		$draftSectionsJson = '[]';
 		$draftCommentsJson = '[]';
