@@ -72,6 +72,7 @@
 	line-height: 1;
 }
 </style>
+<?= $this->element('customduro_locations_promo') ?>
 <footer>
 	<div class="footer_section col-lg-12 col-md-12 col-sm-12">
 		<div class="row">

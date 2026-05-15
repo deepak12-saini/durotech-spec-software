@@ -180,8 +180,12 @@
 	.projectFactsWrap .item p {
 		color: #000;
 	}
-	.projectFactsWrap .item span {		
-		background: #02aab0;		
+	.projectFactsWrap .item span.stat-divider {
+		width: 60px;
+		height: 2px;
+		display: block;
+		margin: 0 auto;
+		background: #02aab0;
 	}
 	.projectFactsWrap .item:hover i, .projectFactsWrap .item:hover p {
 		color: #000;
@@ -403,25 +407,25 @@
 							
 							<img src="<?php echo SITEURL ;?>img/Group 42.png" style="width:42px; height:46px">
 							<p id="number1" class="number">10,000</p>
-							<span></span>
+							<span class="stat-divider" aria-hidden="true"></span>
 							<p>Project Completed</p>
 						</div>
 						<div class="item wow fadeInUpBig animated animated" data-number="55" style="visibility: visible; background:#e4edf4;">
 							<img src="<?php echo SITEURL ;?>img/Group 43.png" style="width:42px; height:46px">
 							<p id="number2" class="number">205</p>
-							<span></span>
+							<span class="stat-divider" aria-hidden="true"></span>
 							<p>Products Made</p>
 						</div>
 						<div class="item wow fadeInUpBig animated animated" data-number="359" style="visibility: visible; background:#e4edf4;" >
 							<img src="<?php echo SITEURL ;?>img/Group 44.png" style="width:42px; height:46px">
 							<p id="number3" class="number">60</p>
-							<span></span>
+							<span class="stat-divider" aria-hidden="true"></span>
 							<p>Global Staff</p>
 						</div>
 						<div class="item wow fadeInUpBig animated animated" data-number="246" style="visibility: visible; background:#e4edf4;">
 							<img src="<?php echo SITEURL ;?>img/Group 45.png" style="width:42px; height:46px">
 							<p id="number4" class="number">40</p>
-							<span></span>
+							<span class="stat-divider" aria-hidden="true"></span>
 							<p>Years of Business</p>
 						</div>
 					</div>

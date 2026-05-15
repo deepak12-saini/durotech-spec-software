@@ -186,8 +186,21 @@
 	.projectFactsWrap .item p {
 		color: #585A5A;
 	}
-	.projectFactsWrap .item span {		
-		background: #2889c8;		
+	.projectFactsWrap .item span.stat-divider {
+		width: 60px;
+		height: 2px;
+		display: block;
+		margin: 0 auto;
+		background: #2889c8;
+	}
+	.projectFactsWrap .item p.stat-value-line span {
+		display: inline;
+		width: auto;
+		height: auto;
+		background: transparent;
+		margin: 0;
+		padding: 0;
+		vertical-align: baseline;
 	}
 	.projectFactsWrap .item:hover i, .projectFactsWrap .item:hover p {
 		color: #585A5A;
@@ -214,6 +227,11 @@
 	}
 	.projectFactsWrap .item:nth-child(4) {
 		background: #fff;
+	}
+	.projectFactsWrap .item p.number.stat-value-line {
+		line-height: 1.25;
+		min-height: 2.5em;
+		padding: 0 8px;
 	}
 	.client_logo h3 {		
 		color: #2889c8;		
@@ -626,39 +644,124 @@
 		  </div>
 		</div>
 		
-		<div class="counter col-lg-12 col-md-12 col-sm-12">
+		<div id="company-stats-section" class="counter col-lg-12 col-md-12 col-sm-12">
 		     <div id="projectFacts" class="sectionClass" style="background:#e4edf4">
 				<div class="fullWidth eight columns" style="background:#e4edf4;">
 					<div class="projectFactsWrap" style="background:#e4edf4;">
-						<div class="item wow fadeInUpBig animated animated" data-number="12" style="visibility: visible;background:#e4edf4;"  >
+						<div class="item wow fadeInUpBig animated animated" data-count-end="1000000" data-count-comma="1" style="visibility: visible;background:#e4edf4;"  >
 							
-							<img src="<?php echo SITEURL ;?>img/Group 42.png" style="width:42px; height:46px">
-							<p id="number1" class="number">10,000</p>
-							<span></span>
-							<p>Project Completed</p>
+							<img src="<?php echo SITEURL ;?>img/Group 42.png" style="width:42px; height:46px" alt="">
+							<p class="number stat-value-line"><span class="stat-prefix">Over </span><span class="stat-value">0</span><span class="stat-suffix">m2</span></p>
+							<span class="stat-divider" aria-hidden="true"></span>
+							<p>Projects Completed</p>
 						</div>
-						<div class="item wow fadeInUpBig animated animated" data-number="55" style="visibility: visible; background:#e4edf4;">
-							<img src="<?php echo SITEURL ;?>img/Group 43.png" style="width:42px; height:46px">
-							<p id="number2" class="number">205</p>
-							<span></span>
-							<p>Products Made</p>
+						<div class="item wow fadeInUpBig animated animated" data-count-end="300" style="visibility: visible; background:#e4edf4;">
+							<img src="<?php echo SITEURL ;?>img/Group 43.png" style="width:42px; height:46px" alt="">
+							<p class="number stat-value-line"><span class="stat-value">0</span><span class="stat-suffix">+</span></p>
+							<span class="stat-divider" aria-hidden="true"></span>
+							<p>Products Developed</p>
 						</div>
-						<div class="item wow fadeInUpBig animated animated" data-number="359" style="visibility: visible; background:#e4edf4;" >
-							<img src="<?php echo SITEURL ;?>img/Group 44.png" style="width:42px; height:46px">
-							<p id="number3" class="number">60</p>
-							<span></span>
-							<p>Global Staff</p>
+						<div class="item wow fadeInUpBig animated animated" data-count-end="100" style="visibility: visible; background:#e4edf4;" >
+							<img src="<?php echo SITEURL ;?>img/Group 44.png" style="width:42px; height:46px" alt="">
+							<p class="number stat-value-line"><span class="stat-value">0</span><span class="stat-suffix">+</span></p>
+							<span class="stat-divider" aria-hidden="true"></span>
+							<p>Global Team</p>
 						</div>
-						<div class="item wow fadeInUpBig animated animated" data-number="246" style="visibility: visible; background:#e4edf4;">
-							<img src="<?php echo SITEURL ;?>img/Group 45.png" style="width:42px; height:46px">
-							<p id="number4" class="number">45</p>
-							<span></span>
-							<p>Years of Business</p>
+						<div class="item wow fadeInUpBig animated animated" data-count-end="49" style="visibility: visible; background:#e4edf4;">
+							<img src="<?php echo SITEURL ;?>img/Group 45.png" style="width:42px; height:46px" alt="">
+							<p class="number stat-value-line"><span class="stat-value">0</span><span class="stat-suffix"> years</span></p>
+							<span class="stat-divider" aria-hidden="true"></span>
+							<p>Years in Business</p>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
+		<script>
+		(function () {
+			var root = document.getElementById('company-stats-section');
+			if (!root) {
+				return;
+			}
+
+			function formatComma(n) {
+				return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+			}
+
+			function resetCounters() {
+				var items = root.querySelectorAll('.item[data-count-end]');
+				for (var i = 0; i < items.length; i++) {
+					var el = items[i].querySelector('.stat-value');
+					if (el) {
+						el.textContent = '0';
+					}
+				}
+			}
+
+			function runCounters() {
+				var items = root.querySelectorAll('.item[data-count-end]');
+				var duration = 2200;
+				var start = null;
+
+				function tick(now) {
+					if (start === null) {
+						start = now;
+					}
+					var elapsed = now - start;
+					var t = Math.min(1, elapsed / duration);
+					var ease = 1 - (1 - t) * (1 - t);
+					for (var i = 0; i < items.length; i++) {
+						var item = items[i];
+						var end = parseInt(item.getAttribute('data-count-end'), 10);
+						var comma = item.getAttribute('data-count-comma') === '1';
+						var el = item.querySelector('.stat-value');
+						if (!el || isNaN(end)) {
+							continue;
+						}
+						var val = Math.floor(ease * end);
+						if (t >= 1) {
+							val = end;
+						}
+						el.textContent = comma ? formatComma(val) : String(val);
+					}
+					if (t < 1) {
+						root._companyStatsRaf = requestAnimationFrame(tick);
+					} else {
+						root._companyStatsRaf = null;
+					}
+				}
+
+				if (root._companyStatsRaf) {
+					cancelAnimationFrame(root._companyStatsRaf);
+				}
+				start = null;
+				root._companyStatsRaf = requestAnimationFrame(tick);
+			}
+
+			function onIntersect(entries) {
+				for (var e = 0; e < entries.length; e++) {
+					var entry = entries[e];
+					if (entry.isIntersecting) {
+						resetCounters();
+						runCounters();
+					} else {
+						if (root._companyStatsRaf) {
+							cancelAnimationFrame(root._companyStatsRaf);
+							root._companyStatsRaf = null;
+						}
+						resetCounters();
+					}
+				}
+			}
+
+			if ('IntersectionObserver' in window) {
+				var io = new IntersectionObserver(onIntersect, { threshold: 0.15, rootMargin: '0px 0px -5% 0px' });
+				io.observe(root);
+			} else {
+				runCounters();
+			}
+		})();
+		</script>
 
 
 		<div class="instagram-reels col-lg-12 col-md-12 col-sm-12">

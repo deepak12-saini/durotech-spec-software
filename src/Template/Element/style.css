@@ -599,7 +599,7 @@ html {
 }
 
 
-.projectFactsWrap .item span{
+.projectFactsWrap .item span.stat-divider{
   width: 60px;
   background: rgba(255, 255, 255, 0.8);
   height: 2px;
@@ -619,7 +619,7 @@ html {
   color: white;
 }
 
-.projectFactsWrap .item:hover span{
+.projectFactsWrap .item:hover span.stat-divider{
   background: white;
 }
 

@@ -373,6 +373,13 @@
 		object-position: center;
 		width: auto;
 		height: auto;
+		max-height: 52px;
+		display: block;
+	}
+	@media (min-width: 768px) {
+		.example5 .navbar-brand > img {
+			max-height: 68px;
+		}
 	}
 	/* When scrolled: hide entire top bar (address + search + social); only logo + menu stay visible at top */
 	.header_top.scrolled {
@@ -950,7 +957,7 @@ $currentMenuIsProduct = ($currentMenuController === 'Products' && $currentMenuAc
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
 					</button>
-					<a class="navbar-brand" href="<?php echo SITEURL; ?>"><img src="<?php echo SITEURL; ?>customdurotech/images/durotech_logo.png" alt="Durotech">
+					<a class="navbar-brand" href="<?php echo SITEURL; ?>"><img src="<?php echo SITEURL; ?>customdurotech/images/durotech_logo_new.png" alt="Durotech — Commercial waterproofing and sealants, Australian Made and Owned">
 					</a>
 				</div>
 				<div id="navbar5" class="navbar-collapse collapse">
@@ -1105,14 +1112,18 @@ $currentMenuIsProduct = ($currentMenuController === 'Products' && $currentMenuAc
 	(function() {
 		var headerTop = document.querySelector(".header_top");
 		if (!headerTop) return;
+		function scrollTop() {
+			return window.scrollY || window.pageYOffset || (document.documentElement && document.documentElement.scrollTop) || (document.body && document.body.scrollTop) || 0;
+		}
 		function updateHeader() {
-			if (window.scrollY > 50) {
+			if (scrollTop() > 40) {
 				headerTop.classList.add("scrolled");
 			} else {
 				headerTop.classList.remove("scrolled");
 			}
 		}
 		window.addEventListener("scroll", updateHeader, { passive: true });
+		window.addEventListener("resize", updateHeader, { passive: true });
 		updateHeader();
 	})();
 
