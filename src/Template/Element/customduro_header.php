@@ -410,15 +410,23 @@
 	}
 	.example5 .navbar-brand > img {
 		object-fit: contain;
-		object-position: center;
+		object-position: left center;
 		width: auto;
 		height: auto;
-		max-height: 52px;
+		max-height: 68px;
+		max-width: min(280px, 72vw);
 		display: block;
 	}
 	@media (min-width: 768px) {
 		.example5 .navbar-brand > img {
-			max-height: 68px;
+			max-height: 92px;
+			max-width: 340px;
+		}
+	}
+	@media (min-width: 1200px) {
+		.example5 .navbar-brand > img {
+			max-height: 100px;
+			max-width: 380px;
 		}
 	}
 	/* When scrolled: hide entire top bar (address + search + social); only logo + menu stay visible at top */
@@ -472,8 +480,8 @@
 	#header_top.header_fixed .container.example5 {
 		margin-top: 0 !important;
 		background: #f4f4f4;
-		padding-top: 6px;
-		padding-bottom: 6px;
+		padding-top: 8px;
+		padding-bottom: 8px;
 	}
 	#header_top.header_fixed .navbar.navbar-default {
 		background-color: #f4f4f4 !important;

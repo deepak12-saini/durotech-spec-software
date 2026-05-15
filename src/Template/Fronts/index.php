@@ -245,33 +245,65 @@
 	}
 	
 	.tab_service{ margin-bottom:30px; }
-	.images{
-		background:#fff;
+	/* Blue / yellow / white stripe frame around home service cards (wider bands like brand reference) */
+	.tab_service .images{
+		--duro-stripe-blue: #2889c9;
+		--duro-stripe-yellow: #f4c400;
+		--duro-stripe-white: #ffffff;
+		--duro-stripe-thick: 9px;
+		--duro-stripe-segment: 26px;
 		width: 100%;
 		min-height: 194px;
+		box-sizing: border-box;
 		border-radius: 14px;
+		background: #ffffff;
 		box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
 		transition: transform 0.22s ease, box-shadow 0.22s ease;
 		position: relative;
 		overflow: hidden;
+		isolation: isolate;
 	}
-	.images:before {
+	.tab_service .images::before {
 		content: "";
 		position: absolute;
-		left: 0;
-		right: 0;
-		top: 0;
-		height: 3px;
-		background: linear-gradient(90deg, #2b98df, #1b78bf);
-		opacity: 0;
-		transition: opacity 0.22s ease;
+		inset: 0;
+		border-radius: inherit;
+		padding: var(--duro-stripe-thick);
+		background: repeating-linear-gradient(
+			-45deg,
+			var(--duro-stripe-yellow) 0,
+			var(--duro-stripe-yellow) var(--duro-stripe-segment),
+			var(--duro-stripe-blue) var(--duro-stripe-segment),
+			var(--duro-stripe-blue) calc(var(--duro-stripe-segment) * 2),
+			var(--duro-stripe-white) calc(var(--duro-stripe-segment) * 2),
+			var(--duro-stripe-white) calc(var(--duro-stripe-segment) * 3)
+		);
+		/* Phase shift so top-left corner lands on yellow, not white */
+		background-position: calc(var(--duro-stripe-segment) * 0.5) calc(var(--duro-stripe-segment) * 0.5);
+		-webkit-mask:
+			linear-gradient(#fff 0 0) content-box,
+			linear-gradient(#fff 0 0);
+		mask:
+			linear-gradient(#fff 0 0) content-box,
+			linear-gradient(#fff 0 0);
+		-webkit-mask-composite: xor;
+		mask-composite: exclude;
+		pointer-events: none;
+		z-index: 0;
 	}
-	.images:hover {
+	.tab_service .images > * {
+		position: relative;
+		z-index: 1;
+	}
+	.tab_service .images:hover {
 		transform: translateY(-5px);
-		box-shadow: 0 14px 30px rgba(0, 0, 0, 0.14);
+		box-shadow: none;
 	}
-	.images:hover:before {
-		opacity: 1;
+	@media (max-width: 767px) {
+		.tab_service .images {
+			--duro-stripe-thick: 8px;
+			--duro-stripe-segment: 20px;
+		}
 	}
 	.div_right{ padding:20px 20px 10px; }
 	.img_left{ padding:0px 20px; }
@@ -298,7 +330,7 @@
 		color: #586074 !important;
 		transition: color 0.2s ease;
 	}
-	.images:hover .spn_right a {
+	.tab_service .images:hover .spn_right a {
 		color: #2889c8 !important;
 	}
 
@@ -508,7 +540,7 @@
 		
 		      <div class="container_service">
 			       <div class="col-lg-4 col-md-4 col-sm-4 tab_service">
-					  <div class='images' style="background:#fff;">
+					  <div class="images">
 					      <div class="div_right">
 							<span class="spn_right"><a style="color:#585A5A;" href="<?php echo SITEURL.'products'; ?>">View All</a></span>
 						  </div>
@@ -521,7 +553,7 @@
 					
 					</div>
 					<div class="col-lg-4 col-md-4 col-sm-4 tab_service">
-					  <div class='images' style="background:#fff;">
+					  <div class="images">
 					      <div class="div_right">
 							<span class="spn_right"><a style="color:#585A5A;" href="<?php echo SITEURL.'technical-literature'; ?>">View All</a></span>
 						  </div>
@@ -535,7 +567,7 @@
 					</div>
 					
 					<!-- <div class="col-lg-4 col-md-4 col-sm-4 tab_service">
-					  <div class='images' style="background:#fff;">
+					  <div class="images">
 					      <div class="div_right">
 							<span class="spn_right"><a style="color:#585A5A;" href="<?php echo SITEURL.'specifiers'; ?>">View All</a></span>
 						  </div>
@@ -550,7 +582,7 @@
 					
 					
 					<div class="col-lg-4 col-md-4 col-sm-4 tab_service">
-					  <div class='images' style="background:#fff;">
+					  <div class="images">
 					      <div class="div_right">
 							<span class="spn_right"><a style="color:#585A5A;" href="<?php echo SITEURL.'durolab'; ?>">View All</a></span>
 						  </div>
@@ -564,7 +596,7 @@
 					</div>
 					
 					<!--div class="col-lg-4 col-md-4 col-sm-4 tab_service">
-					  <div class='images' style="background:#fff;">
+					  <div class="images">
 					      <div class="div_right">
 							<span class="spn_right"><a style="color:#585A5A;" href="<?php echo SITEURL.'durooem'; ?>">View All</a></span>
 						  </div>
@@ -578,7 +610,7 @@
 					</div-->
 					
 					<!--div class="col-lg-4 col-md-4 col-sm-4 tab_service">
-					  <div class='images' style="background:#fff;">
+					  <div class="images">
 					      <div class="div_right">
 							<span class="spn_right"><a style="color:#585A5A;" href="https://duroshop.com">View All</a></span>
 						  </div>
