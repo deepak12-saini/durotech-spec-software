@@ -245,13 +245,14 @@
 	}
 	
 	.tab_service{ margin-bottom:30px; }
-	/* Blue / yellow / white stripe frame around home service cards (wider bands like brand reference) */
+	/* Blue / white / yellow / white stripe frame (brand reference: color bands separated by white gaps) */
 	.tab_service .images{
 		--duro-stripe-blue: #2889c9;
 		--duro-stripe-yellow: #f4c400;
 		--duro-stripe-white: #ffffff;
 		--duro-stripe-thick: 9px;
-		--duro-stripe-segment: 26px;
+		--duro-stripe-color: 36px;
+		--duro-stripe-gap: 16px;
 		width: 100%;
 		min-height: 194px;
 		box-sizing: border-box;
@@ -271,15 +272,16 @@
 		padding: var(--duro-stripe-thick);
 		background: repeating-linear-gradient(
 			-45deg,
-			var(--duro-stripe-yellow) 0,
-			var(--duro-stripe-yellow) var(--duro-stripe-segment),
-			var(--duro-stripe-blue) var(--duro-stripe-segment),
-			var(--duro-stripe-blue) calc(var(--duro-stripe-segment) * 2),
-			var(--duro-stripe-white) calc(var(--duro-stripe-segment) * 2),
-			var(--duro-stripe-white) calc(var(--duro-stripe-segment) * 3)
+			var(--duro-stripe-blue) 0,
+			var(--duro-stripe-blue) var(--duro-stripe-color),
+			var(--duro-stripe-white) var(--duro-stripe-color),
+			var(--duro-stripe-white) calc(var(--duro-stripe-color) + var(--duro-stripe-gap)),
+			var(--duro-stripe-yellow) calc(var(--duro-stripe-color) + var(--duro-stripe-gap)),
+			var(--duro-stripe-yellow) calc(var(--duro-stripe-color) * 2 + var(--duro-stripe-gap)),
+			var(--duro-stripe-white) calc(var(--duro-stripe-color) * 2 + var(--duro-stripe-gap)),
+			var(--duro-stripe-white) calc(var(--duro-stripe-color) * 2 + var(--duro-stripe-gap) * 2)
 		);
-		/* Phase shift so top-left corner lands on yellow, not white */
-		background-position: calc(var(--duro-stripe-segment) * 0.5) calc(var(--duro-stripe-segment) * 0.5);
+		background-position: calc((var(--duro-stripe-color) + var(--duro-stripe-gap)) * 0.5) calc((var(--duro-stripe-color) + var(--duro-stripe-gap)) * 0.5);
 		-webkit-mask:
 			linear-gradient(#fff 0 0) content-box,
 			linear-gradient(#fff 0 0);
@@ -302,7 +304,8 @@
 	@media (max-width: 767px) {
 		.tab_service .images {
 			--duro-stripe-thick: 8px;
-			--duro-stripe-segment: 20px;
+			--duro-stripe-color: 28px;
+			--duro-stripe-gap: 14px;
 		}
 	}
 	.div_right{ padding:20px 20px 10px; }
