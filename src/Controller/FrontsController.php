@@ -250,7 +250,7 @@ class FrontsController extends AppController
     {
         $this->set([
             'meta_title' => 'Terrace & Balcony Waterproofing | Roof Waterproofing Australia | Durotech',
-            'meta_description' => 'Terrace and balcony waterproofing with solvent-based PU and acrylic systems. New build and remedial. Australia. Products & specs. 02 9603 1177.',
+            'meta_description' => 'Terrace and balcony waterproofing with solvent-based PU and acrylic systems. New build and remedial. Australia. Products & specs. Call 1300 434 272.',
             'meta_keyword' => 'terrace waterproofing, balcony waterproofing, roof waterproofing, polyurethane, acrylic, remedial, Australia',
         ]);
         return null;

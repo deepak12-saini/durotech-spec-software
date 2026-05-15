@@ -18,7 +18,7 @@
 			<h2 style="font-size:22px; margin-top:24px;">Products for terrace waterproofing</h2>
 			<p>Browse our <a href="<?= h($this->Url->build('/product')) ?>">waterproofing products</a> and <a href="<?= h($this->Url->build('/category/polyurethane-waterproofing-membrane')) ?>">membrane range</a>. For below-ground and structural applications, see our <a href="<?= h($this->Url->build('/retaining-walls')) ?>">retaining wall waterproofing</a> solutions.</p>
 
-			<p><strong>Case studies:</strong> See how our membranes perform in real projects on our <a href="<?= h($this->Url->build('/projects')) ?>">projects page</a>. For specifications and technical support, <a href="<?= h($this->Url->build('/contact')) ?>">contact us</a> or call 02 9603 1177.</p>
+			<p><strong>Case studies:</strong> See how our membranes perform in real projects on our <a href="<?= h($this->Url->build('/projects')) ?>">projects page</a>. For specifications and technical support, <a href="<?= h($this->Url->build('/contact')) ?>">contact us</a> or call <a href="tel:<?= h(preg_replace('/\D+/', '', PHONE)); ?>"><?= h(PHONE); ?></a>.</p>
 		</div>
 		<!--div class="about_director col-lg-12 col-md-12 col-sm-12">
 		      <div class="container">
