@@ -1,16 +1,24 @@
 <script>
 	function search() {
-		var searchPro = $.trim($("#searchPro").val());
+		var form = document.getElementById("formsubmit");
+		var input = document.getElementById("searchPro");
+		if (!form || !input) {
+			return false;
+		}
+		var searchPro = $.trim($(input).val());
 		if (searchPro.length >= 3) {
-			document.getElementById("formsubmit").submit();
+			form.submit();
 			return true;
 		}
-
 		return false;
 	}
 
 	jQuery(function ($) {
-		$("#formsubmit").on("submit", function () {
+		var $form = $("#formsubmit");
+		if (!$form.length) {
+			return;
+		}
+		$form.on("submit", function () {
 			return $.trim($("#searchPro").val()).length >= 3;
 		});
 	});
@@ -352,9 +360,41 @@
 	.header_fixed {
 		overflow: visible !important;
 	}
+	/* Mobile: center hamburger vertically with logo (Bootstrap float + toggle margins skew alignment) */
+	#header_top .navbar-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		float: none;
+		width: 100%;
+		margin: 0;
+	}
+	#header_top .navbar-header::before,
+	#header_top .navbar-header::after {
+		display: none !important;
+		content: none !important;
+	}
+	#header_top .navbar-toggle {
+		float: none;
+		order: 2;
+		margin: 0;
+		flex-shrink: 0;
+		align-self: center;
+	}
+	#header_top .navbar-brand {
+		float: none;
+		order: 1;
+		height: auto;
+		padding-top: 0;
+		padding-bottom: 0;
+		margin: 0;
+		flex: 1 1 auto;
+		min-width: 0;
+		align-self: center;
+	}
 	}
 	#header_top.header_fixed {
-		padding-top: 24px;
+		padding-top: 0;
 		background: #f4f4f4;
 		box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 	}
@@ -432,8 +472,25 @@
 	#header_top.header_fixed .container.example5 {
 		margin-top: 0 !important;
 		background: #f4f4f4;
-		padding-top: 16px;
-		padding-bottom: 16px;
+		padding-top: 6px;
+		padding-bottom: 6px;
+	}
+	#header_top.header_fixed .navbar.navbar-default {
+		background-color: #f4f4f4 !important;
+		background-image: none !important;
+		border: none !important;
+		border-radius: 0 !important;
+		margin-bottom: 0 !important;
+		box-shadow: none !important;
+	}
+	#header_top.header_fixed .navbar-default .navbar-collapse,
+	#header_top.header_fixed .navbar-default .navbar-form {
+		border-color: transparent !important;
+		box-shadow: none !important;
+	}
+	#header_top.header_fixed .container-fluid,
+	#header_top.header_fixed .navbar-header {
+		background-color: #f4f4f4;
 	}
 	#header_top.header_fixed .container.example5 .navbar {
 		background: #f4f4f4 !important;
@@ -884,9 +941,6 @@
 if (!isset($getCategories)) {
     $getCategories = [];
 }
-$isSearchPage = ($this->request->getParam('controller') === 'Products' && $this->request->getParam('action') === 'search');
-$searchtitle = $isSearchPage ? ($this->request->getSession()->read('searchtitle') ?? '') : '';
-$headerPhoneTel = preg_replace('/\D+/', '', PHONE);
 $currentMenuPass = $this->request->getParam('pass') ?: [];
 $currentMenuSlug = $this->request->getQuery('slug') ?? $this->request->getParam('slug') ?? ($currentMenuPass[0] ?? '');
 $currentMenuSlug = is_string($currentMenuSlug) ? trim(rawurldecode($currentMenuSlug)) : '';
@@ -897,56 +951,6 @@ $currentMenuIsProduct = ($currentMenuController === 'Products' && $currentMenuAc
 
 ?>
 <div class="header_fixed col-lg-12 col-md-12 col-sm-12" id="header_top">
-	<div class="header_top col-lg-12 col-md-12 col-sm-12">
-       <div class="row">
-			<div class="header_top_address col-lg-6 col-md-6 col-sm-12 col-xs-12">
-				<ul>
-						<li>
-							<i class="fa fa-map-marker" aria-hidden="true"></i>
-							<a href="https://www.google.com/maps?q=14+Essex+st,+Minto,+Sydney+NSW+2566" class="state-link" data-state="NSW" target="_blank" rel="noopener noreferrer" aria-label="New South Wales office map">NSW</a>
-						</li>
-						<li>
-							<i class="fa fa-map-marker" aria-hidden="true"></i>
-							<a href="https://www.google.com/maps?q=34+Indian+Drive,+Keysborough,+Victoria+3173" class="state-link" data-state="VIC" target="_blank" rel="noopener noreferrer" aria-label="Victoria office map">VICTORIA</a>
-						</li>
-						<li>
-							<i class="fa fa-map-marker" aria-hidden="true"></i>
-							<a href="https://www.google.com/maps?q=16+Export+Drive,+Molendinar,+Gold+Coast+4214" class="state-link" data-state="QLD" target="_blank" rel="noopener noreferrer" aria-label="Queensland office map">QUEENSLAND</a>
-						</li>
-						<li>
-							<i class="fa fa-map-marker" aria-hidden="true"></i>
-							<a href="https://www.google.com/maps?q=30C+Richard+Street,+Hindmarsh,+SA+5007" class="state-link" data-state="SA" target="_blank" rel="noopener noreferrer" aria-label="South Australia office map">SOUTH AUSTRALIA</a>
-						</li>
-				</ul>
-			</div>
-
-			<div class="header_top_social_search col-lg-2 col-md-2 col-sm-12 col-xs-12">
-				<form action="<?php echo SITEURL . 'products/search' ?>" method="get" id="formsubmit">
-					<input type="text" name="search" value="<?php echo $searchtitle; ?>" id="searchPro" placeholder="Search Product" required>
-					<a href="javascript:void(0)" onclick="search()"><i onclick="search()" class="fa fa-search" aria-hidden="true"></i></a>
-				</form>
-			</div>
-
-			<div class="header_top_contact col-lg-4 col-md-4 col-sm-12 col-xs-12">
-				<ul>
-					<li>
-						<a href="tel:<?php echo h($headerPhoneTel); ?>">
-							<i class="fa fa-phone" aria-hidden="true"></i>
-							<span class="sr-only">Phone: </span>
-							<?php echo h(PHONE); ?>
-						</a>
-					</li>
-					<li>
-						<a href="mailto:sales@durotechindustries.com.au">
-							<i class="fa fa-envelope" aria-hidden="true"></i>
-							<span>sales@durotechindustries.com.au</span>
-						</a>
-					</li>
-				</ul>
-			</div>
-	    </div>
-	</div>
-
 	<div class="container example5">
 		<nav class="navbar navbar-default">
 			<div class="container-fluid">
@@ -1109,23 +1113,57 @@ $currentMenuIsProduct = ($currentMenuController === 'Products' && $currentMenuAc
 		});
 	});
 
-	(function() {
-		var headerTop = document.querySelector(".header_top");
-		if (!headerTop) return;
-		function scrollTop() {
-			return window.scrollY || window.pageYOffset || (document.documentElement && document.documentElement.scrollTop) || (document.body && document.body.scrollTop) || 0;
+	jQuery(function ($) {
+		var headerRoot = document.getElementById("header_top");
+		if (!headerRoot) {
+			return;
 		}
-		function updateHeader() {
-			if (scrollTop() > 40) {
-				headerTop.classList.add("scrolled");
-			} else {
-				headerTop.classList.remove("scrolled");
+		function applyBannerTopPadding() {
+			var h = Math.ceil(headerRoot.getBoundingClientRect().height);
+			if (h < 1) {
+				return;
+			}
+			var pad = h;
+			var selectors = [
+				".durotech .banner",
+				".durotech .contact_banner",
+				".durotech .banner_durolab",
+				".durotech .page-about-wrap",
+				".durotech .banner-section"
+			];
+			for (var s = 0; s < selectors.length; s++) {
+				var nodes = document.querySelectorAll(selectors[s]);
+				for (var i = 0; i < nodes.length; i++) {
+					var el = nodes[i];
+					if (el.classList && el.classList.contains("banner_durolab")) {
+						var hasImg = el.querySelector && el.querySelector("img");
+						var inner = (el.innerHTML || "").replace(/\s+/g, "");
+						if (!hasImg && inner === "") {
+							el.style.setProperty("padding-top", "0", "important");
+							el.style.setProperty("margin-top", "0", "important");
+							el.style.setProperty("min-height", "0", "important");
+							continue;
+						}
+					}
+					el.style.setProperty("padding-top", pad + "px", "important");
+				}
 			}
 		}
-		window.addEventListener("scroll", updateHeader, { passive: true });
-		window.addEventListener("resize", updateHeader, { passive: true });
-		updateHeader();
-	})();
+		function syncLayout() {
+			document.body.classList.add("header-top-bar-removed");
+			applyBannerTopPadding();
+		}
+		window.addEventListener("resize", syncLayout, { passive: true });
+		window.addEventListener("load", syncLayout, { passive: true });
+		if (window.requestAnimationFrame) {
+			requestAnimationFrame(function () {
+				requestAnimationFrame(syncLayout);
+			});
+		} else {
+			setTimeout(syncLayout, 0);
+		}
+		syncLayout();
+	});
 
 	//new_code
 	$(".mega-dropdown").hover(

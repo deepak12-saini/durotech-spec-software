@@ -1,12 +1,7 @@
 <style>
-/* Push content below fixed header so banner sits under header with no overlap */
+/* Offset for fixed header is on .banner_durolab via customduro_header.js — no extra wrapper padding (avoids double gap). */
 .page-durolab-wrap {
-    padding-top: 200px;
-}
-@media (max-width: 767px) {
-    .page-durolab-wrap {
-        padding-top: 180px;
-    }
+    padding-top: 0;
 }
 .banner_durolab {
     overflow: visible;

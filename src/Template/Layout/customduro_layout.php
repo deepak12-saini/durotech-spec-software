@@ -53,6 +53,15 @@
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 	<script src="<?php echo SITEURL ;?>theme/js/jquery.validate.js"></script>
 	<style>
+	/* Match header grey so any sub-pixel gap under fixed header is not a harsh white line */
+	.durotech {
+		background-color: #f4f4f4;
+	}
+	/* Sitewide: no phantom band above dark footer (legacy theme used footer { padding-top: 150px }) */
+	.durotech > footer {
+		margin-top: 0;
+		padding-top: 0;
+	}
 	.ValidationErrors{
 		color: #d00;
 		display: inline-block;

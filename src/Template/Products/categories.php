@@ -1,12 +1,12 @@
 <style>
-/* Clear fixed header so "Categories" heading is not cut off */
+/* Space below fixed header — tuned in CSS (not full measured height) so mobile gap stays tight. */
 .products-categories-page {
-    padding-top: 40px;
+    padding-top: clamp(56px, 14vw, 76px);
     background: #e4edf4;
 }
-@media (max-width: 767px) {
+@media (min-width: 768px) {
     .products-categories-page {
-        padding-top: 40px;
+        padding-top: clamp(72px, 9vw, 96px);
     }
 }
 
@@ -29,13 +29,13 @@
 /* PAGE HEADING - clearly visible, never clipped */
 .category-heading {
     text-align: center;
-    margin: 34px 0 22px;
+    margin: clamp(16px, 4vw, 34px) 0 clamp(14px, 3vw, 22px);
     padding: 0 10px;
     min-height: 1px;
 }
 .category-heading .page-title {
     color: #2889c9;
-    font-size: 36px;
+    font-size: clamp(26px, 5.5vw, 36px);
     font-weight: 700;
     margin: 0;
     padding: 0 0 14px;
@@ -272,7 +272,7 @@
         height: 260px;
     }
     .category-heading .page-title {
-        font-size: 32px;
+        font-size: clamp(26px, 4.5vw, 32px);
     }
     .category-grid .row > div[class*="col-"] {
         margin-bottom: 40px;
@@ -287,10 +287,10 @@
         padding-right: 10px;
     }
     .category-heading {
-        margin: 24px 0 16px;
+        margin: 18px 0 14px;
     }
     .category-heading .page-title {
-        font-size: 28px;
+        font-size: clamp(22px, 5.2vw, 28px);
         font-weight: 700;
     }
     .category-grid .row {
@@ -338,7 +338,6 @@
 
 
 <div class="products-categories-page">
-<div class="banner_durolab col-lg-12 col-md-12 col-sm-12"></div>
 
 <div class="container category-grid">
 

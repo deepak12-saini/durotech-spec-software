@@ -1,19 +1,20 @@
 <style>
-/* Push content below fixed header so banner image is fully visible */
+/* Top offset for fixed #header_top — set in customduro_header.js (applyBannerTopPadding) from measured header height so mobile matches the real bar (avoids pale band or banner underlap). */
 .page-about-wrap {
-    padding-top: 140px;
+    padding-top: 70px;
     background: #e4edf4;
 }
-.content_about:first-child,
-.page-about-wrap > .content_about {
-    margin-top: 0;
-    padding-top: 0;
-    background: #e4edf4;
-}
-@media (max-width: 767px) {
+@media (min-width: 768px) {
     .page-about-wrap {
-        padding-top: 120px;
+        padding-top: 80px;
     }
+}
+/* style.css sets .content_about { padding: 40px 0 } — that top padding sits above the banner and reads as a gap under the header */
+.page-about-wrap > .content_about {
+    padding-top: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 40px;
 }
 /* Ensure banner image displays fully and is not clipped */
 .banner_about {

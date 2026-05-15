@@ -13,21 +13,11 @@
 	padding-bottom: 0 !important;
 	min-height: 0 !important;
 }
-/* Fixed header is out of document flow; old banner padding was the only offset — push first row below header */
+/* Fixed header: single offset (old 150–185px stacked with #header_top and felt like a huge empty band on mobile) */
 .banner_durolab-techhub-no-hero + .technical_search {
 	box-sizing: border-box;
-	padding-top: 150px;
+	padding-top: clamp(56px, 11vw, 88px);
 	background-color: #e4edf4;
-}
-@media (max-width: 991px) {
-	.banner_durolab-techhub-no-hero + .technical_search {
-		padding-top: 170px;
-	}
-}
-@media (max-width: 767px) {
-	.banner_durolab-techhub-no-hero + .technical_search {
-		padding-top: 185px;
-	}
 }
 .sidebar_cate{
 	width:100%;

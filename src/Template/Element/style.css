@@ -1304,9 +1304,21 @@ ul.clearfix {
 .banner_durolab {
 	float: left;
 	width: 100%;
-	padding-top: 150px;
+	padding-top: clamp(56px, 10vw, 88px);
+	margin-top: 0;
 	padding-left: 0px;
 	padding-right: 0px;
+	box-sizing: border-box;
+}
+@media (min-width: 992px) {
+	.banner_durolab {
+		padding-top: clamp(72px, 7vw, 96px);
+	}
+}
+@media (max-width: 767px) {
+	.banner_durolab {
+		padding-top: clamp(52px, 12vw, 76px);
+	}
 }
 .content.lab p {
 	text-align: center;
@@ -2035,7 +2047,8 @@ figure.snip0077 figcaption h2 {
 	width: 100%;
 }
 .banner_durolab {
-	padding-top: 145px;
+	padding-top: clamp(56px, 10vw, 88px);
+	margin-top: 0;
 }
 .content {
 	padding-top: 20px;
@@ -2295,8 +2308,9 @@ padding-top: 30px !important;
  padding-top: 0%;
 }	
 .banner_durolab {
- padding-top: 0px; 
-}	
+	padding-top: clamp(52px, 12vw, 76px);
+	margin-top: 0;
+}
 .content.lab p {
 	text-align: justify;
 	padding:0px;
@@ -2333,7 +2347,8 @@ footer {
 	width: 100%;
 }
 .banner_durolab {
-	padding-top: 85px;
+	padding-top: clamp(56px, 10vw, 84px);
+	margin-top: 0;
 }
 .content {
 	padding-top: 20px;

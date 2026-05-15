@@ -91,20 +91,10 @@
 </div>
 
 <style>
-/* Fixed #header_top — same pattern as about.php: offset so hero/cards are not under the header */
+/* Hero offset: customduro_header.js sets padding-top on .banner-section from #header_top height (avoid stacking with this wrapper). */
 .projects-page-wrap {
-    padding-top: 135px;
+    padding-top: 0;
     background: #e4edf4;
-}
-@media (max-width: 991px) {
-    .projects-page-wrap {
-        padding-top: 155px;
-    }
-}
-@media (max-width: 767px) {
-    .projects-page-wrap {
-        padding-top: 175px;
-    }
 }
 .projects-page-wrap .banner-section {
     margin: 0;

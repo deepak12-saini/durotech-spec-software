@@ -15,18 +15,8 @@
 }
 .banner_durolab-techhub-no-hero + .technical_search {
 	box-sizing: border-box;
-	padding-top: 150px;
+	padding-top: clamp(56px, 11vw, 88px);
 	background-color: #e4edf4;
-}
-@media (max-width: 991px) {
-	.banner_durolab-techhub-no-hero + .technical_search {
-		padding-top: 170px;
-	}
-}
-@media (max-width: 767px) {
-	.banner_durolab-techhub-no-hero + .technical_search {
-		padding-top: 185px;
-	}
 }
 .technical_search .form-control {
 	border: 1px solid #ccc !important;

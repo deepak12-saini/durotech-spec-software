@@ -16,15 +16,32 @@ $salesEmail = 'sales@durotechindustries.com.au';
 	--lp-surface: #ffffff;
 	--lp-radius: 18px;
 	--lp-shadow: 0 4px 6px rgba(26, 72, 96, 0.04), 0 18px 40px rgba(40, 137, 201, 0.12);
+	--lp-gutter: 16px;
 	font-family: Raleway, "Segoe UI", system-ui, -apple-system, sans-serif;
 	position: relative;
-	padding: 36px 18px 42px;
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 100%;
+	float: none;
+	clear: both;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 0;
+	padding: 36px var(--lp-gutter) 42px;
+	padding-left: max(var(--lp-gutter), env(safe-area-inset-left, 0px));
+	padding-right: max(var(--lp-gutter), env(safe-area-inset-right, 0px));
 	overflow: hidden;
 	background:
 		radial-gradient(120% 80% at 50% -20%, rgba(255, 255, 255, 0.75) 0%, transparent 55%),
 		linear-gradient(165deg, #e8f3fb 0%, #d4e8f5 45%, #c5dff0 100%);
 	border-top: 1px solid rgba(40, 137, 201, 0.18);
 	border-bottom: 1px solid rgba(26, 72, 96, 0.08);
+}
+@media (min-width: 768px) {
+	.locations-promo-strip {
+		--lp-gutter: 20px;
+	}
 }
 .locations-promo-strip::before {
 	content: "";
@@ -39,8 +56,11 @@ $salesEmail = 'sales@durotechindustries.com.au';
 .locations-promo-strip .locations-promo-inner {
 	position: relative;
 	z-index: 1;
+	box-sizing: border-box;
+	width: 100%;
 	max-width: 1040px;
-	margin: 0 auto;
+	margin-left: auto;
+	margin-right: auto;
 	background: var(--lp-surface);
 	border-radius: var(--lp-radius);
 	box-shadow: var(--lp-shadow);
@@ -109,35 +129,27 @@ $salesEmail = 'sales@durotechindustries.com.au';
 	list-style: none;
 	margin: 0 0 24px;
 	padding: 0;
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: center;
-	align-items: stretch;
+	display: grid;
+	grid-template-columns: 1fr 1fr;
 	gap: 10px;
+	align-items: stretch;
 }
 .locations-promo-strip .locations-promo-locs li {
 	margin: 0;
 	padding: 0;
-	flex: 1 1 auto;
 	min-width: 0;
-	max-width: 100%;
-}
-@media (min-width: 480px) {
-	.locations-promo-strip .locations-promo-locs li {
-		flex: 0 1 calc(50% - 6px);
-		max-width: calc(50% - 6px);
-	}
 }
 @media (min-width: 992px) {
-	.locations-promo-strip .locations-promo-locs li {
-		flex: 1 1 0;
-		max-width: none;
+	.locations-promo-strip .locations-promo-locs {
+		grid-template-columns: repeat(4, 1fr);
 	}
 }
 .locations-promo-strip .locations-promo-locs a {
 	display: flex;
 	align-items: center;
-	justify-content: center;
+	justify-content: flex-start;
+	width: 100%;
+	box-sizing: border-box;
 	gap: 10px;
 	min-height: 48px;
 	padding: 10px 14px;
@@ -257,7 +269,7 @@ $salesEmail = 'sales@durotechindustries.com.au';
 	box-shadow: 0 0 0 3px rgba(40, 137, 201, 0.25), 0 8px 22px rgba(40, 137, 201, 0.1);
 }
 </style>
-<section class="locations-promo-strip col-lg-12 col-md-12 col-sm-12 col-xs-12" aria-label="Office locations and sales contact">
+<section class="locations-promo-strip" aria-label="Office locations and sales contact">
 	<div class="locations-promo-inner">
 		<header class="locations-promo-head">
 			<p class="locations-promo-kicker">Nationwide</p>
