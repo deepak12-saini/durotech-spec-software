@@ -5,7 +5,7 @@
 			Product List <?php echo $this->Html->link('Add New',array('controller' => 'products','action' => 'admin_add'),array('class'=>'btn btn-info btn-xs top-button')); ?>
 			
 			<form action="" method="get" style="float:right;">
-				<input type="text" name="productname" value="<?php echo h($name); ?>" placeholder="Search By Product Name" >
+				<input type="text" name="productname" value="<?php echo h($name); ?>" placeholder="Search by product or category name">
 				<input type="submit" name="search" value="search" class="btn btn-info btn-xs top-button" >
 			</form>				
 			</h1>

@@ -1168,9 +1168,18 @@ class ProductsController extends AppController
 			'limit' => 25,
 			'order' => ['Product.id' => 'DESC'],
 		];
-		$query = $this->Product->find()->contain(['Category']);
+		$query = $this->Product->find()
+			->contain(['Category'])
+			->leftJoinWith('Category');
 		if ($name !== '') {
-			$query->where(['Product.title LIKE' => '%' . $name . '%']);
+			$term = '%' . $name . '%';
+			$query->where([
+				'OR' => [
+					'Product.title LIKE' => $term,
+					'Product.product_code LIKE' => $term,
+					'Category.category_name LIKE' => $term,
+				],
+			]);
 		}
 		$results = $this->paginate($query);
 
