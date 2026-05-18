@@ -253,6 +253,7 @@
 		--duro-stripe-thick: 9px;
 		--duro-stripe-color: 36px;
 		--duro-stripe-gap: 16px;
+		display: block;
 		width: 100%;
 		min-height: 194px;
 		box-sizing: border-box;
@@ -263,6 +264,13 @@
 		position: relative;
 		overflow: hidden;
 		isolation: isolate;
+		text-decoration: none;
+		color: inherit;
+		cursor: pointer;
+	}
+	.tab_service .images:focus-visible {
+		outline: 2px solid #2889c8;
+		outline-offset: 2px;
 	}
 	.tab_service .images::before {
 		content: "";
@@ -328,13 +336,11 @@
 		float:right;
 		font-size: 17px;
 		font-weight: 500;
-	}
-	.spn_right a {
-		color: #586074 !important;
+		color: #586074;
 		transition: color 0.2s ease;
 	}
-	.tab_service .images:hover .spn_right a {
-		color: #2889c8 !important;
+	.tab_service .images:hover .spn_right {
+		color: #2889c8;
 	}
 
 
@@ -543,29 +549,29 @@
 		
 		      <div class="container_service">
 			       <div class="col-lg-4 col-md-4 col-sm-4 tab_service">
-					  <div class="images">
+					  <a class="images" href="<?php echo SITEURL.'products'; ?>">
 					      <div class="div_right">
-							<span class="spn_right"><a style="color:#585A5A;" href="<?php echo SITEURL.'products'; ?>">View All</a></span>
+							<span class="spn_right">View All</span>
 						  </div>
 						  <div class="img_left">
-							<img src="<?php echo SITEURL ;?>img/paint-bucket.png">
+							<img src="<?php echo SITEURL ;?>img/paint-bucket.png" alt="">
 						  </div>
 						  <h3 class="h2_color">Duro Products</h3>
 						  <p  class="p_color">A wide range of waterproofing Products</p>
-					  </div>
+					  </a>
 					
 					</div>
 					<div class="col-lg-4 col-md-4 col-sm-4 tab_service">
-					  <div class="images">
+					  <a class="images" href="<?php echo SITEURL.'technical-literature'; ?>">
 					      <div class="div_right">
-							<span class="spn_right"><a style="color:#585A5A;" href="<?php echo SITEURL.'technical-literature'; ?>">View All</a></span>
+							<span class="spn_right">View All</span>
 						  </div>
 						  <div class="img_left">
-							<img src="<?php echo SITEURL ;?>img/book.png">
+							<img src="<?php echo SITEURL ;?>img/book.png" alt="">
 						  </div>
 						  <h3 class="h2_color">Technical Literature</h3>
 						  <p  class="p_color">Products datasheet and other documents</p>
-					  </div>
+					  </a>
 					
 					</div>
 					
@@ -585,16 +591,16 @@
 					
 					
 					<div class="col-lg-4 col-md-4 col-sm-4 tab_service">
-					  <div class="images">
+					  <a class="images" href="<?php echo SITEURL.'durolab'; ?>">
 					      <div class="div_right">
-							<span class="spn_right"><a style="color:#585A5A;" href="<?php echo SITEURL.'durolab'; ?>">View All</a></span>
+							<span class="spn_right">View All</span>
 						  </div>
 						  <div class="img_left">
-							<img src="<?php echo SITEURL ;?>img/chemistry.png">
+							<img src="<?php echo SITEURL ;?>img/chemistry.png" alt="">
 						  </div>
 						  <h3 class="h2_color">DuroLab</h3>
 						  <p  class="p_color">Product Testing with latest technology.</p>
-					  </div>
+					  </a>
 					
 					</div>
 					
