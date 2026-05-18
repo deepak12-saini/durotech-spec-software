@@ -440,7 +440,8 @@ class ProductsController extends AppController
 	public function search(): ?Response
 	{
 		$this->viewBuilder()->setLayout(false);
-		// Accept GET (no CSRF) or POST; field may be 'search' or 'data[search]'
+		$this->request->allowMethod(['get', 'post']);
+		// Accept GET (preferred) or legacy POST; field may be 'search' or 'data[search]'
 		$searchtitle = trim(
 			$this->request->getQuery('search') ?? $this->request->getData('search') ?? $this->request->getData('data.search') ?? ''
 		);

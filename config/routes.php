@@ -81,6 +81,14 @@ Router::scope('/', function (RouteBuilder $routes) {
             if (stripos($path, 'mailers/list') !== false) {
                 return true;
             }
+
+            // Public product search (GET form; skip avoids 403 when legacy POST/CSRF hits production)
+            if ($controller === 'products' && strtolower($action) === 'search') {
+                return true;
+            }
+            if (stripos($path, 'products/search') !== false) {
+                return true;
+            }
             
             // Also check by path as fallback
             $skipPaths = [
@@ -510,6 +518,7 @@ Router::scope('/', function (RouteBuilder $routes) {
         'controller' => 'Products',
         'action' => 'detail',
     ], ['pass' => ['slug']]);
+    $routes->connect('/products/search', ['controller' => 'Products', 'action' => 'search']);
     // Admin product edit (support both /products/edit/:id and /admin/products/edit/:id)
     $routes->connect('/products/edit/:id', ['controller' => 'Products', 'action' => 'admin_edit'], ['pass' => ['id']]);
     $routes->connect('/products/project/:id', ['controller' => 'Products', 'action' => 'project'], ['pass' => ['id']]);

@@ -18,7 +18,7 @@ footer {
 	  
 			<div class="product_filter col-lg-3 col-md-3 col-sm-3">
 				<div class="product_search">
-					<form action="<?php echo SITEURL.'products/search'?>" method="post">
+					<form action="<?php echo SITEURL.'products/search'?>" method="get">
 						<input type="search" name="search" placeholder="Search Product" required>
 						<input type="submit"  class="btn btn-primary" value="Search">
 					</form>

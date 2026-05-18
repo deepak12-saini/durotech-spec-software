@@ -215,9 +215,9 @@ a:focus, a:hover {
 					</div>
 					<div class="col-lg-4 col-md-4 col-sm-4">
 						<div class="product_search">
-							<?= $this->Form->create(null, ['url' => ['controller' => 'Products', 'action' => 'search'], 'method' => 'get']) ?>
+							<form action="<?= h($this->Url->build(['controller' => 'Products', 'action' => 'search'])) ?>" method="get">
 								<input type="search" name="search" placeholder="Search Product" required>
-							<?= $this->Form->end() ?>
+							</form>
 						</div>
 					</div>
 					
