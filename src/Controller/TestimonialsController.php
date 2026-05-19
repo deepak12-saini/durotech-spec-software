@@ -43,8 +43,10 @@ class TestimonialsController extends AppController
         }
 
         $testimonials = $this->Testimonials->find()
-            ->where(['Testimonials.created_by' => $employee_id]);
-        $this->set(compact('testimonials'));
+            ->contain(['Employees'])
+            ->orderAsc('Testimonials.display_order')
+            ->orderDesc('Testimonials.id');
+        $this->set(compact('testimonials', 'employee_id'));
     }
 
     /**
@@ -232,7 +234,14 @@ class TestimonialsController extends AppController
             throw new NotFoundException(__('Invalid testimonial'));
         }
 
+        $session = $this->request->getSession();
+        $employee_id = (int)$session->read('Employee.id');
+
         $existing = $this->Testimonials->get($id);
+        if ((int)($existing->created_by ?? 0) !== $employee_id) {
+            $this->Flash->error('You can only edit testimonials you created.');
+            return $this->redirect(['action' => 'employee_index']);
+        }
         $this->set('existing', $existing);
 
         if ($this->request->is(['post', 'put', 'patch'])) {
@@ -310,9 +319,16 @@ class TestimonialsController extends AppController
         $this->request->allowMethod(['post', 'delete']);
         $this->checkEmployeeSession();
 
+        $session = $this->request->getSession();
+        $employee_id = (int)$session->read('Employee.id');
+
         $testimonial = $this->Testimonials->get($id);
         if (!$testimonial) {
             throw new NotFoundException('Invalid testimonial');
+        }
+        if ((int)($testimonial->created_by ?? 0) !== $employee_id) {
+            $this->Flash->error('You can only delete testimonials you created.');
+            return $this->redirect(['action' => 'employee_index']);
         }
 
         if ($this->Testimonials->delete($testimonial)) {
