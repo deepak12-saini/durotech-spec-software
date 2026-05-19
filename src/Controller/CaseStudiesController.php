@@ -60,20 +60,62 @@ class CaseStudiesController extends AppController
     public function adminIndex()
     {
         $this->viewBuilder()->setLayout('admin_layout');
+        $this->set('title_for_layout', (defined('SITENAME') ? SITENAME : '') . ' Case Studies');
 
+        $schema = $this->CaseStudies->getSchema();
         $contain = ['CaseImages', 'Products'];
-        if ($this->CaseStudies->getSchema()->hasColumn('created_by')) {
+        if ($schema->hasColumn('created_by')) {
             $contain[] = 'Employee';
         }
 
-        $this->paginate = [
-            'limit' => 10,
-            'order' => ['CaseStudies.id' => 'DESC'],
-            'contain' => $contain,
+        $filters = [
+            'keyword' => trim((string)$this->request->getQuery('keyword')),
+            'status' => trim((string)$this->request->getQuery('status')),
+            'date_from' => trim((string)$this->request->getQuery('date_from')),
+            'date_to' => trim((string)$this->request->getQuery('date_to')),
         ];
 
-        $caseStudies = $this->paginate($this->CaseStudies);
-        $this->set(compact('caseStudies'));
+        $query = $this->CaseStudies->find()->contain($contain);
+
+        if ($filters['keyword'] !== '') {
+            $keywordLike = '%' . $filters['keyword'] . '%';
+            $searchFields = [];
+            foreach (['title', 'location', 'short_summary', 'challenge', 'solution', 'outcome'] as $field) {
+                if ($schema->hasColumn($field)) {
+                    $searchFields['CaseStudies.' . $field . ' LIKE'] = $keywordLike;
+                }
+            }
+            if (!empty($searchFields)) {
+                $query->andWhere(['OR' => $searchFields]);
+            }
+        }
+
+        if ($filters['status'] !== '' && $schema->hasColumn('status')) {
+            $query->andWhere(['CaseStudies.status' => (int)$filters['status']]);
+        }
+
+        if ($filters['date_from'] !== '' && $schema->hasColumn('project_date')) {
+            $query->andWhere(['CaseStudies.project_date >=' => $filters['date_from']]);
+        }
+
+        if ($filters['date_to'] !== '' && $schema->hasColumn('project_date')) {
+            $query->andWhere(['CaseStudies.project_date <=' => $filters['date_to']]);
+        }
+
+        $order = ['CaseStudies.id' => 'DESC'];
+        if ($schema->hasColumn('created')) {
+            $order = ['CaseStudies.created' => 'DESC', 'CaseStudies.id' => 'DESC'];
+        } elseif ($schema->hasColumn('modified')) {
+            $order = ['CaseStudies.modified' => 'DESC', 'CaseStudies.id' => 'DESC'];
+        }
+        $query->order($order);
+
+        $caseStudies = $this->paginate($query, [
+            'limit' => 15,
+            'order' => $order,
+        ]);
+
+        $this->set(compact('caseStudies', 'filters'));
         return null;
     }
 

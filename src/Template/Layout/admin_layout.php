@@ -23,7 +23,7 @@
 <head>
 	<?php echo $this->Html->charset(); ?>
 	<title>
-		<?php echo $title_for_layout; ?>
+		<?php echo h($title_for_layout ?? (defined('SITENAME') ? SITENAME : 'Admin')); ?>
 	</title>
 	<?php
 		echo $this->Html->meta('icon');
