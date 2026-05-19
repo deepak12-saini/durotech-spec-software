@@ -2813,6 +2813,71 @@ protected function _deleteDirectory($dir)
     /**
      * Delete a single case image. Redirects back to case edit.
      */
+    public function delete_case_featured($caseId = null)
+    {
+        return $this->_employeeClearCaseStudyMediaField($caseId, 'featured_image', __('Cover image removed.'));
+    }
+
+    public function delete_case_datasheet($caseId = null)
+    {
+        return $this->_employeeClearCaseStudyMediaField($caseId, 'datasheet', __('Datasheet removed.'));
+    }
+
+    /** CakePHP 3 action aliases. */
+    public function deleteCaseFeatured($caseId = null)
+    {
+        return $this->delete_case_featured($caseId);
+    }
+
+    public function deleteCaseDatasheet($caseId = null)
+    {
+        return $this->delete_case_datasheet($caseId);
+    }
+
+    /**
+     * Remove featured image or datasheet from an employee case study.
+     *
+     * @param int|null $caseId Case study id
+     * @param string $field featured_image|datasheet
+     * @param string $successMessage Flash message
+     * @return \Cake\Http\Response|null
+     */
+    protected function _employeeClearCaseStudyMediaField($caseId, $field, $successMessage)
+    {
+        $this->viewBuilder()->setLayout('employee_layout');
+        $this->checkEmployeeSession();
+
+        if (!$caseId || !in_array($field, ['featured_image', 'datasheet'], true)) {
+            $this->Flash->error(__('Invalid request.'));
+            return $this->redirect(['action' => 'case_studies']);
+        }
+
+        $caseId = (int)$caseId;
+        try {
+            $entity = $this->CaseStudy->get($caseId);
+        } catch (\Exception $e) {
+            $this->Flash->error(__('Case study not found.'));
+            return $this->redirect(['action' => 'case_studies']);
+        }
+
+        $path = (string)($entity->get($field) ?? '');
+        if ($path !== '') {
+            $filePath = WWW_ROOT . str_replace('/', DS, ltrim($path, '/'));
+            if (file_exists($filePath)) {
+                @unlink($filePath);
+            }
+        }
+
+        $entity->set($field, null);
+        if ($this->CaseStudy->save($entity)) {
+            $this->Flash->success($successMessage);
+        } else {
+            $this->Flash->error(__('Could not remove file.'));
+        }
+
+        return $this->redirect(['action' => 'case_edit', $caseId]);
+    }
+
     public function delete_case_image($caseId = null, $imageId = null)
     {
         $this->viewBuilder()->setLayout('employee_layout');

@@ -69,6 +69,31 @@ $buildDeleteUrl = function ($imageId) use ($panel, $caseId) {
     return $this->Url->build('/admin/case_studies/delete_image/' . (int)$imageId);
 };
 
+$buildFeaturedDeleteUrl = function () use ($panel, $caseId) {
+    if (!$caseId) {
+        return null;
+    }
+    if ($panel === 'employee') {
+        return $this->Url->build(['controller' => 'Employees', 'action' => 'delete_case_featured', (int)$caseId]);
+    }
+
+    return $this->Url->build('/admin/case_studies/delete_featured/' . (int)$caseId);
+};
+
+$buildDatasheetDeleteUrl = function () use ($panel, $caseId) {
+    if (!$caseId) {
+        return null;
+    }
+    if ($panel === 'employee') {
+        return $this->Url->build(['controller' => 'Employees', 'action' => 'delete_case_datasheet', (int)$caseId]);
+    }
+
+    return $this->Url->build('/admin/case_studies/delete_datasheet/' . (int)$caseId);
+};
+
+$featuredDeleteUrl = ($featuredPath !== '' && $caseId) ? $buildFeaturedDeleteUrl() : null;
+$datasheetDeleteUrl = ($datasheetPath !== '' && $caseId) ? $buildDatasheetDeleteUrl() : null;
+
 $imgUrl = function ($filename) {
     return h($this->Url->build('/' . ltrim((string)$filename, '/'), ['fullBase' => true]));
 };
@@ -94,6 +119,14 @@ $imgUrl = function ($filename) {
                 <div class="case-upload-preview">
                     <div class="case-upload-preview__label">Current image</div>
                     <div class="case-upload-preview__img-wrap">
+                        <?php if ($featuredDeleteUrl): ?>
+                            <a href="<?= h($featuredDeleteUrl); ?>"
+                               class="btn btn-danger btn-sm case-upload-preview__delete"
+                               title="Remove cover image"
+                               onclick="return confirm('Remove this cover image?');">
+                                <i class="fa fa-trash"></i>
+                            </a>
+                        <?php endif; ?>
                         <img src="<?= $imgUrl($featuredPath); ?>" alt="Featured">
                     </div>
                 </div>
@@ -115,9 +148,19 @@ $imgUrl = function ($filename) {
             <?php if ($datasheetPath !== ''): ?>
                 <div class="case-upload-preview">
                     <div class="case-upload-preview__label">Current file</div>
-                    <a href="<?= $imgUrl($datasheetPath); ?>" target="_blank" class="btn btn-sm btn-outline-primary">
-                        <i class="fa fa-external-link"></i> View datasheet
-                    </a>
+                    <div class="case-upload-preview__file-wrap">
+                        <?php if ($datasheetDeleteUrl): ?>
+                            <a href="<?= h($datasheetDeleteUrl); ?>"
+                               class="btn btn-danger btn-sm case-upload-preview__delete"
+                               title="Remove datasheet"
+                               onclick="return confirm('Remove this datasheet?');">
+                                <i class="fa fa-trash"></i>
+                            </a>
+                        <?php endif; ?>
+                        <a href="<?= $imgUrl($datasheetPath); ?>" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="fa fa-external-link"></i> View datasheet
+                        </a>
+                    </div>
                 </div>
             <?php endif; ?>
         </div>

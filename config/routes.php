@@ -551,6 +551,8 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/case_studies/approve/:id', ['controller' => 'CaseStudies', 'action' => 'adminApprove'], ['pass' => ['id']]);
     $routes->connect('/admin/case_studies/delete_image/:id', ['controller' => 'CaseStudies', 'action' => 'adminDeleteImage'], ['pass' => ['id']]);
     $routes->connect('/admin/case_studies/admin-delete-image/:id', ['controller' => 'CaseStudies', 'action' => 'adminDeleteImage'], ['pass' => ['id']]);
+    $routes->connect('/admin/case_studies/delete_featured/:id', ['controller' => 'CaseStudies', 'action' => 'adminDeleteFeatured'], ['pass' => ['id']]);
+    $routes->connect('/admin/case_studies/delete_datasheet/:id', ['controller' => 'CaseStudies', 'action' => 'adminDeleteDatasheet'], ['pass' => ['id']]);
 
     // ---------- FILES: all /files/* go to ProductsController (never FilesController) ----------
     $routes->connect('/files/datasheets/*', [

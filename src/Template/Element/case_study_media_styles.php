@@ -134,6 +134,13 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
+    z-index: 2;
+}
+.case-upload-preview__file-wrap {
+    position: relative;
+    display: inline-block;
+    padding-top: 0.25rem;
+    padding-right: 2.5rem;
 }
 .case-upload-preview__new { margin-top: 0.75rem; }
 .case-upload-preview__new img {

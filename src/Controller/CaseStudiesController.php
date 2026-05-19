@@ -615,6 +615,61 @@ class CaseStudiesController extends AppController
     }
 
     /**
+     * Admin: remove featured (cover) image from a case study.
+     *
+     * @param string|int|null $id Case study id
+     * @return \Cake\Http\Response|null
+     */
+    public function adminDeleteFeatured($id = null)
+    {
+        return $this->_adminClearCaseStudyMediaField($id, 'featured_image', __('Cover image removed.'));
+    }
+
+    /**
+     * Admin: remove datasheet from a case study.
+     *
+     * @param string|int|null $id Case study id
+     * @return \Cake\Http\Response|null
+     */
+    public function adminDeleteDatasheet($id = null)
+    {
+        return $this->_adminClearCaseStudyMediaField($id, 'datasheet', __('Datasheet removed.'));
+    }
+
+    /**
+     * Clear a file column on a case study and delete the file from disk.
+     *
+     * @param string|int|null $id Case study id
+     * @param string $field featured_image|datasheet
+     * @param string $successMessage Flash message on success
+     * @return \Cake\Http\Response|null
+     */
+    protected function _adminClearCaseStudyMediaField($id, string $field, string $successMessage)
+    {
+        if (!$id || !in_array($field, ['featured_image', 'datasheet'], true)) {
+            throw new NotFoundException(__('Invalid request'));
+        }
+
+        $entity = $this->CaseStudies->get((int)$id);
+        $path = (string)($entity->get($field) ?? '');
+        if ($path !== '') {
+            $filePath = WWW_ROOT . str_replace('/', DS, ltrim($path, '/'));
+            if (file_exists($filePath)) {
+                @unlink($filePath);
+            }
+        }
+
+        $entity->set($field, null);
+        if ($this->CaseStudies->save($entity)) {
+            $this->Flash->success($successMessage);
+        } else {
+            $this->Flash->error(__('Could not remove file.'));
+        }
+
+        return $this->redirect($this->referer());
+    }
+
+    /**
      * Admin: approve case study
      *
      * @param string|int|null $id Case study id
