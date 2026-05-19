@@ -183,6 +183,7 @@ class FrontsController extends AppController
         ]);
 
         $query = $this->CaseStudies->find()
+            ->where(['CaseStudies.status' => 1])
             ->orderDesc('CaseStudies.id');
         $projects = [];
         foreach ($query as $entity) {
@@ -204,7 +205,10 @@ class FrontsController extends AppController
         }
 
         $caseStudy = $this->CaseStudies->find()
-            ->where(['CaseStudies.slug' => $slug])
+            ->where([
+                'CaseStudies.slug' => $slug,
+                'CaseStudies.status' => 1,
+            ])
             ->contain([
                 'CaseImages',
                 'Products' => function ($q) {
