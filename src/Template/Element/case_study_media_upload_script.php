@@ -2,10 +2,53 @@
 (function () {
     function initUploadZone(zone) {
         var input = zone.querySelector('input[type="file"]');
-        var filenameEl = zone.querySelector('[data-filename]');
+        var filenameEl = zone.querySelector('[data-filename]') || zone.querySelector('[data-gallery-filename]');
         var fieldName = zone.getAttribute('data-upload-zone');
         var previewEl = document.querySelector('[data-preview="' + fieldName + '"]');
         if (!input) {
+            return;
+        }
+
+        if (fieldName === 'gallery_images' && input.multiple) {
+            function showGalleryFiles(fileList) {
+                if (!fileList || !fileList.length) {
+                    return;
+                }
+                if (filenameEl) {
+                    var names = [];
+                    for (var g = 0; g < fileList.length; g++) {
+                        names.push(fileList[g].name);
+                    }
+                    filenameEl.textContent = fileList.length + ' photo(s) selected: ' + names.join(', ');
+                }
+                zone.classList.add('has-file');
+            }
+
+            input.addEventListener('change', function () {
+                showGalleryFiles(input.files);
+            });
+
+            ['dragenter', 'dragover'].forEach(function (ev) {
+                zone.addEventListener(ev, function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    zone.classList.add('is-dragover');
+                });
+            });
+            ['dragleave', 'drop'].forEach(function (ev) {
+                zone.addEventListener(ev, function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    zone.classList.remove('is-dragover');
+                });
+            });
+            zone.addEventListener('drop', function (e) {
+                var files = e.dataTransfer && e.dataTransfer.files;
+                if (files && files.length) {
+                    input.files = files;
+                    showGalleryFiles(files);
+                }
+            });
             return;
         }
 

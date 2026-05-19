@@ -56,6 +56,43 @@
 .case-upload-card__badge--after { background: #d1fae5; color: #065f46; }
 .case-upload-card__badge--featured { background: #dbeafe; color: #1e40af; }
 .case-upload-card__badge--pdf { background: #fce7f3; color: #9d174d; }
+.case-upload-card__badge--gallery { background: #ede9fe; color: #5b21b6; }
+.case-gallery-card { margin-top: 1.25rem; }
+.case-gallery-card__hint { font-size: 0.875rem; margin-bottom: 0.75rem; }
+.case-upload-zone--gallery { min-height: 100px; }
+.case-gallery-file-input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+}
+.existing-images-gallery {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 0.5rem;
+    padding: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    max-height: 320px;
+    overflow-y: auto;
+}
+.existing-images-gallery .image-card {
+    flex: 0 0 auto;
+    width: 140px;
+    position: relative;
+}
+.existing-images-gallery .image-card img {
+    width: 100%;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    display: block;
+}
 .case-upload-zone {
     position: relative;
     border: 2px dashed #cbd5e1;

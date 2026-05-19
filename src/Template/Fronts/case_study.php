@@ -432,6 +432,7 @@ $featuredImage = !empty($caseData['featured_image']) ? SITEURL . $caseData['feat
                 }
             }
             ?>
+            <?php if ($beforeImg || $afterImg): ?>
             <section id="gallery">
                 <h4 class="gallery-title">Before / After Comparison</h4>
                 <div class="row project-gallery">
@@ -451,15 +452,24 @@ $featuredImage = !empty($caseData['featured_image']) ? SITEURL . $caseData['feat
                             </a>
                         </div>
                     <?php endif; ?>
+                </div>
+            </section>
+            <?php endif; ?>
+
+            <?php if (!empty($otherGalleryImages)): ?>
+            <section id="project-photos">
+                <h4 class="gallery-title">Project Photo Gallery</h4>
+                <div class="row project-gallery">
                     <?php foreach ($otherGalleryImages as $img): ?>
-                        <div class="col-md-6 col-sm-6 mb-4">
+                        <div class="col-md-4 col-sm-6 mb-4">
                             <a href="<?= h(SITEURL . $img['filename']) ?>" class="gallery-item" data-lightbox="case-gallery">
-                                <img src="<?= h(SITEURL . $img['filename']) ?>" alt="Project Image" loading="lazy">
+                                <img src="<?= h(SITEURL . $img['filename']) ?>" alt="Project photo" loading="lazy">
                             </a>
                         </div>
                     <?php endforeach; ?>
                 </div>
             </section>
+            <?php endif; ?>
         <?php endif; ?>
 
         <?php if (!empty($case['CaseProduct'])): ?>

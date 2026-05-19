@@ -222,25 +222,41 @@ $imgUrl = function ($filename) {
         </div>
     </div>
 
-    <?php if (!empty($otherImages)): ?>
-        <div class="case-upload-card case-upload-card--full" style="margin-top: 1.25rem;">
-            <div class="case-upload-card__label">Other gallery images</div>
+    <div class="case-upload-card case-upload-card--full case-gallery-card">
+        <div class="case-upload-card__label">
+            <span class="case-upload-card__badge case-upload-card__badge--gallery">Gallery</span>
+            Project photos (multiple)
+        </div>
+        <p class="case-gallery-card__hint text-muted">Add as many site / finished photos as you need. Hold Ctrl (Windows) or Cmd (Mac) to select multiple files at once. Each save adds to the gallery below.</p>
+        <div class="case-upload-zone case-upload-zone--gallery" data-upload-zone="gallery_images">
+            <i class="fa fa-images case-upload-zone__icon"></i>
+            <p class="case-upload-zone__text">Click or drag multiple photos here</p>
+            <span class="case-upload-zone__filename" data-gallery-filename></span>
+            <input type="file" name="gallery_images[]" id="gallery_images" accept="image/*" multiple class="case-gallery-file-input">
+        </div>
+
+        <?php if (!empty($otherImages)): ?>
+            <div class="case-upload-preview__label" style="margin-top: 1rem;">Current gallery (<?= count($otherImages); ?>)</div>
             <div class="existing-images-gallery">
                 <?php foreach ($otherImages as $img):
                     $imgId = is_object($img) ? $img->id : ($img['id'] ?? null);
                     $imgFilename = is_object($img) ? $img->filename : ($img['filename'] ?? '');
                 ?>
                     <div class="image-card position-relative">
-                        <a href="<?= h($buildDeleteUrl($imgId)); ?>"
-                           class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 rounded-circle shadow"
-                           title="Delete image"
-                           onclick="return confirm('Delete this image?');">
-                            <i class="fa fa-trash"></i>
-                        </a>
-                        <img src="<?= $imgUrl($imgFilename); ?>" alt="Gallery">
+                        <?php if ($caseId && $imgId): ?>
+                            <a href="<?= h($buildDeleteUrl($imgId)); ?>"
+                               class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 rounded-circle shadow"
+                               title="Remove photo"
+                               onclick="return confirm('Remove this photo from the gallery?');">
+                                <i class="fa fa-trash"></i>
+                            </a>
+                        <?php endif; ?>
+                        <img src="<?= $imgUrl($imgFilename); ?>" alt="Project photo">
                     </div>
                 <?php endforeach; ?>
             </div>
-        </div>
-    <?php endif; ?>
+        <?php else: ?>
+            <p class="text-muted small mb-0 mt-2">No gallery photos yet.</p>
+        <?php endif; ?>
+    </div>
 </section>

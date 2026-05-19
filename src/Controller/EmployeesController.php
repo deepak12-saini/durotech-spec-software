@@ -2497,6 +2497,127 @@ public function editsendV3($id = null) {
         $this->_saveFeaturedImage($caseId, $uploadDir, false);
         $this->_saveTypedCaseImage($caseId, $this->_resolveUploadedFile('before_image'), 'before');
         $this->_saveTypedCaseImage($caseId, $this->_resolveUploadedFile('after_image'), 'after');
+        $this->_saveGalleryImages($caseId);
+    }
+
+    protected function _collectGalleryUploads()
+    {
+        $files = [];
+
+        $uploaded = $this->request->getUploadedFiles();
+        if (!empty($uploaded['gallery_images'])) {
+            foreach ((array)$uploaded['gallery_images'] as $file) {
+                if ($file instanceof UploadedFileInterface && $file->getError() === UPLOAD_ERR_OK) {
+                    $files[] = $file;
+                }
+            }
+        }
+
+        if (!empty($_FILES['gallery_images']['name'])) {
+            $names = $_FILES['gallery_images']['name'];
+            if (is_array($names)) {
+                foreach ($names as $i => $name) {
+                    if ($name === '' || ($_FILES['gallery_images']['error'][$i] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+                        continue;
+                    }
+                    $tmp = $_FILES['gallery_images']['tmp_name'][$i] ?? '';
+                    if (!is_string($tmp) || $tmp === '') {
+                        continue;
+                    }
+                    $files[] = [
+                        'tmp_name' => $tmp,
+                        'name' => $name,
+                        'error' => (int)$_FILES['gallery_images']['error'][$i],
+                        'type' => $_FILES['gallery_images']['type'][$i] ?? '',
+                        'size' => (int)($_FILES['gallery_images']['size'][$i] ?? 0),
+                    ];
+                }
+            } elseif (is_string($names) && $names !== '' && ($_FILES['gallery_images']['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
+                $files[] = [
+                    'tmp_name' => $_FILES['gallery_images']['tmp_name'],
+                    'name' => $names,
+                    'error' => (int)$_FILES['gallery_images']['error'],
+                    'type' => $_FILES['gallery_images']['type'] ?? '',
+                    'size' => (int)($_FILES['gallery_images']['size'] ?? 0),
+                ];
+            }
+        }
+
+        if (!empty($_FILES['data']['tmp_name']['CaseStudy']['gallery_images'])) {
+            $nested = $_FILES['data'];
+            $names = $nested['name']['CaseStudy']['gallery_images'] ?? null;
+            if (is_array($names)) {
+                foreach ($names as $i => $name) {
+                    if ($name === '' || ($nested['error']['CaseStudy']['gallery_images'][$i] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+                        continue;
+                    }
+                    $files[] = [
+                        'tmp_name' => $nested['tmp_name']['CaseStudy']['gallery_images'][$i],
+                        'name' => $name,
+                        'error' => (int)$nested['error']['CaseStudy']['gallery_images'][$i],
+                        'type' => $nested['type']['CaseStudy']['gallery_images'][$i] ?? '',
+                        'size' => (int)($nested['size']['CaseStudy']['gallery_images'][$i] ?? 0),
+                    ];
+                }
+            }
+        }
+
+        $data = $this->request->getData();
+        $legacy = $this->request->data ?? [];
+        $dataFiles = $data['gallery_images'] ?? $data['CaseStudy']['gallery_images'] ?? $legacy['gallery_images'] ?? $legacy['CaseStudy']['gallery_images'] ?? null;
+        if (is_array($dataFiles)) {
+            foreach ($dataFiles as $candidate) {
+                if ($candidate instanceof UploadedFileInterface && $candidate->getError() === UPLOAD_ERR_OK) {
+                    $files[] = $candidate;
+                } elseif (is_array($candidate) && !empty($candidate['tmp_name']) && ($candidate['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
+                    $files[] = $candidate;
+                }
+            }
+        }
+
+        return $files;
+    }
+
+    protected function _saveGalleryImages($caseId)
+    {
+        $files = $this->_collectGalleryUploads();
+        if (empty($files)) {
+            return;
+        }
+
+        $this->loadModel('CaseImage');
+        $uploadDir = $this->_ensureCaseStudyUploadDir($caseId);
+        $imgDir = $uploadDir . 'images' . DS;
+        if (!file_exists($imgDir)) {
+            mkdir($imgDir, 0755, true);
+        }
+
+        $ordering = (int)$this->CaseImage->find()
+            ->where(['case_study_id' => $caseId, 'type' => 'other'])
+            ->count();
+
+        $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        foreach ($files as $file) {
+            $ext = strtolower(pathinfo($this->_uploadClientFilename($file), PATHINFO_EXTENSION));
+            if (!in_array($ext, $allowedExts, true)) {
+                continue;
+            }
+
+            $safeName = 'gallery_' . time() . '_' . mt_rand(100, 999) . '.' . $ext;
+            $finalPath = $imgDir . $safeName;
+            if ($this->_moveUploadTo($file, $finalPath)) {
+                $imgEntity = $this->CaseImage->newEntity([
+                    'case_study_id' => $caseId,
+                    'filename' => 'files/case_studies/' . $caseId . '/images/' . $safeName,
+                    'type' => 'other',
+                    'caption' => null,
+                    'ordering' => $ordering++,
+                ]);
+                if (!$this->CaseImage->save($imgEntity)) {
+                    @unlink($finalPath);
+                }
+            }
+        }
     }
 
 
@@ -2791,6 +2912,7 @@ protected function _deleteDirectory($dir)
         $this->_saveFeaturedImage($caseId, $uploadDir, true);
         $this->_saveTypedCaseImage($caseId, $this->_resolveUploadedFile('before_image'), 'before');
         $this->_saveTypedCaseImage($caseId, $this->_resolveUploadedFile('after_image'), 'after');
+        $this->_saveGalleryImages($caseId);
 
         /* ------------------------------
         * Update Existing Image Details
