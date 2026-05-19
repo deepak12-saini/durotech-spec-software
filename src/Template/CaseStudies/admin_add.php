@@ -7,37 +7,6 @@
     margin-top: 4px;
     display: block;
 }
-.products-used-picker {
-    min-height: 210px !important;
-    border: 1px solid #cfd8e3;
-    border-radius: 8px;
-    padding: 6px;
-    background: #fff;
-}
-.products-used-picker option {
-    padding: 8px 10px;
-    border-radius: 6px;
-    margin-bottom: 3px;
-}
-.products-used-search {
-    margin-bottom: 8px;
-    border-radius: 8px;
-}
-.products-used-selected {
-    margin-top: 8px;
-    min-height: 24px;
-}
-.products-used-tag {
-    display: inline-block;
-    background: #e7f2ff;
-    border: 1px solid #b9dafb;
-    color: #19578f;
-    border-radius: 999px;
-    padding: 4px 10px;
-    margin: 0 6px 6px 0;
-    font-size: 12px;
-    font-weight: 600;
-}
 </style>
 <div class="page-content">
 
@@ -152,53 +121,16 @@
         </div>
 
         <div class="col-md-12">
-            <div class="form-group">
-                <?php
-                echo $this->Form->control('products._ids', [
-                    'type' => 'select',
-                    'multiple' => true,
-                    'size' => 10,
-                    'options' => $products ?? [],
-                    'class' => 'form-control products-used-picker',
-                    'label' => 'Products Used',
-                    'id' => 'products-used-picker',
-                ]);
-                ?>
-                <input type="text" id="products-used-search" class="form-control products-used-search" placeholder="Search active products...">
-                <small class="text-muted">Only active products are shown. Hold Ctrl (Windows) to select multiple products.</small>
-                <div id="products-used-selected" class="products-used-selected"></div>
-            </div>
+            <?= $this->element('products_used_picker', ['products' => $products ?? []]); ?>
         </div>
+
 
 
     </div>
 
-    <hr>
+    <?= $this->element('case_study_media_uploads', ['caseStudy' => $caseStudy ?? null]); ?>
 
-   <div class="row">
-        <div class="col-md-6">
-            <label><strong>Datasheet (PDF)</strong></label>
-            <input type="file" name="data[CaseStudy][datasheet_file]" accept="application/pdf" class="form-control">
-        </div>
-
-        <div class="col-md-6">
-            <label><strong>Featured Image</strong></label>
-            <input type="file" name="data[CaseStudy][featured_image]" accept="image/*" class="form-control">
-            <small class="text-muted">Upload a main image for this case study.</small>
-        </div>
-    </div>
-
-    <div class="row mt-3">
-        <div class="col-md-12">
-            <label><strong>Upload Images (Before / After)</strong></label>
-            <input type="file" name="images[]" multiple accept="image/*" class="form-control">
-            <small class="text-muted">You can select multiple images at once.</small>
-        </div>
-    </div>
-
-
-
-    <div class="form-group mt-3">
+    <div class="case-status-row">
         <div class="checkbox">
             <label>
                 <?php echo $this->Form->checkbox('status'); ?> Publish this case study
@@ -223,33 +155,40 @@ document.addEventListener("DOMContentLoaded", function() {
         dateInput.setAttribute('type', 'date'); // Convert it to date picker
     }
 
-    var searchInput = document.getElementById('products-used-search');
-    var select = document.getElementById('products-used-picker');
-    var selectedWrap = document.getElementById('products-used-selected');
-    if (searchInput && select) {
-        searchInput.addEventListener('input', function() {
-            var term = (this.value || '').toLowerCase();
-            Array.prototype.forEach.call(select.options, function(opt) {
-                var txt = (opt.text || '').toLowerCase();
-                opt.style.display = txt.indexOf(term) !== -1 ? '' : 'none';
-            });
-        });
+    document.querySelectorAll('.case-upload-zone').forEach(function (zone) {
+        var input = zone.querySelector('input[type="file"]');
+        var filenameEl = zone.querySelector('[data-filename]');
+        var fieldName = zone.getAttribute('data-upload-zone');
+        var previewEl = document.querySelector('[data-preview="' + fieldName + '"]');
+        if (!input) return;
 
-        function renderSelectedTags() {
-            if (!selectedWrap) {
-                return;
+        function showFile(file) {
+            if (!file) return;
+            if (filenameEl) filenameEl.textContent = file.name;
+            zone.classList.add('has-file');
+            if (previewEl && file.type && file.type.indexOf('image/') === 0) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    previewEl.innerHTML = '<div class="case-upload-preview__label">New upload preview</div><img src="' + e.target.result + '" alt="Preview">';
+                    previewEl.hidden = false;
+                };
+                reader.readAsDataURL(file);
             }
-            var html = '';
-            Array.prototype.forEach.call(select.options, function(opt) {
-                if (opt.selected) {
-                    html += '<span class="products-used-tag">' + (opt.text || '') + '</span>';
-                }
-            });
-            selectedWrap.innerHTML = html || '<small class="text-muted">No product selected yet.</small>';
         }
 
-        select.addEventListener('change', renderSelectedTags);
-        renderSelectedTags();
-    }
+        input.addEventListener('change', function () {
+            if (input.files && input.files[0]) showFile(input.files[0]);
+        });
+        ['dragenter', 'dragover'].forEach(function (ev) {
+            zone.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.add('is-dragover'); });
+        });
+        ['dragleave', 'drop'].forEach(function (ev) {
+            zone.addEventListener(ev, function (e) { e.preventDefault(); zone.classList.remove('is-dragover'); });
+        });
+        zone.addEventListener('drop', function (e) {
+            var files = e.dataTransfer && e.dataTransfer.files;
+            if (files && files.length) { input.files = files; showFile(files[0]); }
+        });
+    });
 });
 </script>

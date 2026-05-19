@@ -167,73 +167,29 @@
             <?php echo $this->Form->textarea('outcome', ['class' => 'form-control ckeditor']); ?>
         </div>
 
-        <div class="mb-3">
-                <label><strong>Featured Image</strong></label><br>
-                <?php echo $this->Form->file('featured_image', ['class' => 'form-control', 'accept' => 'image/*']); ?>
+        <?php
+        $selectedProductIds = [];
+        if (is_object($case) && !empty($case->products)) {
+            foreach ($case->products as $p) {
+                $pid = is_object($p) ? ($p->id ?? null) : ($p['id'] ?? null);
+                if ($pid !== null) {
+                    $selectedProductIds[] = (int)$pid;
+                }
+            }
+        }
+        echo $this->element('products_used_picker', [
+            'products' => $products ?? [],
+            'selectedIds' => $selectedProductIds,
+        ]);
+        ?>
 
-                <?php
-                $featuredImg = is_object($case) ? ($case->featured_image ?? '') : ($case['CaseStudy']['featured_image'] ?? $case['featured_image'] ?? '');
-                if (!empty($featuredImg)): ?>
-                    <div class="mt-2">
-                        <p class="fw-bold mb-1">Current Featured Image:</p>
-                        <img src="<?php echo $baseUrl . '/' . ltrim($featuredImg, '/'); ?>"
-                            alt="Featured Image"
-                            class="img-thumbnail"
-                            style="max-width: 200px;">
-                    </div>
-                <?php endif; ?>
-            </div>
+        <?= $this->element('case_study_media_uploads', [
+            'case' => $case,
+            'caseId' => $caseId,
+            'panel' => 'employee',
+            'caseImages' => $caseImages,
+        ]); ?>
 
-        
-
-        <div class="col-md-12 mb-3">
-            <label>Upload Datasheet (PDF)</label><br>
-            <?php echo $this->Form->file('datasheet_file', ['class' => 'form-control']); ?>
-
-            <?php
-            $datasheet = is_object($case) ? ($case->datasheet ?? '') : ($case['CaseStudy']['datasheet'] ?? $case['datasheet'] ?? '');
-            if (!empty($datasheet)): ?>
-                <p class="mt-2">
-                    <a href="<?php echo $baseUrl . '/' . ltrim($datasheet, '/'); ?>" target="_blank">View Current Datasheet</a>
-                </p>
-            <?php endif; ?>
-        </div>
-
-        
-
-
-        <div class="col-md-12 mb-4">
-            <label class="fw-bold mb-2 d-block">Upload Images (Before / After)</label>
-            <input type="file" name="data[CaseStudy][images][]" accept="image/*" multiple class="form-control">
-
-                 <?php if (!empty($caseImages)): ?>
-            <div class="mb-4">
-                <label class="form-label fw-bold mb-3 d-block">Existing Images</label>
-
-                <div class="existing-images-gallery p-3 border rounded bg-light shadow-sm">
-                    <?php foreach ($caseImages as $img):
-                        $imgId = is_object($img) ? $img->id : $img['id'];
-                        $imgFilename = is_object($img) ? $img->filename : $img['filename'];
-                    ?>
-                        <div class="image-card position-relative">
-                            <a href="<?php echo $this->Url->build(['controller' => 'Employees', 'action' => 'delete_case_image', $caseId, $imgId]); ?>"
-                            class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 rounded-circle shadow"
-                            title="Remove this image"
-                            onclick="return confirm('Remove this image?');">
-                                <i class="fa fa-trash"></i>
-                            </a>
-
-                            <!-- Image Preview -->
-                            <img src="<?php echo $baseUrl . '/' . ltrim($imgFilename, '/'); ?>"
-                                alt="Case Image"
-                                class="img-fluid rounded shadow-sm">
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-        <?php endif; ?>
-
-        </div>
 
  
 
@@ -284,5 +240,6 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 </script>
+<?= $this->element('case_study_media_upload_script'); ?>
 
 </div>

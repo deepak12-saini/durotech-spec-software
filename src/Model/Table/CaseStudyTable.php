@@ -22,5 +22,11 @@ class CaseStudyTable extends Table
             'className' => 'CaseImage',
             'foreignKey' => 'case_study_id',
         ]);
+
+        $this->belongsToMany('Products', [
+            'foreignKey' => 'case_study_id',
+            'targetForeignKey' => 'product_id',
+            'joinTable' => 'case_study_products',
+        ]);
     }
 }

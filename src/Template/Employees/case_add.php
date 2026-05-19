@@ -123,28 +123,13 @@
 
     </div>
 
-    <hr>
-
-   <div class="row">
-        <div class="col-md-6">
-            <label><strong>Datasheet (PDF)</strong></label>
-            <input type="file" name="data[CaseStudy][datasheet_file]" accept="application/pdf" class="form-control">
-        </div>
-
-        <div class="col-md-6">
-            <label><strong>Featured Image</strong></label>
-            <input type="file" name="data[CaseStudy][featured_image]" accept="image/*" class="form-control">
-            <small class="text-muted">Upload a main image for this case study.</small>
-        </div>
+    <div class="col-md-12">
+        <?= $this->element('products_used_picker', ['products' => $products ?? []]); ?>
     </div>
 
-    <div class="row mt-3">
-        <div class="col-md-12">
-            <label><strong>Upload Images (Before / After)</strong></label>
-            <input type="file" name="images[]" multiple accept="image/*" class="form-control">
-            <small class="text-muted">You can select multiple images at once.</small>
-        </div>
-    </div>
+    <?= $this->element('case_study_media_uploads', [
+        'panel' => 'employee',
+    ]); ?>
 
 
 
@@ -174,3 +159,4 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 </script>
+<?= $this->element('case_study_media_upload_script'); ?>

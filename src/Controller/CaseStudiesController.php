@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Cake\Http\Exception\NotFoundException;
+use Cake\Log\Log;
+use Psr\Http\Message\UploadedFileInterface;
 
 /**
  * CaseStudies Controller (CakePHP 3.10)
@@ -88,15 +90,13 @@ class CaseStudiesController extends AppController
             if (isset($data['CaseStudy'])) {
                 $data = $data['CaseStudy'];
             }
-            $featuredImage = $data['featured_image'] ?? null;
-            $datasheetFile = $data['datasheet_file'] ?? null;
-            unset($data['featured_image'], $data['datasheet_file']);
+            unset($data['featured_image'], $data['datasheet_file'], $data['before_image'], $data['after_image']);
 
             $caseStudy = $this->CaseStudies->patchEntity($caseStudy, $data);
 
             if ($this->CaseStudies->save($caseStudy)) {
                 $caseId = $caseStudy->id;
-                $this->_handleUploads($caseId, $featuredImage, $datasheetFile);
+                $this->_handleUploads($caseId);
 
                 $this->Flash->success('Case study saved');
                 return $this->redirect(['controller' => 'CaseStudies', 'action' => 'adminIndex']);
@@ -140,17 +140,15 @@ class CaseStudiesController extends AppController
             if (isset($data['CaseStudy'])) {
                 $data = $data['CaseStudy'];
             }
-            $featuredImage = $data['featured_image'] ?? null;
-            $datasheetFile = $data['datasheet_file'] ?? null;
-            unset($data['featured_image'], $data['datasheet_file']);
+            unset($data['featured_image'], $data['datasheet_file'], $data['before_image'], $data['after_image']);
 
             $caseStudy = $this->CaseStudies->patchEntity($caseStudy, $data);
 
             if ($this->CaseStudies->save($caseStudy)) {
-                $this->_editHandleUploads((int)$id, $featuredImage, $datasheetFile);
+                $this->_editHandleUploads((int)$id);
 
                 $this->Flash->success('Case study updated successfully.');
-                return $this->redirect(['controller' => 'CaseStudies', 'action' => 'adminIndex']);
+                return $this->redirect(['controller' => 'CaseStudies', 'action' => 'adminEdit', $id]);
             }
 
             $this->Flash->error('Save failed');
@@ -214,209 +212,342 @@ class CaseStudiesController extends AppController
     }
 
     /**
-     * Edit: handle file uploads (datasheet, featured image, images)
+     * Edit: handle file uploads (datasheet, featured image, before/after)
      *
      * @param int $caseId Case study id
-     * @param array|null $featuredImage File data for featured image
-     * @param array|null $datasheetFile File data for datasheet
      * @return void
      */
-    protected function _editHandleUploads(int $caseId, $featuredImage = null, $datasheetFile = null): void
+    protected function _editHandleUploads(int $caseId): void
     {
-        $this->loadModel('CaseImages');
+        $uploadDir = $this->_ensureCaseStudyUploadDir($caseId);
+
+        $this->_saveDatasheet($caseId, $uploadDir);
+        $this->_saveFeaturedImage($caseId, $uploadDir, true);
+        $this->_saveTypedCaseImage($caseId, $this->_resolveUploadedFile('before_image'), 'before');
+        $this->_saveTypedCaseImage($caseId, $this->_resolveUploadedFile('after_image'), 'after');
+
         $data = $this->request->getData();
         if (isset($data['CaseStudy'])) {
             $data = array_merge($data, $data['CaseStudy']);
         }
-        $uploadDir = WWW_ROOT . 'files' . DS . 'case_studies' . DS . $caseId . DS;
-
-        if (!file_exists($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-
-        // Datasheet (PDF)
-        $ds = $datasheetFile ?? $data['datasheet_file'] ?? null;
-        if (!empty($ds['tmp_name']) && ($ds['error'] ?? 0) === UPLOAD_ERR_OK) {
-            $ext = strtolower(pathinfo($ds['name'], PATHINFO_EXTENSION));
-            if ($ext === 'pdf') {
-                $datasheetName = 'datasheet_' . time() . '.' . $ext;
-                $dest = $uploadDir . $datasheetName;
-                if (move_uploaded_file($ds['tmp_name'], $dest)) {
-                    $entity = $this->CaseStudies->get($caseId);
-                    $entity->datasheet = 'files/case_studies/' . $caseId . '/' . $datasheetName;
-                    $this->CaseStudies->save($entity);
-                }
-            }
-        }
-
-        // Featured image
-        $fi = $featuredImage ?? $data['featured_image'] ?? null;
-        if (!empty($fi['tmp_name']) && ($fi['error'] ?? 0) === UPLOAD_ERR_OK) {
-            $ext = strtolower(pathinfo($fi['name'], PATHINFO_EXTENSION));
-            if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
-                $existing = $this->CaseStudies->get($caseId);
-                if (!empty($existing->featured_image)) {
-                    $oldPath = WWW_ROOT . $existing->featured_image;
-                    if (file_exists($oldPath)) {
-                        @unlink($oldPath);
-                    }
-                }
-
-                $featuredName = 'featured_' . time() . '.' . $ext;
-                $dest = $uploadDir . $featuredName;
-                if (move_uploaded_file($fi['tmp_name'], $dest)) {
-                    $entity = $this->CaseStudies->get($caseId);
-                    $entity->featured_image = 'files/case_studies/' . $caseId . '/' . $featuredName;
-                    $this->CaseStudies->save($entity);
-                }
-            }
-        }
-
-        // Multiple images
-        $images = $data['images'] ?? [];
-        if (!empty($images)) {
-            $imgDir = $uploadDir . 'images' . DS;
-            if (!file_exists($imgDir)) {
-                mkdir($imgDir, 0755, true);
-            }
-            $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-
-            foreach ($images as $i => $file) {
-                if (empty($file['tmp_name']) || ($file['error'] ?? 0) !== UPLOAD_ERR_OK) {
-                    continue;
-                }
-                $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-                if (!in_array($ext, $allowedExts)) {
-                    continue;
-                }
-                $safeName = 'caseimg_' . uniqid() . '.' . $ext;
-                $finalPath = $imgDir . $safeName;
-
-                if (move_uploaded_file($file['tmp_name'], $finalPath)) {
-                    $imgEntity = $this->CaseImages->newEntity([
-                        'case_study_id' => $caseId,
-                        'filename' => 'files/case_studies/' . $caseId . '/images/' . $safeName,
-                        'type' => $data['CaseImage']['type'][$i] ?? 'other',
-                        'caption' => $data['CaseImage']['caption'][$i] ?? null,
-                        'ordering' => 0,
-                    ]);
-                    $this->CaseImages->save($imgEntity);
-                }
-            }
-        }
-
-        // Update existing image details
         $existingImages = $data['ExistingImage'] ?? [];
-        foreach ($existingImages as $imgId => $imgData) {
-            if (!$this->CaseImages->exists(['id' => $imgId])) {
-                continue;
+        if (!empty($existingImages)) {
+            $this->loadModel('CaseImages');
+            foreach ($existingImages as $imgId => $imgData) {
+                if (!$this->CaseImages->exists(['id' => $imgId])) {
+                    continue;
+                }
+                $imgEntity = $this->CaseImages->get($imgId);
+                $imgEntity->caption = $imgData['caption'] ?? null;
+                $imgEntity->type = $imgData['type'] ?? 'other';
+                $this->CaseImages->save($imgEntity);
             }
-            $imgEntity = $this->CaseImages->get($imgId);
-            $imgEntity->caption = $imgData['caption'] ?? null;
-            $imgEntity->type = $imgData['type'] ?? 'other';
-            $this->CaseImages->save($imgEntity);
         }
     }
 
     /**
-     * Handle file uploads for add (datasheet, featured image, multiple images)
+     * Handle file uploads for add (datasheet, featured image, before/after)
      *
      * @param int $caseId Case study id
-     * @param array|null $featuredImage File data for featured image
-     * @param array|null $datasheetFile File data for datasheet
      * @return void
      */
-    protected function _handleUploads(int $caseId, $featuredImage = null, $datasheetFile = null): void
+    protected function _handleUploads(int $caseId): void
     {
-        $this->loadModel('CaseImages');
-        $data = $this->request->getData();
-        if (isset($data['CaseStudy'])) {
-            $data = array_merge($data, $data['CaseStudy']);
-        }
-        $uploadDir = WWW_ROOT . 'files' . DS . 'case_studies' . DS . $caseId . DS;
+        $uploadDir = $this->_ensureCaseStudyUploadDir($caseId);
 
+        $this->_saveDatasheet($caseId, $uploadDir);
+        $this->_saveFeaturedImage($caseId, $uploadDir, false);
+        $this->_saveTypedCaseImage($caseId, $this->_resolveUploadedFile('before_image'), 'before');
+        $this->_saveTypedCaseImage($caseId, $this->_resolveUploadedFile('after_image'), 'after');
+    }
+
+    /**
+     * Get file array from $_FILES for nested name like data[CaseStudy][datasheet_file].
+     *
+     * @param string $base Base key (e.g. data)
+     * @param string $key1 First nested key (e.g. CaseStudy)
+     * @param string $key2 Second nested key (e.g. datasheet_file)
+     * @return array|null
+     */
+    protected function _getUploadedFile(string $base, string $key1, string $key2): ?array
+    {
+        if (empty($_FILES[$base]['tmp_name'][$key1][$key2])) {
+            return null;
+        }
+        $tmp = $_FILES[$base]['tmp_name'][$key1][$key2];
+        if (!is_string($tmp) || !is_uploaded_file($tmp)) {
+            return null;
+        }
+
+        return [
+            'tmp_name' => $tmp,
+            'name' => $_FILES[$base]['name'][$key1][$key2] ?? '',
+            'error' => (int)($_FILES[$base]['error'][$key1][$key2] ?? UPLOAD_ERR_NO_FILE),
+            'type' => $_FILES[$base]['type'][$key1][$key2] ?? '',
+            'size' => (int)($_FILES[$base]['size'][$key1][$key2] ?? 0),
+        ];
+    }
+
+    /**
+     * Get file array from $_FILES for a flat field name (e.g. before_image).
+     *
+     * @param string $field Field name
+     * @return array|null
+     */
+    protected function _getFlatUploadedFile(string $field): ?array
+    {
+        if (empty($_FILES[$field]['tmp_name'])) {
+            return null;
+        }
+        $tmp = $_FILES[$field]['tmp_name'];
+        if (!is_string($tmp) || !is_uploaded_file($tmp)) {
+            return null;
+        }
+
+        return [
+            'tmp_name' => $tmp,
+            'name' => $_FILES[$field]['name'] ?? '',
+            'error' => (int)($_FILES[$field]['error'] ?? UPLOAD_ERR_NO_FILE),
+            'type' => $_FILES[$field]['type'] ?? '',
+            'size' => (int)($_FILES[$field]['size'] ?? 0),
+        ];
+    }
+
+    /**
+     * Resolve an uploaded file from nested or flat $_FILES / getData.
+     *
+     * @param string $field Field name (featured_image, datasheet_file, before_image, after_image)
+     * @return array|null
+     */
+    protected function _resolveUploadedFile(string $field)
+    {
+        $psr7 = $this->request->getUploadedFile($field);
+        if ($psr7 instanceof UploadedFileInterface && $psr7->getError() === UPLOAD_ERR_OK) {
+            return $psr7;
+        }
+
+        $nested = $this->request->getUploadedFile('CaseStudy.' . $field);
+        if ($nested instanceof UploadedFileInterface && $nested->getError() === UPLOAD_ERR_OK) {
+            return $nested;
+        }
+
+        $file = $this->_getUploadedFile('data', 'CaseStudy', $field)
+            ?? $this->_getFlatUploadedFile($field);
+
+        if ($file !== null) {
+            return $file;
+        }
+
+        $data = $this->request->getData();
+        $candidates = [
+            $data[$field] ?? null,
+            $data['CaseStudy'][$field] ?? null,
+        ];
+        foreach ($candidates as $candidate) {
+            if ($candidate instanceof UploadedFileInterface && $candidate->getError() === UPLOAD_ERR_OK) {
+                return $candidate;
+            }
+            if (is_array($candidate) && !empty($candidate['tmp_name']) && ($candidate['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_OK) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Move an uploaded file (PSR-7 or PHP array) to destination path.
+     *
+     * @param array|UploadedFileInterface $file Upload payload
+     * @param string $dest Absolute destination path
+     * @return bool
+     */
+    protected function _moveUploadTo($file, string $dest): bool
+    {
+        if ($file instanceof UploadedFileInterface) {
+            if ($file->getError() !== UPLOAD_ERR_OK) {
+                return false;
+            }
+            try {
+                $file->moveTo($dest);
+
+                return true;
+            } catch (\Throwable $e) {
+                Log::error('Case study upload moveTo failed: ' . $e->getMessage());
+
+                return false;
+            }
+        }
+
+        if (!is_array($file) || empty($file['tmp_name']) || ($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+            return false;
+        }
+
+        $tmp = $file['tmp_name'];
+        if (is_uploaded_file($tmp)) {
+            return move_uploaded_file($tmp, $dest);
+        }
+
+        if (is_string($tmp) && file_exists($tmp)) {
+            return copy($tmp, $dest);
+        }
+
+        return false;
+    }
+
+    /**
+     * Get original filename from upload payload.
+     *
+     * @param array|UploadedFileInterface $file Upload payload
+     * @return string
+     */
+    protected function _uploadClientFilename($file): string
+    {
+        if ($file instanceof UploadedFileInterface) {
+            return $file->getClientFilename() ?? '';
+        }
+
+        return $file['name'] ?? '';
+    }
+
+    /**
+     * Ensure upload directory exists for a case study.
+     *
+     * @param int $caseId Case study id
+     * @return string Absolute upload directory path
+     */
+    protected function _ensureCaseStudyUploadDir(int $caseId): string
+    {
+        $uploadDir = WWW_ROOT . 'files' . DS . 'case_studies' . DS . $caseId . DS;
         if (!file_exists($uploadDir)) {
             mkdir($uploadDir, 0755, true);
         }
 
-        // Datasheet (PDF)
-        $ds = $datasheetFile ?? $data['datasheet_file'] ?? null;
-        if (!empty($ds['tmp_name']) && ($ds['error'] ?? 0) === UPLOAD_ERR_OK) {
-            $ext = strtolower(pathinfo($ds['name'], PATHINFO_EXTENSION));
-            if ($ext === 'pdf') {
-                $datasheetName = 'datasheet_' . time() . '.' . $ext;
-                $dest = $uploadDir . $datasheetName;
-                if (move_uploaded_file($ds['tmp_name'], $dest)) {
-                    $entity = $this->CaseStudies->get($caseId);
-                    $entity->datasheet = 'files/case_studies/' . $caseId . '/' . $datasheetName;
-                    $this->CaseStudies->save($entity);
+        return $uploadDir;
+    }
+
+    /**
+     * Save datasheet PDF for a case study.
+     *
+     * @param int $caseId Case study id
+     * @param string $uploadDir Upload directory
+     * @return void
+     */
+    protected function _saveDatasheet(int $caseId, string $uploadDir): void
+    {
+        $ds = $this->_resolveUploadedFile('datasheet_file');
+        if ($ds === null) {
+            return;
+        }
+
+        $ext = strtolower(pathinfo($this->_uploadClientFilename($ds), PATHINFO_EXTENSION));
+        if ($ext !== 'pdf') {
+            return;
+        }
+
+        $datasheetName = 'datasheet_' . time() . '.' . $ext;
+        $dest = $uploadDir . $datasheetName;
+        if ($this->_moveUploadTo($ds, $dest)) {
+            $entity = $this->CaseStudies->get($caseId);
+            $entity->datasheet = 'files/case_studies/' . $caseId . '/' . $datasheetName;
+            $this->CaseStudies->save($entity);
+        }
+    }
+
+    /**
+     * Save featured image for a case study.
+     *
+     * @param int $caseId Case study id
+     * @param string $uploadDir Upload directory
+     * @param bool $replaceExisting Whether to delete the previous featured image file
+     * @return void
+     */
+    protected function _saveFeaturedImage(int $caseId, string $uploadDir, bool $replaceExisting): void
+    {
+        $fi = $this->_resolveUploadedFile('featured_image');
+        if ($fi === null) {
+            return;
+        }
+
+        $ext = strtolower(pathinfo($this->_uploadClientFilename($fi), PATHINFO_EXTENSION));
+        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true)) {
+            return;
+        }
+
+        if ($replaceExisting) {
+            $existing = $this->CaseStudies->get($caseId);
+            if (!empty($existing->featured_image)) {
+                $oldPath = WWW_ROOT . $existing->featured_image;
+                if (file_exists($oldPath)) {
+                    @unlink($oldPath);
                 }
             }
         }
 
-        // Featured image
-        $fi = $featuredImage ?? $data['featured_image'] ?? null;
-        if (!empty($fi['tmp_name']) && ($fi['error'] ?? 0) === UPLOAD_ERR_OK) {
-            $ext = strtolower(pathinfo($fi['name'], PATHINFO_EXTENSION));
-            if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
-                $featuredName = 'featured_' . time() . '.' . $ext;
-                $dest = $uploadDir . $featuredName;
-                if (move_uploaded_file($fi['tmp_name'], $dest)) {
-                    $entity = $this->CaseStudies->get($caseId);
-                    $entity->featured_image = 'files/case_studies/' . $caseId . '/' . $featuredName;
-                    $this->CaseStudies->save($entity);
-                }
-            }
+        $featuredName = 'featured_' . time() . '.' . $ext;
+        $dest = $uploadDir . $featuredName;
+        if ($this->_moveUploadTo($fi, $dest)) {
+            $entity = $this->CaseStudies->get($caseId);
+            $entity->featured_image = 'files/case_studies/' . $caseId . '/' . $featuredName;
+            $this->CaseStudies->save($entity);
+        }
+    }
+
+    /**
+     * Save or replace a typed case image (before / after).
+     *
+     * @param int $caseId Case study id
+     * @param array|null $file Uploaded file array
+     * @param string $type Image type (before|after)
+     * @return void
+     */
+    protected function _saveTypedCaseImage(int $caseId, $file, string $type): void
+    {
+        if (!in_array($type, ['before', 'after'], true)) {
+            return;
+        }
+        if ($file === null) {
+            return;
         }
 
-        // Multiple images (from form or $_FILES)
-        $images = $data['images'] ?? [];
-        if (empty($images) && !empty($_FILES['images']['name'][0])) {
-            $total = count($_FILES['images']['name']);
-            for ($i = 0; $i < $total; $i++) {
-                if (($_FILES['images']['error'][$i] ?? 0) !== UPLOAD_ERR_OK) {
-                    continue;
-                }
-                $images[] = [
-                    'tmp_name' => $_FILES['images']['tmp_name'][$i],
-                    'name' => $_FILES['images']['name'][$i],
-                    'error' => $_FILES['images']['error'][$i],
-                ];
-            }
+        $ext = strtolower(pathinfo($this->_uploadClientFilename($file), PATHINFO_EXTENSION));
+        if (!in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true)) {
+            return;
         }
 
-        if (!empty($images)) {
-            $imgDestDir = $uploadDir . 'images' . DS;
-            if (!file_exists($imgDestDir)) {
-                mkdir($imgDestDir, 0755, true);
+        $this->loadModel('CaseImages');
+        $existing = $this->CaseImages->find()
+            ->where(['case_study_id' => $caseId, 'type' => $type])
+            ->all();
+
+        foreach ($existing as $row) {
+            $filePath = WWW_ROOT . $row->filename;
+            if (file_exists($filePath)) {
+                @unlink($filePath);
             }
-            $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+            $this->CaseImages->delete($row);
+        }
 
-            foreach ($images as $i => $file) {
-                $tmpName = is_array($file) ? ($file['tmp_name'] ?? null) : null;
-                $name = is_array($file) ? ($file['name'] ?? '') : '';
-                $err = is_array($file) ? ($file['error'] ?? 0) : 0;
+        $uploadDir = $this->_ensureCaseStudyUploadDir($caseId);
+        $imgDir = $uploadDir . 'images' . DS;
+        if (!file_exists($imgDir)) {
+            mkdir($imgDir, 0755, true);
+        }
 
-                if (empty($tmpName) || $err !== UPLOAD_ERR_OK) {
-                    continue;
-                }
-                $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
-                if (!in_array($ext, $allowedExts)) {
-                    continue;
-                }
-                $safeName = 'caseimg_' . time() . '_' . mt_rand(100, 999) . '.' . $ext;
-                $fullPath = $imgDestDir . $safeName;
+        $safeName = $type . '_' . time() . '_' . mt_rand(100, 999) . '.' . $ext;
+        $finalPath = $imgDir . $safeName;
 
-                if (move_uploaded_file($tmpName, $fullPath)) {
-                    $imgEntity = $this->CaseImages->newEntity([
-                        'case_study_id' => $caseId,
-                        'filename' => 'files/case_studies/' . $caseId . '/images/' . $safeName,
-                        'type' => $data['CaseImage']['type'][$i] ?? 'other',
-                        'caption' => $data['CaseImage']['caption'][$i] ?? null,
-                        'ordering' => 0,
-                    ]);
-                    $this->CaseImages->save($imgEntity);
-                }
+        if ($this->_moveUploadTo($file, $finalPath)) {
+            $imgEntity = $this->CaseImages->newEntity([
+                'case_study_id' => $caseId,
+                'filename' => 'files/case_studies/' . $caseId . '/images/' . $safeName,
+                'type' => $type,
+                'caption' => null,
+                'ordering' => $type === 'before' ? 0 : 1,
+            ]);
+            if (!$this->CaseImages->save($imgEntity)) {
+                Log::error('Failed to save case image: ' . json_encode($imgEntity->getErrors()));
+                @unlink($finalPath);
             }
         }
     }

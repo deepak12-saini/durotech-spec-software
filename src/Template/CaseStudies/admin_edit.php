@@ -34,36 +34,178 @@
     transform: scale(1.05);
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
-.products-used-picker {
-    min-height: 210px !important;
-    border: 1px solid #cfd8e3;
-    border-radius: 8px;
-    padding: 6px;
+/* Media uploads section */
+.case-media-section {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    padding: 1.75rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+}
+.case-media-section__title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 0.35rem;
+}
+.case-media-section__subtitle {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+.case-upload-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+}
+@media (max-width: 768px) {
+    .case-upload-grid { grid-template-columns: 1fr; }
+}
+.case-upload-card {
     background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1.25rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
-.products-used-picker option {
-    padding: 8px 10px;
+.case-upload-card:hover {
+    border-color: #94a3b8;
+}
+.case-upload-card--full {
+    grid-column: 1 / -1;
+}
+.case-upload-card__label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+}
+.case-upload-card__badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+}
+.case-upload-card__badge--before { background: #fef3c7; color: #92400e; }
+.case-upload-card__badge--after { background: #d1fae5; color: #065f46; }
+.case-upload-card__badge--featured { background: #dbeafe; color: #1e40af; }
+.case-upload-card__badge--pdf { background: #fce7f3; color: #9d174d; }
+.case-upload-zone {
+    position: relative;
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    padding: 1.5rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    background: #fafbfc;
+    transition: border-color 0.2s, background 0.2s;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+.case-upload-zone:hover,
+.case-upload-zone.is-dragover,
+.case-upload-zone.has-file {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+.case-upload-zone.has-file .case-upload-zone__icon {
+    color: #3b82f6;
+}
+.case-upload-zone__icon {
+    font-size: 1.75rem;
+    color: #94a3b8;
+}
+.case-upload-zone__text {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin: 0;
+}
+.case-upload-zone__filename {
+    font-size: 0.8rem;
+    color: #3b82f6;
+    font-weight: 600;
+    word-break: break-all;
+    max-width: 100%;
+}
+.case-upload-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+}
+.case-upload-preview {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e2e8f0;
+}
+.case-upload-preview__label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+.case-upload-preview__img-wrap {
+    position: relative;
+    display: inline-block;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.case-upload-preview__img-wrap img {
+    display: block;
+    max-width: 100%;
+    max-height: 180px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    background: #f1f5f9;
+}
+.case-upload-preview__delete {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    opacity: 0.95;
+}
+.case-upload-preview__new {
+    margin-top: 0.75rem;
+}
+.case-upload-preview__new img {
+    max-height: 120px;
     border-radius: 6px;
-    margin-bottom: 3px;
+    border: 2px solid #3b82f6;
 }
-.products-used-search {
-    margin-bottom: 8px;
+.case-status-row {
+    margin-top: 1.5rem;
+    padding: 1rem 1.25rem;
+    background: #fff;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
 }
-.products-used-selected {
-    margin-top: 8px;
-    min-height: 24px;
-}
-.products-used-tag {
-    display: inline-block;
-    background: #e7f2ff;
-    border: 1px solid #b9dafb;
-    color: #19578f;
-    border-radius: 999px;
-    padding: 4px 10px;
-    margin: 0 6px 6px 0;
-    font-size: 12px;
-    font-weight: 600;
+.case-form-actions {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #e2e8f0;
 }
 </style>
 
@@ -155,117 +297,35 @@
             <?php echo $this->Form->textarea('outcome', ['class' => 'form-control ckeditor']); ?>
         </div>
 
-        <div class="mb-3">
-            <?php
-            $selectedProductIds = [];
-            if (!empty($caseStudy->products)) {
-                foreach ($caseStudy->products as $p) {
-                    $pid = is_object($p) ? ($p->id ?? null) : ($p['id'] ?? null);
-                    if ($pid !== null) {
-                        $selectedProductIds[] = (int)$pid;
-                    }
+        <?php
+        $selectedProductIds = [];
+        if (!empty($caseStudy->products)) {
+            foreach ($caseStudy->products as $p) {
+                $pid = is_object($p) ? ($p->id ?? null) : ($p['id'] ?? null);
+                if ($pid !== null) {
+                    $selectedProductIds[] = (int)$pid;
                 }
             }
-            echo $this->Form->control('products._ids', [
-                'type' => 'select',
-                'multiple' => true,
-                'size' => 10,
-                'options' => $products ?? [],
-                'class' => 'form-control products-used-picker',
-                'label' => 'Products Used',
-                'id' => 'products-used-picker',
-                'value' => $selectedProductIds,
-            ]);
-            ?>
-            <input type="text" id="products-used-search" class="form-control products-used-search" placeholder="Search active products...">
-            <small class="text-muted">Only active products are shown. Hold Ctrl (Windows) to select multiple products.</small>
-            <div id="products-used-selected" class="products-used-selected"></div>
-        </div>
+        }
+        echo $this->element('products_used_picker', [
+            'products' => $products ?? [],
+            'selectedIds' => $selectedProductIds,
+        ]);
+        ?>
 
-        <div class="mb-3">
-                <label><strong>Featured Image</strong></label><br>
-                <?php echo $this->Form->file('featured_image', ['class' => 'form-control', 'accept' => 'image/*']); ?>
+        <?= $this->element('case_study_media_uploads', ['caseStudy' => $caseStudy]); ?>
 
-                <?php if (!empty($caseStudy->featured_image)): ?>
-                    <div class="mt-2">
-                        <p class="fw-bold mb-1">Current Featured Image:</p>
-                        <img src="<?= h($this->Url->build('/' . ltrim($caseStudy->featured_image, '/'), ['fullBase' => true])); ?>"
-                            alt="Featured Image"
-                            class="img-thumbnail"
-                            style="max-width: 200px;">
-                    </div>
-                <?php endif; ?>
-            </div>
-
-        
-
-        <div class="col-md-12 mb-3">
-            <label>Upload Datasheet (PDF)</label><br>
-            <?php echo $this->Form->file('datasheet_file', ['class' => 'form-control']); ?>
-
-            <?php if (!empty($caseStudy->datasheet)): ?>
-                <p class="mt-2">
-                    <a href="<?= h($this->Url->build('/' . ltrim($caseStudy->datasheet, '/'), ['fullBase' => true])); ?>" target="_blank">View Current Datasheet</a>
-                </p>
-            <?php endif; ?>
-        </div>
-
-        
-
-
-        <div class="col-md-12 mb-4">
-            <label class="fw-bold mb-2 d-block">Upload Images (Before / After)</label>
-            <input type="file" name="data[CaseStudy][images][]" accept="image/*" multiple class="form-control">
-
-                 <?php 
-                 $caseImages = $caseStudy->case_images ?? [];
-                 if (!empty($caseImages)): ?>
-            <div class="mb-4">
-                <label class="form-label fw-bold mb-3 d-block">Existing Images</label>
-
-                <div class="existing-images-gallery p-3 border rounded bg-light shadow-sm">
-                    <?php foreach ($caseImages as $img): 
-                        $imgId = is_object($img) ? $img->id : ($img['id'] ?? null);
-                        $imgFilename = is_object($img) ? $img->filename : ($img['filename'] ?? '');
-                    ?>
-                        <div class="image-card position-relative">
-                            <!-- Delete Button -->
-                            <a href="<?= $this->Url->build('/admin/case_studies/delete_image/' . (int)$imgId); ?>"
-                            class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 rounded-circle shadow"
-                            title="Delete Image"
-                            onclick="return confirm('Are you sure you want to delete this image?');">
-                                <i class="fa fa-trash"></i>
-                            </a>
-
-                            <!-- Image Preview -->
-                            <img src="<?= h($this->Url->build('/' . ltrim($imgFilename, '/'), ['fullBase' => true])); ?>"
-                                alt="Case Image"
-                                class="img-fluid rounded shadow-sm">
-                        </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-        <?php endif; ?>
-
-        </div>
-
- 
-
-
-
-
-
-        <div class="col-md-12 mb-3">
+        <div class="case-status-row">
             <?php
             echo $this->Form->input('status', [
                 'type' => 'checkbox',
-                'label' => 'Active',
+                'label' => 'Publish as active (visible on website)',
                 'checked' => !empty($caseStudy->status)
             ]);
             ?>
         </div>
 
-        <div class="row mt-4">
+        <div class="row case-form-actions">
             <div class="col-12 text-end">
                 <?php echo $this->Form->button(
                     'Update Case Study',
@@ -292,35 +352,63 @@
     }
 
     (function () {
-        var searchInput = document.getElementById('products-used-search');
-        var select = document.getElementById('products-used-picker');
-        var selectedWrap = document.getElementById('products-used-selected');
-        if (!searchInput || !select) {
-            return;
-        }
-        searchInput.addEventListener('input', function () {
-            var term = (this.value || '').toLowerCase();
-            Array.prototype.forEach.call(select.options, function (opt) {
-                var txt = (opt.text || '').toLowerCase();
-                opt.style.display = txt.indexOf(term) !== -1 ? '' : 'none';
-            });
-        });
-
-        function renderSelectedTags() {
-            if (!selectedWrap) {
+        function initUploadZone(zone) {
+            var input = zone.querySelector('input[type="file"]');
+            var filenameEl = zone.querySelector('[data-filename]');
+            var fieldName = zone.getAttribute('data-upload-zone');
+            var previewEl = document.querySelector('[data-preview="' + fieldName + '"]');
+            if (!input) {
                 return;
             }
-            var html = '';
-            Array.prototype.forEach.call(select.options, function (opt) {
-                if (opt.selected) {
-                    html += '<span class="products-used-tag">' + (opt.text || '') + '</span>';
+
+            function showFile(file) {
+                if (!file) {
+                    return;
+                }
+                if (filenameEl) {
+                    filenameEl.textContent = file.name;
+                }
+                zone.classList.add('has-file');
+                if (previewEl && file.type && file.type.indexOf('image/') === 0) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        previewEl.innerHTML = '<div class="case-upload-preview__label">New upload preview</div><img src="' + e.target.result + '" alt="Preview">';
+                        previewEl.hidden = false;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            input.addEventListener('change', function () {
+                if (input.files && input.files[0]) {
+                    showFile(input.files[0]);
                 }
             });
-            selectedWrap.innerHTML = html || '<small class="text-muted">No product selected yet.</small>';
+
+            ['dragenter', 'dragover'].forEach(function (ev) {
+                zone.addEventListener(ev, function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    zone.classList.add('is-dragover');
+                });
+            });
+            ['dragleave', 'drop'].forEach(function (ev) {
+                zone.addEventListener(ev, function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    zone.classList.remove('is-dragover');
+                });
+            });
+            zone.addEventListener('drop', function (e) {
+                var files = e.dataTransfer && e.dataTransfer.files;
+                if (files && files.length) {
+                    input.files = files;
+                    showFile(files[0]);
+                }
+            });
         }
 
-        select.addEventListener('change', renderSelectedTags);
-        renderSelectedTags();
+        document.querySelectorAll('.case-upload-zone').forEach(initUploadZone);
     })();
 </script>
 

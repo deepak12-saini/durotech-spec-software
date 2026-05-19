@@ -417,10 +417,41 @@ $featuredImage = !empty($caseData['featured_image']) ? SITEURL . $caseData['feat
         <?php endif; ?>
 
         <?php if (!empty($case['CaseImage'])): ?>
+            <?php
+            $beforeImg = null;
+            $afterImg = null;
+            $otherGalleryImages = [];
+            foreach ($case['CaseImage'] as $img) {
+                $imgType = $img['type'] ?? 'other';
+                if ($imgType === 'before') {
+                    $beforeImg = $img;
+                } elseif ($imgType === 'after') {
+                    $afterImg = $img;
+                } else {
+                    $otherGalleryImages[] = $img;
+                }
+            }
+            ?>
             <section id="gallery">
                 <h4 class="gallery-title">Before / After Comparison</h4>
                 <div class="row project-gallery">
-                    <?php foreach ($case['CaseImage'] as $img): ?>
+                    <?php if ($beforeImg): ?>
+                        <div class="col-md-6 col-sm-6 mb-4">
+                            <p class="fw-bold mb-2">Before</p>
+                            <a href="<?= h(SITEURL . $beforeImg['filename']) ?>" class="gallery-item" data-lightbox="case-gallery">
+                                <img src="<?= h(SITEURL . $beforeImg['filename']) ?>" alt="Before" loading="lazy">
+                            </a>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ($afterImg): ?>
+                        <div class="col-md-6 col-sm-6 mb-4">
+                            <p class="fw-bold mb-2">After</p>
+                            <a href="<?= h(SITEURL . $afterImg['filename']) ?>" class="gallery-item" data-lightbox="case-gallery">
+                                <img src="<?= h(SITEURL . $afterImg['filename']) ?>" alt="After" loading="lazy">
+                            </a>
+                        </div>
+                    <?php endif; ?>
+                    <?php foreach ($otherGalleryImages as $img): ?>
                         <div class="col-md-6 col-sm-6 mb-4">
                             <a href="<?= h(SITEURL . $img['filename']) ?>" class="gallery-item" data-lightbox="case-gallery">
                                 <img src="<?= h(SITEURL . $img['filename']) ?>" alt="Project Image" loading="lazy">
