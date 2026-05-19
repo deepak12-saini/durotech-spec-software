@@ -61,10 +61,15 @@ class CaseStudiesController extends AppController
     {
         $this->viewBuilder()->setLayout('admin_layout');
 
+        $contain = ['CaseImages', 'Products'];
+        if ($this->CaseStudies->getSchema()->hasColumn('created_by')) {
+            $contain[] = 'Employee';
+        }
+
         $this->paginate = [
             'limit' => 10,
             'order' => ['CaseStudies.id' => 'DESC'],
-            'contain' => ['CaseImages', 'Products'],
+            'contain' => $contain,
         ];
 
         $caseStudies = $this->paginate($this->CaseStudies);

@@ -9,6 +9,8 @@ class CaseStudiesTable extends Table
     {
         parent::initialize($config);
 
+        $this->addBehavior('Timestamp');
+
         // Database table name (adjust if different)
         $this->setTable('case_studies');
         $this->setPrimaryKey('id');
@@ -27,10 +29,12 @@ class CaseStudiesTable extends Table
             'dependent' => false,
         ]);
 
-        $this->belongsTo('Employee', [
-            'foreignKey' => 'created_by',
-            'joinType' => 'LEFT',
-        ]);
+        if ($this->getSchema()->hasColumn('created_by')) {
+            $this->belongsTo('Employee', [
+                'foreignKey' => 'created_by',
+                'joinType' => 'LEFT',
+            ]);
+        }
 
         // status is 0=Inactive, 1=Active, 2=Approved (integer), not boolean
         $this->getSchema()->setColumnType('status', 'integer');

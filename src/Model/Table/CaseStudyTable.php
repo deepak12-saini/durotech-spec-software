@@ -9,14 +9,19 @@ class CaseStudyTable extends Table
     {
         parent::initialize($config);
 
+        $this->addBehavior('Timestamp');
+
         $this->setTable('case_studies');
         $this->setPrimaryKey('id');
         $this->setDisplayField('title');
 
-        $this->belongsTo('Employee', [
-            'className' => 'Employee',
-            'foreignKey' => 'created_by',
-        ]);
+        if ($this->getSchema()->hasColumn('created_by')) {
+            $this->belongsTo('Employee', [
+                'className' => 'Employee',
+                'foreignKey' => 'created_by',
+                'joinType' => 'LEFT',
+            ]);
+        }
 
         $this->hasMany('CaseImage', [
             'className' => 'CaseImage',

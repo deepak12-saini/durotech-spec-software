@@ -14,8 +14,8 @@
             <th>Solution</th>
             <th>Outcome</th>
             <th>Created By</th>
-
-            <th>Date</th>
+            <th>Project Date</th>
+            <th>Created At</th>
             <th>Status</th>
             <th>Action</th>
         </tr>
@@ -29,7 +29,15 @@
                 $solution = is_object($c) ? ($c->solution ?? '') : ($c['solution'] ?? '');
                 $outcome = is_object($c) ? ($c->outcome ?? '') : ($c['outcome'] ?? '');
                 $projectDate = is_object($c) ? ($c->project_date ?? '') : ($c['project_date'] ?? '');
+                $createdAt = is_object($c) ? ($c->created ?? null) : ($c['created'] ?? null);
                 $status = is_object($c) ? ($c->status ?? 0) : ($c['status'] ?? 0);
+                $createdAtFormatted = '';
+                if ($createdAt instanceof \DateTimeInterface) {
+                    $createdAtFormatted = $createdAt->format('d M Y, H:i');
+                } elseif (!empty($createdAt)) {
+                    $ts = strtotime((string)$createdAt);
+                    $createdAtFormatted = $ts ? date('d M Y, H:i', $ts) : '';
+                }
                 $employeeName = null;
                 if (is_object($case) && $case->has('employee')) {
                     $employeeName = $case->employee->name ?? null;
@@ -46,7 +54,8 @@
                     <td><?= strip_tags($solution); ?></td>
                     <td><?= strip_tags($outcome); ?></td>
                     <td><?= $employeeName ? h($employeeName) : 'Admin'; ?></td>
-                    <td><?= strip_tags($projectDate); ?></td>
+                    <td><?= h($projectDate); ?></td>
+                    <td><?= $createdAtFormatted !== '' ? h($createdAtFormatted) : '<span class="text-muted">—</span>'; ?></td>
                     <td>
                         <?php if ($status == 0): ?>
                             <span class="badge badge-secondary">Inactive</span>
@@ -90,7 +99,7 @@
                 </tr>
             <?php endforeach; ?>
         <?php else: ?>
-            <tr><td colspan="8" class="text-center text-muted">No case studies found.</td></tr>
+            <tr><td colspan="10" class="text-center text-muted">No case studies found.</td></tr>
         <?php endif; ?>
     </tbody>
 </table>

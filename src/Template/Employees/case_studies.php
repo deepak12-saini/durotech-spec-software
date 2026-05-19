@@ -170,7 +170,8 @@ $excerpt = function($str, $limit = 90) use ($stripHtml) {
                     <th>Challenge</th>
                     <th>Solution</th>
                     <th>Outcome</th>
-                    <th>Date</th>
+                    <th>Project Date</th>
+                    <th>Created At</th>
                     <th>Status</th>
                     <th>Action</th>
                 </tr>
@@ -187,6 +188,7 @@ $excerpt = function($str, $limit = 90) use ($stripHtml) {
                             $solution = $case->solution ?? '';
                             $outcome = $case->outcome ?? '';
                             $projectDate = $case->project_date ?? '';
+                            $createdAt = $case->created ?? null;
                             $status = (bool)($case->status ?? false);
                         } else {
                             $caseData = $case['CaseStudy'] ?? $case;
@@ -197,7 +199,15 @@ $excerpt = function($str, $limit = 90) use ($stripHtml) {
                             $solution = $caseData['solution'] ?? '';
                             $outcome = $caseData['outcome'] ?? '';
                             $projectDate = $caseData['project_date'] ?? '';
+                            $createdAt = $caseData['created'] ?? null;
                             $status = !empty($caseData['status']);
+                        }
+                        $createdAtFormatted = '';
+                        if (!empty($createdAt) && $createdAt instanceof \DateTimeInterface) {
+                            $createdAtFormatted = $createdAt->format('d M Y, H:i');
+                        } elseif (!empty($createdAt)) {
+                            $ts = strtotime((string)$createdAt);
+                            $createdAtFormatted = $ts ? date('d M Y, H:i', $ts) : '';
                         }
                     ?>
                         <tr>
@@ -212,6 +222,7 @@ $excerpt = function($str, $limit = 90) use ($stripHtml) {
                             <td><?php echo h($excerpt($solution)); ?></td>
                             <td><?php echo h($excerpt($outcome)); ?></td>
                             <td><?php echo h($projectDate); ?></td>
+                            <td><?php echo $createdAtFormatted !== '' ? h($createdAtFormatted) : '<span class="text-muted">—</span>'; ?></td>
                             <td>
                                 <?php if ($status): ?>
                                     <span class="case-status case-status-active">Active</span>
@@ -233,7 +244,7 @@ $excerpt = function($str, $limit = 90) use ($stripHtml) {
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <tr><td colspan="8" class="case-empty">No case studies found.</td></tr>
+                    <tr><td colspan="9" class="case-empty">No case studies found.</td></tr>
                 <?php endif; ?>
             </tbody>
         </table>

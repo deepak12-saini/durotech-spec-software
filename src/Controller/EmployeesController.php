@@ -2071,8 +2071,12 @@ public function editsendV3($id = null) {
             $query->andWhere(['CaseStudy.project_date <=' => $filters['date_to']]);
         }
 
-        // LIFO: newest case studies first.
-        $query->orderDesc('CaseStudy.id');
+        // Newest first (by created timestamp when available).
+        if ($schema->hasColumn('created')) {
+            $query->orderDesc('CaseStudy.created');
+        } else {
+            $query->orderDesc('CaseStudy.id');
+        }
 
         $caseStudies = $this->paginate($query, ['limit' => 10]);
         $this->set(compact('caseStudies', 'filters'));
