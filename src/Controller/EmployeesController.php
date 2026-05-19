@@ -2071,14 +2071,19 @@ public function editsendV3($id = null) {
             $query->andWhere(['CaseStudy.project_date <=' => $filters['date_to']]);
         }
 
-        // Newest first (by created timestamp when available).
+        // LIFO: newest records first (id is reliable even when created is NULL).
+        $order = ['CaseStudy.id' => 'DESC'];
         if ($schema->hasColumn('created')) {
-            $query->orderDesc('CaseStudy.created');
-        } else {
-            $query->orderDesc('CaseStudy.id');
+            $order = ['CaseStudy.created' => 'DESC', 'CaseStudy.id' => 'DESC'];
+        } elseif ($schema->hasColumn('modified')) {
+            $order = ['CaseStudy.modified' => 'DESC', 'CaseStudy.id' => 'DESC'];
         }
+        $query->order($order);
 
-        $caseStudies = $this->paginate($query, ['limit' => 10]);
+        $caseStudies = $this->paginate($query, [
+            'limit' => 10,
+            'order' => $order,
+        ]);
         $this->set(compact('caseStudies', 'filters'));
     }
 
