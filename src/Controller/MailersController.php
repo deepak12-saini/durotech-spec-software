@@ -2347,7 +2347,9 @@ class MailersController extends AppController
 			$company = $this->request->getData()['company'];
 			$address = $this->request->getData()['address'];
 			$specification = $this->request->getData()['specification'];
-			$date = date('Y-m-d',strtotime($this->request->getData()['date']));
+			$dateRaw = trim((string)$this->request->getData('date', ''));
+			$dateTs = $dateRaw !== '' ? strtotime($dateRaw) : false;
+			$date = ($dateTs !== false) ? date('Y-m-d', $dateTs) : date('Y-m-d');
 			$type = $this->request->getData()['type'];
 			$subject = $this->request->getData()['subject'];
 			//$mft = $this->request->getData()['mft'];
