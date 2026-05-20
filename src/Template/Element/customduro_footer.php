@@ -76,7 +76,7 @@
 	<div class="footer_section col-lg-12 col-md-12 col-sm-12">
 		<div class="row">
 			<div class="footer_about col-lg-3 col-md-3 col-sm-3 para-gr">
-				<img src="<?php echo SITEURL; ?>customdurotech/images/durotech_logo_new.png?v=20260520" alt="Durotech — Commercial waterproofing and sealants, Australian Made and Owned" style="max-width:100%;height:auto;display:block;">
+				<img src="<?php echo SITEURL; ?>customdurotech/images/durotech_logo_new.png?v=20260521" alt="Durotech — Commercial waterproofing and sealants, Australian Made and Owned" style="max-width:100%;width:280px;height:auto;display:block;">
 				<h5>Durotech industries is a leading manufacturer and supplier of waterproofing and coating solutions. Durotech Systems have been widely used in the construction industry for the sealing of wet areas, decks, roofs and other substrates providing protection against moisture and weather damage for over 48 years.</h5>
 				<nav class="footer-about-social" aria-label="Social media">
 					<ul>

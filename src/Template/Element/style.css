@@ -1009,7 +1009,9 @@ footer p strong {
 	width: 70px;
 }
 .footer_section img {
-	width: 225px;
+	width: 280px;
+	max-width: 100%;
+	height: auto;
 }
 .footer_section {
 	/* padding: 0px; */
