@@ -413,20 +413,20 @@
 		object-position: left center;
 		width: auto;
 		height: auto;
-		max-height: 90px;
-		max-width: min(340px, 82vw);
+		max-height: 68px;
+		max-width: min(280px, 72vw);
 		display: block;
 	}
 	@media (min-width: 768px) {
 		.example5 .navbar-brand > img {
-			max-height: 125px;
-			max-width: 460px;
+			max-height: 92px;
+			max-width: 340px;
 		}
 	}
 	@media (min-width: 1200px) {
 		.example5 .navbar-brand > img {
-			max-height: 145px;
-			max-width: 520px;
+			max-height: 100px;
+			max-width: 380px;
 		}
 	}
 	/* When scrolled: hide entire top bar (address + search + social); only logo + menu stay visible at top */
@@ -969,7 +969,7 @@ $currentMenuIsProduct = ($currentMenuController === 'Products' && $currentMenuAc
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
 					</button>
-					<a class="navbar-brand" href="<?php echo SITEURL; ?>"><img src="<?php echo SITEURL; ?>customdurotech/images/durotech_logo_new.png?v=20260521" alt="Durotech — Commercial waterproofing and sealants, Australian Made and Owned">
+					<a class="navbar-brand" href="<?php echo SITEURL; ?>"><img src="<?php echo SITEURL; ?>customdurotech/images/durotech_logo_new.png?v=20260520" alt="Durotech — Commercial waterproofing and sealants, Australian Made and Owned">
 					</a>
 				</div>
 				<div id="navbar5" class="navbar-collapse collapse">
