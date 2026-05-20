@@ -1,6 +1,8 @@
 <?php
 $log = $warrantyLog['ProductWarrantyRequest'] ?? [];
 $siteName = defined('SITENAME') ? SITENAME : 'Durotech Industries';
+$siteUrl = defined('SITEURL') ? rtrim((string)SITEURL, '/') : '';
+$logoUrl = $siteUrl !== '' ? $siteUrl . '/customdurotech/images/durotech_logo_new.png?v=20260520' : '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -13,13 +15,25 @@ $siteName = defined('SITENAME') ? SITENAME : 'Durotech Industries';
     <style>
         body { background-color: #f5f5f5; font-family: Arial, sans-serif; padding-bottom: 30px; }
         .warranty-header {
-            background: #0066cc;
-            color: #fff;
-            padding: 12px 20px;
+            background: #ffffff;
+            color: #333;
+            padding: 16px 20px;
             margin: 0 0 20px 0;
+            border-bottom: 1px solid #e8eef2;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
         }
-        .warranty-header .brand { font-size: 18px; font-weight: bold; }
-        .warranty-header .brand i { margin-right: 6px; }
+        .warranty-header .brand-logo {
+            max-width: 280px;
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .warranty-header .form-title {
+            font-size: 14px;
+            color: #2889c8;
+            font-weight: 600;
+            margin-top: 8px;
+        }
         .page-content { max-width: 1200px; margin: 0 auto; padding: 0 15px; }
         .btn { margin-bottom: 2px; }
         input, textarea {
@@ -63,11 +77,13 @@ $siteName = defined('SITENAME') ? SITENAME : 'Durotech Industries';
     <div class="warranty-header">
         <div class="container-fluid">
             <div class="row">
-                <div class="col-xs-6 col-sm-6">
-                    <span class="brand"><i class="glyphicon glyphicon-leaf"></i><?= h($siteName) ?></span>
-                </div>
-                <div class="col-xs-6 col-sm-6 text-right">
-                    <span>Product Warranty Request Form</span>
+                <div class="col-xs-12 text-center">
+                    <?php if ($logoUrl !== '') : ?>
+                        <a href="<?= h($siteUrl) ?>/"><img src="<?= h($logoUrl) ?>" alt="<?= h($siteName) ?>" class="brand-logo"></a>
+                    <?php else : ?>
+                        <span class="brand"><?= h($siteName) ?></span>
+                    <?php endif; ?>
+                    <div class="form-title">Product Warranty Request Form</div>
                 </div>
             </div>
         </div>

@@ -17,17 +17,11 @@ $adminListUrl = $adminListUrl ?? '';
     <tr>
         <td align="center" style="padding:24px 12px;">
             <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                <tr>
-                    <td style="background-color:#2889c8;padding:20px 24px;text-align:center;">
-                        <?php if ($logoUrl !== ''): ?>
-                            <a href="<?= h($adminListUrl) ?>" style="text-decoration:none;display:inline-block;" target="_blank" rel="noopener">
-                                <img src="<?= h($logoUrl) ?>" alt="<?= h($siteName) ?>" width="200" style="display:block;margin:0 auto;max-width:220px;height:auto;border:0;" />
-                            </a>
-                        <?php else: ?>
-                            <span style="font-size:20px;font-weight:bold;color:#ffffff;letter-spacing:0.5px;"><?= h($siteName) ?></span>
-                        <?php endif; ?>
-                    </td>
-                </tr>
+                <?= $this->element('Email/durotech_logo_header', [
+                    'siteName' => $siteName,
+                    'logoUrl' => $logoUrl,
+                    'linkUrl' => $adminListUrl,
+                ]) ?>
                 <tr>
                     <td style="padding:8px 24px 0 24px;">
                         <p style="margin:0;padding:10px 0 4px 0;font-size:13px;color:#2889c8;font-weight:bold;text-transform:uppercase;letter-spacing:0.06em;">Product warranty</p>

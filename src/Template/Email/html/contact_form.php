@@ -14,7 +14,7 @@ $messageRaw = trim((string)($message ?? ''));
 
 $siteName = defined('SITENAME') ? (string)SITENAME : 'Durotech Industries';
 $siteUrl = defined('SITEURL') ? rtrim((string)SITEURL, '/') : Router::url('/', true);
-$logoUrl = Router::url('/customdurotech/images/durotech_logo.png', true);
+$logoUrl = trim((string)($logoUrl ?? ''));
 
 $enquiryType = '';
 $company = '';
@@ -38,14 +38,12 @@ $row = static function (string $label, string $value): string {
 	<tr>
 		<td align="center">
 			<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
-				<tr>
-					<td style="background:linear-gradient(180deg,#2e4a6e 0%,#1a3a52 100%);padding:28px 24px;text-align:center;border-bottom:3px solid #8CC63F;">
-						<a href="<?= h($siteUrl) ?>/" style="text-decoration:none;display:inline-block;">
-							<img src="<?= h($logoUrl) ?>" alt="<?= h($siteName) ?>" width="200" style="max-width:200px;height:auto;display:block;margin:0 auto;border:0;outline:none;">
-						</a>
-						<p style="margin:16px 0 0;font-size:13px;font-weight:600;color:#e2e8f0;letter-spacing:0.06em;text-transform:uppercase;">New enquiry · contact form</p>
-					</td>
-				</tr>
+				<?= $this->element('Email/durotech_logo_header', [
+					'siteName' => $siteName,
+					'logoUrl' => $logoUrl,
+					'linkUrl' => $siteUrl . '/',
+					'subtitle' => 'New enquiry · contact form',
+				]) ?>
 				<tr>
 					<td style="padding:28px 24px 12px;color:#2c3e50;">
 						<p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#4a5568;">

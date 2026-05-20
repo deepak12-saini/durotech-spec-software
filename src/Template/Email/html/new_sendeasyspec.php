@@ -17,7 +17,7 @@ $downloadUrl = !empty($pdf_attachment)
     ? Router::url('/' . ltrim($pdf_attachment, '/'), true)
     : '';
 
-$logoUrl = Router::url('/customdurotech/images/durotech_logo.png', true);
+$logoUrl = Router::url('/customdurotech/images/durotech_logo_new.png', true);
 ?>
 
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8;padding:20px;font-family:Arial, sans-serif;">
@@ -27,12 +27,10 @@ $logoUrl = Router::url('/customdurotech/images/durotech_logo.png', true);
             <!-- Main Container -->
             <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
                 
-                <!-- Header -->
-                <tr>
-                    <td style="background:#e4edf4;padding:20px;text-align:center;">
-                        <img src="<?= $logoUrl ?>" alt="Durotech" style="max-width:180px;">
-                    </td>
-                </tr>
+                <?= $this->element('Email/durotech_logo_header', [
+                    'logoUrl' => $logoUrl,
+                    'logoWidth' => 180,
+                ]) ?>
 
                 <!-- Body -->
                 <tr>

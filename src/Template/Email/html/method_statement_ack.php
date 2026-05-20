@@ -10,24 +10,18 @@ $name = trim((string)($name ?? ''));
 $siteName = defined('SITENAME') ? SITENAME : (string)($site_name ?? 'Durotech Industries');
 $id = (int)($id ?? 0);
 $siteUrl = defined('SITEURL') ? rtrim((string)SITEURL, '/') : '';
-$logoUrl = Router::url('/customdurotech/images/durotech_logo.png', true);
+$logoUrl = Router::url('/customdurotech/images/durotech_logo_new.png', true);
 $greeting = $name !== '' ? $name : 'there';
 ?>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef2f6;padding:24px 12px;font-family:'Segoe UI',Arial,Helvetica,sans-serif;">
 	<tr>
 		<td align="center">
 			<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-				<tr>
-					<td style="background:linear-gradient(180deg,#e8f0f8 0%,#dce8f4 100%);padding:28px 24px;text-align:center;border-bottom:1px solid #c5d8e8;">
-						<?php if ($siteUrl !== '') : ?>
-							<a href="<?= h($siteUrl) ?>/" style="text-decoration:none;border:0;">
-								<img src="<?= h($logoUrl) ?>" alt="<?= h($siteName) ?>" width="200" style="max-width:200px;height:auto;display:block;margin:0 auto;border:0;">
-							</a>
-						<?php else : ?>
-							<img src="<?= h($logoUrl) ?>" alt="<?= h($siteName) ?>" width="200" style="max-width:200px;height:auto;display:block;margin:0 auto;border:0;">
-						<?php endif; ?>
-					</td>
-				</tr>
+				<?= $this->element('Email/durotech_logo_header', [
+					'siteName' => $siteName,
+					'logoUrl' => $logoUrl,
+					'linkUrl' => $siteUrl !== '' ? $siteUrl . '/' : '',
+				]) ?>
 				<tr>
 					<td style="padding:32px 28px 28px;color:#2c3e50;">
 						<p style="margin:0 0 16px;font-size:18px;line-height:1.45;font-weight:600;color:#1a3a52;">Hi <?= h($greeting) ?>,</p>

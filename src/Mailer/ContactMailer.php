@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Mailer;
 
+use App\Utility\EmailLogo;
 use Cake\Core\Configure;
 use Cake\Mailer\Mailer;
 
@@ -81,6 +82,8 @@ class ContactMailer extends Mailer
         if ($bccList !== []) {
             $this->setBcc($bccList);
         }
+        $data['logoUrl'] = EmailLogo::resolveForMailer($this, $data['logoUrl'] ?? null);
+
         $this
             ->setSubject('Contact form: ' . ($name ?: 'No name'))
             ->setEmailFormat('html')

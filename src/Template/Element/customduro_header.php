@@ -395,7 +395,7 @@
 	}
 	#header_top.header_fixed {
 		padding-top: 0;
-		background: #f4f4f4;
+		background: #ffffff;
 		box-shadow: 0 1px 3px rgba(0,0,0,0.08);
 	}
 	.container.example5,
@@ -436,7 +436,7 @@
 	/* When scrolled: solid background for logo section so banner doesn't show through */
 	.header_top.scrolled + .container.example5 {
 		overflow: visible !important;
-		background: #f4f4f4;
+		background: #ffffff;
 	}
 	.header_top.scrolled + .container.example5 .navbar {
 		overflow: visible !important;
@@ -969,7 +969,7 @@ $currentMenuIsProduct = ($currentMenuController === 'Products' && $currentMenuAc
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
 					</button>
-					<a class="navbar-brand" href="<?php echo SITEURL; ?>"><img src="<?php echo SITEURL; ?>customdurotech/images/durotech_logo_new.png" alt="Durotech — Commercial waterproofing and sealants, Australian Made and Owned">
+					<a class="navbar-brand" href="<?php echo SITEURL; ?>"><img src="<?php echo SITEURL; ?>customdurotech/images/durotech_logo_new.png?v=20260520" alt="Durotech — Commercial waterproofing and sealants, Australian Made and Owned">
 					</a>
 				</div>
 				<div id="navbar5" class="navbar-collapse collapse">

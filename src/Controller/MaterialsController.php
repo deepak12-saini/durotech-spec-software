@@ -158,7 +158,7 @@ class MaterialsController extends AppController
             ]);
             if ($this->MaterialOrders->save($entity)) {
                 $teamMails = [
-                    'deepaksaini10036@gmail.com',
+                    'sales@durotechindustries.com.au',
                     'kal@durotechindustries.com.au',
                     'info@durotechindustries.com.au',
                 ];

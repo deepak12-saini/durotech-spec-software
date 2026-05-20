@@ -8,7 +8,7 @@ use Cake\Routing\Router;
 
 $id = (int)($id ?? 0);
 $siteName = defined('SITENAME') ? SITENAME : (string)($site_name ?? 'Durotech Industries');
-$logoUrl = Router::url('/customdurotech/images/durotech_logo.png', true);
+$logoUrl = Router::url('/customdurotech/images/durotech_logo_new.png', true);
 $adminUrl = trim((string)($admin_view_url ?? ''));
 
 $row = static function (string $label, string $value): string {
@@ -25,12 +25,12 @@ $notesHtml = trim((string)($notes ?? '')) !== '' ? nl2br(h((string)($notes ?? ''
 	<tr>
 		<td align="center">
 			<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:640px;background:#ffffff;border-radius:10px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
-				<tr>
-					<td style="background:linear-gradient(180deg,#e8f0f8 0%,#dce8f4 100%);padding:26px 24px;text-align:center;border-bottom:1px solid #c5d8e8;">
-						<img src="<?= h($logoUrl) ?>" alt="<?= h($siteName) ?>" width="190" style="max-width:190px;height:auto;display:block;margin:0 auto 10px;border:0;">
-						<p style="margin:0;font-size:14px;font-weight:700;color:#1a3a52;letter-spacing:0.03em;text-transform:uppercase;">New Method Statement request</p>
-					</td>
-				</tr>
+				<?= $this->element('Email/durotech_logo_header', [
+					'siteName' => $siteName,
+					'logoUrl' => $logoUrl,
+					'subtitle' => 'New Method Statement request',
+					'logoWidth' => 190,
+				]) ?>
 				<tr>
 					<td style="padding:28px 24px 8px;color:#2c3e50;">
 						<p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#4a5568;">

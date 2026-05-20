@@ -19,6 +19,8 @@ use Cake\Core\Configure;
 use Cake\Event\EventInterface;
 use Cake\Http\Response;
 use Cake\Mailer\Email;
+use App\Utility\EmailFrom;
+use App\Utility\EmailLogo;
 use Cake\Log\Log;
 use Cake\Routing\Router;
 
@@ -322,9 +324,7 @@ class AppController extends Controller
             define('SITENAME', 'Durotech Industries');
         }
         if (!defined('EMAIL')) {
-            // define('EMAIL', 'info@durotechindustries.com.au');
-            define('EMAIL', 'deepaksaini10036@gmail.com');
-
+            define('EMAIL', 'sales@durotechindustries.com.au');
         }
         if (!defined('PHONE')) {
             define('PHONE', '');
@@ -445,29 +445,11 @@ class AppController extends Controller
         $this->autoRender = false;
         
         try {
-            // From must match the SMTP-authenticated mailbox (e.g. Gmail). The EMAIL
-            // constant can come from the DB and differ, which causes Gmail to reject or drop mail.
-            $fromProfile = Configure::read('Email.default.from');
-            $from = '';
-            $from_name = defined('SITENAME') ? SITENAME : 'Site';
-            if (is_array($fromProfile) && $fromProfile !== []) {
-                $keys = array_keys($fromProfile);
-                $from = (string)($keys[0] ?? '');
-                $named = $from !== '' ? ($fromProfile[$from] ?? '') : '';
-                if (is_string($named) && $named !== '') {
-                    $from_name = $named;
-                }
-            } elseif (is_string($fromProfile) && strpos($fromProfile, '@') !== false) {
-                $from = $fromProfile;
-            }
-            if ($from === '') {
-                $gmailUser = Configure::read('EmailTransport.gmail.username');
-                if (is_string($gmailUser) && strpos($gmailUser, '@') !== false) {
-                    $from = $gmailUser;
-                }
-            }
-            if ($from === '') {
-                $from = defined('EMAIL') ? (string)EMAIL : 'deepaksaini10036@gmail.com';
+            $siteName = defined('SITENAME') ? (string)SITENAME : 'Durotech Industries';
+            [$from, $from_name] = EmailFrom::resolve($siteName);
+            $smtpAuthFrom = EmailFrom::smtpAuthAddressIfAllowed();
+            if ($smtpAuthFrom !== null) {
+                $from = $smtpAuthFrom;
             }
             
             $rawList = is_array($to) ? $to : [$to];
@@ -487,6 +469,9 @@ class AppController extends Controller
             $email->viewBuilder()
                 ->setClassName('App\View\AppView')
                 ->setTemplate($template_name);
+
+            $variables['logoUrl'] = EmailLogo::resolveForEmail($email, $variables['logoUrl'] ?? null);
+
             $email->setFrom([$from => $from_name])
                 ->setTo(count($toList) === 1 ? $toList[0] : $toList)
                 ->setSubject($subject)

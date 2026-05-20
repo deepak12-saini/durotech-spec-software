@@ -204,7 +204,7 @@ if (!defined('META_KEYWORD')) {
     define('META_KEYWORD', Configure::read('Site.metaKeyword') ?: '');
 }
 if (!defined('MAILTO')) {
-    define('MAILTO', Configure::read('Site.email') ?: 'info@durotechindustries.com.au');
+    define('MAILTO', Configure::read('Site.email') ?: 'kal@durotechindustries.com.au');
 }
 if (!defined('PHONE')) {
     define('PHONE', Configure::read('Site.phone') ?: '1300 434 272');
@@ -213,7 +213,7 @@ if (!defined('ADDRESS')) {
     define('ADDRESS', Configure::read('Site.address') ?: '12 Production Ave, Taren Point NSW 2229, Australia');
 }
 if (!defined('EMAIL')) {
-    define('EMAIL', Configure::read('Site.email') ?: 'info@durotechindustries.com.au');
+    define('EMAIL', Configure::read('Site.email') ?: 'kal@durotechindustries.com.au');
 }
 if (!defined('FACEBOOK')) {
     define('FACEBOOK', Configure::read('Site.facebook') ?: 'https://www.facebook.com/durotechindustries');

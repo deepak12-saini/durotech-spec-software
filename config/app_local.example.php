@@ -68,4 +68,35 @@ return [
             'url' => env('EMAIL_TRANSPORT_DEFAULT_URL', null),
         ],
     ],
+
+    /*
+     * PRODUCTION (live server) — company mail. Kal/clients must NOT see personal Gmail.
+     */
+    // 'Email' => [
+    //     'default' => ['transport' => 'durotech'],
+    //     'useSmtpAuthAddressAsFrom' => false,
+    // ],
+    // 'EmailTransport' => [
+    //     'durotech' => [
+    //         'host' => 'mail.durotechindustries.com.au',
+    //         'port' => 587,
+    //         'username' => 'sales@durotechindustries.com.au',
+    //         'password' => 'YOUR_SMTP_PASSWORD',
+    //         'tls' => true,
+    //     ],
+    // ],
+
+    /*
+     * LOCAL DEV only — personal Gmail for testing on localhost.
+     */
+    // 'Email' => [
+    //     'default' => ['transport' => 'gmail'],
+    //     'useSmtpAuthAddressAsFrom' => true,
+    // ],
+    // 'EmailTransport' => [
+    //     'gmail' => [
+    //         'username' => 'your@gmail.com',
+    //         'password' => 'your-app-password',
+    //     ],
+    // ],
 ];

@@ -1452,13 +1452,7 @@ class FrontsController extends AppController
                 // Notify internal team for new Product Warranty Request submissions.
                 $baseUrl = defined('SITEURL') ? (string)SITEURL : (string)(Configure::read('App.fullBaseUrl') ?? '');
                 $adminListUrl = rtrim($baseUrl, '/') . '/admin/stocks/product_warranty_request';
-                $recipients = array_values(array_unique(array_filter([
-                    'info@durotechindustries.com.au',
-                    'kal@durotechindustries.com.au',
-                    'deepaksaini10036@gmail.com',
-                ], function ($email) {
-                    return is_string($email) && filter_var(trim($email), FILTER_VALIDATE_EMAIL);
-                })));
+                $recipients = $this->collectWarrantyEmailRecipients();
 
                 if (!empty($recipients)) {
                     try {
@@ -1470,7 +1464,7 @@ class FrontsController extends AppController
                             . trim((string)($data['end_requested_warranty'] ?? ''));
 
                         $logoUrl = $baseUrl !== ''
-                            ? (rtrim($baseUrl, '/') . '/customdurotech/images/durotech_logo.png')
+                            ? (rtrim($baseUrl, '/') . '/customdurotech/images/durotech_logo_new.png')
                             : '';
                         $siteName = defined('SITENAME') ? (string)SITENAME : 'Durotech Industries';
 
@@ -1497,23 +1491,23 @@ class FrontsController extends AppController
                             'Certificate sign date' => trim((string)($data['sign_date'] ?? '')),
                         ];
 
-                        $email = new Email('default');
-                        $email->setTo($recipients)
-                            ->setSubject('New Product Warranty Request Submitted')
-                            ->setEmailFormat('html')
-                            ->setTemplate('product_warranty_admin_notify')
-                            ->setLayout('default')
-                            ->setViewVars([
+                        $this->sendemail(
+                            $recipients,
+                            'New Product Warranty Request Submitted',
+                            'product_warranty_admin_notify',
+                            [
                                 'siteName' => $siteName,
                                 'logoUrl' => $logoUrl,
                                 'introLine' => 'A new product warranty request was submitted from the website.',
                                 'detailRows' => $detailRows,
                                 'adminListUrl' => $adminListUrl,
-                            ])
-                            ->send();
+                            ]
+                        );
                     } catch (\Throwable $e) {
                         Log::error('Product warranty request notification email failed: ' . $e->getMessage());
                     }
+                } else {
+                    Log::warning('Product warranty: no recipients from WarrantyEmail config.');
                 }
 
                 $this->Flash->success(__('Thank you for your application a Durotech representative will be in touch shortly.'));
@@ -1550,18 +1544,15 @@ class FrontsController extends AppController
             // Notify internal team with direct admin link to process/send warranty form.
             $baseUrl = defined('SITEURL') ? (string)SITEURL : (string)(Configure::read('App.fullBaseUrl') ?? '');
             $adminListUrl = rtrim($baseUrl, '/') . '/admin/stocks/warrant_request';
-            $recipients = array_values(array_unique(array_filter([
-                'info@durotechindustries.com.au',
-                'kal@durotechindustries.com.au',
-                'deepaksaini10036@gmail.com',
-            ], function ($email) {
-                return is_string($email) && filter_var(trim($email), FILTER_VALIDATE_EMAIL);
-            })));
+            $recipients = $this->collectWarrantyEmailRecipients();
 
             if (!empty($recipients)) {
                 try {
+                    $siteName = defined('SITENAME') ? (string)SITENAME : 'Durotech Industries';
+                    [$fromEmail, $fromName] = $this->resolveWarrantyFrom($siteName);
                     $email = new Email('default');
-                    $email->setTo($recipients)
+                    $email->setFrom([$fromEmail => $fromName])
+                        ->setTo($recipients)
                         ->setSubject('New Warranty Request Submitted - ' . ($data['unique_id'] ?? ''))
                         ->setEmailFormat('html')
                         ->send(
@@ -1870,5 +1861,47 @@ class FrontsController extends AppController
             $this->Flash->error('The notification could not be deleted. Please, try again.');
         }
         return $this->redirect(['action' => 'admin_index']);
+    }
+
+    /**
+     * Collect WarrantyEmail to/cc/bcc addresses for warranty form notifications.
+     *
+     * @return string[]
+     */
+    protected function collectWarrantyEmailRecipients(): array
+    {
+        $cfg = (array)Configure::read('WarrantyEmail');
+        $seen = [];
+        foreach (['to', 'cc', 'bcc'] as $blockKey) {
+            $block = $cfg[$blockKey] ?? [];
+            if (!is_array($block)) {
+                continue;
+            }
+            foreach ($block as $key => $val) {
+                if (is_string($key) && filter_var($key, FILTER_VALIDATE_EMAIL)) {
+                    $seen[$key] = true;
+                }
+                if (is_int($key) && is_string($val) && filter_var($val, FILTER_VALIDATE_EMAIL)) {
+                    $seen[$val] = true;
+                }
+            }
+        }
+
+        return array_keys($seen);
+    }
+
+    /**
+     * Resolve sender for warranty notification emails from WarrantyEmail config.
+     *
+     * @return array{0: string, 1: string} [email, display name]
+     */
+    protected function resolveWarrantyFrom(string $siteName): array
+    {
+        $smtpAuthFrom = \App\Utility\EmailFrom::smtpAuthAddressIfAllowed();
+        if ($smtpAuthFrom !== null) {
+            return [$smtpAuthFrom, $siteName];
+        }
+
+        return \App\Utility\EmailFrom::resolve($siteName);
     }
 }

@@ -223,13 +223,30 @@ return [
             'url' => env('EMAIL_TRANSPORT_DEFAULT_URL', null),
         ],
 
+        /*
+         * Company mail (production). Ask IT for host, port, username, password.
+         * Set in app_local.php on the live server — do not use personal Gmail there.
+         */
+        'durotech' => [
+            'className' => 'Smtp',
+            'host' => env('DUROTECH_SMTP_HOST', 'mail.durotechindustries.com.au'),
+            'port' => (int)env('DUROTECH_SMTP_PORT', 587),
+            'timeout' => 30,
+            'username' => env('DUROTECH_SMTP_USER', 'sales@durotechindustries.com.au'),
+            'password' => env('DUROTECH_SMTP_PASSWORD', ''),
+            'tls' => filter_var(env('DUROTECH_SMTP_TLS', true), FILTER_VALIDATE_BOOLEAN),
+        ],
+
+        /*
+         * Personal Gmail — LOCAL DEV ONLY. Put credentials in app_local.php, not here.
+         */
         'gmail' => [
             'className' => 'Smtp',
             'host' => 'smtp.gmail.com',
             'port' => 587,
             'timeout' => 30,
             'username' => 'deepaksaini10036@gmail.com',
-            'password' => 'vgzmlqodhngvsdty',   // app password
+            'password' => 'vgzmlqodhngvsdty',
             'tls' => true,
         ],
     ],
@@ -245,23 +262,26 @@ return [
      */
     'Email' => [
         'default' => [
-            'transport' => 'gmail',
-            // 'from' => 'you@localhost',
-            'from' => ['kal@durotechindustries.com.au' => 'Durotech Industries'],
-
-            /*
-             * Will by default be set to config value of App.encoding, if that exists otherwise to UTF-8.
-             */
-            //'charset' => 'utf-8',
-            //'headerCharset' => 'utf-8',
+            // Production: use durotech (company SMTP). Local dev: override to gmail in app_local.php.
+            'transport' => env('EMAIL_TRANSPORT', 'durotech'),
+            'from' => ['sales@durotechindustries.com.au' => 'Durotech Industries'],
         ],
+        /*
+         * If true, From address = SMTP login (e.g. personal Gmail). LOCAL DEV ONLY.
+         * On production leave false so customers see sales@ / info@, not a personal Gmail.
+         */
+        'useSmtpAuthAddressAsFrom' => filter_var(env('EMAIL_USE_SMTP_AUTH_AS_FROM', false), FILTER_VALIDATE_BOOLEAN),
+        /*
+         * Public HTTPS URL for the logo in HTML emails when inline embed is unavailable.
+         */
+        'logoPublicUrl' => 'https://www.durotechindustries.com.au/customdurotech/images/durotech_logo_new.png',
     ],
 
     /*
      * Internal recipients for spec workflow notification emails.
      */
     'SpecEmail' => [
-        'from' => ['no-reply@durotechindustries.com.au' => 'Durotech Industries'],
+        'from' => ['info@durotechindustries.com.au' => 'Durotech Industries'],
         // 'to' => ['deepaksaini10036@gmail.com'],
         // 'cc' => ['deepaksaini10036@gmail.com'],
         // 'bcc' => ['deepaksaini10036@gmail.com'],
@@ -281,6 +301,24 @@ return [
         // 'to' => ['deepaksaini10036@gmail.com'],
         // 'cc' => ['deepaksaini10036@gmail.com'],
         // 'bcc' => ['deepaksaini10036@gmail.com'],
+    ],
+
+    /*
+     * Product warranty + project warranty form notification emails.
+     * Edit recipients and sender here — FrontsController reads WarrantyEmail only.
+     */
+    'WarrantyEmail' => [
+        'from' => ['sales@durotechindustries.com.au' => 'Durotech Industries'],
+        'to' => [
+            'info@durotechindustries.com.au',
+            'kal@durotechindustries.com.au',
+            'sales@durotechindustries.com.au',
+            // 'deepaksaini10036@gmail.com',
+            // 'deepaksaini10036@gmail.com',
+            // 'deepaksaini10036@gmail.com',
+        ],
+        'cc' => [],
+        'bcc' => [],
     ],
 
     /*
