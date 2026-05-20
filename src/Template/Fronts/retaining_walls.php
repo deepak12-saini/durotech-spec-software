@@ -13,6 +13,6 @@
 	 <p>We supply membrane systems suitable for retaining walls and below-ground applications. For terrace and balcony waterproofing, see our <a href="<?= h($this->Url->build('/terrace-waterproofing')) ?>">terrace waterproofing</a> page.</p>
 
 	 <h2 style="font-size:22px; margin-top:24px;">Products and support</h2>
-	 <p>Browse our <a href="<?= h($this->Url->build('/product')) ?>">waterproofing products</a> and categories for membranes and coatings suited to retaining walls. View <a href="<?= h($this->Url->build('/projects')) ?>">case studies</a> to see how our systems perform. For product selection and technical support, <a href="<?= h($this->Url->build('/contact')) ?>">contact us</a> or call 02 9603 1177.</p>
+	 <p>Browse our <a href="<?= h($this->Url->build('/product')) ?>">waterproofing products</a> and categories for membranes and coatings suited to retaining walls. View <a href="<?= h($this->Url->build('/projects')) ?>">case studies</a> to see how our systems perform. For product selection and technical support, <a href="<?= h($this->Url->build('/contact')) ?>">contact us</a> or call 1300 434 272.</p>
 </div>
 

@@ -308,14 +308,14 @@ return [
      * Edit recipients and sender here — FrontsController reads WarrantyEmail only.
      */
     'WarrantyEmail' => [
-        'from' => ['sales@durotechindustries.com.au' => 'Durotech Industries'],
+        'from' => ['info@durotechindustries.com.au' => 'Durotech Industries'],
         'to' => [
             'info@durotechindustries.com.au',
             'kal@durotechindustries.com.au',
             'sales@durotechindustries.com.au',
             // 'deepaksaini10036@gmail.com',
-            // 'deepaksaini10036@gmail.com',
-            // 'deepaksaini10036@gmail.com',
+            // 'deepak543saini@gmail.com',
+            // 'deepak543saini@gmail.com',
         ],
         'cc' => [],
         'bcc' => [],
