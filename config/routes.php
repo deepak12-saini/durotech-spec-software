@@ -663,6 +663,12 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/testimonials/delete/:id', ['controller' => 'Testimonials', 'action' => 'admin_delete'], ['pass' => ['id']]);
     $routes->connect('/admin/testimonials/toggle-status/:id', ['controller' => 'Testimonials', 'action' => 'admin_toggleStatus'], ['pass' => ['id']]);
 
+    // Admin AiSpec — Waterproofing Materials Matrix
+    $routes->connect('/admin/ai-specs', ['controller' => 'AiSpecs', 'action' => 'admin_index']);
+    $routes->connect('/admin/ai-specs/send', ['controller' => 'AiSpecs', 'action' => 'admin_send']);
+    $routes->connect('/admin/ai-specs/edit/:id', ['controller' => 'AiSpecs', 'action' => 'admin_edit'], ['pass' => ['id'], 'id' => '\d+']);
+    $routes->connect('/admin/ai-specs/delete/:id', ['controller' => 'AiSpecs', 'action' => 'admin_delete'], ['pass' => ['id'], 'id' => '\d+']);
+
     // Admin Quick Spec website requests
     $routes->connect('/admin/quick-specs', ['controller' => 'QuickSpecs', 'action' => 'admin_index']);
     $routes->connect('/admin/quick-specs/view/:id', ['controller' => 'QuickSpecs', 'action' => 'admin_view'], ['pass' => ['id'], 'id' => '\d+']);

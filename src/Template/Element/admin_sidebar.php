@@ -248,6 +248,13 @@
 						</a>
 					</li>
 
+					<li class="<?php if ($reqController == 'aispecs' && strpos($reqAction, 'admin_') === 0) {echo 'active';} ?>">
+						<a href="<?php echo $this->Url->build(['controller' => 'AiSpecs', 'action' => 'admin_index']); ?>">
+							<i class="menu-icon fa fa-table"></i>
+							<span class="menu-text">AiSpec materials matrix</span></b>
+						</a>
+					</li>
+
 					<!-- //new_code end deepak -->
 
 					<!-- //new_code deepak 14 june 2025 -->
