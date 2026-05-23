@@ -73,8 +73,24 @@
 .aispec-admin .widget-body {
 	padding: 0;
 }
-.aispec-admin #aispec-table {
+.aispec-admin .widget-body .table-responsive {
+	border: none;
 	margin-bottom: 0;
+}
+.aispec-admin #aispec-table,
+.aispec-admin #aispec-table.dataTable {
+	width: 100% !important;
+	margin-bottom: 0;
+	border: 1px solid var(--aispec-border);
+	border-collapse: collapse !important;
+	border-spacing: 0 !important;
+}
+.aispec-admin #aispec-table thead th,
+.aispec-admin #aispec-table tbody td,
+.aispec-admin table.dataTable#aispec-table thead th,
+.aispec-admin table.dataTable#aispec-table tbody td {
+	border: 1px solid var(--aispec-border) !important;
+	box-sizing: border-box;
 }
 .aispec-admin #aispec-table thead th {
 	background: var(--aispec-grey);
@@ -83,7 +99,6 @@
 	font-weight: 600;
 	text-transform: uppercase;
 	letter-spacing: .3px;
-	border: none;
 	padding: 10px 8px;
 	white-space: nowrap;
 }
@@ -91,7 +106,15 @@
 	vertical-align: middle;
 	padding: 10px 8px;
 	font-size: 13px;
-	border-color: var(--aispec-border);
+}
+.aispec-admin .dataTables_wrapper {
+	border: none;
+	padding: 0;
+}
+.aispec-admin .dataTables_wrapper .dataTables_scroll,
+.aispec-admin .dataTables_wrapper .dataTables_scrollHead,
+.aispec-admin .dataTables_wrapper .dataTables_scrollBody {
+	border: none !important;
 }
 .aispec-admin #aispec-table tbody tr:hover {
 	background: #f0f7fc;

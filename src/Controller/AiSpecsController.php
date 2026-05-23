@@ -94,6 +94,8 @@ class AiSpecsController extends AppController
             ->orderDesc('AiSpecs.id');
         $aiSpecs = $this->paginate($query, ['limit' => 25]);
         $this->set(compact('aiSpecs'));
+        $this->set('showAispecStats', false);
+        $this->set('showAispecWidgetTitle', false);
 
         return null;
     }
@@ -145,6 +147,7 @@ class AiSpecsController extends AppController
         $this->set('aispecActions', $this->_employeeAispecActions());
         $this->set('showAispecStats', false);
         $this->set('showAispecWidgetTitle', false);
+        $this->set('showAispecPaginator', false);
         $this->set('enableAispecTableSearch', true);
         $this->viewBuilder()->setTemplate('admin_index');
 

@@ -8,7 +8,7 @@ $aispecActions = $aispecActions ?? [
 $showAispecStats = $showAispecStats ?? true;
 $showAispecWidgetTitle = $showAispecWidgetTitle ?? true;
 $enableAispecTableSearch = $enableAispecTableSearch ?? false;
-$showAispecPaginator = $showAispecStats;
+$showAispecPaginator = $showAispecPaginator ?? true;
 $totalCount = 0;
 $draftCount = 0;
 $submittedCount = 0;
@@ -72,7 +72,7 @@ if ($showAispecStats) {
 				<?php endif; ?>
 				<div class="widget-body">
 					<div class="table-responsive">
-						<table class="table table-striped table-bordered table-hover" id="aispec-table">
+						<table class="table table-striped table-hover aispec-list-table" id="aispec-table">
 							<thead>
 							<tr>
 								<th>ID</th>
