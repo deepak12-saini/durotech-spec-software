@@ -314,7 +314,9 @@ class UsersController extends AppController
 			$loginRec->set('logouttime', date('Y-m-d H:i:s'));
 			$this->LoginHistory->save($loginRec);
 		}
-		$this->request->getSession()->destroy();
+		$session = $this->request->getSession();
+		$session->delete('User');
+		$session->delete('is_admin');
 		return $this->redirect(rtrim(SITEURL, '/') . '/admin');
 	}
 	

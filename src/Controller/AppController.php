@@ -177,15 +177,44 @@ class AppController extends Controller
             $this->Flash->error('Sorry, you have no user account access. Please login with user account.');
             if (($this->request->is('get') || $this->request->is('head'))
                 && !$this->request->is('ajax')) {
-                $target = $this->request->getRequestTarget();
-                if ($this->isSafeEmployeeRedirectUrl($target)
-                    && stripos($target, 'spec-draft-autosave') === false) {
-                    $session->write('Employee.intended_url', $target);
-                }
+                $this->storeEmployeeIntendedUrlFromRequest();
             }
             return $this->redirect(rtrim(SITEURL, '/') . '/employees/login');
         }
         return null;
+    }
+
+    /**
+     * Remember current employee panel URL for redirect after login (session expiry or logout).
+     */
+    protected function storeEmployeeIntendedUrlFromRequest(): void
+    {
+        $session = $this->request->getSession();
+        $target = $this->request->getRequestTarget();
+        if ($this->isSafeEmployeeRedirectUrl($target)
+            && stripos($target, 'spec-draft-autosave') === false
+            && stripos($target, '/employees/logout') === false) {
+            $session->write('Employee.intended_url', $target);
+
+            return;
+        }
+
+        $referer = (string)$this->request->getEnv('HTTP_REFERER');
+        if ($referer === '') {
+            return;
+        }
+
+        $path = parse_url($referer, PHP_URL_PATH);
+        $query = parse_url($referer, PHP_URL_QUERY);
+        if (!is_string($path) || $path === '') {
+            return;
+        }
+
+        $url = $path . (is_string($query) && $query !== '' ? '?' . $query : '');
+        if ($this->isSafeEmployeeRedirectUrl($url)
+            && stripos($url, 'spec-draft-autosave') === false) {
+            $session->write('Employee.intended_url', $url);
+        }
     }
 
     /**

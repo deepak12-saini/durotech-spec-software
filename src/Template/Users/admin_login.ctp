@@ -21,7 +21,7 @@
 
 											<div class="space-6"></div>
 
-											<?= $this->Form->create(null, ['url' => ['action' => 'adminLogin'], 'name' => 'loginForm', 'id' => 'loginForm']) ?>
+											<?= $this->Form->create(null, ['url' => rtrim(SITEURL, '/') . '/admin', 'name' => 'loginForm', 'id' => 'loginForm']) ?>
 											<?= $this->Flash->render() ?>
 												<fieldset>
 													<label class="block clearfix">
@@ -198,7 +198,7 @@
 														</button>
 													</div>
 												</fieldset>
-											</form>
+											<?= $this->Form->end() ?>
 										</div>
 
 										<div class="toolbar center">

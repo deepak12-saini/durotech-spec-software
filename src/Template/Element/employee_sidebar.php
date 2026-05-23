@@ -32,6 +32,8 @@
 					&& in_array($activeAction, ['case_studies', 'casestudies', 'case_add', 'caseadd', 'case_edit', 'caseedit', 'case_delete', 'casedelete'], true);
 				$isTestimonialsActive = $activeController === 'testimonials'
 					&& in_array($activeAction, ['employee_index', 'employeeindex', 'employee_add', 'employeeadd', 'employee_edit', 'employeeedit', 'employee_delete', 'employeedelete'], true);
+				$isAiSpecsActive = $activeController === 'aispecs'
+					&& in_array($activeAction, ['employee_index', 'employeeindex', 'employee_send', 'employeesend', 'employee_edit', 'employeeedit', 'employee_delete', 'employeedelete'], true);
 				?>
 
 				<ul class="nav nav-list">
@@ -55,6 +57,14 @@
 						<a href="<?php echo SITEURL?>employees/employee_send_v3?mode=adaptive">
 							<i class="menu-icon fa fa-magic"></i>
 							<span class="menu-text">Smart Spec</span>
+						</a>
+						<b class="arrow"></b>
+					</li>
+
+					<li class="<?php echo $isAiSpecsActive ? 'active' : ''; ?>">
+						<a href="<?php echo $this->Url->build(['controller' => 'AiSpecs', 'action' => 'employee_index']); ?>">
+							<i class="menu-icon fa fa-th"></i>
+							<span class="menu-text">AiSpec materials matrix</span>
 						</a>
 						<b class="arrow"></b>
 					</li>

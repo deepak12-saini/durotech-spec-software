@@ -188,21 +188,62 @@
 	padding: 10px 14px;
 	cursor: pointer;
 	user-select: none;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	min-height: 48px;
+}
+.aispec-form-admin .aispec-section-head-main {
+	flex: 1;
+	min-width: 0;
+	padding-right: 8px;
 }
 .aispec-form-admin .aispec-section-head .section-title {
 	font-weight: 600;
 	font-size: 13px;
 	text-transform: uppercase;
 	letter-spacing: .3px;
+	display: block;
+	line-height: 1.35;
 }
 .aispec-form-admin .aispec-section-head .section-meta {
 	font-size: 11px;
 	opacity: .85;
 	margin-top: 2px;
+	line-height: 1.3;
+}
+.aispec-form-admin .aispec-section-head-actions {
+	display: flex;
+	align-items: center;
+	flex-shrink: 0;
+	gap: 10px;
+}
+.aispec-form-admin .aispec-section-head .btn-remove-section {
+	margin: 0;
+	border-color: rgba(255, 255, 255, 0.35);
+	box-shadow: none;
+	white-space: nowrap;
+}
+.aispec-form-admin .aispec-section-head .btn-remove-section:hover,
+.aispec-form-admin .aispec-section-head .btn-remove-section:focus {
+	border-color: #fff;
+}
+.aispec-form-admin .aispec-section-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border-radius: 4px;
+	background: rgba(255, 255, 255, 0.12);
+	flex-shrink: 0;
 }
 .aispec-form-admin .aispec-section-head .toggle-icon {
-	float: right;
-	margin-top: 2px;
+	float: none;
+	margin: 0;
+	font-size: 14px;
+	line-height: 1;
 }
 .aispec-form-admin .aispec-section-body {
 	padding: 14px;
@@ -232,6 +273,11 @@
 	padding: 8px 6px;
 	vertical-align: middle;
 	border-top: 1px solid #edf2f7;
+}
+.aispec-form-admin .aispec-row-table .btn-remove-row {
+	margin: 0;
+	padding: 4px 8px;
+	line-height: 1.2;
 }
 .aispec-form-admin .aispec-row-table tbody tr:hover {
 	background: #f8fbff;

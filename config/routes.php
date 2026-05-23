@@ -111,6 +111,17 @@ Router::scope('/', function (RouteBuilder $routes) {
                     return true;
                 }
             }
+            // Admin login POST: avoid CSRF mismatch after logout, back button, or stale login tab
+            if ($request->is('post')) {
+                $normalizedPath = rtrim(str_replace('\\', '/', $path), '/');
+                if (preg_match('#/admin$#', $normalizedPath)) {
+                    return true;
+                }
+                if ($controller === 'users' && strtolower($action) === 'adminlogin') {
+                    return true;
+                }
+            }
+
             return false;
         }
     ]));
@@ -668,6 +679,12 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/ai-specs/send', ['controller' => 'AiSpecs', 'action' => 'admin_send']);
     $routes->connect('/admin/ai-specs/edit/:id', ['controller' => 'AiSpecs', 'action' => 'admin_edit'], ['pass' => ['id'], 'id' => '\d+']);
     $routes->connect('/admin/ai-specs/delete/:id', ['controller' => 'AiSpecs', 'action' => 'admin_delete'], ['pass' => ['id'], 'id' => '\d+']);
+
+    // Employee AiSpec — Waterproofing Materials Matrix
+    $routes->connect('/employees/ai-specs', ['controller' => 'AiSpecs', 'action' => 'employee_index']);
+    $routes->connect('/employees/ai-specs/send', ['controller' => 'AiSpecs', 'action' => 'employee_send']);
+    $routes->connect('/employees/ai-specs/edit/:id', ['controller' => 'AiSpecs', 'action' => 'employee_edit'], ['pass' => ['id'], 'id' => '\d+']);
+    $routes->connect('/employees/ai-specs/delete/:id', ['controller' => 'AiSpecs', 'action' => 'employee_delete'], ['pass' => ['id'], 'id' => '\d+']);
 
     // Admin Quick Spec website requests
     $routes->connect('/admin/quick-specs', ['controller' => 'QuickSpecs', 'action' => 'admin_index']);

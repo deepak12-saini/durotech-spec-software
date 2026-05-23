@@ -169,7 +169,11 @@ public function logout()
         $this->LoginHistory->save($loginHistory);
     }
 
-    $this->Session->destroy();
+    // Keep intended URL so login returns to the page the user was on (referer).
+    $this->storeEmployeeIntendedUrlFromRequest();
+    $this->Session->delete('Employee');
+    $this->Session->delete('is_employee');
+
     return $this->redirect('/employees/login');
 }
 
@@ -477,6 +481,9 @@ public function employee_send_v3() {
     $employee_id = (int)$this->Session->read('Employee.id');
     if ($employee_id <= 0) {
         $this->Flash->error('Session expired. Please login again.');
+        if ($this->request->is('get') || $this->request->is('head')) {
+            $this->storeEmployeeIntendedUrlFromRequest();
+        }
         return $this->redirect(rtrim(SITEURL, '/') . '/employees/login');
     }
     $mode = (string)$this->request->getQuery('mode');

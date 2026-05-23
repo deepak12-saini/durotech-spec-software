@@ -7,7 +7,7 @@ use Cake\Datasource\ConnectionManager;
 use Cake\Event\EventInterface;
 use Cake\Http\Response;
 /**
- * Admin: AiSpec Waterproofing Materials Matrix
+ * AiSpec Waterproofing Materials Matrix (admin and employee panels)
  */
 class AiSpecsController extends AppController
 {
@@ -60,6 +60,26 @@ class AiSpecsController extends AppController
         return $this->admin_delete($id);
     }
 
+    public function employeeIndex(): ?Response
+    {
+        return $this->employee_index();
+    }
+
+    public function employeeSend(): ?Response
+    {
+        return $this->employee_send();
+    }
+
+    public function employeeEdit($id = null): ?Response
+    {
+        return $this->employee_edit($id);
+    }
+
+    public function employeeDelete($id = null): ?Response
+    {
+        return $this->employee_delete($id);
+    }
+
     public function admin_index(): ?Response
     {
         $this->viewBuilder()->setLayout('admin_layout');
@@ -95,7 +115,7 @@ class AiSpecsController extends AppController
         }
 
         if ($this->request->is('post')) {
-            $result = $this->_processSave($userId, null);
+            $result = $this->_processSave($userId, null, 'admin_index', false);
             if ($result instanceof Response) {
                 return $result;
             }
@@ -106,6 +126,140 @@ class AiSpecsController extends AppController
         $this->set('isEdit', false);
 
         return null;
+    }
+
+    public function employee_index(): ?Response
+    {
+        $this->viewBuilder()->setLayout('employee_layout');
+        $this->set('title_for_layout', SITENAME . ' AiSpec materials matrix');
+        $redirect = $this->_requireEmployeeSession();
+        if ($redirect instanceof Response) {
+            return $redirect;
+        }
+
+        $query = $this->AiSpecs->find()
+            ->where(['AiSpecs.deleted_at IS' => null])
+            ->orderDesc('AiSpecs.id');
+        $aiSpecs = $this->paginate($query, ['limit' => 25]);
+        $this->set(compact('aiSpecs'));
+        $this->set('aispecActions', $this->_employeeAispecActions());
+        $this->viewBuilder()->setTemplate('admin_index');
+
+        return null;
+    }
+
+    public function employee_send(): ?Response
+    {
+        $this->viewBuilder()->setLayout('employee_layout');
+        $this->set('title_for_layout', SITENAME . ' AiSpec — New matrix');
+        $redirect = $this->_requireEmployeeSession();
+        if ($redirect instanceof Response) {
+            return $redirect;
+        }
+
+        if ($this->request->is('post')) {
+            $result = $this->_processSave(0, null, 'employee_index', true);
+            if ($result instanceof Response) {
+                return $result;
+            }
+        }
+
+        $this->set('tracknumber', $this->AiSpecs->getNextTrackNumber());
+        $this->set('aiSpec', null);
+        $this->set('isEdit', false);
+        $this->set('aispecFormAction', ['action' => 'employee_send']);
+        $this->set('aispecListAction', 'employee_index');
+        $this->viewBuilder()->setTemplate('admin_send');
+
+        return null;
+    }
+
+    public function employee_edit($id = null): ?Response
+    {
+        $this->viewBuilder()->setLayout('employee_layout');
+        $this->set('title_for_layout', SITENAME . ' AiSpec — Edit matrix');
+        $redirect = $this->_requireEmployeeSession();
+        if ($redirect instanceof Response) {
+            return $redirect;
+        }
+
+        $id = (int)$id;
+        if ($id <= 0) {
+            $this->Flash->error('Invalid record.');
+
+            return $this->redirect(['action' => 'employee_index']);
+        }
+
+        try {
+            $aiSpec = $this->AiSpecs->get($id, [
+                'contain' => [
+                    'AiSpecSections' => [
+                        'sort' => ['AiSpecSections.sort_order' => 'ASC', 'AiSpecSections.id' => 'ASC'],
+                        'AiSpecItems' => [
+                            'sort' => ['AiSpecItems.sort_order' => 'ASC', 'AiSpecItems.id' => 'ASC'],
+                        ],
+                    ],
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            $this->Flash->error('Record not found.');
+
+            return $this->redirect(['action' => 'employee_index']);
+        }
+
+        if ($aiSpec->deleted_at !== null) {
+            $this->Flash->error('Record not found.');
+
+            return $this->redirect(['action' => 'employee_index']);
+        }
+
+        if ($this->request->is('post')) {
+            $result = $this->_processSave(0, $aiSpec, 'employee_index', true);
+            if ($result instanceof Response) {
+                return $result;
+            }
+        }
+
+        $displayTrack = trim((string)($aiSpec->tracknumber ?? ''));
+        if ($displayTrack === '') {
+            $displayTrack = $this->AiSpecs->getNextTrackNumber();
+        }
+
+        $this->set(compact('aiSpec'));
+        $this->set('tracknumber', $displayTrack);
+        $this->set('isEdit', true);
+        $this->set('aispecFormAction', ['action' => 'employee_edit', $id]);
+        $this->set('aispecListAction', 'employee_index');
+        $this->viewBuilder()->setTemplate('admin_edit');
+
+        return null;
+    }
+
+    public function employee_delete($id = null): ?Response
+    {
+        $this->request->allowMethod(['post', 'delete']);
+        $redirect = $this->_requireEmployeeSession();
+        if ($redirect instanceof Response) {
+            return $redirect;
+        }
+
+        $id = (int)$id;
+        try {
+            $aiSpec = $this->AiSpecs->get($id);
+        } catch (\Throwable $e) {
+            $this->Flash->error('Record not found.');
+
+            return $this->redirect(['action' => 'employee_index']);
+        }
+
+        $aiSpec = $this->AiSpecs->patchEntity($aiSpec, ['deleted_at' => date('Y-m-d H:i:s')]);
+        if ($this->AiSpecs->save($aiSpec)) {
+            $this->Flash->success('AiSpec deleted.');
+        } else {
+            $this->Flash->error('Could not delete.');
+        }
+
+        return $this->redirect(['action' => 'employee_index']);
     }
 
     public function admin_edit($id = null): ?Response
@@ -149,7 +303,7 @@ class AiSpecsController extends AppController
         }
 
         if ($this->request->is('post')) {
-            $result = $this->_processSave($userId, $aiSpec);
+            $result = $this->_processSave($userId, $aiSpec, 'admin_index', false);
             if ($result instanceof Response) {
                 return $result;
             }
@@ -195,11 +349,45 @@ class AiSpecsController extends AppController
     }
 
     /**
-     * @param int $userId
-     * @param \App\Model\Entity\AiSpec|null $existing
      * @return \Cake\Http\Response|null
      */
-    protected function _processSave(int $userId, $existing): ?Response
+    protected function _requireEmployeeSession(): ?Response
+    {
+        $redirect = $this->checkEmployeeSession();
+        if ($redirect instanceof Response) {
+            return $redirect;
+        }
+        $employeeId = (int)$this->request->getSession()->read('Employee.id');
+        if ($employeeId <= 0) {
+            $this->Flash->error('Session expired. Please login again.');
+
+            return $this->redirect(['controller' => 'Employees', 'action' => 'login']);
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function _employeeAispecActions(): array
+    {
+        return [
+            'index' => 'employee_index',
+            'send' => 'employee_send',
+            'edit' => 'employee_edit',
+            'delete' => 'employee_delete',
+        ];
+    }
+
+    /**
+     * @param int $userId Admin user id (0 when saving from employee panel)
+     * @param \App\Model\Entity\AiSpec|null $existing
+     * @param string $redirectAction
+     * @param bool $forEmployee
+     * @return \Cake\Http\Response|null
+     */
+    protected function _processSave(int $userId, $existing, string $redirectAction, bool $forEmployee = false): ?Response
     {
         $data = $this->request->getData();
         $saveStatus = ($data['save_action'] ?? '') === 'draft' ? 'draft' : 'submitted';
@@ -213,7 +401,6 @@ class AiSpecsController extends AppController
         }
 
         $header = [
-            'admin_id' => $userId,
             'tracknumber' => $tracknumber,
             'project' => trim((string)($data['project'] ?? '')),
             'client' => trim((string)($data['client'] ?? '')),
@@ -225,6 +412,13 @@ class AiSpecsController extends AppController
             'subsection_title' => trim((string)($data['subsection_title'] ?? 'Waterproofing Materials Matrix')) ?: 'Waterproofing Materials Matrix',
             'save_status' => $saveStatus,
         ];
+        if ($forEmployee) {
+            if ($existing === null) {
+                $header['admin_id'] = 0;
+            }
+        } else {
+            $header['admin_id'] = $userId;
+        }
 
         $conn = ConnectionManager::get('default');
         $conn->begin();
@@ -357,7 +551,7 @@ class AiSpecsController extends AppController
 
         $this->Flash->success($saveStatus === 'draft' ? 'Draft saved.' : 'AiSpec saved and PDF generated.');
 
-        return $this->redirect(['action' => 'admin_index']);
+        return $this->redirect(['action' => $redirectAction]);
     }
 
     /**

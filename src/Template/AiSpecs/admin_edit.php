@@ -5,9 +5,12 @@
  * @var string $tracknumber
  * @var bool $isEdit
  */
+$formAction = $aispecFormAction ?? ['action' => 'admin_edit', $aiSpec->id];
+$listAction = $aispecListAction ?? 'admin_index';
 echo $this->element('AiSpecs/form', [
 	'formTitle' => 'Edit materials matrix',
-	'formAction' => ['action' => 'admin_edit', $aiSpec->id],
+	'formAction' => $formAction,
+	'listAction' => $listAction,
 	'tracknumber' => $tracknumber,
 	'aiSpec' => $aiSpec,
 	'isEdit' => true,

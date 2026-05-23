@@ -94,7 +94,7 @@ $val = function ($field, $default = '') use ($aiSpec, $dummyHeader, $isNewForm) 
 <div class="page-content aispec-admin aispec-form-admin">
 	<div class="page-header clearfix">
 		<div class="pull-right page-header-actions">
-			<a href="<?php echo $this->Url->build(['action' => 'admin_index']); ?>" class="btn btn-default">
+			<a href="<?php echo $this->Url->build(['action' => $listAction ?? 'admin_index']); ?>" class="btn btn-default">
 				<i class="ace-icon fa fa-arrow-left"></i> Back to list
 			</a>
 		</div>
@@ -267,10 +267,14 @@ $val = function ($field, $default = '') use ($aiSpec, $dummyHeader, $isNewForm) 
 		var title = sec.name || ('Section ' + (secIdx + 1));
 		return '<div class="aispec-section-card" data-section="' + secIdx + '">' +
 			'<div class="aispec-section-head">' +
-			'<i class="ace-icon fa fa-chevron-down toggle-icon"></i> ' +
+			'<div class="aispec-section-head-main">' +
 			'<span class="section-title">' + esc(title) + '</span>' +
 			'<div class="section-meta"><span class="section-row-count">' + items.length + ' row' + (items.length === 1 ? '' : 's') + '</span></div>' +
-			'<button type="button" class="btn btn-xs btn-danger pull-right btn-remove-section" style="margin-top:-22px;"><i class="fa fa-times"></i> Remove</button>' +
+			'</div>' +
+			'<div class="aispec-section-head-actions">' +
+			'<button type="button" class="btn btn-xs btn-danger btn-remove-section"><i class="fa fa-times"></i> Remove</button>' +
+			'<span class="aispec-section-toggle" aria-hidden="true"><i class="ace-icon fa fa-chevron-down toggle-icon"></i></span>' +
+			'</div>' +
 			'</div>' +
 			'<div class="aispec-section-body">' +
 			'<div class="row">' +

@@ -1,4 +1,10 @@
 <?php
+$aispecActions = $aispecActions ?? [
+	'index' => 'admin_index',
+	'send' => 'admin_send',
+	'edit' => 'admin_edit',
+	'delete' => 'admin_delete',
+];
 $totalCount = (int)$this->Paginator->param('count');
 $draftCount = 0;
 $submittedCount = 0;
@@ -16,7 +22,7 @@ foreach ($aiSpecs as $row) {
 		<div class="pull-right page-header-actions">
 			<?php echo $this->Html->link(
 				'<i class="ace-icon fa fa-plus"></i> New materials matrix',
-				['action' => 'admin_send'],
+				['action' => $aispecActions['send']],
 				['class' => 'btn btn-success', 'escape' => false]
 			); ?>
 		</div>
@@ -74,7 +80,7 @@ foreach ($aiSpecs as $row) {
 									<td colspan="8" class="text-center" style="padding:32px;color:#7a8a99;">
 										<i class="ace-icon fa fa-inbox fa-2x" style="display:block;margin-bottom:8px;"></i>
 										No materials matrices yet.
-										<?php echo $this->Html->link('Create your first one', ['action' => 'admin_send']); ?>.
+										<?php echo $this->Html->link('Create your first one', ['action' => $aispecActions['send']]); ?>.
 									</td>
 								</tr>
 							<?php endif; ?>
@@ -113,12 +119,12 @@ foreach ($aiSpecs as $row) {
 											<?php } ?>
 											<?php echo $this->Html->link(
 												'<i class="ace-icon fa fa-pencil"></i>',
-												['action' => 'admin_edit', $rid],
+												['action' => $aispecActions['edit'], $rid],
 												['class' => 'btn btn-xs btn-info', 'escape' => false, 'title' => 'Edit']
 											); ?>
 											<?php echo $this->Form->postLink(
 												'<i class="ace-icon fa fa-trash-o"></i>',
-												['action' => 'admin_delete', $rid],
+												['action' => $aispecActions['delete'], $rid],
 												[
 													'confirm' => 'Delete this materials matrix?',
 													'class' => 'btn btn-xs btn-danger',
