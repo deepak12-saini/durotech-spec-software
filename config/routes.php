@@ -677,12 +677,14 @@ Router::scope('/', function (RouteBuilder $routes) {
     // Admin AiSpec — Waterproofing Materials Matrix
     $routes->connect('/admin/ai-specs', ['controller' => 'AiSpecs', 'action' => 'admin_index']);
     $routes->connect('/admin/ai-specs/send', ['controller' => 'AiSpecs', 'action' => 'admin_send']);
+    $routes->connect('/admin/ai-specs/view/:id', ['controller' => 'AiSpecs', 'action' => 'admin_view'], ['pass' => ['id'], 'id' => '\d+']);
     $routes->connect('/admin/ai-specs/edit/:id', ['controller' => 'AiSpecs', 'action' => 'admin_edit'], ['pass' => ['id'], 'id' => '\d+']);
     $routes->connect('/admin/ai-specs/delete/:id', ['controller' => 'AiSpecs', 'action' => 'admin_delete'], ['pass' => ['id'], 'id' => '\d+']);
 
     // Employee AiSpec — Waterproofing Materials Matrix
     $routes->connect('/employees/ai-specs', ['controller' => 'AiSpecs', 'action' => 'employee_index']);
     $routes->connect('/employees/ai-specs/send', ['controller' => 'AiSpecs', 'action' => 'employee_send']);
+    $routes->connect('/employees/ai-specs/view/:id', ['controller' => 'AiSpecs', 'action' => 'employee_view'], ['pass' => ['id'], 'id' => '\d+']);
     $routes->connect('/employees/ai-specs/edit/:id', ['controller' => 'AiSpecs', 'action' => 'employee_edit'], ['pass' => ['id'], 'id' => '\d+']);
     $routes->connect('/employees/ai-specs/delete/:id', ['controller' => 'AiSpecs', 'action' => 'employee_delete'], ['pass' => ['id'], 'id' => '\d+']);
 

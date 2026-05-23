@@ -2,6 +2,7 @@
 $aispecActions = $aispecActions ?? [
 	'index' => 'admin_index',
 	'send' => 'admin_send',
+	'view' => 'admin_view',
 	'edit' => 'admin_edit',
 	'delete' => 'admin_delete',
 ];
@@ -140,6 +141,11 @@ if ($showAispecStats) {
 													<i class="ace-icon fa fa-file-pdf-o"></i> PDF
 												</a>
 											<?php } ?>
+											<?php echo $this->Html->link(
+												'<i class="ace-icon fa fa-eye"></i>',
+												['action' => $aispecActions['view'], $rid],
+												['class' => 'btn btn-xs btn-default', 'escape' => false, 'title' => 'View details']
+											); ?>
 											<?php echo $this->Html->link(
 												'<i class="ace-icon fa fa-pencil"></i>',
 												['action' => $aispecActions['edit'], $rid],

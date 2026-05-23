@@ -60,6 +60,16 @@ class AiSpecsController extends AppController
         return $this->admin_delete($id);
     }
 
+    public function adminView($id = null): ?Response
+    {
+        return $this->admin_view($id);
+    }
+
+    public function employeeView($id = null): ?Response
+    {
+        return $this->employee_view($id);
+    }
+
     public function employeeIndex(): ?Response
     {
         return $this->employee_index();
@@ -354,6 +364,131 @@ class AiSpecsController extends AppController
         return $this->redirect(['action' => 'admin_index']);
     }
 
+    public function admin_view($id = null): ?Response
+    {
+        $this->viewBuilder()->setLayout('admin_layout');
+        $redirect = $this->checkAdminSession();
+        if ($redirect instanceof Response) {
+            return $redirect;
+        }
+
+        return $this->_renderAiSpecView((int)$id, [
+            'index' => 'admin_index',
+            'send' => 'admin_send',
+            'edit' => 'admin_edit',
+            'delete' => 'admin_delete',
+            'view' => 'admin_view',
+        ], 'admin_index');
+    }
+
+    public function employee_view($id = null): ?Response
+    {
+        $this->viewBuilder()->setLayout('employee_layout');
+        $redirect = $this->_requireEmployeeSession();
+        if ($redirect instanceof Response) {
+            return $redirect;
+        }
+
+        return $this->_renderAiSpecView((int)$id, $this->_employeeAispecActions(), 'employee_index');
+    }
+
+    /**
+     * @param int $id
+     * @param array<string, string> $aispecActions
+     * @param string $listAction
+     * @return \Cake\Http\Response|null
+     */
+    protected function _renderAiSpecView(int $id, array $aispecActions, string $listAction): ?Response
+    {
+        if ($id <= 0) {
+            $this->Flash->error('Invalid record.');
+
+            return $this->redirect(['action' => $listAction]);
+        }
+
+        $aiSpec = $this->_loadAiSpecForDisplay($id);
+        if ($aiSpec === null) {
+            $this->Flash->error('Record not found.');
+
+            return $this->redirect(['action' => $listAction]);
+        }
+
+        $track = trim((string)($aiSpec->tracknumber ?? ''));
+        $this->set('title_for_layout', SITENAME . ' AiSpec — ' . ($track !== '' ? $track : '#' . $id));
+        $this->set(compact('aiSpec', 'aispecActions'));
+        $this->set('allItemsSorted', $this->_sortedMatrixItems($aiSpec));
+        $this->viewBuilder()->setTemplate('view');
+
+        return null;
+    }
+
+    /**
+     * @param int $id
+     * @return \App\Model\Entity\AiSpec|null
+     */
+    protected function _loadAiSpecForDisplay(int $id)
+    {
+        try {
+            $aiSpec = $this->AiSpecs->get($id, [
+                'contain' => [
+                    'AiSpecSections' => [
+                        'sort' => ['AiSpecSections.sort_order' => 'ASC', 'AiSpecSections.id' => 'ASC'],
+                        'AiSpecItems' => [
+                            'sort' => ['AiSpecItems.sort_order' => 'ASC', 'AiSpecItems.id' => 'ASC'],
+                        ],
+                    ],
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            return null;
+        }
+
+        if ($aiSpec->deleted_at !== null) {
+            return null;
+        }
+
+        return $aiSpec;
+    }
+
+    /**
+     * @param \App\Model\Entity\AiSpec $aiSpec
+     * @return array<int, array{section: \App\Model\Entity\AiSpecSection, item: \App\Model\Entity\AiSpecItem}>
+     */
+    protected function _sortedMatrixItems($aiSpec): array
+    {
+        $rows = [];
+        foreach ($aiSpec->ai_spec_sections ?? [] as $section) {
+            foreach ($section->ai_spec_items ?? [] as $item) {
+                $rows[] = ['section' => $section, 'item' => $item];
+            }
+        }
+
+        usort($rows, function (array $a, array $b): int {
+            $na = $this->_wpmSortNum($a['item']);
+            $nb = $this->_wpmSortNum($b['item']);
+            if ($na === $nb) {
+                return ((int)($a['item']->id ?? 0)) <=> ((int)($b['item']->id ?? 0));
+            }
+
+            return $na <=> $nb;
+        });
+
+        return $rows;
+    }
+
+    /**
+     * @param \App\Model\Entity\AiSpecItem $item
+     */
+    protected function _wpmSortNum($item): int
+    {
+        $code = (string)($item->wpm_code ?? '');
+        if (preg_match('/(\d+)/', $code, $m)) {
+            return (int)$m[1];
+        }
+
+        return (int)($item->sort_order ?? 9999);
+    }
+
     /**
      * @return \Cake\Http\Response|null
      */
@@ -381,6 +516,7 @@ class AiSpecsController extends AppController
         return [
             'index' => 'employee_index',
             'send' => 'employee_send',
+            'view' => 'employee_view',
             'edit' => 'employee_edit',
             'delete' => 'employee_delete',
         ];

@@ -369,6 +369,198 @@
 .aispec-admin .widget-box .widget-body {
 	padding-top: 14px;
 }
+.aispec-view .aispec-view-meta-bar {
+	background: #f4f7fb;
+	border: 1px solid var(--aispec-border);
+	border-radius: 6px;
+	padding: 10px 14px;
+	margin-bottom: 16px;
+	font-size: 13px;
+}
+.aispec-view .aispec-view-meta-item {
+	display: inline-block;
+	margin-right: 20px;
+	margin-bottom: 4px;
+}
+.aispec-view .label-sm {
+	font-size: 11px;
+	padding: 3px 8px;
+}
+/* PDF-style preview (matches generated PDF layout) */
+.aispec-view .aispec-pdf-preview {
+	max-width: 900px;
+	margin: 0 auto 24px;
+	border: 1px solid #bbbbbb;
+	box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12);
+	font-family: Arial, Helvetica, sans-serif;
+	background: #fff;
+}
+.aispec-view .aispec-pdf-title {
+	background: #000000;
+	color: #ffffff;
+	text-align: center;
+	font-size: 16px;
+	font-weight: bold;
+	padding: 10px 14px;
+	letter-spacing: 0.2px;
+}
+.aispec-view .aispec-pdf-header-meta {
+	background: #000000;
+	color: #ffffff;
+	padding: 4px 14px 12px;
+}
+.aispec-view .aispec-pdf-meta-table {
+	border: none;
+}
+.aispec-view .aispec-pdf-meta-label {
+	width: 72px;
+	text-align: right;
+	font-size: 11px;
+	color: #ffffff;
+	padding: 3px 10px 3px 0;
+	vertical-align: top;
+	white-space: nowrap;
+}
+.aispec-view .aispec-pdf-meta-value {
+	font-size: 12px;
+	font-weight: bold;
+	color: #ffffff;
+	padding: 3px 0;
+	line-height: 1.35;
+	vertical-align: top;
+	word-break: break-word;
+}
+.aispec-view .aispec-pdf-standards {
+	background: #625d59;
+	border-top: 1px solid #bbbbbb;
+	border-bottom: 1px solid #bbbbbb;
+	padding: 6px 0;
+}
+.aispec-view .aispec-pdf-standards-table {
+	width: 100%;
+}
+.aispec-view .aispec-pdf-standards-name {
+	width: 46%;
+	font-size: 11px;
+	font-weight: bold;
+	color: #ffffff;
+	padding: 4px 8px 4px 12px;
+	vertical-align: top;
+	letter-spacing: 0.2px;
+}
+.aispec-view .aispec-pdf-standards-text {
+	width: 54%;
+	font-size: 10px;
+	font-weight: normal;
+	color: #ffffff;
+	padding: 4px 12px 4px 0;
+	text-align: right;
+	line-height: 1.3;
+	vertical-align: top;
+	word-break: break-word;
+}
+.aispec-view .aispec-pdf-matrix {
+	border-bottom: 1px solid #bbbbbb;
+}
+.aispec-view .aispec-pdf-row {
+	display: table;
+	width: 100%;
+	table-layout: fixed;
+	border-bottom: 1px solid #bbbbbb;
+}
+.aispec-view .aispec-pdf-row-last {
+	border-bottom: none;
+}
+.aispec-view .aispec-pdf-wpm,
+.aispec-view .aispec-pdf-content {
+	display: table-cell;
+	vertical-align: middle;
+}
+.aispec-view .aispec-pdf-wpm {
+	width: 28px;
+	min-width: 28px;
+	max-width: 28px;
+	text-align: center;
+	font-size: 10px;
+	font-weight: bold;
+	line-height: 1.15;
+	padding: 8px 2px;
+	border-right: 1px solid #bbbbbb;
+	word-wrap: break-word;
+}
+.aispec-view .aispec-pdf-content {
+	padding: 8px 14px 8px 10px;
+	background: #ffffff;
+}
+.aispec-view .aispec-pdf-topline {
+	margin-bottom: 4px;
+}
+.aispec-view .aispec-pdf-area {
+	float: left;
+	width: 52%;
+	font-size: 11px;
+	color: #333333;
+	line-height: 1.3;
+	padding-right: 8px;
+	word-break: break-word;
+}
+.aispec-view .aispec-pdf-fall {
+	float: right;
+	width: 48%;
+	font-size: 10px;
+	color: #444444;
+	font-style: italic;
+	line-height: 1.25;
+	text-align: right;
+	word-break: break-word;
+}
+.aispec-view .aispec-pdf-product {
+	font-size: 12px;
+	font-weight: bold;
+	color: #000000;
+	line-height: 1.3;
+	margin-bottom: 2px;
+	word-break: break-word;
+}
+.aispec-view .aispec-pdf-desc {
+	font-size: 11px;
+	color: #333333;
+	line-height: 1.35;
+	word-break: break-word;
+}
+.aispec-view .aispec-pdf-empty {
+	padding: 16px 14px;
+	font-size: 11px;
+	color: #666666;
+	background: #ffffff;
+}
+.aispec-view .aispec-pdf-footer {
+	background: #000000;
+	color: #ffffff;
+	text-align: right;
+	font-size: 10px;
+	padding: 8px 14px;
+	min-height: 18px;
+	word-break: break-word;
+}
+@media (max-width: 767px) {
+	.aispec-view .aispec-pdf-standards-name,
+	.aispec-view .aispec-pdf-standards-text {
+		display: block;
+		width: 100%;
+		text-align: left;
+		padding: 4px 12px;
+	}
+	.aispec-view .aispec-pdf-area,
+	.aispec-view .aispec-pdf-fall {
+		float: none;
+		width: 100%;
+		text-align: left;
+	}
+	.aispec-view .aispec-pdf-fall {
+		margin-top: 4px;
+	}
+}
 @media (max-width: 991px) {
 	.aispec-form-admin .aispec-row-table { font-size: 12px; }
 	.aispec-form-admin .aispec-row-table input { min-width: 80px; }

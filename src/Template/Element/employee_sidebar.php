@@ -33,7 +33,7 @@
 				$isTestimonialsActive = $activeController === 'testimonials'
 					&& in_array($activeAction, ['employee_index', 'employeeindex', 'employee_add', 'employeeadd', 'employee_edit', 'employeeedit', 'employee_delete', 'employeedelete'], true);
 				$isAiSpecsActive = $activeController === 'aispecs'
-					&& in_array($activeAction, ['employee_index', 'employeeindex', 'employee_send', 'employeesend', 'employee_edit', 'employeeedit', 'employee_delete', 'employeedelete'], true);
+					&& in_array($activeAction, ['employee_index', 'employeeindex', 'employee_send', 'employeesend', 'employee_view', 'employeeview', 'employee_edit', 'employeeedit', 'employee_delete', 'employeedelete'], true);
 				?>
 
 				<ul class="nav nav-list">
