@@ -5,15 +5,22 @@ $aispecActions = $aispecActions ?? [
 	'edit' => 'admin_edit',
 	'delete' => 'admin_delete',
 ];
-$totalCount = (int)$this->Paginator->param('count');
+$showAispecStats = $showAispecStats ?? true;
+$showAispecWidgetTitle = $showAispecWidgetTitle ?? true;
+$enableAispecTableSearch = $enableAispecTableSearch ?? false;
+$showAispecPaginator = $showAispecStats;
+$totalCount = 0;
 $draftCount = 0;
 $submittedCount = 0;
-foreach ($aiSpecs as $row) {
-	$r = is_object($row) ? $row : (object)$row;
-	if (($r->save_status ?? '') === 'draft') {
-		$draftCount++;
-	} else {
-		$submittedCount++;
+if ($showAispecStats) {
+	$totalCount = (int)$this->Paginator->param('count');
+	foreach ($aiSpecs as $row) {
+		$r = is_object($row) ? $row : (object)$row;
+		if (($r->save_status ?? '') === 'draft') {
+			$draftCount++;
+		} else {
+			$submittedCount++;
+		}
 	}
 }
 ?>
@@ -32,6 +39,7 @@ foreach ($aiSpecs as $row) {
 		</h1>
 	</div>
 
+	<?php if ($showAispecStats): ?>
 	<div class="row aispec-stat-row">
 		<div class="col-sm-4">
 			<div class="aispec-stat-card">
@@ -52,13 +60,16 @@ foreach ($aiSpecs as $row) {
 			</div>
 		</div>
 	</div>
+	<?php endif; ?>
 
 	<div class="row">
 		<div class="col-xs-12">
 			<div class="widget-box">
+				<?php if ($showAispecWidgetTitle): ?>
 				<div class="widget-header clearfix">
 					<h5 class="pull-left"><i class="ace-icon fa fa-table"></i> All materials matrices</h5>
 				</div>
+				<?php endif; ?>
 				<div class="widget-body">
 					<div class="table-responsive">
 						<table class="table table-striped table-bordered table-hover" id="aispec-table">
@@ -90,8 +101,20 @@ foreach ($aiSpecs as $row) {
 								$rid = (int)($r->id ?? 0);
 								$st = (string)($r->save_status ?? '');
 								$pdf = trim((string)($r->pdf_attachment ?? ''));
+								$searchBlob = preg_replace('/\s+/u', ' ', trim(implode(' ', array_filter([
+									(string)$rid,
+									(string)($r->tracknumber ?? ''),
+									(string)($r->project ?? ''),
+									(string)($r->client ?? ''),
+									(string)($r->revision ?? ''),
+									(string)($r->doc_reference ?? ''),
+									$st === 'draft' ? 'draft' : 'submitted',
+									!empty($r->created) ? format_db_date('d M Y, H:i', $r->created) : '',
+								], function ($v) {
+									return $v !== '' && $v !== '—';
+								}))));
 								?>
-								<tr>
+								<tr data-search="<?php echo h(function_exists('mb_strtolower') ? mb_strtolower($searchBlob, 'UTF-8') : strtolower($searchBlob)); ?>">
 									<td data-order="<?php echo h((string)$rid); ?>"><strong>#<?php echo h((string)$rid); ?></strong></td>
 									<td><span class="aispec-track"><?php echo h((string)($r->tracknumber ?? '')); ?></span></td>
 									<td>
@@ -141,6 +164,7 @@ foreach ($aiSpecs as $row) {
 					</div>
 				</div>
 			</div>
+			<?php if ($showAispecPaginator): ?>
 			<div class="paginator" style="margin-top:12px;">
 				<ul class="pagination">
 					<?php echo $this->Paginator->prev('< ' . __('previous')); ?>
@@ -148,20 +172,78 @@ foreach ($aiSpecs as $row) {
 					<?php echo $this->Paginator->next(__('next') . ' >'); ?>
 				</ul>
 			</div>
+			<?php endif; ?>
 		</div>
 	</div>
 </div>
 <?php echo $this->element('AiSpecs/admin_styles'); ?>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/dataTables.bootstrap.min.css" />
+<?php if ($enableAispecTableSearch): ?>
+<script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.10.19/js/dataTables.bootstrap.min.js"></script>
+<?php endif; ?>
 <script>
-$(document).ready(function() {
-	if ($('#aispec-table tbody tr').length && !$('#aispec-table tbody tr td[colspan]').length && $.fn.DataTable) {
-		$('#aispec-table').DataTable({
-			order: [[0, 'desc']],
-			pageLength: 25,
-			lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']],
-			columnDefs: [{ orderable: false, targets: 7 }],
-			language: { search: 'Filter:', searchPlaceholder: 'Project, client, track…' }
+(function() {
+	if (!window._aispecListFilterFn) {
+		window._aispecListFilterFn = true;
+		window.aispecListFilter = '';
+		$.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+			var tableId = settings.sTableId || (settings.nTable && settings.nTable.id) || '';
+			if (tableId !== 'aispec-table') {
+				return true;
+			}
+			var term = window.aispecListFilter || '';
+			if (term === '') {
+				return true;
+			}
+			var api = new $.fn.dataTable.Api(settings);
+			var node = api.row(dataIndex).node();
+			var haystack = '';
+			if (node && node.getAttribute) {
+				haystack = node.getAttribute('data-search') || '';
+			}
+			if (haystack === '' && data && data.length) {
+				haystack = data.join(' ');
+			}
+			return haystack.indexOf(term) !== -1;
 		});
 	}
-});
+
+	function bindAispecFilterInput(dt) {
+		var $filter = $(dt.table().container()).find('.dataTables_filter input');
+		if (!$filter.length) {
+			return;
+		}
+		$filter.attr('placeholder', 'Project, client, track…');
+		$filter.off('keyup.DT search.DT input.DT paste.DT cut.DT .aispecFilter')
+			.on('keyup.aispecFilter change.aispecFilter paste.aispecFilter', function() {
+				window.aispecListFilter = $.trim($(this).val()).toLowerCase();
+				dt.draw();
+			});
+	}
+
+	$(document).ready(function() {
+		var $table = $('#aispec-table');
+		var isEmpty = $table.find('tbody tr td[colspan]').length > 0;
+
+		if (!isEmpty && $.fn.DataTable) {
+			var dt = $table.DataTable({
+				order: [[0, 'desc']],
+				pageLength: 25,
+				lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
+				columnDefs: [{ orderable: false, targets: 7 }],
+				language: {
+					search: 'Filter:',
+					searchPlaceholder: 'Project, client, track…',
+					zeroRecords: 'No matching matrices found.'
+				},
+				initComplete: function() {
+					bindAispecFilterInput(this.api());
+				}
+			});
+			// Disable built-in global search (regex); custom ext.search handles filtering.
+			dt.search('');
+		}
+	});
+})();
 </script>

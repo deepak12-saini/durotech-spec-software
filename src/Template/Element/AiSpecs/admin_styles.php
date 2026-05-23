@@ -323,6 +323,29 @@
 .aispec-form-admin .alert-example {
 	border-left: 4px solid var(--aispec-teal);
 }
+.aispec-admin .dataTables_wrapper .dataTables_filter {
+	float: right;
+	margin-bottom: 12px;
+}
+.aispec-admin .dataTables_wrapper .dataTables_filter label {
+	font-weight: normal;
+	margin: 0;
+}
+.aispec-admin .dataTables_wrapper .dataTables_filter input {
+	margin-left: 6px;
+	min-width: 220px;
+}
+.aispec-admin .dataTables_wrapper .dataTables_length {
+	float: left;
+	margin-bottom: 12px;
+}
+.aispec-admin .dataTables_wrapper .dataTables_info,
+.aispec-admin .dataTables_wrapper .dataTables_paginate {
+	margin-top: 10px;
+}
+.aispec-admin .widget-box .widget-body {
+	padding-top: 14px;
+}
 @media (max-width: 991px) {
 	.aispec-form-admin .aispec-row-table { font-size: 12px; }
 	.aispec-form-admin .aispec-row-table input { min-width: 80px; }

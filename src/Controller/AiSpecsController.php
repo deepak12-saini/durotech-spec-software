@@ -137,12 +137,15 @@ class AiSpecsController extends AppController
             return $redirect;
         }
 
-        $query = $this->AiSpecs->find()
+        $aiSpecs = $this->AiSpecs->find()
             ->where(['AiSpecs.deleted_at IS' => null])
-            ->orderDesc('AiSpecs.id');
-        $aiSpecs = $this->paginate($query, ['limit' => 25]);
+            ->orderDesc('AiSpecs.id')
+            ->all();
         $this->set(compact('aiSpecs'));
         $this->set('aispecActions', $this->_employeeAispecActions());
+        $this->set('showAispecStats', false);
+        $this->set('showAispecWidgetTitle', false);
+        $this->set('enableAispecTableSearch', true);
         $this->viewBuilder()->setTemplate('admin_index');
 
         return null;
