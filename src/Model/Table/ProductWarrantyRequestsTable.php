@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Model\Table;
 
 use Cake\ORM\Table;
+use Cake\Validation\Validator;
 
 class ProductWarrantyRequestsTable extends Table
 {
@@ -12,5 +13,97 @@ class ProductWarrantyRequestsTable extends Table
         parent::initialize($config);
         $this->setTable('product_warranty_request');
         $this->setPrimaryKey('id');
+    }
+
+    public function validationDefault(Validator $validator): Validator
+    {
+        $validator
+            ->scalar('serialnumber')
+            ->maxLength('serialnumber', 255)
+            ->requirePresence('serialnumber', 'create')
+            ->notEmptyString('serialnumber', 'Warranty serial number is required.');
+
+        $validator
+            ->scalar('dateofpurchase')
+            ->maxLength('dateofpurchase', 32)
+            ->requirePresence('dateofpurchase', 'create')
+            ->notEmptyString('dateofpurchase', 'Date of purchase is required.')
+            ->date('dateofpurchase', ['ymd'], 'Enter a valid date of purchase (YYYY-MM-DD).');
+
+        $validator
+            ->scalar('product')
+            ->requirePresence('product', 'create')
+            ->notEmptyString('product', 'Product is required.');
+
+        $validator
+            ->scalar('used_as')
+            ->requirePresence('used_as', 'create')
+            ->notEmptyString('used_as', 'Used As is required.');
+
+        $validator
+            ->scalar('building_address')
+            ->requirePresence('building_address', 'create')
+            ->notEmptyString('building_address', 'Building address is required.');
+
+        $validator
+            ->scalar('contract_company_name')
+            ->requirePresence('contract_company_name', 'create')
+            ->notEmptyString('contract_company_name', 'Contractor company name is required.');
+
+        $validator
+            ->scalar('contract_name')
+            ->requirePresence('contract_name', 'create')
+            ->notEmptyString('contract_name', 'Contractor full name is required.');
+
+        $validator
+            ->scalar('sign_date')
+            ->maxLength('sign_date', 32)
+            ->requirePresence('sign_date', 'create')
+            ->notEmptyString('sign_date', 'Signature date is required.')
+            ->date('sign_date', ['ymd'], 'Enter a valid signature date (YYYY-MM-DD).');
+
+        $validator
+            ->allowEmptyString('application')
+            ->scalar('application');
+
+        $validator
+            ->allowEmptyString('area_warranted')
+            ->scalar('area_warranted');
+
+        $validator
+            ->allowEmptyString('building_area_name')
+            ->scalar('building_area_name');
+
+        $validator
+            ->allowEmptyString('building_name')
+            ->scalar('building_name');
+
+        $validator
+            ->allowEmptyString('start_requested_warranty')
+            ->scalar('start_requested_warranty')
+            ->date('start_requested_warranty', ['ymd'], 'Enter a valid warranty start date (YYYY-MM-DD).');
+
+        $validator
+            ->allowEmptyString('end_requested_warranty')
+            ->scalar('end_requested_warranty')
+            ->date('end_requested_warranty', ['ymd'], 'Enter a valid warranty end date (YYYY-MM-DD).');
+
+        $validator
+            ->allowEmptyString('applicator')
+            ->scalar('applicator');
+
+        $validator
+            ->allowEmptyString('applicator_contact')
+            ->scalar('applicator_contact');
+
+        $validator
+            ->allowEmptyString('applicator_active_abn')
+            ->scalar('applicator_active_abn');
+
+        $validator
+            ->allowEmptyString('applicator_address')
+            ->scalar('applicator_address');
+
+        return $validator;
     }
 }

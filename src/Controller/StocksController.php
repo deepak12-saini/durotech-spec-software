@@ -755,6 +755,13 @@ class StocksController extends AppController
 			$this->response = $this->response->withStringBody('error');
 			return $this->response;
 		}
+		$currentStatus = trim((string)($entity->status ?? ''));
+		if ($currentStatus === '' || $currentStatus === 'Pending') {
+			// ok
+		} else {
+			$this->response = $this->response->withStringBody('error');
+			return $this->response;
+		}
 		$entity->status = 'Approved';
 		if ($this->ProductWarrantyRequests->save($entity)) {
 			$this->_includeProductWarrantyCertificateScript($id);
@@ -771,6 +778,49 @@ class StocksController extends AppController
 	public function adminApproveWarranty(): ?Response
 	{
 		return $this->admin_approve_warranty();
+	}
+
+	/**
+	 * Reject product warranty request (AJAX POST).
+	 */
+	public function admin_reject_warranty(): ?Response
+	{
+		$this->request->allowMethod(['post']);
+		$this->autoRender = false;
+
+		$id = (int)$this->request->getData('id');
+		if (!$id) {
+			$this->response = $this->response->withStringBody('error');
+			return $this->response;
+		}
+		try {
+			$entity = $this->ProductWarrantyRequests->get($id);
+		} catch (\Cake\Datasource\Exception\RecordNotFoundException $e) {
+			$this->response = $this->response->withStringBody('error');
+			return $this->response;
+		}
+		$currentStatus = trim((string)($entity->status ?? ''));
+		if ($currentStatus === 'Approved') {
+			$this->response = $this->response->withStringBody('error');
+			return $this->response;
+		}
+		if ($currentStatus === 'Rejected') {
+			$this->response = $this->response->withStringBody('success');
+			return $this->response;
+		}
+		$entity->status = 'Rejected';
+		if ($this->ProductWarrantyRequests->save($entity)) {
+			$this->response = $this->response->withStringBody('success');
+			return $this->response;
+		}
+		$this->response = $this->response->withStringBody('error');
+		return $this->response;
+	}
+
+	/** CamelCase alias for reject action routing. */
+	public function adminRejectWarranty(): ?Response
+	{
+		return $this->admin_reject_warranty();
 	}
 
 	/**

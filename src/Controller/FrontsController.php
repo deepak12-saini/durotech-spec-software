@@ -1442,12 +1442,20 @@ class FrontsController extends AppController
         $warrantyLog = ['ProductWarrantyRequest' => []];
 
         $this->loadModel('ProductWarrantyRequests');
+        $entity = $this->ProductWarrantyRequests->newEntity();
+
         if ($this->request->is('post')) {
             $data = $this->request->getData('ProductWarrantyRequest') ?? $this->request->getData();
             if (isset($data['application']) && is_array($data['application'])) {
                 $data['application'] = implode(', ', array_filter($data['application']));
             }
+            if (isset($data['applicator_address']) && is_array($data['applicator_address'])) {
+                $data['applicator_address'] = implode("\n", array_filter($data['applicator_address']));
+            }
             $entity = $this->ProductWarrantyRequests->newEntity($data);
+            if (empty($entity->status)) {
+                $entity->status = 'Pending';
+            }
             if ($this->ProductWarrantyRequests->save($entity)) {
                 // Notify internal team for new Product Warranty Request submissions.
                 $baseUrl = defined('SITEURL') ? (string)SITEURL : (string)(Configure::read('App.fullBaseUrl') ?? '');
@@ -1513,11 +1521,11 @@ class FrontsController extends AppController
                 $this->Flash->success(__('Thank you for your application a Durotech representative will be in touch shortly.'));
                 return $this->redirect(['controller' => 'Fronts', 'action' => 'productWarranty']);
             }
-            $this->Flash->error(__('Failed to save warranty details.'));
-            $warrantyLog['ProductWarrantyRequest'] = $data;
+            $this->Flash->error(__('Please fill in all required fields.'));
+            $warrantyLog['ProductWarrantyRequest'] = $entity->toArray();
         }
 
-        $this->set(compact('warrantyLog'));
+        $this->set(compact('warrantyLog', 'entity'));
         return null;
     }
 

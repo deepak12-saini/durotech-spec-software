@@ -653,6 +653,8 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/stocks/delete_product_warranty/:id', ['controller' => 'Stocks', 'action' => 'admin_delete_product_warranty'], ['pass' => ['id']]);
     $routes->connect('/admin/stocks/approveWarranty', ['controller' => 'Stocks', 'action' => 'admin_approve_warranty']);
     $routes->connect('/admin/stocks/admin-approve-warranty', ['controller' => 'Stocks', 'action' => 'admin_approve_warranty']);
+    $routes->connect('/admin/stocks/rejectWarranty', ['controller' => 'Stocks', 'action' => 'admin_reject_warranty']);
+    $routes->connect('/admin/stocks/admin-reject-warranty', ['controller' => 'Stocks', 'action' => 'admin_reject_warranty']);
     $routes->connect('/admin/stocks/sendformtocsutomer/:id', ['controller' => 'Stocks', 'action' => 'admin_sendformtocsutomer'], ['pass' => ['id']]);
 
     $routes->connect('/warranty/*', ['controller' => 'Stocks', 'action' => 'warranty']);

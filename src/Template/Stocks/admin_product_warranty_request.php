@@ -41,6 +41,7 @@ if (!empty($csrfToken)) {
                     '' => 'All statuses',
                     'Pending' => 'Pending',
                     'Approved' => 'Approved',
+                    'Rejected' => 'Rejected',
                 ], [
                     'class' => 'form-control',
                     'value' => $filterStatus,
@@ -76,6 +77,19 @@ if (!empty($csrfToken)) {
                         } else {
                             foreach ($productWarrantyRequests as $request) {
                                 $rowId = (int)($request['ProductWarrantyRequest']['id'] ?? 0);
+                                $statusVal = (string)($request['ProductWarrantyRequest']['status'] ?? '');
+                                if ($statusVal === '') {
+                                    $statusVal = 'Pending';
+                                }
+                                $isPending = ($statusVal === 'Pending');
+                                $statusClass = 'label-default';
+                                if ($statusVal === 'Pending') {
+                                    $statusClass = 'label-warning';
+                                } elseif ($statusVal === 'Approved') {
+                                    $statusClass = 'label-success';
+                                } elseif ($statusVal === 'Rejected') {
+                                    $statusClass = 'label-danger';
+                                }
                         ?>
                         <tr>
                             <td><?= h($request['ProductWarrantyRequest']['id']); ?></td>
@@ -83,61 +97,37 @@ if (!empty($csrfToken)) {
                             <td><?= h($request['ProductWarrantyRequest']['product']); ?></td>
                             <td><?= h($request['ProductWarrantyRequest']['used_as']); ?></td>
                             <td><?= h($request['ProductWarrantyRequest']['building_name']); ?></td>
-                            <td>
-                                   <?= !empty($request['ProductWarrantyRequest']['status']) ? h($request['ProductWarrantyRequest']['status']) : 'Pending'; ?>
-
-                            </td>
+                            <td><span class="label <?= $statusClass; ?>"><?= h($statusVal); ?></span></td>
                             <td>
                                 <?php if (!empty($request['ProductWarrantyRequest']['certificate'])): ?>
                                     <?php
                                         $cert = $request['ProductWarrantyRequest']['certificate'];
                                         $pathDir = strpos($cert, '/') !== false ? dirname($cert) . '/' : 'pdf/FPDI/';
                                         $pathName = strpos($cert, '/') !== false ? basename($cert) : $cert;
-                                        // Webroot file: prefix webroot so /cake3app/pdf/... is used (avoids Cake routing /pdf as controller).
                                         $webroot = (string)$this->getRequest()->getAttribute('webroot');
                                         $fileUrl = rtrim($webroot, '/') . '/' . trim($pathDir, '/') . '/' . rawurlencode($pathName);
                                     ?>
-                                    <a href="<?= h($fileUrl); ?>" target="_blank" class="btn btn-xs btn-primary">
-                                        View PDF
-                                    </a>
+                                    <a href="<?= h($fileUrl); ?>" target="_blank" class="btn btn-xs btn-primary">View PDF</a>
                                 <?php else: ?>
                                     <span class="text-muted">Not Available</span>
                                 <?php endif; ?>
                             </td>
-
-
                             <td><?= !empty($request['ProductWarrantyRequest']['created_at']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['created_at']) : ''; ?></td>
                             <td>
-                                <button type="button" class="btn btn-xs btn-info autoModal" data-target="#detailModal_<?= $rowId; ?>">
-                                    View Details
-                                </button>
-
+                                <button type="button" class="btn btn-xs btn-info autoModal" data-target="#detailModal_<?= $rowId; ?>">View Details</button>
                                 <?php
-                                $statusVal = (string)($request['ProductWarrantyRequest']['status'] ?? '');
-                                $isPending = ($statusVal === '' || $statusVal === 'Pending');
                                 $draftPreviewUrl = $this->Url->build(
                                     '/admin/stocks/preview_product_warranty_certificate/' . (int)($request['ProductWarrantyRequest']['id'] ?? 0)
                                 );
                                 ?>
-                                <a href="<?= h($draftPreviewUrl); ?>" target="_blank" class="btn btn-xs btn-warning" title="Opens a temporary PDF built from current form data in the database. Does not overwrite the saved certificate. Use with View PDF to compare draft vs saved file.">
-                                    Preview PDF
-                                </a>
-
+                                <a href="<?= h($draftPreviewUrl); ?>" target="_blank" class="btn btn-xs btn-warning" title="Preview certificate PDF from current form data.">Preview PDF</a>
                                 <?php if ($isPending): ?>
-                                    <button type="button" class="btn btn-xs btn-success approveBtn" data-id="<?= $request['ProductWarrantyRequest']['id']; ?>">
-                                        Approve
-                                    </button>
-                                <?php else: ?>
-                                    <span class="label label-default"><?= h($request['ProductWarrantyRequest']['status']); ?></span>
+                                    <button type="button" class="btn btn-xs btn-success approveBtn" data-id="<?= $request['ProductWarrantyRequest']['id']; ?>">Approve</button>
+                                    <button type="button" class="btn btn-xs btn-danger rejectBtn" data-id="<?= $request['ProductWarrantyRequest']['id']; ?>">Reject</button>
                                 <?php endif; ?>
-
-
-                                <a href="<?= $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_delete_product_warranty', $request['ProductWarrantyRequest']['id'] ?? '']); ?>" 
-                                        class="btn btn-xs btn-danger"
-                                        onclick="return confirm('Are you sure you want to delete this warranty request?');">
-                                        Delete
-                                </a>
-
+                                <a href="<?= $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_delete_product_warranty', $request['ProductWarrantyRequest']['id'] ?? '']); ?>"
+                                   class="btn btn-xs btn-danger"
+                                   onclick="return confirm('Are you sure you want to delete this warranty request?');">Delete</a>
                             </td>
                         </tr>
                         <?php }
@@ -164,97 +154,86 @@ if (!empty($csrfToken)) {
     </div>
 </div>
 
-    <!-- Modals (outside table) -->
-    <?php
-    if (!empty($productWarrantyRequests)) {
-        foreach ($productWarrantyRequests as $request) {
-            $rowId = (int)($request['ProductWarrantyRequest']['id'] ?? 0);
-    ?>
-    <div id="detailModal_<?= $rowId; ?>" class="modal fade" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Product Warranty Request Details</h4>
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <table class="table table-bordered">
-                        <tr><th>Serial Number:</th><td><?= h($request['ProductWarrantyRequest']['serialnumber']); ?></td></tr>
-                        <tr><th>Date Of Purchase:</th><td><?= !empty($request['ProductWarrantyRequest']['dateofpurchase']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['dateofpurchase']) : ''; ?></td></tr>
-                        <tr><th>Product:</th><td><?= h($request['ProductWarrantyRequest']['product']); ?></td></tr>
-                        <tr><th>Used As:</th><td><?= h($request['ProductWarrantyRequest']['used_as']); ?></td></tr>
-                        <tr><th>Application:</th><td><?= h($request['ProductWarrantyRequest']['application']); ?></td></tr>
-                        <tr><th>Area Warranted:</th><td><?= h($request['ProductWarrantyRequest']['area_warranted']); ?></td></tr>
-                        <tr><th>Building Address:</th><td><?= h($request['ProductWarrantyRequest']['building_address']); ?></td></tr>
-                        <tr><th>Building Name:</th><td><?= h($request['ProductWarrantyRequest']['building_name']); ?></td></tr>
-                        <tr><th>Start Warranty Date:</th><td><?= !empty($request['ProductWarrantyRequest']['start_requested_warranty']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['start_requested_warranty']) : ''; ?></td></tr>
-                        <tr><th>End Warranty Date:</th><td><?= !empty($request['ProductWarrantyRequest']['end_requested_warranty']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['end_requested_warranty']) : ''; ?></td></tr>
-                        <tr><th>Contractor Company Name:</th><td><?= h($request['ProductWarrantyRequest']['contract_company_name']); ?></td></tr>
-                        <tr><th>Contractor Name:</th><td><?= h($request['ProductWarrantyRequest']['contract_name']); ?></td></tr>
-                        <tr><th>Sign Date:</th><td><?= !empty($request['ProductWarrantyRequest']['sign_date']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['sign_date']) : ''; ?></td></tr>
-                    </table>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                </div>
+<?php
+if (!empty($productWarrantyRequests)) {
+    foreach ($productWarrantyRequests as $request) {
+        $rowId = (int)($request['ProductWarrantyRequest']['id'] ?? 0);
+?>
+<div id="detailModal_<?= $rowId; ?>" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Product Warranty Request Details</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered">
+                    <tr><th>Serial Number:</th><td><?= h($request['ProductWarrantyRequest']['serialnumber']); ?></td></tr>
+                    <tr><th>Date Of Purchase:</th><td><?= !empty($request['ProductWarrantyRequest']['dateofpurchase']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['dateofpurchase']) : ''; ?></td></tr>
+                    <tr><th>Product:</th><td><?= h($request['ProductWarrantyRequest']['product']); ?></td></tr>
+                    <tr><th>Used As:</th><td><?= h($request['ProductWarrantyRequest']['used_as']); ?></td></tr>
+                    <tr><th>Application:</th><td><?= h($request['ProductWarrantyRequest']['application']); ?></td></tr>
+                    <tr><th>Area Warranted:</th><td><?= h($request['ProductWarrantyRequest']['area_warranted']); ?></td></tr>
+                    <tr><th>Building Address:</th><td><?= h($request['ProductWarrantyRequest']['building_address']); ?></td></tr>
+                    <tr><th>Building Name:</th><td><?= h($request['ProductWarrantyRequest']['building_name']); ?></td></tr>
+                    <tr><th>Start Warranty Date:</th><td><?= !empty($request['ProductWarrantyRequest']['start_requested_warranty']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['start_requested_warranty']) : ''; ?></td></tr>
+                    <tr><th>End Warranty Date:</th><td><?= !empty($request['ProductWarrantyRequest']['end_requested_warranty']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['end_requested_warranty']) : ''; ?></td></tr>
+                    <tr><th>Contractor Company Name:</th><td><?= h($request['ProductWarrantyRequest']['contract_company_name']); ?></td></tr>
+                    <tr><th>Contractor Name:</th><td><?= h($request['ProductWarrantyRequest']['contract_name']); ?></td></tr>
+                    <tr><th>Sign Date:</th><td><?= !empty($request['ProductWarrantyRequest']['sign_date']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['sign_date']) : ''; ?></td></tr>
+                    <tr><th>Status:</th><td><?= h($request['ProductWarrantyRequest']['status'] ?: 'Pending'); ?></td></tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
-    <?php } } ?>
-
-<!-- jQuery + Bootstrap JS -->
-<!-- <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script> -->
+</div>
+<?php } } ?>
 
 <script>
 $(document).ready(function() {
     $('.autoModal').click(function() {
-        var target = $(this).data('target'); // Get modal ID
-        $(target).modal('show');             // Open modal
-
-        // // Automatically hide after 5 seconds
-        // setTimeout(function() {
-        //     $(target).modal('hide');
-        // }, 5000);
+        $($(this).data('target')).modal('show');
     });
-});
-</script>
 
-<script>
-$(document).ready(function() {
-    // Approve button click – include CSRF token for CakePHP 3
     var approveUrl = '<?= $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_approve_warranty']); ?>';
+    var rejectUrl = '<?= $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_reject_warranty']); ?>';
     var csrfToken = $('input[name="_csrfToken"]').val() || '';
     if (!csrfToken) {
         var m = document.cookie.match(/(?:^|;\s*)csrfToken=([^;]+)/);
         csrfToken = m ? decodeURIComponent(m[1]) : '';
     }
 
-    $('.approveBtn').click(function() {
-        var id = $(this).data('id');
-        var btn = $(this);
-
+    function postWarrantyAction(url, id, confirmMsg) {
+        if (!confirm(confirmMsg)) {
+            return;
+        }
         $.ajax({
-            url: approveUrl,
+            url: url,
             type: 'POST',
             data: { id: id, _csrfToken: csrfToken },
             headers: csrfToken ? { 'X-CSRF-Token': csrfToken } : {},
             success: function(response) {
-                if(response.trim() == 'success') {
-                    btn.replaceWith('<span class="label label-success">Approved</span>');
-                     setTimeout(function() {
-                        location.reload();
-                    }, 1000);
+                if (response.trim() === 'success') {
+                    location.reload();
                 } else {
-                    alert('Error! Please try again.');
+                    alert('Unable to update this request.');
                 }
             },
             error: function(xhr) {
-                alert('AJAX error! Status: ' + xhr.status);
+                alert('Request failed. Status: ' + xhr.status);
             }
         });
+    }
+
+    $('.approveBtn').click(function() {
+        postWarrantyAction(approveUrl, $(this).data('id'), 'Approve this warranty request and generate the certificate PDF?');
     });
 
+    $('.rejectBtn').click(function() {
+        postWarrantyAction(rejectUrl, $(this).data('id'), 'Reject this warranty request? No certificate will be issued.');
+    });
 });
 </script>
-
