@@ -690,6 +690,15 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/employees/ai-specs/edit/:id', ['controller' => 'AiSpecs', 'action' => 'employee_edit'], ['pass' => ['id'], 'id' => '\d+']);
     $routes->connect('/employees/ai-specs/delete/:id', ['controller' => 'AiSpecs', 'action' => 'employee_delete'], ['pass' => ['id'], 'id' => '\d+']);
 
+    // Employee Claude Spec Assistant
+    $routes->connect('/employees/claude-specs', ['controller' => 'ClaudeSpecs', 'action' => 'employee_index']);
+    $routes->connect('/employees/claude-specs/send', ['controller' => 'ClaudeSpecs', 'action' => 'employee_send']);
+    $routes->connect('/employees/claude-specs/view/:id', ['controller' => 'ClaudeSpecs', 'action' => 'employee_view'], ['pass' => ['id'], 'id' => '\d+']);
+    $routes->connect('/employees/claude-specs/edit/:id', ['controller' => 'ClaudeSpecs', 'action' => 'employee_edit'], ['pass' => ['id'], 'id' => '\d+']);
+    $routes->connect('/employees/claude-specs/regenerate/:id', ['controller' => 'ClaudeSpecs', 'action' => 'employee_regenerate'], ['pass' => ['id'], 'id' => '\d+']);
+    $routes->connect('/employees/claude-specs/apply/:id', ['controller' => 'ClaudeSpecs', 'action' => 'employee_apply'], ['pass' => ['id'], 'id' => '\d+']);
+    $routes->connect('/employees/claude-specs/delete/:id', ['controller' => 'ClaudeSpecs', 'action' => 'employee_delete'], ['pass' => ['id'], 'id' => '\d+']);
+
     // Admin Quick Spec website requests
     $routes->connect('/admin/quick-specs', ['controller' => 'QuickSpecs', 'action' => 'admin_index']);
     $routes->connect('/admin/quick-specs/view/:id', ['controller' => 'QuickSpecs', 'action' => 'admin_view'], ['pass' => ['id'], 'id' => '\d+']);

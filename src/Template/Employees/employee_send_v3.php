@@ -226,7 +226,19 @@
 			<a href="javascript:window.history.back();" class="btn btn-inverse spec-back-btn">Back</a>
 		</div>
 		<div id="spec-draft-status" class="alert alert-info" style="margin-top:10px;margin-bottom:0;">
-			<strong>Status:</strong> <span id="spec-status-text"><?php echo !empty($draftId) ? 'Draft (restored)' : (((string)$this->request->getQuery('mode') === 'adaptive') ? 'New (Smart Spec mode)' : ((((string)$this->request->getQuery('mode') === 'template') ? 'New (Template mode)' : 'New'))); ?></span>
+			<strong>Status:</strong> <span id="spec-status-text"><?php
+				if (!empty($draftId)) {
+					echo 'Draft (restored)';
+				} elseif (!empty($claudeMode)) {
+					echo 'Loaded from Claude Spec Assistant';
+				} elseif ((string)$this->request->getQuery('mode') === 'adaptive') {
+					echo 'New (Smart Spec mode)';
+				} elseif ((string)$this->request->getQuery('mode') === 'template') {
+					echo 'New (Template mode)';
+				} else {
+					echo 'New';
+				}
+			?></span>
 			<span id="spec-source-track" style="margin-left:15px;display:none;color:#2a88c8;font-weight:600;"></span>
 			<span id="spec-last-saved" style="margin-left:15px;"></span>
 			<?php if (!empty($draftId)): ?>
@@ -276,6 +288,12 @@
 		?>
 		<?php echo $this->Form->create('Employee',array('class'=>'form-horizontal','enctype'=>'multipart/form-data','id'=>'specForm')); ?>
 			<input type="hidden" name="draft_id" id="draft_id" value="<?php echo $draftIdVal; ?>">
+			<?php
+			$claudeDraftIdVal = !empty($claudeDraftId) ? (int)$claudeDraftId : 0;
+			if ($claudeDraftIdVal > 0):
+			?>
+			<input type="hidden" name="claude_draft_id" id="claude_draft_id" value="<?php echo $claudeDraftIdVal; ?>">
+			<?php endif; ?>
 			<?php if ($isAdaptiveMode): ?>
 			<?php
 				$adaptiveSpecChoices = [];
@@ -1004,5 +1022,25 @@ function loadCommentsFromData(comments) {
 			loadCommentsFromData(draftComments);
 		});
 	}
+
+	<?php if (!empty($claudeMode) && !empty($claudePrefill) && is_array($claudePrefill)): ?>
+	jQuery(function() {
+		var data = <?php echo json_encode($claudePrefill, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE); ?>;
+		$('#name').val(data.name || '');
+		$('input[name="company"]').val(data.company || '');
+		$('input[name="address"]').val(data.address || '');
+		$('input[name="specification"]').val(data.specification || '');
+		$('#email').val(data.email || '');
+		if (data.date) {
+			$('input[name="date"]').val(data.date);
+		}
+		$('select[name="type"]').val(data.type || '3');
+		$('#subject').val(data.subject || '');
+		clearAllSectionsAndComments();
+		loadSectionsFromData(data.sections || []);
+		loadCommentsFromData(data.comments || []);
+		$('#spec-source-track').text('Source: Claude Spec Assistant').show();
+	});
+	<?php endif; ?>
 
 </script>

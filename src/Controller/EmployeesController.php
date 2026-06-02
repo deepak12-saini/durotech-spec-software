@@ -489,6 +489,7 @@ public function employee_send_v3() {
     $mode = (string)$this->request->getQuery('mode');
     $adaptiveMode = $mode === 'adaptive';
     $templateMode = $mode === 'template';
+    $claudeMode = $mode === 'claude';
 
     $hasSaveStatusColumn = $this->Mailer->getSchema()->getColumn('save_status');
     // "Start New Spec (discard this draft)" must delete drafts first; otherwise the next block
@@ -513,7 +514,7 @@ public function employee_send_v3() {
         return $this->redirect(['action' => 'employee_send_v3']);
     }
 
-    if (!$this->request->is('post') && !$adaptiveMode && !$templateMode && !$this->request->getQuery('resume') && $hasSaveStatusColumn) {
+    if (!$this->request->is('post') && !$adaptiveMode && !$templateMode && !$claudeMode && !$this->request->getQuery('resume') && $hasSaveStatusColumn) {
         $existingDraft = $this->Mailer->find()
             ->select(['id'])
             ->where([
@@ -550,6 +551,7 @@ public function employee_send_v3() {
                 || ($existing && $existing->get('deleted_at') === null);
             if ($existing && $notDeleted && (int)$existing->employee_id === (int)$employee_id && $existing->save_status === 'draft') {
                 $this->_saveEmployeeSpecAsSubmitted($draftIdFromForm, $formData, $employee_id);
+                $this->_markClaudeDraftAppliedIfRequested($formData, $draftIdFromForm);
                 $this->Flash->success('Spec generated successfully.');
                 return $this->redirect(['action' => 'index']);
             }
@@ -767,6 +769,8 @@ public function employee_send_v3() {
             }
 
 
+            $this->_markClaudeDraftAppliedIfRequested($formData, $lastinsertId);
+
             $this->Flash->success('Spec generated successfully.');
             return $this->redirect(array('action' => 'index'));
         }
@@ -848,7 +852,19 @@ public function employee_send_v3() {
             ->toArray();
     }
 
-    $this->set(compact('refernce', 'draft', 'draftId', 'adaptiveMode', 'templateMode', 'previousSpecs', 'templatePresets'));
+    $claudePrefill = null;
+    $claudeDraftId = (int)$this->request->getQuery('claude_draft_id');
+    if ($claudeMode) {
+        $sessionPrefill = $this->request->getSession()->read('ClaudeSpec.prefill');
+        if (is_array($sessionPrefill)) {
+            $claudePrefill = $sessionPrefill;
+            if ($claudeDraftId <= 0 && !empty($sessionPrefill['claude_draft_id'])) {
+                $claudeDraftId = (int)$sessionPrefill['claude_draft_id'];
+            }
+        }
+    }
+
+    $this->set(compact('refernce', 'draft', 'draftId', 'adaptiveMode', 'templateMode', 'claudeMode', 'claudePrefill', 'claudeDraftId', 'previousSpecs', 'templatePresets'));
 }
 
 /**
@@ -1383,6 +1399,38 @@ protected function _saveEmployeeSpecAsSubmitted(int $mailerId, array $formData, 
         'source' => 'employee_panel',
         'message' => 'Employee resumed and submitted draft spec.',
     ]);
+    $this->_markClaudeDraftAppliedIfRequested($formData, $mailerId);
+}
+
+/**
+ * Mark Claude Spec Assistant draft as applied when employee submits DuroEzy form.
+ *
+ * @param array<string, mixed> $formData
+ */
+protected function _markClaudeDraftAppliedIfRequested(array $formData, int $mailerId): void
+{
+    $claudeDraftId = isset($formData['claude_draft_id']) ? (int)$formData['claude_draft_id'] : 0;
+    if ($claudeDraftId <= 0) {
+        return;
+    }
+    try {
+        $this->loadModel('ClaudeSpecDrafts');
+    } catch (\Throwable $e) {
+        return;
+    }
+    $employeeId = (int)$this->request->getSession()->read('Employee.id');
+    try {
+        $draft = $this->ClaudeSpecDrafts->get($claudeDraftId);
+    } catch (\Throwable $e) {
+        return;
+    }
+    if ((int)$draft->employee_id !== $employeeId || $draft->deleted_at !== null) {
+        return;
+    }
+    $draft->status = 'applied';
+    $draft->applied_mailer_id = $mailerId;
+    $this->ClaudeSpecDrafts->save($draft);
+    $this->request->getSession()->delete('ClaudeSpec.prefill');
 }
 
 /**

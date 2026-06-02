@@ -198,7 +198,74 @@ class UsersController extends AppController
 		$totalpro = $this->Product->find()->count();
 		$totalStaff = $this->Staff->find()->count();
 		$totalCustomer = $this->NappUser->find()->count();
-		$this->set(compact('UserPermission', 'totalCustomer', 'totalStaff', 'totalcate', 'totalpro'));
+		$specStats = [
+			'duroezy_total' => 0,
+			'duroezy_submitted' => 0,
+			'duroezy_draft' => 0,
+			'employee_total' => 0,
+			'employee_submitted' => 0,
+			'employee_draft' => 0,
+			'aispec_total' => 0,
+			'claude_total' => 0,
+			'claude_generated' => 0,
+			'claude_applied' => 0,
+		];
+
+		try {
+			$this->loadModel('Mailer');
+			$specStats['duroezy_total'] = (int)$this->Mailer->find()
+				->where(['Mailer.type' => 3])
+				->count();
+			$specStats['employee_total'] = (int)$this->Mailer->find()
+				->where(['Mailer.type' => 3, 'Mailer.employee_id >' => 0])
+				->count();
+
+			$hasSaveStatus = $this->Mailer->getSchema()->getColumn('save_status');
+			if ($hasSaveStatus) {
+				$specStats['duroezy_submitted'] = (int)$this->Mailer->find()
+					->where(['Mailer.type' => 3, 'Mailer.save_status' => 'submitted'])
+					->count();
+				$specStats['duroezy_draft'] = (int)$this->Mailer->find()
+					->where(['Mailer.type' => 3, 'Mailer.save_status' => 'draft'])
+					->count();
+				$specStats['employee_submitted'] = (int)$this->Mailer->find()
+					->where(['Mailer.type' => 3, 'Mailer.employee_id >' => 0, 'Mailer.save_status' => 'submitted'])
+					->count();
+				$specStats['employee_draft'] = (int)$this->Mailer->find()
+					->where(['Mailer.type' => 3, 'Mailer.employee_id >' => 0, 'Mailer.save_status' => 'draft'])
+					->count();
+			} else {
+				$specStats['duroezy_submitted'] = $specStats['duroezy_total'];
+				$specStats['employee_submitted'] = $specStats['employee_total'];
+			}
+		} catch (\Throwable $e) {
+			// Keep dashboard available even if spec tables differ between environments.
+		}
+
+		try {
+			$this->loadModel('ClaudeSpecDrafts');
+			$baseClaude = $this->ClaudeSpecDrafts->find()
+				->where(['ClaudeSpecDrafts.deleted_at IS' => null]);
+			$specStats['claude_total'] = (int)$baseClaude->count();
+			$specStats['claude_generated'] = (int)$this->ClaudeSpecDrafts->find()
+				->where(['ClaudeSpecDrafts.deleted_at IS' => null, 'ClaudeSpecDrafts.status' => 'generated'])
+				->count();
+			$specStats['claude_applied'] = (int)$this->ClaudeSpecDrafts->find()
+				->where(['ClaudeSpecDrafts.deleted_at IS' => null, 'ClaudeSpecDrafts.status' => 'applied'])
+				->count();
+		} catch (\Throwable $e) {
+			// Claude module may not be migrated in all environments.
+		}
+		try {
+			$this->loadModel('AiSpecs');
+			$specStats['aispec_total'] = (int)$this->AiSpecs->find()
+				->where(['AiSpecs.deleted_at IS' => null])
+				->count();
+		} catch (\Throwable $e) {
+			// AiSpecs module/table may not exist on all environments.
+		}
+
+		$this->set(compact('UserPermission', 'totalCustomer', 'totalStaff', 'totalcate', 'totalpro', 'specStats'));
 	}
 
 

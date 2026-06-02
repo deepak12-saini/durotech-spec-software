@@ -34,6 +34,8 @@
 					&& in_array($activeAction, ['employee_index', 'employeeindex', 'employee_add', 'employeeadd', 'employee_edit', 'employeeedit', 'employee_delete', 'employeedelete'], true);
 				$isAiSpecsActive = $activeController === 'aispecs'
 					&& in_array($activeAction, ['employee_index', 'employeeindex', 'employee_send', 'employeesend', 'employee_view', 'employeeview', 'employee_edit', 'employeeedit', 'employee_delete', 'employeedelete'], true);
+				$isClaudeSpecsActive = $activeController === 'claudespecs'
+					&& in_array($activeAction, ['employee_index', 'employeeindex', 'employee_send', 'employeesend', 'employee_view', 'employeeview', 'employee_edit', 'employeeedit', 'employee_regenerate', 'employeeregenerate', 'employee_apply', 'employeeapply', 'employee_delete', 'employeedelete'], true);
 				?>
 
 				<ul class="nav nav-list">
@@ -57,6 +59,14 @@
 						<a href="<?php echo SITEURL?>employees/employee_send_v3?mode=adaptive">
 							<i class="menu-icon fa fa-magic"></i>
 							<span class="menu-text">Smart Spec</span>
+						</a>
+						<b class="arrow"></b>
+					</li>
+
+					<li class="<?php echo $isClaudeSpecsActive ? 'active' : ''; ?>">
+						<a href="<?php echo $this->Url->build(['controller' => 'ClaudeSpecs', 'action' => 'employee_index']); ?>">
+							<i class="menu-icon fa fa-comments"></i>
+							<span class="menu-text">Claude Spec Assistant</span>
 						</a>
 						<b class="arrow"></b>
 					</li>
