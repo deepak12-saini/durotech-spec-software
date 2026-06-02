@@ -4,7 +4,8 @@
  * @var string $tracknumber
  */
 ?>
-<div class="page-content">
+<?= $this->element('claude_specs_styles'); ?>
+<div class="page-content claude-wrap">
     <div class="page-header">
         <h1>
             New Claude Spec draft
@@ -12,12 +13,13 @@
         </h1>
     </div>
 
-    <div class="alert alert-warning">
+    <div class="alert alert-warning claude-card" style="padding:12px 14px;">
         <strong>Human review required.</strong> Claude suggests content only. Review and edit before applying to DuroEzy or submitting to a client.
     </div>
 
     <div class="row">
         <div class="col-xs-12 col-md-10">
+            <div class="claude-card">
             <?= $this->Form->create(null, ['class' => 'form-horizontal']); ?>
             <div class="form-group">
                 <label class="col-sm-3 control-label">Client name</label>
@@ -61,6 +63,7 @@
                 </div>
             </div>
             <?= $this->Form->end(); ?>
+            </div>
         </div>
     </div>
 </div>

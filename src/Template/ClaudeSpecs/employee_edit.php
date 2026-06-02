@@ -14,11 +14,13 @@ if (empty($products)) {
     $products = [['title' => '', 'product' => '', 'serial' => '1', 'coverage' => '', 'coverage_by_pack' => '', 'Warranty' => '', 'types' => '1']];
 }
 ?>
-<div class="page-content">
+<?= $this->element('claude_specs_styles'); ?>
+<div class="page-content claude-wrap">
     <div class="page-header">
         <h1>Edit Claude draft <?= h($draft->tracknumber); ?></h1>
     </div>
 
+    <div class="claude-card">
     <?= $this->Form->create(null, ['class' => 'form-horizontal']); ?>
     <h4>Project</h4>
     <div class="form-group">
@@ -75,7 +77,7 @@ if (empty($products)) {
 
     <h4>Products</h4>
     <div class="table-responsive">
-        <table class="table table-bordered" id="claude-products">
+        <table class="table table-bordered claude-table" id="claude-products">
             <thead>
                 <tr>
                     <th>Section title</th>
@@ -113,6 +115,7 @@ if (empty($products)) {
         </div>
     </div>
     <?= $this->Form->end(); ?>
+    </div>
 </div>
 
 <script>

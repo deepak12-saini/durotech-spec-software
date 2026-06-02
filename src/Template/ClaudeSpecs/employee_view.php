@@ -9,9 +9,10 @@ $comments = $payload['comments'] ?? [];
 $products = $payload['products'] ?? [];
 $status = (string)($draft->status ?? 'draft');
 ?>
-<div class="page-content">
+<?= $this->element('claude_specs_styles'); ?>
+<div class="page-content claude-wrap">
     <div class="page-header clearfix">
-        <div class="pull-right">
+        <div class="pull-right claude-toolbar">
             <?= $this->Html->link('Edit', ['action' => 'employee_edit', $draft->id], ['class' => 'btn btn-primary']); ?>
             <?php if ($status !== 'applied'): ?>
                 <?= $this->Form->postLink(
@@ -30,7 +31,8 @@ $status = (string)($draft->status ?? 'draft');
         <h1>Claude draft <?= h($draft->tracknumber); ?></h1>
     </div>
 
-    <p><strong>Status:</strong> <?= h($status); ?>
+    <div class="claude-card">
+    <p><strong>Status:</strong> <span class="label label-info claude-status"><?= h($status); ?></span>
         <?php if (!empty($draft->applied_mailer_id)): ?>
             — applied to mailer #<?= (int)$draft->applied_mailer_id; ?>
         <?php endif; ?>
@@ -40,7 +42,7 @@ $status = (string)($draft->status ?? 'draft');
     <p class="well well-sm"><?= nl2br(h((string)$draft->project_brief)); ?></p>
 
     <h4>Header (DuroEzy)</h4>
-    <table class="table table-bordered table-condensed">
+    <table class="table table-bordered table-condensed claude-table">
         <tr><th>Name</th><td><?= h($header['name'] ?? $draft->client_name); ?></td></tr>
         <tr><th>Email</th><td><?= h($header['email'] ?? $draft->email); ?></td></tr>
         <tr><th>Project</th><td><?= h($header['company'] ?? $draft->company); ?></td></tr>
@@ -63,7 +65,7 @@ $status = (string)($draft->status ?? 'draft');
 
     <h4>Products / sections</h4>
     <div class="table-responsive">
-        <table class="table table-striped table-bordered">
+        <table class="table table-striped table-bordered claude-table">
             <thead>
                 <tr>
                     <th>Section</th>
@@ -87,5 +89,6 @@ $status = (string)($draft->status ?? 'draft');
                 <?php endforeach; ?>
             </tbody>
         </table>
+    </div>
     </div>
 </div>

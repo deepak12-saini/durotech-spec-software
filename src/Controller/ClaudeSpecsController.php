@@ -80,6 +80,8 @@ class ClaudeSpecsController extends AppController
         }
 
         $employeeId = (int)$this->request->getSession()->read('Employee.id');
+        $search = trim((string)$this->request->getQuery('q', ''));
+        $statusFilter = trim((string)$this->request->getQuery('status', ''));
         $query = $this->ClaudeSpecDrafts->find()
             ->where([
                 'ClaudeSpecDrafts.employee_id' => $employeeId,
@@ -87,8 +89,24 @@ class ClaudeSpecsController extends AppController
             ])
             ->orderDesc('ClaudeSpecDrafts.id');
 
+        if ($search !== '') {
+            $like = '%' . $search . '%';
+            $query->where([
+                'OR' => [
+                    ['ClaudeSpecDrafts.tracknumber LIKE' => $like],
+                    ['ClaudeSpecDrafts.client_name LIKE' => $like],
+                    ['ClaudeSpecDrafts.company LIKE' => $like],
+                    ['ClaudeSpecDrafts.email LIKE' => $like],
+                    ['ClaudeSpecDrafts.project_brief LIKE' => $like],
+                ],
+            ]);
+        }
+        if ($statusFilter !== '' && in_array($statusFilter, ['draft', 'generated', 'applied'], true)) {
+            $query->where(['ClaudeSpecDrafts.status' => $statusFilter]);
+        }
+
         $claudeSpecDrafts = $this->paginate($query, ['limit' => 25]);
-        $this->set(compact('claudeSpecDrafts'));
+        $this->set(compact('claudeSpecDrafts', 'search', 'statusFilter'));
 
         return null;
     }
