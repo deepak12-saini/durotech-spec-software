@@ -24,14 +24,27 @@
     border: 1px solid rgba(40, 137, 201, 0.12);
     padding-top: 8px;
     padding-bottom: 10px;
+    overflow: visible;
 }
 
-/* PAGE HEADING - clearly visible, never clipped */
-.category-heading {
-    text-align: center;
-    margin: clamp(16px, 4vw, 34px) 0 clamp(14px, 3vw, 22px);
+/* Heading toolbar: title + search */
+.category-heading-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px 20px;
+    margin: clamp(16px, 4vw, 34px) 0 clamp(10px, 2vw, 16px);
     padding: 0 10px;
+    overflow: visible;
+}
+.category-heading {
+    text-align: left;
+    margin: 0;
+    padding: 0;
     min-height: 1px;
+    flex: 1 1 auto;
+    min-width: 160px;
 }
 .category-heading .page-title {
     color: #2889c9;
@@ -51,10 +64,112 @@
     display: block;
     width: 56px;
     height: 4px;
-    margin: 12px auto 0;
+    margin: 12px 0 0;
     border-radius: 999px;
     background: linear-gradient(90deg, #2889c9 0%, #f2c23a 100%);
     opacity: 0.9;
+}
+
+.category-search-wrap {
+    position: relative;
+    flex: 0 1 320px;
+    width: 100%;
+    max-width: 360px;
+    min-width: 200px;
+    box-sizing: border-box;
+    overflow: visible;
+    margin-right: 4px;
+    padding: 2px 4px 2px 2px;
+}
+.category-search-wrap .fa-search {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #2889c9;
+    font-size: 15px;
+    pointer-events: none;
+    opacity: 0.85;
+}
+#categoryFilter {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-height: 44px;
+    padding: 10px 42px 10px 40px;
+    border: 1px solid rgba(40, 137, 201, 0.35);
+    border-radius: 999px;
+    background: #fff;
+    font-size: 15px;
+    color: #14213d;
+    box-sizing: border-box;
+    box-shadow: 0 2px 10px rgba(20, 33, 61, 0.06);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    -webkit-appearance: none;
+    appearance: none;
+}
+#categoryFilter::-webkit-search-decoration,
+#categoryFilter::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+    display: none;
+}
+#categoryFilter::placeholder {
+    color: #6b7c93;
+}
+#categoryFilter:focus {
+    outline: none;
+    border-color: #2889c9;
+    box-shadow: 0 0 0 3px rgba(40, 137, 201, 0.2);
+}
+#categoryFilterClear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(40, 137, 201, 0.12);
+    color: #2889c9;
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+}
+#categoryFilterClear:hover {
+    background: rgba(40, 137, 201, 0.22);
+}
+#categoryFilterClear:focus-visible {
+    outline: 2px solid #2889c9;
+    outline-offset: 2px;
+}
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+.category-filter-status,
+.category-filter-empty {
+    text-align: center;
+    margin: 0 10px 12px;
+    font-size: 14px;
+    color: #4a5f78;
+}
+.category-filter-empty {
+    color: #2889c9;
+    font-weight: 600;
+    padding: 8px 0 4px;
+}
+.category-card-item.is-filter-hidden {
+    display: none !important;
 }
 
 /* FLEX ROW FIX */
@@ -279,8 +394,14 @@
         padding-left: 10px;
         padding-right: 10px;
     }
-    .category-heading {
-        margin: 18px 0 14px;
+    .category-heading-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        margin: 18px 0 12px;
+    }
+    .category-search-wrap {
+        max-width: none;
+        flex: 1 1 100%;
     }
     .category-heading .page-title {
         font-size: clamp(22px, 5.2vw, 28px);
@@ -335,15 +456,32 @@
 
 <div class="container category-grid">
 
-    <div class="category-heading product_text_section">
-        <h1 class="page-title">Categories</h1>
+    <div class="category-heading-toolbar">
+        <div class="category-heading product_text_section">
+            <h1 class="page-title">Categories</h1>
+        </div>
+        <div class="category-search-wrap">
+            <label class="sr-only" for="categoryFilter">Search categories</label>
+            <i class="fa fa-search" aria-hidden="true"></i>
+            <input type="search" id="categoryFilter" placeholder="Search categories…" autocomplete="off">
+            <button type="button" id="categoryFilterClear" aria-label="Clear search" hidden>&times;</button>
+        </div>
     </div>
+    <p class="category-filter-status" id="categoryFilterStatus" aria-live="polite" hidden></p>
+    <p class="category-filter-empty" id="categoryFilterEmpty" hidden>No categories match your search.</p>
 
-    <div class="row">
+    <div class="row" id="categoryCardsRow">
 
         <?php foreach ($categories as $cat): ?>
             <?php if (empty($cat->slug)) continue; ?>
-            <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
+            <?php
+            $catNameLower = function_exists('mb_strtolower')
+                ? mb_strtolower((string)($cat->category_name ?? ''), 'UTF-8')
+                : strtolower((string)($cat->category_name ?? ''));
+            ?>
+            <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12 category-card-item"
+                 data-category-name="<?= h($catNameLower) ?>"
+                 data-category-slug="<?= h($cat->slug) ?>">
 
                 <!-- FULL TILE CLICKABLE -->
                 <a href="<?= h($this->Url->build('/category/' . $cat->slug)) ?>"
@@ -371,5 +509,60 @@
     </div>
 </div>
 </div><!-- .products-categories-page -->
+
+<script>
+(function () {
+    var input = document.getElementById('categoryFilter');
+    var clearBtn = document.getElementById('categoryFilterClear');
+    var statusEl = document.getElementById('categoryFilterStatus');
+    var emptyEl = document.getElementById('categoryFilterEmpty');
+    var cards = document.querySelectorAll('.category-card-item');
+    if (!input || !cards.length) {
+        return;
+    }
+
+    var total = cards.length;
+
+    function applyFilter() {
+        var q = (input.value || '').trim().toLowerCase();
+        var visible = 0;
+
+        for (var i = 0; i < cards.length; i++) {
+            var name = (cards[i].getAttribute('data-category-name') || '').toLowerCase();
+            var slug = (cards[i].getAttribute('data-category-slug') || '').toLowerCase();
+            var match = !q || name.indexOf(q) !== -1 || slug.indexOf(q) !== -1;
+            cards[i].classList.toggle('is-filter-hidden', !match);
+            if (match) {
+                visible++;
+            }
+        }
+
+        if (clearBtn) {
+            clearBtn.hidden = !q;
+        }
+        if (emptyEl) {
+            emptyEl.hidden = !q || visible > 0;
+        }
+        if (statusEl) {
+            if (q) {
+                statusEl.textContent = 'Showing ' + visible + ' of ' + total + ' categories';
+                statusEl.hidden = false;
+            } else {
+                statusEl.hidden = true;
+                statusEl.textContent = '';
+            }
+        }
+    }
+
+    input.addEventListener('input', applyFilter);
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function () {
+            input.value = '';
+            input.focus();
+            applyFilter();
+        });
+    }
+})();
+</script>
 
 
