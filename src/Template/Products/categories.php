@@ -76,7 +76,8 @@
 .category-box.image-tile {
     position: relative;
     width: 100%;
-    height: 280px;
+    height: clamp(300px, 32vw, 380px);
+    min-height: 300px;
     overflow: hidden;
     margin-bottom: 0;
     border-radius: 14px;
@@ -99,15 +100,15 @@
     left: 0;
     right: 0;
     bottom: 0;
-    height: 58%;
+    height: 42%;
     z-index: 1;
     pointer-events: none;
     border-bottom-left-radius: inherit;
     border-bottom-right-radius: inherit;
     background: linear-gradient(
         to top,
-        rgba(15, 28, 48, 0.62) 0%,
-        rgba(15, 28, 48, 0.22) 42%,
+        rgba(12, 24, 42, 0.55) 0%,
+        rgba(12, 24, 42, 0.12) 55%,
         rgba(15, 28, 48, 0) 100%
     );
 }
@@ -142,43 +143,43 @@
     transform: scale(1.001);
 }
 
-/* OVERLAY */
+/* Bottom caption only — no full-card dark overlay */
 .category-overlay {
     position: absolute;
-    inset: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     z-index: 2;
-    background: rgba(0, 0, 0, 0.3);
+    background: transparent;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: center;
     text-align: center;
-    padding: 15px;
-    transition: background 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    padding: 0 14px 18px;
+    pointer-events: none;
 }
 
-/* CATEGORY NAME ON TILES */
+/* Category name — text shadow only, no dark pill */
 .category-overlay h2 {
     color: #ffffff;
-    font-size: 23px;
+    font-size: clamp(17px, 2.2vw, 22px);
     font-weight: 700;
-    letter-spacing: 0.6px;
-    line-height: 1.25;
+    letter-spacing: 0.04em;
+    line-height: 1.3;
     margin: 0;
-    opacity: 0.96;
-    transition:
-        transform 0.32s cubic-bezier(0.22, 1, 0.36, 1),
-        opacity 0.32s ease,
-        box-shadow 0.32s ease;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
-    background: rgba(0, 0, 0, 0.32);
-    border: 1px solid rgba(255, 255, 255, 0.32);
-    border-radius: 12px;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    padding: 12px 16px;
-    display: inline-block;
-    max-width: 92%;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: 0;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    display: block;
+    max-width: 100%;
+    box-shadow: none;
+    text-shadow:
+        0 1px 2px rgba(0, 0, 0, 0.65),
+        0 4px 14px rgba(0, 0, 0, 0.45);
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* HOVER - IMAGE ZOOM */
@@ -195,19 +196,10 @@
         0 6px 14px rgba(20, 33, 61, 0.08);
 }
 .category-box.image-tile:hover .category-overlay h2 {
-    transform: translateY(-2px) scale(1.02);
-    opacity: 1;
-}
-/* ODD boxes -> blue hover overlay */
-.category-grid .row > div:nth-child(odd) .category-box.image-tile:hover .category-overlay {
-    background: rgba(40, 137, 201, 0.45);
+    transform: translateY(-3px);
 }
 .category-grid .row > div:nth-child(odd) .category-box.image-tile {
     border-top: 4px solid #2889c9;
-}
-/* EVEN boxes -> yellow hover overlay */
-.category-grid .row > div:nth-child(even) .category-box.image-tile:hover .category-overlay {
-    background: rgba(255, 215, 0, 0.45);
 }
 .category-grid .row > div:nth-child(even) .category-box.image-tile {
     border-top: 4px solid #f2c23a;
@@ -269,7 +261,8 @@
 /* ===== RESPONSIVE - TABLET ===== */
 @media (max-width: 991px) {
     .category-box.image-tile {
-        height: 260px;
+        height: 320px;
+        min-height: 280px;
     }
     .category-heading .page-title {
         font-size: clamp(26px, 4.5vw, 32px);
@@ -306,15 +299,15 @@
         outline-offset: 2px;
     }
     .category-box.image-tile {
-        height: 220px;
+        height: 280px;
+        min-height: 260px;
         border-radius: 12px;
     }
     .category-overlay h2 {
         font-size: 16px;
-        padding: 8px 10px;
     }
     .category-overlay {
-        padding: 12px;
+        padding: 0 12px 14px;
     }
 }
 
@@ -328,7 +321,8 @@
         font-size: 24px;
     }
     .category-box.image-tile {
-        height: 200px;
+        height: 260px;
+        min-height: 240px;
     }
     .category-overlay h2 {
         font-size: 15px;
@@ -349,7 +343,7 @@
 
         <?php foreach ($categories as $cat): ?>
             <?php if (empty($cat->slug)) continue; ?>
-            <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
+            <div class="col-lg-4 col-md-4 col-sm-6 col-xs-12">
 
                 <!-- FULL TILE CLICKABLE -->
                 <a href="<?= h($this->Url->build('/category/' . $cat->slug)) ?>"
@@ -364,7 +358,6 @@
                                  decoding="async">
                         <?php endif; ?>
 
-                        <!-- CENTER TEXT -->
                         <div class="category-overlay">
                             <h2><?= h($cat->category_name ?? '') ?></h2>
                         </div>
