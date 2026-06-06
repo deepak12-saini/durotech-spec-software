@@ -4,8 +4,11 @@
  *
  * @var \App\View\AppView $this
  */
+use Cake\Core\Configure;
+
 $promoPhoneTel = preg_replace('/\D+/', '', (string)PHONE);
 $salesEmail = 'sales@durotechindustries.com.au';
+$officeMaps = (array)Configure::read('Durotech.officeMapUrls');
 ?>
 <style>
 .locations-promo-strip {
@@ -278,25 +281,25 @@ $salesEmail = 'sales@durotechindustries.com.au';
 		</header>
 		<ul class="locations-promo-locs">
 			<li>
-				<a href="https://www.google.com/maps?q=14+Essex+st,+Minto,+Sydney+NSW+2566" target="_blank" rel="noopener noreferrer">
+				<a href="<?php echo h($officeMaps['nsw'] ?? '#'); ?>" target="_blank" rel="noopener noreferrer">
 					<span class="loc-icon" aria-hidden="true"><i class="fa fa-map-marker"></i></span>
 					<span>NSW</span>
 				</a>
 			</li>
 			<li>
-				<a href="https://www.google.com/maps?q=34+Indian+Drive,+Keysborough,+Victoria+3173" target="_blank" rel="noopener noreferrer">
+				<a href="<?php echo h($officeMaps['vic'] ?? '#'); ?>" target="_blank" rel="noopener noreferrer">
 					<span class="loc-icon" aria-hidden="true"><i class="fa fa-map-marker"></i></span>
 					<span>Victoria</span>
 				</a>
 			</li>
 			<li>
-				<a href="https://www.google.com/maps?q=16+Export+Drive,+Molendinar,+Gold+Coast+4214" target="_blank" rel="noopener noreferrer">
+				<a href="<?php echo h($officeMaps['qld'] ?? '#'); ?>" target="_blank" rel="noopener noreferrer">
 					<span class="loc-icon" aria-hidden="true"><i class="fa fa-map-marker"></i></span>
 					<span>Queensland</span>
 				</a>
 			</li>
 			<li>
-				<a href="https://www.google.com/maps?q=30C+Richard+Street,+Hindmarsh,+SA+5007" target="_blank" rel="noopener noreferrer">
+				<a href="<?php echo h($officeMaps['sa'] ?? '#'); ?>" target="_blank" rel="noopener noreferrer">
 					<span class="loc-icon" aria-hidden="true"><i class="fa fa-map-marker"></i></span>
 					<span>South Australia</span>
 				</a>

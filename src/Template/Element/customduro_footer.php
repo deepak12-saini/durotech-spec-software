@@ -125,6 +125,7 @@
 
 			<div class="footer_info col-lg-3 col-md-3 col-sm-3">
 				<h4>Contact Information</h4>
+				<?php $officeMaps = (array)\Cake\Core\Configure::read('Durotech.officeMapUrls'); ?>
 				<ul>
 					<!-- <li><i class="fa fa-map-marker" aria-hidden="true"></i><a href="<?php //echo SITEURL . 'contact'; 
 																							?>"><?php //echo ADDRESS;  
@@ -135,25 +136,25 @@
 					</li>
 					<li>
 						<i class="fa fa-map-marker" aria-hidden="true"></i>
-							<a href="https://www.google.com/maps?q=14+Essex+st,+Minto,+Sydney+NSW+2566" target="_blank">
+							<a href="<?php echo h($officeMaps['nsw'] ?? '#'); ?>" target="_blank">
                             NSW</a>
 					</li>
 					<li>
 						<i class="fa fa-map-marker" aria-hidden="true"></i>
-						 <a href="https://www.google.com/maps?q=34+Indian+Drive,+Keysborough,+Victoria+3173" target="_blank">
+						 <a href="<?php echo h($officeMaps['vic'] ?? '#'); ?>" target="_blank">
 							VICTORIA
 						</a>
 					</li>
 					<li>
 						<i class="fa fa-map-marker" aria-hidden="true"></i>
-						 <a href="https://www.google.com/maps?q=16+Export+Drive,+Molendinar,+Gold+Coast+4214" target="_blank">
+						 <a href="<?php echo h($officeMaps['qld'] ?? '#'); ?>" target="_blank">
 							QUEENSLAND
 						</a>
 					</li>
 
 					<li>
 						<i class="fa fa-map-marker" aria-hidden="true"></i>
-						<a href="https://www.google.com/maps?q=30C+Richard+Street,+Hindmarsh,+SA+5007" target="_blank">
+						<a href="<?php echo h($officeMaps['sa'] ?? '#'); ?>" target="_blank">
 							SOUTH AUSTRALIA
 						</a>
 					</li>
