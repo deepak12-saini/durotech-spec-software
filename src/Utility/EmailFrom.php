@@ -35,20 +35,20 @@ class EmailFrom
     }
 
     /**
-     * Default From for site emails: WarrantyEmail → Email.default → sales@.
+     * Default From for site emails: Email.default (SMTP-aligned) → WarrantyEmail → sales@.
      *
      * @return array{0: string, 1: string}
      */
     public static function resolve(string $siteName = 'Durotech Industries'): array
     {
-        $warranty = self::parseFromConfig(Configure::read('WarrantyEmail.from'), $siteName);
-        if ($warranty !== null) {
-            return $warranty;
-        }
-
         $default = self::parseFromConfig(Configure::read('Email.default.from'), $siteName);
         if ($default !== null) {
             return $default;
+        }
+
+        $warranty = self::parseFromConfig(Configure::read('WarrantyEmail.from'), $siteName);
+        if ($warranty !== null) {
+            return $warranty;
         }
 
         return ['sales@durotechindustries.com.au', $siteName];

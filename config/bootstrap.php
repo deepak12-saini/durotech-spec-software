@@ -90,6 +90,8 @@ try {
  */
 if (file_exists(CONFIG . 'app_local.php')) {
     Configure::load('app_local', 'default');
+}
+if (file_exists(CONFIG . 'durotech_offices.php')) {
     Configure::load('durotech_offices', 'default');
 }
 
