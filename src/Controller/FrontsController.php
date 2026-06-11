@@ -141,7 +141,7 @@ class FrontsController extends AppController
         $instagramPosts = $this->InstagramPosts->find()
             ->where(['InstagramPosts.status' => 1])
             ->orderDesc('InstagramPosts.id')
-            ->limit(20)
+            ->limit(30)
             ->all();
         $this->set(compact('instagramPosts'));
         return null;

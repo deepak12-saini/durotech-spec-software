@@ -1025,44 +1025,4 @@
 			
 		});
 		</script>
-
-<script>
-	$(document).ready(function(){
-		if (!$('.instagram-slider').length) {
-			return;
-		}
-		$('.instagram-slider').slick({
-			slidesToShow: 3,
-			slidesToScroll: 1,
-			autoplay: true,
-			autoplaySpeed: 3000,
-			infinite: true,
-			arrows: false,
-			dots: false,
-			pauseOnHover: false,
-			responsive: [
-				{
-					breakpoint: 992,
-					settings: { slidesToShow: 2 }
-				},
-				{
-					breakpoint: 576,
-					settings: { slidesToShow: 1 }
-				}
-			]
-		});
-		var embedAttempts = 0;
-		function processInstagramEmbeds() {
-			if (window.instgrm && window.instgrm.Embeds && typeof window.instgrm.Embeds.process === 'function') {
-				window.instgrm.Embeds.process();
-				return;
-			}
-			if (embedAttempts < 20) {
-				embedAttempts++;
-				setTimeout(processInstagramEmbeds, 250);
-			}
-		}
-		processInstagramEmbeds();
-	});
-</script>
 		
