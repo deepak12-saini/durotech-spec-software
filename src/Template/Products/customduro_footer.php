@@ -18,7 +18,7 @@
 						<li><a target="_blank" rel="noopener noreferrer" href="<?php echo h(FACEBOOK); ?>" aria-label="Facebook"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
 						<li><a target="_blank" rel="noopener noreferrer" href="<?php echo h(TWITER); ?>" aria-label="Twitter"><i class="fa fa-twitter" aria-hidden="true"></i></a></li>
 						<li><a target="_blank" rel="noopener noreferrer" href="<?php echo h(LINKDIN); ?>" aria-label="LinkedIn"><i class="fa fa-linkedin" aria-hidden="true"></i></a></li>
-						<li><a target="_blank" rel="noopener noreferrer" href="https://www.instagram.com/durotechindustries.com.au" aria-label="Instagram"><i class="fa fa-instagram" aria-hidden="true"></i></a></li>
+						<li><a target="_blank" rel="noopener noreferrer" href="https://www.instagram.com/durotech_australia" aria-label="Instagram"><i class="fa fa-instagram" aria-hidden="true"></i></a></li>
 					</ul>
 				</nav>
 			</div>

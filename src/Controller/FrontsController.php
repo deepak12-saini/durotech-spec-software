@@ -43,6 +43,7 @@ class FrontsController extends AppController
         $this->loadModel('Visitor');
         $this->loadModel('QuickSpecs');
         $this->loadModel('MethodStatements');
+        $this->loadModel('InstagramPosts');
     }
 
     /**
@@ -136,6 +137,13 @@ class FrontsController extends AppController
             $homeTestimonials[] = ['Testimonial' => $entity->toArray()];
         }
         $this->set(compact('homeTestimonials'));
+
+        $instagramPosts = $this->InstagramPosts->find()
+            ->where(['InstagramPosts.status' => 1])
+            ->orderDesc('InstagramPosts.id')
+            ->limit(20)
+            ->all();
+        $this->set(compact('instagramPosts'));
         return null;
     }
 

@@ -387,6 +387,13 @@
 						</a>
 					</li>
 
+					<li class="<?php if ($reqController=='instagramposts') {echo 'active';}?>">
+						<a href="<?= $this->Url->build(['controller' => 'InstagramPosts', 'action' => 'admin_index']); ?>">
+							<i class="menu-icon fa fa-instagram"></i>
+							<span class="menu-text">Instagram Posts</span>
+						</a>
+					</li>
+
 
 
 					<li class="<?php if ($reqController=='coas') {echo 'active';}?>">

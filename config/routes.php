@@ -739,6 +739,13 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/hero_sections/manage/:id', ['controller' => 'HeroSections', 'action' => 'admin_manage'], ['pass' => ['id']]);
     $routes->connect('/admin/hero_sections/delete/:id', ['controller' => 'HeroSections', 'action' => 'admin_delete'], ['pass' => ['id']]);
 
+    // Admin Instagram Posts (home page feed)
+    $routes->connect('/admin/instagram_posts', ['controller' => 'InstagramPosts', 'action' => 'admin_index']);
+    $routes->connect('/admin/instagram_posts/manage', ['controller' => 'InstagramPosts', 'action' => 'admin_manage']);
+    $routes->connect('/admin/instagram_posts/manage/:id', ['controller' => 'InstagramPosts', 'action' => 'admin_manage'], ['pass' => ['id']]);
+    $routes->connect('/admin/instagram_posts/delete/:id', ['controller' => 'InstagramPosts', 'action' => 'admin_delete'], ['pass' => ['id']]);
+    $routes->connect('/admin/instagram_posts/toggle-status/:id', ['controller' => 'InstagramPosts', 'action' => 'admin_toggleStatus'], ['pass' => ['id']]);
+
     /*
      * ...and connect the rest of 'Pages' controller's URLs.
      */

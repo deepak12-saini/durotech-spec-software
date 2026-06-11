@@ -345,98 +345,6 @@
 
 
 
-	/* new css for reels */
-	.instagram-reels {
-		background: #e4edf4;
-	}
-	.instagram-reels .container > h3 {
-		color: #2889c8;
-		font-weight: 600;
-		display: inline-block;
-		position: relative;
-		transition: color 0.25s ease, text-shadow 0.25s ease, transform 0.25s ease;
-		animation: instagramTitleFadeUp 0.7s ease both;
-	}
-	.instagram-reels .container > h3:after {
-		content: "";
-		position: absolute;
-		left: 50%;
-		bottom: -8px;
-		width: 70px;
-		height: 3px;
-		border-radius: 999px;
-		background: linear-gradient(90deg, #2889c8 0%, #f4c400 100%);
-		transform: translateX(-50%) scaleX(0.55);
-		transform-origin: center;
-		transition: width 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
-	}
-	.instagram-reels:hover .container > h3 {
-		color: #0056b3;
-		text-shadow: 0 6px 16px rgba(40, 137, 200, 0.18);
-		transform: translateY(-3px);
-	}
-	.instagram-reels:hover .container > h3:after {
-		width: 120px;
-		transform: translateX(-50%) scaleX(1);
-		box-shadow: 0 4px 12px rgba(40, 137, 200, 0.22);
-	}
-	@keyframes instagramTitleFadeUp {
-		from {
-			opacity: 0;
-			transform: translateY(12px);
-		}
-		to {
-			opacity: 1;
-			transform: translateY(0);
-		}
-	}
-	.instagram-reels .container > p:first-of-type {
-		color: #585A5A;
-	}
-
-	.instagram-slider .slick-track {
-		display: flex !important;
-	}
-	.instagram-slider .slick-slide {
-		height: inherit !important;
-	}
-	.instagram-slider .slide {
-		padding: 5px; /* spacing between reels */
-		height: auto;
-	}
-
-	.insta-reel-wrapper {
-		--insta-crop-top: 58px;
-		--insta-crop-bottom: 80px;
-		width: 100%;
-		position: relative;
-		height: 330px;
-		overflow: hidden;
-		background: #fff;
-		border: 1px solid #e4e4e4;
-		border-radius: 12px;
-	}
-
-	.insta-reel-wrapper > blockquote,
-	.insta-reel-wrapper > iframe {
-		position: static;
-		width: 100% !important;
-		height: calc(100% + var(--insta-crop-top) + var(--insta-crop-bottom)) !important;
-		min-height: calc(100% + var(--insta-crop-top) + var(--insta-crop-bottom)) !important;
-		min-width: 100% !important;
-		margin: calc(0px - var(--insta-crop-top)) 0 0 !important;
-	}
-	@media (max-width: 991px) {
-		.insta-reel-wrapper {
-			height: 320px;
-		}
-	}
-	@media (max-width: 576px) {
-		.insta-reel-wrapper {
-			height: 300px;
-		}
-	}
-
 	/* === HOME TESTIMONIALS (hidden pending client approval) — remove this wrapper comment to restore CSS ===
 	.home-testimonials {
 		background: #f7f7f7;
@@ -805,136 +713,7 @@
 		</script>
 
 
-		<div class="instagram-reels col-lg-12 col-md-12 col-sm-12">
-			<div class="container">
-				<h3>Our Latest Instagram Posts</h3>
-				<section class="instagram-slider">
-
-					<div class="slide">
-						<!-- Reel 1 -->
-						<div class="insta-reel-wrapper">
-							<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/DO-Vi8Ek7Is/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style="width:100%; max-width:540px;">
-							</blockquote>
-						</div>	
-					</div>
-
-					<div class="slide">
-						<!-- Reel 2 -->
-						 
-						 <div class="insta-reel-wrapper">
-							<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/DOIasoakiAT/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style="width:100%; max-width:540px;">
-							</blockquote>
-						 </div>
-					</div>
-
-					<div class="slide">
-						<!-- Reel 3 -->
-						<div class="insta-reel-wrapper">
-							<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/DN2nsgx5HLM/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style="width:100%; max-width:540px;">
-							</blockquote>
-						</div>
-					</div>
-
-					<div class="slide">
-						<!-- Reel 4 -->
-						 <div class="insta-reel-wrapper">
-							<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/DN2aTC9Yr1I/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style="width:100%; max-width:540px;">
-							</blockquote>
-						 </div>
-					</div>
-
-					<div class="slide">
-						<!-- Reel 5 -->
-						 <div class="insta-reel-wrapper">
-							<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/DNFFat4RiQR/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style="width:100%; max-width:540px;">
-							</blockquote>
-						 </div>
-					</div>
-
-					<div class="slide">
-						<!-- Reel 6 -->
-						 <div class="insta-reel-wrapper">
-							<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/DNEdysBzyMa/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style="width:100%; max-width:540px;">
-							</blockquote>
-						 </div>
-					</div>
-
-					<div class="slide">
-						<!-- Reel 7 -->
-						 <div class="insta-reel-wrapper">
-							<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/DM_1uOgTkX0/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style="width:100%; max-width:540px;">
-							</blockquote>
-						 </div>
-					</div>
-
-					<div class="slide">
-						<!-- Reel 8 -->
-						 <div class="insta-reel-wrapper">
-							<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/DLj3jntxkk0/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style="width:100%; max-width:540px;">
-							</blockquote>
-						 </div>
-					</div>
-
-					<div class="slide">
-						<!-- Reel 9 -->
-						 <div class="insta-reel-wrapper">
-							<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/DLi_yJLy0CS/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style="width:100%; max-width:540px;">
-							</blockquote>
-						 </div>
-					</div>
-
-
-					<div class="slide">
-						<!-- Reel 10 -->
-						 <div class="insta-reel-wrapper">
-							<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/DLYlioMBtds/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style="width:100%; max-width:540px;">
-							</blockquote>
-						 </div>
-					</div>
-
-										<div class="slide">
-						<!-- Reel 11 -->
-						 <div class="insta-reel-wrapper">
-							<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/DKLgR9Ay9lM/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style="width:100%; max-width:540px;">
-							</blockquote>
-						 </div>
-					</div>
-
-					<div class="slide">
-						<!-- Reel 12 -->
-						 <div class="insta-reel-wrapper">
-							<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/DJ_VFcDOlGH/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style="width:100%; max-width:540px;">
-							</blockquote>
-						 </div>
-					</div>
-
-					<div class="slide">
-						<!-- Reel 13 -->
-						 <div class="insta-reel-wrapper">
-							<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/DJ3Oebdxeet/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style="width:100%; max-width:540px;">
-							</blockquote>
-						 </div>
-					</div>
-
-					<div class="slide">
-						<!-- Reel 14 -->
-						 <div class="insta-reel-wrapper">
-							<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/DJ1JHYeSLYn/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style="width:100%; max-width:540px;">
-							</blockquote>
-						 </div>
-					</div>
-
-					<div class="slide">
-						<!-- Reel 15 -->
-						 <div class="insta-reel-wrapper">
-							<blockquote class="instagram-media" data-instgrm-captioned data-instgrm-permalink="https://www.instagram.com/p/DIzpGKszpQv/?utm_source=ig_embed&amp;utm_campaign=loading" data-instgrm-version="14" style="width:100%; max-width:540px;">
-							</blockquote>
-						 </div>
-					</div>
-
-				</section>
-			</div>
-        </div>
+		<?= $this->element('instagram_feed', compact('instagramPosts')) ?>
 
 		<?php
 		/**
@@ -1015,8 +794,7 @@
 			</div>
 		</div>
 		<?php endif; ?>
-        <script async src="//www.instagram.com/embed.js"></script>
-		<!-- <div class="client_logo col-lg-12 col-md-12 col-sm-12">		
+		<!-- <div class="client_logo col-lg-12 col-md-12 col-sm-12">
 			<div class="container">
 				<h3>We Work With</h3>
 				<p>Renowned national and multinational companies whom we work with.</p>
@@ -1250,14 +1028,17 @@
 
 <script>
 	$(document).ready(function(){
+		if (!$('.instagram-slider').length) {
+			return;
+		}
 		$('.instagram-slider').slick({
-			slidesToShow: 3,        // visible reels at a time
+			slidesToShow: 3,
 			slidesToScroll: 1,
 			autoplay: true,
-			autoplaySpeed: 3000,    // 3 seconds per slide
-			infinite: true,         // loop continuously
-			arrows: false,          // hide prev/next arrows
-			dots: false,            // hide pagination
+			autoplaySpeed: 3000,
+			infinite: true,
+			arrows: false,
+			dots: false,
 			pauseOnHover: false,
 			responsive: [
 				{
@@ -1270,6 +1051,18 @@
 				}
 			]
 		});
+		var embedAttempts = 0;
+		function processInstagramEmbeds() {
+			if (window.instgrm && window.instgrm.Embeds && typeof window.instgrm.Embeds.process === 'function') {
+				window.instgrm.Embeds.process();
+				return;
+			}
+			if (embedAttempts < 20) {
+				embedAttempts++;
+				setTimeout(processInstagramEmbeds, 250);
+			}
+		}
+		processInstagramEmbeds();
 	});
 </script>
 		

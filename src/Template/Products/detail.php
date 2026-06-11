@@ -226,7 +226,7 @@
 			color: #003366; /* Keep blue text */
 			box-shadow: 0 3px 12px rgba(255, 204, 0, 0.45);
 		}
-
+ Get INSTAGRAM_USER_ID
 		.product-tabs .nav-tabs > li.active > a::after,
 		.product-tabs .nav-tabs .nav-link.active::after {
 			content: "";
