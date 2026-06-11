@@ -179,9 +179,10 @@
 		.product-tabs .nav-tabs {
 			position: relative;
 			display: flex;
-			flex-wrap: nowrap;
+			flex-wrap: wrap;
+			justify-content: flex-start;
 			align-items: flex-end;
-			gap: 0;
+			gap: 10px;
 			background-color: #f8f9fa;
 			border-radius: 10px 10px 0 0;
 			padding: 8px 10px;
@@ -192,17 +193,8 @@
 
 		.product-tabs .nav-tabs > li {
 			float: none;
-			flex: 1 1 0;
+			flex: 0 0 auto;
 			margin-bottom: 0;
-		}
-		.product-tabs .nav-tabs > li:nth-child(1) {
-			text-align: left;
-		}
-		.product-tabs .nav-tabs > li:nth-child(2) {
-			text-align: center;
-		}
-		.product-tabs .nav-tabs > li:nth-child(3) {
-			text-align: right;
 		}
 
 	   .product-tabs .nav-tabs .nav-link {
