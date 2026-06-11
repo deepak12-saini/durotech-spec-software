@@ -341,10 +341,11 @@ class FrontsController extends AppController
      */
     public function durolab(): ?Response
     {
+        $durotechYears = (int)date('Y') - 1977;
         $this->set([
             'title_for_layout' => (defined('SITENAME') ? SITENAME : 'Durotech') . ' | Duro Lab',
             'meta_title' => 'Duro Lab',
-            'meta_description' => 'After establishing in 1977 Durotech is now just over 45 years old making Durotech one of the Original Australian Made and Owned manufactures of construction chemicals.',
+            'meta_description' => 'After establishing in 1977 Durotech is now just over ' . $durotechYears . ' years old making Durotech one of the Original Australian Made and Owned manufactures of construction chemicals.',
             'meta_keyword' => '',
         ]);
         return null;
