@@ -450,7 +450,7 @@
 
 		<div class="content col-lg-12 col-md-12 col-sm-12">
 			 <h1  style="text-align:center; color:#2889c8; font-weight: 600; text-decoration:underline;">About Us</h1>
-			 <p style="text-align:center;">Durotech Australia is a 48 year old Australian Made and Owned construction chemical manufacturer. The Durotech Group was established in 1977 to provide Innovative waterproofing and coating technology to the local and global market. We continue to lead the market with end to end solutions offering the latest technology backed systems. The Durotech group established itself as a market leader and a preferred choice for many Contractors, Architects, Distributors and industries partners.</p>			 
+			 <p style="text-align:center;">Durotech Australia is a 49 year old Australian Made and Owned construction chemical manufacturer. The Durotech Group was established in 1977 to provide Innovative waterproofing and coating technology to the local and global market. We continue to lead the market with end to end solutions offering the latest technology backed systems. The Durotech group established itself as a market leader and a preferred choice for many Contractors, Architects, Distributors and industries partners.</p>			 
 		</div>
 		
 		<div class="duro_service col-lg-12 col-md-12 col-sm-12" style="background:#e4edf4;padding-top: 62px;">
