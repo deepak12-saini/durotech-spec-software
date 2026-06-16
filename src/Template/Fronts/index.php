@@ -450,7 +450,7 @@
 
 		<div class="content col-lg-12 col-md-12 col-sm-12">
 			 <h1  style="text-align:center; color:#2889c8; font-weight: 600; text-decoration:underline;">About Us</h1>
-			 <p style="text-align:center;">Durotech Australia is a 49 year old Australian Made and Owned construction chemical manufacturer. The Durotech Group was established in 1977 to provide Innovative waterproofing and coating technology to the local and global market. We continue to lead the market with end to end solutions offering the latest technology backed systems. The Durotech group established itself as a market leader and a preferred choice for many Contractors, Architects, Distributors and industries partners.</p>			 
+			 <p style="text-align:center;">Durotech Australia is a <?php echo (int)DUROTECH_YEARS; ?> year old Australian Made and Owned construction chemical manufacturer. The Durotech Group was established in <?php echo (int)DUROTECH_FOUNDED_YEAR; ?> to provide Innovative waterproofing and coating technology to the local and global market. We continue to lead the market with end to end solutions offering the latest technology backed systems. The Durotech group established itself as a market leader and a preferred choice for many Contractors, Architects, Distributors and industries partners.</p>			 
 		</div>
 		
 		<div class="duro_service col-lg-12 col-md-12 col-sm-12" style="background:#e4edf4;padding-top: 62px;">
@@ -616,7 +616,7 @@
 							<span class="stat-divider" aria-hidden="true"></span>
 							<p>Global Team</p>
 						</div>
-						<div class="item wow fadeInUpBig animated animated" data-count-end="49" style="visibility: visible; background:#e4edf4;">
+						<div class="item wow fadeInUpBig animated animated" data-count-end="<?php echo (int)DUROTECH_YEARS; ?>" style="visibility: visible; background:#e4edf4;">
 							<img src="<?php echo SITEURL ;?>img/Group 45.png" style="width:42px; height:46px" alt="">
 							<p class="number stat-value-line"><span class="stat-value">0</span><span class="stat-suffix"> years</span></p>
 							<span class="stat-divider" aria-hidden="true"></span>
@@ -845,7 +845,7 @@
 	      <div class="container">
 		  <div class="mobile_app_section_top_content">
 		  <h2>Our Hi-Tech Mobile App </h2>
-		  <p>With an Australian wide community that is connected to Durotech for over 40 years, we wish to make the user experience simplified and convenient. Download our latest mobile App to know about latest products and waterproofing solutions from Durotech Industries. </p>
+		  <p>With an Australian wide community that is connected to Durotech for over <?php echo (int)DUROTECH_YEARS; ?> years, we wish to make the user experience simplified and convenient. Download our latest mobile App to know about latest products and waterproofing solutions from Durotech Industries. </p>
           </div>
 	      <div class="mobile_app_section_1 col-lg-4 col-md-4 col-sm-4">
 		       <div class="app_new_product">

@@ -27,7 +27,7 @@
 					  <div class="image-card">
 						  <img src="<?php echo SITEURL ;?>customdurotech/images/kal_img.jpg"/>
 						  <h5>Business Manager</h5>
-						  <p>Durotech industries is a leading manufacturer and supplier of waterproofing products. Durotech waterproofing products have been widely used in the construction industry for the sealing of wet areas, decks, roofs and other substrates providing protection against moisture and weather damage for over 40 years.</p>
+						  <p>Durotech industries is a leading manufacturer and supplier of waterproofing products. Durotech waterproofing products have been widely used in the construction industry for the sealing of wet areas, decks, roofs and other substrates providing protection against moisture and weather damage for over <?php echo (int)DUROTECH_YEARS; ?> years.</p>
 					  </div>
 				  </div>
 			  </div>
@@ -36,7 +36,7 @@
 					  <div class="image-card">
 						 <img src="<?php echo SITEURL ;?>customdurotech/images/varan_img.jpg"/>
 						  <h5>Business Manager</h5>
-						  <p>Durotech industries is a leading manufacturer and supplier of waterproofing products. Durotech waterproofing products have been widely used in the construction industry for the sealing of wet areas, decks, roofs and other substrates providing protection against moisture and weather damage for over 40 years.</p>
+						  <p>Durotech industries is a leading manufacturer and supplier of waterproofing products. Durotech waterproofing products have been widely used in the construction industry for the sealing of wet areas, decks, roofs and other substrates providing protection against moisture and weather damage for over <?php echo (int)DUROTECH_YEARS; ?> years.</p>
 					  </div>
 				  </div>
 			  </div>

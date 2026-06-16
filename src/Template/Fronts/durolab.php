@@ -151,10 +151,6 @@
 }
 body{background:url(<?php echo SITEURL.'img/'?>bg-4.png)}
 </style>
-<?php
-$durotechFoundedYear = 1977;
-$durotechYears = (int)date('Y') - $durotechFoundedYear;
-?>
 <div class="page-durolab-wrap">
 		<div class="banner_durolab col-lg-12 col-md-12 col-sm-12">
 		     <img src="<?php echo SITEURL ;?>customdurotech/images/durolab_banner.jpg" alt="DuroLab">
@@ -172,13 +168,13 @@ $durotechYears = (int)date('Y') - $durotechFoundedYear;
 			 </div>
 			
 			 <div class="duro_lab_content_page col-lg-12 col-md-12 col-sm-12">
-			     <p>After establishing in <?php echo (int)$durotechFoundedYear; ?> Durotech is now just over <?php echo (int)$durotechYears; ?> years old making Durotech one of the Original Australian Made and Owned manufactures of construction chemicals. Durotech now <?php echo (int)$durotechYears; ?> years later has cemented them selfs in the market as the most powerful Australian MADE and Australian OWNED companies. With <?php echo (int)$durotechYears; ?> years comes allot of history, evidence and facts that Durotech does not only have some of the highest quality products it has the most Innovative products backed by an extremely well experienced and educated team off technical chemists and engineers. After <?php echo (int)$durotechYears; ?> years Durotech has proven that its products have been designed and have latest some of the harshest conditions in the world….The Australian Sun. By manufacturing locally in Sydney Australia we are able to support our customers with local support and fast response times.
+			     <p>After establishing in <?php echo (int)DUROTECH_FOUNDED_YEAR; ?> Durotech is now just over <?php echo (int)DUROTECH_YEARS; ?> years old making Durotech one of the Original Australian Made and Owned manufactures of construction chemicals. Durotech now <?php echo (int)DUROTECH_YEARS; ?> years later has cemented them selfs in the market as the most powerful Australian MADE and Australian OWNED companies. With <?php echo (int)DUROTECH_YEARS; ?> years comes allot of history, evidence and facts that Durotech does not only have some of the highest quality products it has the most Innovative products backed by an extremely well experienced and educated team off technical chemists and engineers. After <?php echo (int)DUROTECH_YEARS; ?> years Durotech has proven that its products have been designed and have latest some of the harshest conditions in the world….The Australian Sun. By manufacturing locally in Sydney Australia we are able to support our customers with local support and fast response times.
 
 In todays market the Environment comes first. At Durotech we realise this and we ensure that we keep it that way. By utalising the latest research techniques Durotech Laboratory technical team Is able to develop a range of low VOC products and ULTRA low VOC products making these products not only safe for Australian conditions but being safe for global conditions as well.
 
 While Durotech has its own testing laboratory, the Durotech range has also been externally tested as low VOC by an independent, nationally accredited Firm. By doing this Durotech has become the most environmental construction chemical supplier in Australia.
 
-At Durotech <?php echo (int)$durotechYears; ?> years ago DuroLab was establishing for one main purpose to support and show our responsibility to our customers and our country. Making QUALITY products was and still is our priority and continually Investing in the backbone of our company. DuroLab is where it all started and its where it will take us into the future.</p>
+At Durotech <?php echo (int)DUROTECH_YEARS; ?> years ago DuroLab was establishing for one main purpose to support and show our responsibility to our customers and our country. Making QUALITY products was and still is our priority and continually Investing in the backbone of our company. DuroLab is where it all started and its where it will take us into the future.</p>
 
 
 

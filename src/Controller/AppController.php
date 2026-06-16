@@ -370,6 +370,12 @@ class AppController extends Controller
         if (!defined('GOOGLE_PLUS')) {
             define('GOOGLE_PLUS', '#');
         }
+        if (!defined('DUROTECH_FOUNDED_YEAR')) {
+            define('DUROTECH_FOUNDED_YEAR', 1977);
+        }
+        if (!defined('DUROTECH_YEARS')) {
+            define('DUROTECH_YEARS', (int)date('Y') - DUROTECH_FOUNDED_YEAR);
+        }
     }
 	
 	/***
