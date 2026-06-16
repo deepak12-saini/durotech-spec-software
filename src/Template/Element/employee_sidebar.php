@@ -63,6 +63,7 @@
 						<b class="arrow"></b>
 					</li>
 
+					<?php /* Claude Spec Assistant hidden for now. Uncomment when ready to enable.
 					<li class="<?php echo $isClaudeSpecsActive ? 'active' : ''; ?>">
 						<a href="<?php echo $this->Url->build(['controller' => 'ClaudeSpecs', 'action' => 'employee_index']); ?>">
 							<i class="menu-icon fa fa-comments"></i>
@@ -70,6 +71,7 @@
 						</a>
 						<b class="arrow"></b>
 					</li>
+					*/ ?>
 
 					<li class="<?php echo $isAiSpecsActive ? 'active' : ''; ?>">
 						<a href="<?php echo $this->Url->build(['controller' => 'AiSpecs', 'action' => 'employee_index']); ?>">
