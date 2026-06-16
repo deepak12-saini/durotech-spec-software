@@ -216,7 +216,7 @@
 		         <h3>Who We Are</h3>
 		         <p class="about-intro__text">Durotech industries is a leading manufacturer and supplier of waterproofing and coating solutions. Durotech Systems have been widely
 used in the construction industry for the sealing of wet areas, decks, roofs and other substrates providing protection against moisture and weather
-damage for over 48 years. State of the art technology combined with dedicated commitment to research and development has made Durotech Industries an authoritative and dominant leader in the waterproofing and coatings arena.</p>
+damage for over 49 years. State of the art technology combined with dedicated commitment to research and development has made Durotech Industries an authoritative and dominant leader in the waterproofing and coatings arena.</p>
              </div>
 			 <div class="container">
 			 
@@ -268,7 +268,7 @@ damage for over 48 years. State of the art technology combined with dedicated co
 			      <div class="block">
 				      <i class="fa fa-industry" aria-hidden="true"></i>
 				      <h4>Manufacturing Facilities</h4>
-					 <p>Australian manufacturing for over 48 years Local quality control to ensure consistent products.... </p>
+					 <p>Australian manufacturing for over 49 years Local quality control to ensure consistent products.... </p>
 					  <button type="button" class="read-more-trigger" data-toggle="modal" data-target="#basicModal_2">READ MORE</button>
 					 <div class="modal fade" id="basicModal_2" tabindex="-1" role="dialog" aria-labelledby="basicModalLabel2">
 					  <div class="modal-dialog">
@@ -278,7 +278,7 @@ damage for over 48 years. State of the art technology combined with dedicated co
 							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 						  </div>
 						  <div class="modal-body">
-							<p>Australian manufacturing for over 48 years Local quality control to ensure consistent products Large production capacity 400,000 Litres monthly production capacity Customised formulation to customer specific solutions .</p>
+							<p>Australian manufacturing for over 49 years Local quality control to ensure consistent products Large production capacity 400,000 Litres monthly production capacity Customised formulation to customer specific solutions .</p>
 						  </div>
 						 
 						</div>
@@ -300,7 +300,7 @@ damage for over 48 years. State of the art technology combined with dedicated co
 							<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 						  </div>
 						  <div class="modal-body">
-							<p>Specification &amp; design services Onsite and in house QA and technical support End to end solution from manufacturing to accessories. Innovative research and design using the latest technology Long history over 48 years of proven technologies.</p>
+							<p>Specification &amp; design services Onsite and in house QA and technical support End to end solution from manufacturing to accessories. Innovative research and design using the latest technology Long history over 49 years of proven technologies.</p>
 						  </div>
 						 
 						</div>

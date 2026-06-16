@@ -250,7 +250,7 @@ body.modal-open .modal-backdrop.in {
 					<p class="applicator-cta-label-text">For applicators</p>
 				</div>
 				<h2 id="applicator-cta-heading" class="applicator-cta-headline">Applicator ordering, specifications &amp; project support</h2>
-				<p class="applicator-cta-sub">Durotech is an Australian manufacturer of waterproofing membranes and coatings for wet areas, decks, roofs and facades — systems contractors have relied on for over 48 years. Contact us for product selection, documentation and on-site advice.</p>
+				<p class="applicator-cta-sub">Durotech is an Australian manufacturer of waterproofing membranes and coatings for wet areas, decks, roofs and facades — systems contractors have relied on for over 49 years. Contact us for product selection, documentation and on-site advice.</p>
 				<button type="button" class="applicator-cta-btn" data-toggle="modal" data-target="#applicatorContactModal">Contact Us</button>
 			</div>
 			<div class="applicator-cta-col-img">

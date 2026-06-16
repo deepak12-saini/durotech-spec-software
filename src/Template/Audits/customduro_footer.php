@@ -12,7 +12,7 @@
 		<div class="row">
 			<div class="footer_about col-lg-3 col-md-3 col-sm-3">
 				<img src="<?php echo SITEURL; ?>customdurotech/images/durotech_logo.png" alt="Durotech">
-				<h6>Durotech industries is a leading manufacturer and supplier of waterproofing and coating solutions. Durotech Systems have been widely used in the construction industry for the sealing of wet areas, decks, roofs and other substrates providing protection against moisture and weather damage for over 48 years. </h6>
+				<h6>Durotech industries is a leading manufacturer and supplier of waterproofing and coating solutions. Durotech Systems have been widely used in the construction industry for the sealing of wet areas, decks, roofs and other substrates providing protection against moisture and weather damage for over 49 years. </h6>
 				<nav class="footer-about-social" aria-label="Social media">
 					<ul>
 						<li><a target="_blank" rel="noopener noreferrer" href="<?php echo h(FACEBOOK); ?>" aria-label="Facebook"><i class="fa fa-facebook" aria-hidden="true"></i></a></li>
