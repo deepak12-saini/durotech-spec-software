@@ -14,11 +14,98 @@ use Dompdf\Options;
 final class ProductWarrantyPdfGenerator
 {
     /**
-     * Build certificate filename for a request id.
+     * Build certificate filename for a request (uses area warranted / product text when available).
+     *
+     * @param array<string, mixed>|null $log Request row data; loaded from DB when omitted.
      */
-    public static function certificateFilename(int $id): string
+    public static function certificateFilename(int $id, ?array $log = null): string
+    {
+        if ($log === null) {
+            try {
+                $table = TableRegistry::getTableLocator()->get('ProductWarrantyRequests');
+                $log = $table->get($id)->toArray();
+            } catch (\Throwable $e) {
+                $log = [];
+            }
+        }
+
+        $areaWarranted = trim((string)($log['area_warranted'] ?? ''));
+        $product = trim((string)($log['product'] ?? ''));
+
+        $label = $areaWarranted;
+        if ($areaWarranted !== '' && $product !== '') {
+            $label = $product . ' - ' . $areaWarranted;
+        } elseif ($areaWarranted === '' && $product !== '') {
+            $label = $product;
+        }
+
+        if ($label === '') {
+            return self::legacyCertificateFilename($id);
+        }
+
+        return self::sanitizeFilename($label) . '.pdf';
+    }
+
+    /**
+     * Fallback certificate filename when area/product text is unavailable.
+     */
+    public static function legacyCertificateFilename(int $id): string
     {
         return 'DTWNTRQ ' . date('y-m') . '-' . str_pad((string)$id, 3, '0', STR_PAD_LEFT) . '.pdf';
+    }
+
+    /**
+     * @param array<string, mixed>|null $log
+     */
+    public static function certificateRelativePath(int $id, ?array $log = null): string
+    {
+        return 'pdf/FPDI/' . self::certificateFilename($id, $log);
+    }
+
+    /**
+     * Resolve a unique filename in the certificate directory.
+     *
+     * @param array<string, mixed> $log
+     */
+    public static function resolveCertificateFilename(int $id, array $log, ?string $currentCertificate = null): string
+    {
+        $filename = self::certificateFilename($id, $log);
+        $dir = self::certificateDirectory();
+        $fullPath = $dir . $filename;
+        if (!is_file($fullPath)) {
+            return $filename;
+        }
+
+        if ($currentCertificate !== null && basename(str_replace('\\', '/', $currentCertificate)) === $filename) {
+            return $filename;
+        }
+
+        $base = pathinfo($filename, PATHINFO_FILENAME);
+        $suffix = str_pad((string)$id, 3, '0', STR_PAD_LEFT);
+        $candidate = self::sanitizeFilename($base . ' - ' . $suffix) . '.pdf';
+        if (!is_file($dir . $candidate)) {
+            return $candidate;
+        }
+
+        return self::legacyCertificateFilename($id);
+    }
+
+    /**
+     * Sanitize user text for a safe PDF filename.
+     */
+    public static function sanitizeFilename(string $name): string
+    {
+        $name = preg_replace('/[\\\\\/:*?"<>|]+/', '-', $name) ?? $name;
+        $name = preg_replace('/\s+/u', ' ', $name) ?? $name;
+        $name = trim($name, " .-\t\n\r\0\x0B");
+        if ($name === '') {
+            return 'warranty-certificate';
+        }
+        if (strlen($name) > 120) {
+            $name = rtrim(substr($name, 0, 120), " .-");
+        }
+
+        return $name;
     }
 
     /**
@@ -27,14 +114,6 @@ final class ProductWarrantyPdfGenerator
     public static function certificateDirectory(): string
     {
         return WWW_ROOT . 'pdf' . DS . 'FPDI' . DS;
-    }
-
-    /**
-     * Relative web path stored in DB.
-     */
-    public static function certificateRelativePath(int $id): string
-    {
-        return 'pdf/FPDI/' . self::certificateFilename($id);
     }
 
     /**
@@ -86,7 +165,19 @@ final class ProductWarrantyPdfGenerator
             return false;
         }
 
-        $filename = self::certificateFilename($requestId);
+        try {
+            $table = TableRegistry::getTableLocator()->get('ProductWarrantyRequests');
+            $entity = $table->get($requestId);
+        } catch (\Throwable $e) {
+            Log::error('ProductWarrantyPdfGenerator: request not found id ' . $requestId);
+
+            return false;
+        }
+
+        $log = $entity->toArray();
+        $oldCertificate = trim((string)($entity->certificate ?? ''));
+
+        $filename = self::resolveCertificateFilename($requestId, $log, $oldCertificate !== '' ? $oldCertificate : null);
         $fullPath = $dir . $filename;
         if (@file_put_contents($fullPath, $pdfBinary) === false) {
             Log::error('ProductWarrantyPdfGenerator: failed to write ' . $fullPath);
@@ -95,14 +186,19 @@ final class ProductWarrantyPdfGenerator
         }
 
         try {
-            $table = TableRegistry::getTableLocator()->get('ProductWarrantyRequests');
-            $entity = $table->get($requestId);
-            $relative = self::certificateRelativePath($requestId);
+            $relative = 'pdf/FPDI/' . $filename;
             $entity->certificate = $relative;
             if (!$table->save($entity)) {
                 Log::error('ProductWarrantyPdfGenerator: failed to save certificate path for id ' . $requestId);
 
                 return false;
+            }
+
+            if ($oldCertificate !== '' && $oldCertificate !== $relative) {
+                $oldPath = WWW_ROOT . str_replace('/', DS, ltrim($oldCertificate, '/'));
+                if (is_file($oldPath) && $oldPath !== $fullPath) {
+                    @unlink($oldPath);
+                }
             }
         } catch (\Throwable $e) {
             Log::error('ProductWarrantyPdfGenerator ORM save: ' . $e->getMessage());

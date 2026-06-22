@@ -849,7 +849,7 @@ class StocksController extends AppController
 			return $this->redirect(['action' => 'admin_product_warranty_request']);
 		}
 		try {
-			$this->ProductWarrantyRequests->get($rid);
+			$entity = $this->ProductWarrantyRequests->get($rid);
 		} catch (\Throwable $e) {
 			$this->Flash->error('Request not found.');
 			return $this->redirect(['action' => 'admin_product_warranty_request']);
@@ -862,7 +862,7 @@ class StocksController extends AppController
 			return $this->redirect(['action' => 'admin_product_warranty_request']);
 		}
 
-		$filename = 'product-warranty-preview-' . $rid . '.pdf';
+		$filename = ProductWarrantyPdfGenerator::certificateFilename($rid, $entity->toArray());
 
 		return $this->response
 			->withType('application/pdf')
