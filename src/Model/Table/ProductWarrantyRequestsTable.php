@@ -18,10 +18,9 @@ class ProductWarrantyRequestsTable extends Table
     public function validationDefault(Validator $validator): Validator
     {
         $validator
+            ->allowEmptyString('serialnumber')
             ->scalar('serialnumber')
-            ->maxLength('serialnumber', 255)
-            ->requirePresence('serialnumber', 'create')
-            ->notEmptyString('serialnumber', 'Warranty serial number is required.');
+            ->maxLength('serialnumber', 255);
 
         $validator
             ->scalar('dateofpurchase')
@@ -36,9 +35,8 @@ class ProductWarrantyRequestsTable extends Table
             ->notEmptyString('product', 'Product is required.');
 
         $validator
-            ->scalar('used_as')
-            ->requirePresence('used_as', 'create')
-            ->notEmptyString('used_as', 'Used As is required.');
+            ->allowEmptyString('used_as')
+            ->scalar('used_as');
 
         $validator
             ->scalar('building_address')
@@ -61,6 +59,12 @@ class ProductWarrantyRequestsTable extends Table
             ->requirePresence('sign_date', 'create')
             ->notEmptyString('sign_date', 'Signature date is required.')
             ->date('sign_date', ['ymd'], 'Enter a valid signature date (YYYY-MM-DD).');
+
+        $validator
+            ->scalar('contractor_signature')
+            ->maxLength('contractor_signature', 255)
+            ->requirePresence('contractor_signature', 'create')
+            ->notEmptyString('contractor_signature', 'Signature is required.');
 
         $validator
             ->allowEmptyString('application')

@@ -181,6 +181,7 @@ if (!empty($productWarrantyRequests)) {
                     <tr><th>Contractor Company Name:</th><td><?= h($request['ProductWarrantyRequest']['contract_company_name']); ?></td></tr>
                     <tr><th>Contractor Name:</th><td><?= h($request['ProductWarrantyRequest']['contract_name']); ?></td></tr>
                     <tr><th>Sign Date:</th><td><?= !empty($request['ProductWarrantyRequest']['sign_date']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['sign_date']) : ''; ?></td></tr>
+                    <tr><th>Signature:</th><td><?php if (!empty($request['ProductWarrantyRequest']['contractor_signature'])) : ?><img src="<?= h((defined('SITEURL') ? rtrim((string)SITEURL, '/') : '') . '/signature/' . $request['ProductWarrantyRequest']['contractor_signature']) ?>" alt="Signature" style="max-width:220px;max-height:80px;border:1px solid #ddd;"><?php else : ?>—<?php endif; ?></td></tr>
                     <tr><th>Status:</th><td><?= h($request['ProductWarrantyRequest']['status'] ?: 'Pending'); ?></td></tr>
                 </table>
             </div>

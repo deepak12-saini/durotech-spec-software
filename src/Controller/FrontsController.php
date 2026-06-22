@@ -1460,6 +1460,10 @@ class FrontsController extends AppController
             if (isset($data['applicator_address']) && is_array($data['applicator_address'])) {
                 $data['applicator_address'] = implode("\n", array_filter($data['applicator_address']));
             }
+            $signatureName = $this->saveContractorSignatureImage((string)$this->request->getData('sigimage'));
+            if ($signatureName !== '') {
+                $data['contractor_signature'] = $signatureName;
+            }
             $entity = $this->ProductWarrantyRequests->newEntity($data);
             if (empty($entity->status)) {
                 $entity->status = 'Pending';
@@ -1877,6 +1881,35 @@ class FrontsController extends AppController
             $this->Flash->error('The notification could not be deleted. Please, try again.');
         }
         return $this->redirect(['action' => 'admin_index']);
+    }
+
+    /**
+     * Save a base64 canvas signature PNG to webroot/signature and return filename.
+     */
+    protected function saveContractorSignatureImage(string $sigimage): string
+    {
+        if ($sigimage === '' || strpos($sigimage, 'data:image') !== 0) {
+            return '';
+        }
+
+        $signatureData = preg_replace('/^data:image\/\w+;base64,/', '', $sigimage);
+        $signatureData = str_replace(' ', '+', (string)$signatureData);
+        $decoded = base64_decode((string)$signatureData, true);
+        if ($decoded === false) {
+            return '';
+        }
+
+        $signatureDir = WWW_ROOT . 'signature' . DS;
+        if (!is_dir($signatureDir) && !@mkdir($signatureDir, 0755, true) && !is_dir($signatureDir)) {
+            return '';
+        }
+
+        $signatureName = uniqid('warranty_sign_', true) . '.png';
+        if (@file_put_contents($signatureDir . $signatureName, $decoded) === false) {
+            return '';
+        }
+
+        return $signatureName;
     }
 
     /**

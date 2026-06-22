@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Utility\ProductWarrantyPdfGenerator;
 use Cake\Event\EventInterface;
 use Cake\Http\Response;
 
@@ -824,63 +825,12 @@ class StocksController extends AppController
 	}
 
 	/**
-	 * Include warrantyCertificate_new.php with app DB (not preview). Overwrites PDF file if generation succeeds.
+	 * Generate HTML-based Product Warranty Request Form PDF and save to disk.
 	 */
 	protected function _includeProductWarrantyCertificateScript(int $id): void
 	{
-		$_REQUEST['lastinsertId'] = $id;
-		unset($GLOBALS['warranty_cert_preview_only'], $GLOBALS['warranty_cert_pdf_string']);
-		try {
-			$conn = \Cake\Datasource\ConnectionManager::get('default');
-			$dbConfig = $conn->config();
-			$GLOBALS['warranty_cert_db'] = [
-				'hostname' => $dbConfig['host'] ?? 'localhost',
-				'port' => $dbConfig['port'] ?? 3306,
-				'username' => $dbConfig['username'] ?? '',
-				'password' => $dbConfig['password'] ?? '',
-				'database' => $dbConfig['database'] ?? '',
-			];
-		} catch (\Throwable $e) {
-			$GLOBALS['warranty_cert_db'] = null;
-		}
-		$certPath = WWW_ROOT . 'pdf' . DS . 'FPDI' . DS . 'warrantyCertificate_new.php';
-		if (!is_file($certPath)) {
-			return;
-		}
-		try {
-			ob_start();
-			include $certPath;
-		} catch (\Throwable $e) {
-			\Cake\Log\Log::error('Product warranty certificate script failed: ' . $e->getMessage());
-		}
-		if (ob_get_level()) {
-			ob_end_clean();
-		}
-		$this->_syncProductWarrantyCertificatePathFromDisk($id);
-	}
-
-	/**
-	 * If the PDF file exists but certificate is still empty (mysqli failed or wrong DB), persist path via ORM.
-	 */
-	protected function _syncProductWarrantyCertificatePathFromDisk(int $id): void
-	{
-		$filename = 'DTWNTRQ ' . date('y-m') . '-' . str_pad((string)$id, 3, '0', STR_PAD_LEFT) . '.pdf';
-		$full = WWW_ROOT . 'pdf' . DS . 'FPDI' . DS . $filename;
-		if (!is_file($full)) {
-			return;
-		}
-		$relative = 'pdf/FPDI/' . $filename;
-		try {
-			$entity = $this->ProductWarrantyRequests->get($id);
-			if (trim((string)($entity->certificate ?? '')) === $relative) {
-				return;
-			}
-			$entity->certificate = $relative;
-			if (!$this->ProductWarrantyRequests->save($entity)) {
-				\Cake\Log\Log::error('Product warranty certificate ORM sync save failed for id ' . $id);
-			}
-		} catch (\Throwable $e) {
-			\Cake\Log\Log::error('Product warranty certificate ORM sync: ' . $e->getMessage());
+		if (!ProductWarrantyPdfGenerator::generateAndSave($id)) {
+			\Cake\Log\Log::error('Product warranty HTML PDF generation failed for id ' . $id);
 		}
 	}
 
@@ -905,44 +855,10 @@ class StocksController extends AppController
 			return $this->redirect(['action' => 'admin_product_warranty_request']);
 		}
 
-		$_REQUEST['lastinsertId'] = $rid;
-		try {
-			$conn = \Cake\Datasource\ConnectionManager::get('default');
-			$dbConfig = $conn->config();
-			$GLOBALS['warranty_cert_db'] = [
-				'hostname' => $dbConfig['host'] ?? 'localhost',
-				'port' => $dbConfig['port'] ?? 3306,
-				'username' => $dbConfig['username'] ?? '',
-				'password' => $dbConfig['password'] ?? '',
-				'database' => $dbConfig['database'] ?? '',
-			];
-		} catch (\Throwable $e) {
-			$GLOBALS['warranty_cert_db'] = null;
-		}
-		$GLOBALS['warranty_cert_preview_only'] = true;
-		$GLOBALS['warranty_cert_pdf_string'] = null;
-
-		$certPath = WWW_ROOT . 'pdf' . DS . 'FPDI' . DS . 'warrantyCertificate_new.php';
-		if (!is_file($certPath)) {
-			$GLOBALS['warranty_cert_preview_only'] = false;
-			$this->Flash->error('Certificate script not found.');
-			return $this->redirect(['action' => 'admin_product_warranty_request']);
-		}
-		try {
-			ob_start();
-			include $certPath;
-		} catch (\Throwable $e) {
-			\Cake\Log\Log::error('Product warranty certificate preview failed: ' . $e->getMessage());
-		}
-		if (ob_get_level()) {
-			ob_end_clean();
-		}
-		$GLOBALS['warranty_cert_preview_only'] = false;
-		$pdfBinary = $GLOBALS['warranty_cert_pdf_string'] ?? null;
-		$GLOBALS['warranty_cert_pdf_string'] = null;
+		$pdfBinary = ProductWarrantyPdfGenerator::generatePdfBinary($rid);
 
 		if (!is_string($pdfBinary) || $pdfBinary === '') {
-			$this->Flash->error('Certificate preview could not be generated. Check webroot/pdf/FPDI/10_year_pdf.pdf and logs/error.log.');
+			$this->Flash->error('Certificate preview could not be generated. Check header/footer images and logs/error.log.');
 			return $this->redirect(['action' => 'admin_product_warranty_request']);
 		}
 

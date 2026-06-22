@@ -6,10 +6,6 @@ class ProductWarrantyRequest extends AppModel {
     public $primaryKey = 'id';
 
     public $validate = [
-        'serialnumber' => [
-            'rule' => 'notEmpty',
-            'message' => 'Serial number is required'
-        ],
         'dateofpurchase' => [
             'rule' => 'notEmpty',
             'message' => 'Date of purchase is required'
@@ -17,10 +13,6 @@ class ProductWarrantyRequest extends AppModel {
         'product' => [
             'rule' => 'notEmpty',
             'message' => 'Product is required'
-        ],
-        'used_as' => [
-            'rule' => 'notEmpty',
-            'message' => 'Used As is required'
         ],
         'application' => [
             'rule' => 'notEmpty',

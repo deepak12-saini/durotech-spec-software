@@ -268,6 +268,26 @@ if (!empty($log['applicator_address'])) {
         .form-group { margin-bottom: 0; }
         .warranty-submit-wrap { text-align: center; padding: 12px 0 8px; }
         #add_ser_prd_btn { min-width: 130px; }
+        .warranty-signature-box {
+            border: 1px dashed #888;
+            background: #fff;
+            max-width: 100%;
+        }
+        #signature-pad {
+            display: block;
+            width: 100%;
+            max-width: 360px;
+            height: 100px;
+            touch-action: none;
+            cursor: crosshair;
+        }
+        .warranty-signature-actions {
+            margin: 6px 0 8px;
+        }
+        .warranty-signature-actions .btn {
+            padding: 2px 10px;
+            font-size: 12px;
+        }
 
         @media (max-width: 767px) {
             body { padding: 10px 8px 24px; background: #fff; }
@@ -359,7 +379,7 @@ if (!empty($log['applicator_address'])) {
                 <div class="form-group">
                     <div class="col-sm-6 warranty-field">
                         <label class="warranty-label" for="serialnumber">1. Warranty Serial No.:</label>
-                        <input type="text" name="ProductWarrantyRequest[serialnumber]" value="<?= h(@$log['serialnumber']) ?>" id="serialnumber" required>
+                        <input type="text" name="ProductWarrantyRequest[serialnumber]" value="<?= h(@$log['serialnumber']) ?>" id="serialnumber">
                         <?= $this->Form->error('serialnumber', null, ['class' => 'text-danger']) ?>
                     </div>
                     <div class="col-sm-6 warranty-field">
@@ -377,7 +397,7 @@ if (!empty($log['applicator_address'])) {
                     </div>
                     <div class="col-sm-6 warranty-field">
                         <label class="warranty-label" for="used_as">4. Used As <span class="hint">(Please set out in detail the manner in which the Product was used in relation to 6.):</span></label>
-                        <input type="text" name="ProductWarrantyRequest[used_as]" value="<?= h(@$log['used_as']) ?>" id="used_as" required>
+                        <input type="text" name="ProductWarrantyRequest[used_as]" value="<?= h(@$log['used_as']) ?>" id="used_as">
                         <?= $this->Form->error('used_as', null, ['class' => 'text-danger']) ?>
                     </div>
                 </div>
@@ -479,8 +499,16 @@ if (!empty($log['applicator_address'])) {
 
                 <div class="form-group">
                     <div class="col-sm-6 warranty-field">
-                        <label class="warranty-label" for="sign_date">Signature/Date:</label>
-                        <input type="text" name="ProductWarrantyRequest[sign_date]" value="<?= !empty($log['sign_date']) ? format_db_date('Y-m-d', $log['sign_date']) : '' ?>" id="sign_date" class="datepicker" required>
+                        <label class="warranty-label">Signature/Date:</label>
+                        <div class="warranty-signature-box">
+                            <canvas id="signature-pad" class="signature-pad" width="360" height="100"></canvas>
+                        </div>
+                        <div class="warranty-signature-actions">
+                            <button type="button" class="btn btn-default btn-xs" id="clear-signature">Clear signature</button>
+                        </div>
+                        <input type="hidden" name="sigimage" id="sigimage" value="">
+                        <?= $this->Form->error('contractor_signature', null, ['class' => 'text-danger']) ?>
+                        <input type="text" name="ProductWarrantyRequest[sign_date]" value="<?= !empty($log['sign_date']) ? format_db_date('Y-m-d', $log['sign_date']) : '' ?>" id="sign_date" class="datepicker" required placeholder="Date">
                         <?= $this->Form->error('sign_date', null, ['class' => 'text-danger']) ?>
                     </div>
                     <div class="col-sm-6 warranty-field">
@@ -523,6 +551,9 @@ if (!empty($log['applicator_address'])) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/js/bootstrap-datepicker.min.js"></script>
+    <?php if ($siteUrl !== '') : ?>
+    <script src="<?= h($siteUrl) ?>/signature_pad-master/signature_pad-master/js/signature_pad.js"></script>
+    <?php endif; ?>
     <script type="text/javascript">
         jQuery(function(){
             $('.datepicker').datepicker({
@@ -536,6 +567,46 @@ if (!empty($log['applicator_address'])) {
                 syncInputBg($(this));
             }).each(function() {
                 syncInputBg($(this));
+            });
+
+            var signatureCanvas = document.getElementById('signature-pad');
+            var signaturePad = null;
+            if (signatureCanvas && typeof SignaturePad !== 'undefined') {
+                signaturePad = new SignaturePad(signatureCanvas, {
+                    backgroundColor: 'rgb(255, 255, 255)'
+                });
+
+                function resizeSignaturePad() {
+                    var ratio = Math.max(window.devicePixelRatio || 1, 1);
+                    var width = signatureCanvas.offsetWidth || 360;
+                    signatureCanvas.width = width * ratio;
+                    signatureCanvas.height = 100 * ratio;
+                    signatureCanvas.getContext('2d').scale(ratio, ratio);
+                    signaturePad.clear();
+                }
+
+                resizeSignaturePad();
+                $(window).on('resize', resizeSignaturePad);
+
+                $('#clear-signature').on('click', function() {
+                    signaturePad.clear();
+                    $('#sigimage').val('');
+                });
+            }
+
+            $('#product-warranty-form').on('submit', function(e) {
+                if (signaturePad) {
+                    if (signaturePad.isEmpty()) {
+                        e.preventDefault();
+                        alert('Please sign in the signature box before submitting.');
+                        return false;
+                    }
+                    $('#sigimage').val(signaturePad.toDataURL('image/png'));
+                } else if ($.trim($('#sigimage').val()) === '') {
+                    e.preventDefault();
+                    alert('Signature pad failed to load. Please refresh the page and try again.');
+                    return false;
+                }
             });
         });
     </script>
