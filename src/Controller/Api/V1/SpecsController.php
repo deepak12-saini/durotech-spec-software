@@ -18,7 +18,10 @@ class SpecsController extends ApiAppController
     public function index(): ?Response
     {
         $this->request->allowMethod(['get']);
-        $this->requireToken();
+        $authError = $this->requireToken();
+        if ($authError !== null) {
+            return $authError;
+        }
 
         $search = trim((string)$this->request->getQuery('search'));
         $page = max(1, (int)$this->request->getQuery('page', 1));
@@ -71,7 +74,10 @@ class SpecsController extends ApiAppController
     public function view($id = null): ?Response
     {
         $this->request->allowMethod(['get']);
-        $this->requireToken();
+        $authError = $this->requireToken();
+        if ($authError !== null) {
+            return $authError;
+        }
 
         $mailer = $this->findOwnedSpec((int)$id);
         if (!$mailer) {
@@ -91,7 +97,10 @@ class SpecsController extends ApiAppController
     public function pdf($id = null): ?Response
     {
         $this->request->allowMethod(['get']);
-        $this->requireToken();
+        $authError = $this->requireToken();
+        if ($authError !== null) {
+            return $authError;
+        }
 
         $mailer = $this->findOwnedSpec((int)$id);
         if (!$mailer) {

@@ -77,7 +77,10 @@ class AuthController extends ApiAppController
     public function me(): ?Response
     {
         $this->request->allowMethod(['get']);
-        $this->requireToken();
+        $authError = $this->requireToken();
+        if ($authError !== null) {
+            return $authError;
+        }
 
         $body = [
             'success' => true,

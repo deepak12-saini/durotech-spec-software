@@ -5,7 +5,6 @@ namespace App\Controller\Api\V1;
 
 use App\Controller\AppController;
 use Cake\Event\EventInterface;
-use Cake\Http\Exception\UnauthorizedException;
 use Cake\Http\Response;
 use Cake\I18n\FrozenTime;
 
@@ -67,11 +66,11 @@ class ApiAppController extends AppController
         ];
     }
 
-    protected function requireToken(): void
+    protected function requireToken(): ?Response
     {
         $header = (string)$this->request->getHeaderLine('Authorization');
         if (!preg_match('/^Bearer\s+(\S+)$/i', $header, $matches)) {
-            throw new UnauthorizedException('Missing or invalid authorization token.');
+            return $this->jsonError('Missing or invalid authorization token.', 401);
         }
 
         $token = $matches[1];
@@ -83,26 +82,28 @@ class ApiAppController extends AppController
             ->first();
 
         if (!$row || !$row->employee) {
-            throw new UnauthorizedException('Invalid or expired token.');
+            return $this->jsonError('Invalid or expired token.', 401);
         }
 
         $expiresAt = $row->expires_at;
         if ($expiresAt instanceof FrozenTime) {
             if ($expiresAt->isPast()) {
                 $this->ApiTokens->delete($row);
-                throw new UnauthorizedException('Invalid or expired token.');
+                return $this->jsonError('Invalid or expired token.', 401);
             }
         } elseif (strtotime((string)$expiresAt) < time()) {
             $this->ApiTokens->delete($row);
-            throw new UnauthorizedException('Invalid or expired token.');
+            return $this->jsonError('Invalid or expired token.', 401);
         }
 
         if ((int)$row->employee->is_active === 0) {
-            throw new UnauthorizedException('Account is not active.');
+            return $this->jsonError('Account is not active.', 401);
         }
 
         $this->employeeId = (int)$row->employee->id;
         $this->employee = $row->employee;
+
+        return null;
     }
 
     /**

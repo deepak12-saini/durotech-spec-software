@@ -14,6 +14,7 @@
  */
 namespace App;
 
+use App\Middleware\ApiCorsMiddleware;
 use App\Middleware\FixDuplicateBasePathMiddleware;
 use Cake\Core\Configure;
 use Cake\Core\Exception\MissingPluginException;
@@ -62,6 +63,8 @@ class Application extends BaseApplication
     public function middleware($middlewareQueue)
     {
         $middlewareQueue
+            // CORS on all API responses (including exception renders).
+            ->add(new ApiCorsMiddleware())
             // Redirect /cake3app/cake3app/... to /cake3app/... to avoid "Controller Cake3app not found"
             ->add(new FixDuplicateBasePathMiddleware())
             // Catch any exceptions in the lower layers,
