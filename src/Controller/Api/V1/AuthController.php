@@ -96,10 +96,10 @@ class AuthController extends ApiAppController
     {
         $this->request->allowMethod(['post']);
 
-        $header = (string)$this->request->getHeaderLine('Authorization');
-        if (preg_match('/^Bearer\s+(\S+)$/i', $header, $matches)) {
+        $token = $this->extractBearerToken();
+        if ($token !== null) {
             $this->loadModel('ApiTokens');
-            $this->ApiTokens->deleteAll(['token' => $matches[1]]);
+            $this->ApiTokens->deleteAll(['token' => $token]);
         }
 
         $body = [

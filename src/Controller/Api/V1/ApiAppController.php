@@ -47,7 +47,7 @@ class ApiAppController extends AppController
         $this->response = $this->response
             ->withHeader('Access-Control-Allow-Origin', '*')
             ->withHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-            ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+            ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Api-Token');
     }
 
     /**
@@ -68,12 +68,11 @@ class ApiAppController extends AppController
 
     protected function requireToken(): ?Response
     {
-        $header = (string)$this->request->getHeaderLine('Authorization');
-        if (!preg_match('/^Bearer\s+(\S+)$/i', $header, $matches)) {
+        $token = $this->extractBearerToken();
+        if ($token === null) {
             return $this->jsonError('Missing or invalid authorization token.', 401);
         }
 
-        $token = $matches[1];
         $this->loadModel('ApiTokens');
 
         $row = $this->ApiTokens->find()
@@ -102,6 +101,32 @@ class ApiAppController extends AppController
 
         $this->employeeId = (int)$row->employee->id;
         $this->employee = $row->employee;
+
+        return null;
+    }
+
+    protected function extractBearerToken(): ?string
+    {
+        $candidates = [
+            (string)$this->request->getHeaderLine('Authorization'),
+            (string)$this->request->getHeaderLine('X-Api-Token'),
+            (string)($_SERVER['HTTP_AUTHORIZATION'] ?? ''),
+            (string)($_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? ''),
+        ];
+
+        foreach ($candidates as $header) {
+            if ($header === '') {
+                continue;
+            }
+
+            if (preg_match('/^Bearer\s+(\S+)$/i', $header, $matches)) {
+                return $matches[1];
+            }
+
+            if (preg_match('/^\S+$/', $header)) {
+                return $header;
+            }
+        }
 
         return null;
     }
