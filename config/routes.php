@@ -799,12 +799,12 @@ Router::prefix('api', function (RouteBuilder $routes) {
     $routes->setExtensions(['json']);
 
     $routes->prefix('v1', function (RouteBuilder $routes) {
-        $routes->connect('/auth/login', ['controller' => 'Auth', 'action' => 'login'], ['_method' => 'POST']);
-        $routes->connect('/auth/logout', ['controller' => 'Auth', 'action' => 'logout'], ['_method' => 'POST']);
-        $routes->connect('/auth/me', ['controller' => 'Auth', 'action' => 'me'], ['_method' => 'GET']);
+        $routes->connect('/auth/login', ['controller' => 'Auth', 'action' => 'login'], ['_method' => ['POST', 'OPTIONS']]);
+        $routes->connect('/auth/logout', ['controller' => 'Auth', 'action' => 'logout'], ['_method' => ['POST', 'OPTIONS']]);
+        $routes->connect('/auth/me', ['controller' => 'Auth', 'action' => 'me'], ['_method' => ['GET', 'OPTIONS']]);
 
-        $routes->connect('/specs', ['controller' => 'Specs', 'action' => 'index'], ['_method' => 'GET']);
-        $routes->connect('/specs/:id/pdf', ['controller' => 'Specs', 'action' => 'pdf'], ['_method' => 'GET', 'pass' => ['id'], 'id' => '\d+']);
-        $routes->connect('/specs/:id', ['controller' => 'Specs', 'action' => 'view'], ['_method' => 'GET', 'pass' => ['id'], 'id' => '\d+']);
+        $routes->connect('/specs', ['controller' => 'Specs', 'action' => 'index'], ['_method' => ['GET', 'OPTIONS']]);
+        $routes->connect('/specs/:id/pdf', ['controller' => 'Specs', 'action' => 'pdf'], ['_method' => ['GET', 'OPTIONS'], 'pass' => ['id'], 'id' => '\d+']);
+        $routes->connect('/specs/:id', ['controller' => 'Specs', 'action' => 'view'], ['_method' => ['GET', 'OPTIONS'], 'pass' => ['id'], 'id' => '\d+']);
     });
 });

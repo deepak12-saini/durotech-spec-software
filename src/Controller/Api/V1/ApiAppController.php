@@ -33,6 +33,13 @@ class ApiAppController extends AppController
         $this->callConstants();
         $this->applyCorsHeaders();
 
+        if (strtoupper($this->request->getMethod()) === 'OPTIONS') {
+            return $this->response
+                ->withStatus(200)
+                ->withType('application/json')
+                ->withStringBody((string)json_encode(['success' => true]));
+        }
+
         return null;
     }
 
