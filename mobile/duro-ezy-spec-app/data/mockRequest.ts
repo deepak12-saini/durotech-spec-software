@@ -1,0 +1,1 @@
+export const MOCK_NEW_TRACK_NUMBER = 'DT-2024-0892';
