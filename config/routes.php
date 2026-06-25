@@ -122,6 +122,11 @@ Router::scope('/', function (RouteBuilder $routes) {
                 }
             }
 
+            // API v1 JSON endpoints (Bearer auth; no CSRF)
+            if (stripos($path, '/api/v1/') !== false) {
+                return true;
+            }
+
             return false;
         }
     ]));
@@ -788,13 +793,18 @@ Router::scope('/', function (RouteBuilder $routes) {
 });
 
 /*
- * If you need a different set of middleware or none at all,
- * open new scope and define routes there.
- *
- * ```
- * Router::scope('/api', function (RouteBuilder $routes) {
- *     // No $routes->applyMiddleware() here.
- *     // Connect API actions here.
- * });
- * ```
+ * API v1 — JSON endpoints for the Duro Ezy Spec mobile app (no CSRF middleware).
  */
+Router::prefix('api', function (RouteBuilder $routes) {
+    $routes->setExtensions(['json']);
+
+    $routes->prefix('v1', function (RouteBuilder $routes) {
+        $routes->connect('/auth/login', ['controller' => 'Auth', 'action' => 'login'], ['_method' => 'POST']);
+        $routes->connect('/auth/logout', ['controller' => 'Auth', 'action' => 'logout'], ['_method' => 'POST']);
+        $routes->connect('/auth/me', ['controller' => 'Auth', 'action' => 'me'], ['_method' => 'GET']);
+
+        $routes->connect('/specs', ['controller' => 'Specs', 'action' => 'index'], ['_method' => 'GET']);
+        $routes->connect('/specs/:id/pdf', ['controller' => 'Specs', 'action' => 'pdf'], ['_method' => 'GET', 'pass' => ['id'], 'id' => '\d+']);
+        $routes->connect('/specs/:id', ['controller' => 'Specs', 'action' => 'view'], ['_method' => 'GET', 'pass' => ['id'], 'id' => '\d+']);
+    });
+});

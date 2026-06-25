@@ -1,0 +1,134 @@
+<?php
+declare(strict_types=1);
+
+namespace App\Controller\Api\V1;
+
+use App\Controller\AppController;
+use Cake\Event\EventInterface;
+use Cake\Http\Exception\UnauthorizedException;
+use Cake\Http\Response;
+use Cake\I18n\FrozenTime;
+
+/**
+ * Base controller for JSON API v1 (employee mobile app).
+ */
+class ApiAppController extends AppController
+{
+    /** @var int|null */
+    protected $employeeId;
+
+    /** @var \App\Model\Entity\Employee|null */
+    protected $employee;
+
+    public function initialize(): void
+    {
+        parent::initialize();
+
+        $this->loadComponent('RequestHandler');
+        $this->viewBuilder()->setClassName('Json');
+    }
+
+    public function beforeFilter(EventInterface $event): ?Response
+    {
+        $this->callConstants();
+        $this->applyCorsHeaders();
+
+        return null;
+    }
+
+    protected function applyCorsHeaders(): void
+    {
+        $this->response = $this->response
+            ->withHeader('Access-Control-Allow-Origin', '*')
+            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+            ->withHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function formatEmployee($employee): array
+    {
+        $name = (string)($employee->name ?? '');
+
+        return [
+            'id' => (int)$employee->id,
+            'name' => $name,
+            'username' => $name,
+            'email' => (string)($employee->email ?? ''),
+            'role' => 'employee',
+        ];
+    }
+
+    protected function requireToken(): void
+    {
+        $header = (string)$this->request->getHeaderLine('Authorization');
+        if (!preg_match('/^Bearer\s+(\S+)$/i', $header, $matches)) {
+            throw new UnauthorizedException('Missing or invalid authorization token.');
+        }
+
+        $token = $matches[1];
+        $this->loadModel('ApiTokens');
+
+        $row = $this->ApiTokens->find()
+            ->contain(['Employee'])
+            ->where(['ApiTokens.token' => $token])
+            ->first();
+
+        if (!$row || !$row->employee) {
+            throw new UnauthorizedException('Invalid or expired token.');
+        }
+
+        $expiresAt = $row->expires_at;
+        if ($expiresAt instanceof FrozenTime) {
+            if ($expiresAt->isPast()) {
+                $this->ApiTokens->delete($row);
+                throw new UnauthorizedException('Invalid or expired token.');
+            }
+        } elseif (strtotime((string)$expiresAt) < time()) {
+            $this->ApiTokens->delete($row);
+            throw new UnauthorizedException('Invalid or expired token.');
+        }
+
+        if ((int)$row->employee->is_active === 0) {
+            throw new UnauthorizedException('Account is not active.');
+        }
+
+        $this->employeeId = (int)$row->employee->id;
+        $this->employee = $row->employee;
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     */
+    protected function jsonResponse(array $payload, int $status = 200): Response
+    {
+        $data = array_merge(['success' => true], $payload);
+        $data['_serialize'] = array_keys($data);
+        $data['_serialize'] = array_values(array_diff($data['_serialize'], ['_serialize']));
+
+        $this->set($data);
+
+        return $this->response->withStatus($status)->withType('application/json');
+    }
+
+    /**
+     * @param array<string, mixed> $errors
+     */
+    protected function jsonError(string $message, int $status = 400, array $errors = []): Response
+    {
+        $payload = [
+            'success' => false,
+            'message' => $message,
+        ];
+
+        if ($errors !== []) {
+            $payload['errors'] = $errors;
+        }
+
+        return $this->response
+            ->withStatus($status)
+            ->withType('application/json')
+            ->withStringBody((string)json_encode($payload));
+    }
+}
