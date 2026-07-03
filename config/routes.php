@@ -546,6 +546,7 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/specifiers', ['controller' => 'Fronts', 'action' => 'specification']);
     $routes->connect('/about', ['controller' => 'Fronts', 'action' => 'about']);
     $routes->connect('/australia-wide-delivery', ['controller' => 'Fronts', 'action' => 'landing']);
+    $routes->connect('/australia-wide-delivery-draft', ['controller' => 'Fronts', 'action' => 'australiaWideDeliveryDraft']);
 
     $routes->connect('/projects', ['controller' => 'Fronts', 'action' => 'projects']);
     $routes->connect('/faqs', ['controller' => 'Fronts', 'action' => 'faq']);

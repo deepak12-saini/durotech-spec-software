@@ -193,6 +193,21 @@ class FrontsController extends AppController
     }
 
     /**
+     * Draft landing page (About Us layout). View: Fronts/australia_wide_delivery_draft.php
+     */
+    public function australiaWideDeliveryDraft(): ?Response
+    {
+        $this->viewBuilder()->setLayout('customduro_layout');
+        $this->set([
+            'meta_title' => 'Australia Wide Delivery (Draft) | Durotech',
+            'meta_description' => 'Durotech delivers waterproofing and construction chemical products Australia wide. Draft page for review.',
+            'meta_keyword' => 'Durotech, Australia wide delivery, waterproofing, construction chemicals',
+            'meta_robots' => 'noindex, nofollow',
+        ]);
+        return null;
+    }
+
+    /**
      * Projects (case study list). View: Fronts/projects.php
      */
     public function projects(): ?Response
