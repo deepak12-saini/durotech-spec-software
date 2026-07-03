@@ -238,16 +238,17 @@ return [
         ],
 
         /*
-         * Personal Gmail — LOCAL DEV ONLY. Put credentials in app_local.php, not here.
+         * Gmail / interim SMTP — credentials from .env (DUROTECH_SMTP_*).
+         * Set EMAIL_TRANSPORT=gmail until company mailbox credentials are available.
          */
         'gmail' => [
             'className' => 'Smtp',
-            'host' => 'smtp.gmail.com',
-            'port' => 587,
+            'host' => env('DUROTECH_SMTP_HOST', 'smtp.gmail.com'),
+            'port' => (int)env('DUROTECH_SMTP_PORT', 587),
             'timeout' => 30,
-            'username' => 'deepaksaini10036@gmail.com',
-            'password' => 'vgzmlqodhngvsdty',
-            'tls' => true,
+            'username' => env('DUROTECH_SMTP_USER', ''),
+            'password' => env('DUROTECH_SMTP_PASSWORD', ''),
+            'tls' => filter_var(env('DUROTECH_SMTP_TLS', true), FILTER_VALIDATE_BOOLEAN),
         ],
     ],
 

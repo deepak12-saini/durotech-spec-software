@@ -514,9 +514,44 @@ class AppController extends Controller
                 ->setViewVars($variables)
                 ->send();
         } catch (\Throwable $e) {
-            Log::write('error', 'Email sending failed: ' . $e->getMessage());
+            $this->logSmtpFailure($e);
             throw $e; // rethrow to trigger catch in calling method
         }
+    }
+
+    /**
+     * Log SMTP context and return a safe admin hint (no passwords).
+     */
+    protected function smtpFailureHint(\Throwable $e): string
+    {
+        if (Configure::read('debug')) {
+            return ' ' . $e->getMessage();
+        }
+
+        $transportName = (string)(Configure::read('Email.default.transport') ?? 'default');
+        $host = (string)(Configure::read('EmailTransport.' . $transportName . '.host') ?? '');
+        $port = (string)(Configure::read('EmailTransport.' . $transportName . '.port') ?? '');
+
+        return ' SMTP server unreachable (' . $host . ':' . $port . '). '
+            . 'On production, set company mail credentials in config/app_local.php '
+            . '(not personal Gmail). See docs/PRODUCTION_EMAIL_SETUP.md and logs/error.log.';
+    }
+
+    protected function logSmtpFailure(\Throwable $e): void
+    {
+        $transportName = (string)(Configure::read('Email.default.transport') ?? 'default');
+        $host = (string)(Configure::read('EmailTransport.' . $transportName . '.host') ?? '');
+        $port = (string)(Configure::read('EmailTransport.' . $transportName . '.port') ?? '');
+        $user = (string)(Configure::read('EmailTransport.' . $transportName . '.username') ?? '');
+
+        Log::write('error', sprintf(
+            'Email SMTP failure [transport=%s host=%s port=%s user=%s]: %s',
+            $transportName,
+            $host,
+            $port,
+            $user !== '' ? $user : '(not set)',
+            $e->getMessage()
+        ));
     }
 
     /**

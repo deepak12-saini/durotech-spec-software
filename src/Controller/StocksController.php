@@ -1093,11 +1093,7 @@ class StocksController extends AppController
 				$this->WarrantyRequests->save($wr);
 				$this->Flash->success('Form sent to customer successfully.');
 			} catch (\Throwable $e) {
-				\Cake\Log\Log::error('Warranty form email failed: ' . $e->getMessage());
-				$hint = ' Check production SMTP: config/.env needs DUROTECH_SMTP_USER=sales@durotechindustries.com.au and the mailbox password (not Gmail on live server). See logs/error.log.';
-				if (\Cake\Core\Configure::read('debug')) {
-					$hint = ' ' . $e->getMessage();
-				}
+				$hint = $this->smtpFailureHint($e);
 				$this->Flash->error('Email could not be sent. Please check logs or email configuration. The request remains in Pending status.' . $hint);
 			}
 		} else {
@@ -1142,11 +1138,7 @@ class StocksController extends AppController
 				$this->WarrantyRequests->save($wr);
 				$this->Flash->success('Form sent to customer successfully.');
 			} catch (\Throwable $e) {
-				\Cake\Log\Log::error('Warranty form email failed: ' . $e->getMessage());
-				$hint = ' Check production SMTP: config/.env needs DUROTECH_SMTP_USER=sales@durotechindustries.com.au and the mailbox password (not Gmail on live server). See logs/error.log.';
-				if (\Cake\Core\Configure::read('debug')) {
-					$hint = ' ' . $e->getMessage();
-				}
+				$hint = $this->smtpFailureHint($e);
 				$this->Flash->error('Email could not be sent. Please check logs or email configuration. The request remains in Pending status.' . $hint);
 			}
 		} else {
