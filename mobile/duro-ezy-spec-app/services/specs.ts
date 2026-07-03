@@ -234,7 +234,7 @@ export async function fetchHomeData(): Promise<{
   };
 
   return {
-    recentSpecs: items.slice(0, 2),
+    recentSpecs: items,
     stats: [
       { value: String(stats.total), label: 'Total Specs' },
       { value: String(stats.this_month), label: 'This Month' },

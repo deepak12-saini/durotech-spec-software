@@ -29,6 +29,9 @@
 	<title><?php  if(isset($meta_title)){ echo $meta_title; } else{ echo  META_TITLE; }?></title>
 	<meta name="description" content="<?php  if(isset($meta_description)){ echo $meta_description; } else{ echo  META_DESCRIPTION; }?>" />
 	<meta name="keywords" content="<?php  if(isset($meta_keyword)){ echo $meta_keyword; } else{ echo  META_KEYWORD; }?>">	
+	<?php if (!empty($meta_robots)): ?>
+	<meta name="robots" content="<?php echo h($meta_robots); ?>">
+	<?php endif; ?>
 	<meta name="google-site-verification" content="wmHiC6zArKxSWd5E5_z9yXPZRFjjsCmR94TlFP266MA" />
 	<?php
 	

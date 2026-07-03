@@ -25,21 +25,55 @@ export default function HomeScreen() {
   >([]);
   const [totalSpecs, setTotalSpecs] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     let active = true;
 
     const load = async () => {
       try {
-        const [me, home] = await Promise.all([getMe(), fetchHomeData()]);
+        const [meResult, homeResult] = await Promise.allSettled([
+          getMe(),
+          fetchHomeData(),
+        ]);
+
         if (!active) {
           return;
         }
 
-        setUser(me);
-        setStats(home.stats);
-        setRecentSpecs(home.recentSpecs);
-        setTotalSpecs(home.total);
+        if (meResult.status === 'fulfilled') {
+          setUser(meResult.value);
+        }
+
+        if (homeResult.status === 'fulfilled') {
+          const home = homeResult.value;
+          setStats(home.stats);
+          setRecentSpecs(home.recentSpecs);
+          setTotalSpecs(home.total);
+          setError('');
+        } else {
+          setStats([]);
+          setRecentSpecs([]);
+          setTotalSpecs(0);
+          const reason = homeResult.reason;
+          setError(
+            reason instanceof Error
+              ? reason.message
+              : 'Unable to load dashboard data right now.',
+          );
+        }
+      } catch (err) {
+        if (!active) {
+          return;
+        }
+        setStats([]);
+        setRecentSpecs([]);
+        setTotalSpecs(0);
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Unable to load dashboard data right now.',
+        );
       } finally {
         if (active) {
           setLoading(false);
@@ -137,6 +171,8 @@ export default function HomeScreen() {
             <Text style={styles.seeAll}>See all</Text>
           </Pressable>
         </View>
+
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
         {loading ? (
           <ActivityIndicator color={colors.primary} style={styles.listLoader} />
@@ -344,5 +380,10 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 15,
     color: colors.textSecondary,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#c0392b',
+    marginBottom: 12,
   },
 });

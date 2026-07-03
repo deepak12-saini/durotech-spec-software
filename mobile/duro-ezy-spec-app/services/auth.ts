@@ -1,4 +1,4 @@
-import { apiRequest } from './api';
+import { ApiError, apiRequest } from './api';
 import { getToken, setToken } from './token';
 
 export type AuthUser = {
@@ -53,8 +53,14 @@ export async function getMe(): Promise<AuthUser | null> {
   try {
     const response = await apiRequest<MeResponse>('/api/v1/auth/me.json');
     return response.user;
-  } catch {
-    await setToken(null);
+  } catch (err) {
+    if (
+      err instanceof ApiError &&
+      err.status === 401 &&
+      err.message.toLowerCase().includes('invalid or expired token')
+    ) {
+      await setToken(null);
+    }
     return null;
   }
 }

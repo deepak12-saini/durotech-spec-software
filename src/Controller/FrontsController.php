@@ -178,6 +178,21 @@ class FrontsController extends AppController
     }
 
     /**
+     * Hidden landing page (link-only, not in nav). View: Fronts/landing.php
+     */
+    public function landing(): ?Response
+    {
+        $this->viewBuilder()->setLayout('customduro_layout');
+        $this->set([
+            'meta_title' => 'We Deliver Australia Wide | Durotech',
+            'meta_description' => 'Call or email the Durotech team for project-specific advice and delivery options direct to you, anywhere in Australia.',
+            'meta_keyword' => 'Durotech, Australia wide delivery, waterproofing, construction chemicals',
+            'meta_robots' => 'noindex, nofollow',
+        ]);
+        return null;
+    }
+
+    /**
      * Projects (case study list). View: Fronts/projects.php
      */
     public function projects(): ?Response

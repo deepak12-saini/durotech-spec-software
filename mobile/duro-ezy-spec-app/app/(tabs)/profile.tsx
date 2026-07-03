@@ -19,6 +19,7 @@ export default function ProfileScreen() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [totalSpecs, setTotalSpecs] = useState('0');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -32,6 +33,18 @@ export default function ProfileScreen() {
 
         setUser(me);
         setTotalSpecs(String(home.total));
+        setError('');
+      } catch (err) {
+        if (!active) {
+          return;
+        }
+        setUser(null);
+        setTotalSpecs('0');
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Unable to load profile details right now.',
+        );
       } finally {
         if (active) {
           setLoading(false);
@@ -75,6 +88,8 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.bodyContent}
         showsVerticalScrollIndicator
       >
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
         <ProfileSection title="ACCOUNT">
           <ProfileMenuItem
             icon="person-outline"
@@ -182,5 +197,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 24,
     paddingBottom: 24,
+  },
+  errorText: {
+    fontSize: 14,
+    color: '#c0392b',
+    marginBottom: 16,
   },
 });

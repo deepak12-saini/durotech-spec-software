@@ -32,16 +32,26 @@ export async function apiRequest<T>(
 
   if (auth) {
     const token = await getToken();
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
+    if (!token) {
+      throw new ApiError('You are not signed in. Please sign in again.', 401);
     }
+    headers.Authorization = `Bearer ${token}`;
+    headers['X-Api-Token'] = token;
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
+  let response: globalThis.Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+  } catch {
+    throw new ApiError(
+      'Unable to reach the server. Check the API URL, CORS, or your network connection.',
+      0,
+    );
+  }
 
   const text = await response.text();
   let payload: Record<string, unknown> = {};

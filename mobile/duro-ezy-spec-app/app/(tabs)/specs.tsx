@@ -20,6 +20,7 @@ export default function SpecsScreen() {
   const [specs, setSpecs] = useState<SpecListItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const loadSpecs = useCallback(async (search: string) => {
     setLoading(true);
@@ -27,6 +28,15 @@ export default function SpecsScreen() {
       const result = await fetchSpecs({ search, page: 1, limit: 100 });
       setSpecs(result.items);
       setTotal(result.meta.total);
+      setError('');
+    } catch (err) {
+      setSpecs([]);
+      setTotal(0);
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Unable to load specifications right now.',
+      );
     } finally {
       setLoading(false);
     }
@@ -103,7 +113,9 @@ export default function SpecsScreen() {
           showsVerticalScrollIndicator
           ListEmptyComponent={
             <View style={styles.empty}>
-              <Text style={styles.emptyText}>No specifications found</Text>
+              <Text style={styles.emptyText}>
+                {error || 'No specifications found'}
+              </Text>
             </View>
           }
         />
@@ -181,5 +193,6 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 15,
     color: colors.textSecondary,
+    textAlign: 'center',
   },
 });
