@@ -107,6 +107,27 @@ $excerpt = function($str, $limit = 90) use ($stripHtml) {
         padding: 36px 10px;
         text-align: center;
     }
+    .case-pager {
+        border-top: 1px solid #e8eef5;
+        margin-top: 14px;
+        padding-top: 14px;
+    }
+    .case-pager .pagination > li > a,
+    .case-pager .pagination > li > span {
+        border-radius: 6px;
+        color: #2f4d6b;
+        margin: 0 2px;
+    }
+    .case-pager .pagination > .active > a,
+    .case-pager .pagination > .active > span {
+        background: #2889c8;
+        border-color: #2889c8;
+    }
+    .case-pager-info {
+        color: #7a8794;
+        font-size: 12px;
+        margin-top: 8px;
+    }
     @media (max-width: 767px) {
         .case-page-header,
         .case-filter-actions {
@@ -177,7 +198,12 @@ $excerpt = function($str, $limit = 90) use ($stripHtml) {
                 </tr>
             </thead>
             <tbody>
-                <?php if (!empty($caseStudies)): $i = (int)$this->Paginator->counter('{{start}}'); ?>
+                <?php if (!empty($caseStudies)):
+                    $i = (int)$this->Paginator->param('start');
+                    if ($i < 1) {
+                        $i = 1;
+                    }
+                ?>
                     <?php foreach ($caseStudies as $case):
                         if (is_object($case) && method_exists($case, 'toArray')) {
                             $caseData = $case->toArray();
@@ -249,17 +275,19 @@ $excerpt = function($str, $limit = 90) use ($stripHtml) {
             </tbody>
         </table>
     </div>
-</div>
 
-<?php if (!empty($caseStudies) && $this->Paginator->numbers()): ?>
-<div class="text-center" style="margin-top: 10px;">
-    <ul class="pagination" style="margin:0;">
-        <?php echo $this->Paginator->first('<< First'); ?>
-        <?php echo $this->Paginator->prev('< Prev'); ?>
-        <?php echo $this->Paginator->numbers(); ?>
-        <?php echo $this->Paginator->next('Next >'); ?>
-        <?php echo $this->Paginator->last('Last >>'); ?>
-    </ul>
-    <div class="case-muted" style="margin-top:6px;"><?php echo $this->Paginator->counter('{{start}}-{{end}} of {{count}} records'); ?></div>
+    <?php if (!empty($caseStudies)): ?>
+    <div class="case-pager text-center">
+        <ul class="pagination" style="margin:0;">
+            <?php echo $this->Paginator->first('« First'); ?>
+            <?php echo $this->Paginator->prev('‹ Prev'); ?>
+            <?php echo $this->Paginator->numbers(['modulus' => 5]); ?>
+            <?php echo $this->Paginator->next('Next ›'); ?>
+            <?php echo $this->Paginator->last('Last »'); ?>
+        </ul>
+        <div class="case-pager-info">
+            <?php echo $this->Paginator->counter('Page {{page}} of {{pages}} — showing {{start}}–{{end}} of {{count}} case studies'); ?>
+        </div>
+    </div>
+    <?php endif; ?>
 </div>
-<?php endif; ?>

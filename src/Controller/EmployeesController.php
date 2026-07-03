@@ -47,6 +47,7 @@ class EmployeesController extends AppController {
 	public function initialize(): void
 	{
 		parent::initialize();
+		$this->loadComponent('Paginator');
 		// CakePHP 3 does not support $uses; load legacy models explicitly.
 		$this->loadModel('LoginHistory');
 		$this->loadModel('Employee');
@@ -2136,7 +2137,8 @@ public function editsendV3($id = null) {
         $query->order($order);
 
         $caseStudies = $this->paginate($query, [
-            'limit' => 10,
+            'limit' => 15,
+            'maxLimit' => 100,
             'order' => $order,
         ]);
         $this->set(compact('caseStudies', 'filters'));
