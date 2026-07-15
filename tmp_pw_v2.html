@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Durotech Industries | Product Warranty Request Form</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/css/bootstrap-datepicker.min.css">
+    <style>
+        :root {
+            --pw-navy: #0b2d4a;
+            --pw-navy-dark: #071f35;
+            --pw-gold: #f5b335;
+            --pw-gold-dark: #d99612;
+            --pw-page-bg: #eef1f4;
+            --pw-text: #1a2b3c;
+            --pw-muted: #6b7c8f;
+            --pw-border: #d8dee6;
+            --pw-cert-bg: #edf4fa;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+            background: var(--pw-page-bg);
+            color: var(--pw-text);
+            line-height: 1.5;
+        }
+
+        .pw-hero {
+            background: linear-gradient(165deg, var(--pw-navy) 0%, var(--pw-navy-dark) 100%);
+            color: #fff;
+            padding: 0 0 72px;
+        }
+        .pw-hero-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 24px 0;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.82);
+        }
+        .pw-stripes {
+            height: 14px;
+            margin: 14px 0 0;
+            background: repeating-linear-gradient(-45deg, var(--pw-gold) 0, var(--pw-gold) 12px, var(--pw-navy-dark) 12px, var(--pw-navy-dark) 24px);
+        }
+        .pw-hero-body {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 28px 24px 0;
+        }
+        .pw-badge {
+            display: inline-block;
+            background: rgba(245, 179, 53, 0.18);
+            color: var(--pw-gold);
+            border: 1px solid rgba(245, 179, 53, 0.45);
+            border-radius: 999px;
+            padding: 5px 14px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+        .pw-hero h1 {
+            margin: 0 0 12px;
+            font-size: 38px;
+            font-weight: 700;
+        }
+        .pw-hero-intro {
+            max-width: 720px;
+            margin: 0 0 22px;
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        .pw-meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.88);
+        }
+        .pw-meta-row strong {
+            display: block;
+            color: #fff;
+            font-size: 14px;
+            margin-top: 2px;
+        }
+
+        .pw-wrap {
+            max-width: 980px;
+            margin: -44px auto 0;
+            padding: 0 16px 32px;
+            position: relative;
+            z-index: 2;
+        }
+        .pw-section {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 8px 24px rgba(11, 45, 74, 0.1);
+            border: 1px solid rgba(11, 45, 74, 0.06);
+            padding: 22px 24px 20px;
+            margin-bottom: 18px;
+        }
+        .pw-section-head {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .pw-section-head-text { flex: 1; min-width: 0; }
+        .pw-section-sub {
+            margin: 4px 0 0;
+            font-size: 13px;
+            color: var(--pw-muted);
+            font-weight: 400;
+        }
+        .pw-section-num {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--pw-navy);
+            color: #fff;
+            font-weight: 700;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .pw-section-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--pw-navy);
+        }
+        .pw-field { margin-bottom: 14px; }
+        .pw-field:last-child { margin-bottom: 0; }
+        .pw-label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+        .pw-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--pw-text);
+            margin-bottom: 5px;
+        }
+        .pw-label-row .pw-label { margin-bottom: 0; }
+        .pw-hint {
+            font-size: 11px;
+            font-weight: 400;
+            color: var(--pw-muted);
+            white-space: nowrap;
+        }
+        .pw-hint-block {
+            display: block;
+            font-size: 11px;
+            font-weight: 400;
+            color: var(--pw-muted);
+            margin-top: 2px;
+            margin-bottom: 5px;
+        }
+        .pw-control {
+            width: 100%;
+            border: 1px solid var(--pw-border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 14px;
+            color: var(--pw-text);
+            background: #fff;
+        }
+        .pw-control:focus {
+            outline: none;
+            border-color: var(--pw-navy);
+            box-shadow: 0 0 0 3px rgba(11, 45, 74, 0.12);
+        }
+        .pw-control::placeholder {
+            color: #9aa8b8;
+            opacity: 1;
+        }
+        textarea.pw-control { min-height: 100px; resize: vertical; }
+        .pw-cert-box {
+            background: var(--pw-cert-bg);
+            border: 1px solid #c5d9ea;
+            border-radius: 10px;
+            padding: 16px 18px;
+            font-size: 13px;
+            color: var(--pw-text);
+            line-height: 1.55;
+            margin-bottom: 16px;
+        }
+        .pw-cert-stripes {
+            height: 8px;
+            margin-top: 14px;
+            background: repeating-linear-gradient(-45deg, var(--pw-gold) 0, var(--pw-gold) 8px, var(--pw-navy-dark) 8px, var(--pw-navy-dark) 16px);
+            border-radius: 4px;
+        }
+        .pw-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 13px;
+            margin-top: 12px;
+        }
+        .pw-checkbox input { margin-top: 3px; }
+        .pw-signature-box {
+            border: 1px solid var(--pw-border);
+            border-radius: 8px;
+            background: #fff;
+            overflow: hidden;
+        }
+        #signature-pad {
+            display: block;
+            width: 100%;
+            height: 120px;
+            touch-action: none;
+        }
+        .pw-signature-actions { margin-top: 8px; }
+        .pw-submit-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            margin-top: 8px;
+        }
+        .pw-submit-note {
+            color: var(--pw-muted);
+            font-size: 13px;
+            max-width: 520px;
+        }
+        .pw-btn-submit {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 48px;
+            padding: 0 28px;
+            border: none;
+            border-radius: 8px;
+            background: var(--pw-gold);
+            color: #1a1a1a;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .pw-btn-submit:hover { background: var(--pw-gold-dark); }
+        .pw-page-footer {
+            text-align: center;
+            color: var(--pw-muted);
+            font-size: 12px;
+            line-height: 1.7;
+            padding: 8px 16px 28px;
+        }
+        .text-danger { color: #c0392b; font-size: 12px; }
+        .alert { border-radius: 8px; }
+
+        @media (max-width: 767px) {
+            .pw-hero h1 { font-size: 28px; }
+            .pw-hero-top { flex-direction: column; align-items: flex-start; }
+            .pw-submit-bar { flex-direction: column; align-items: stretch; }
+            .pw-btn-submit { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<section class="pw-hero">
+    <div class="pw-hero-top">
+        <span>Durotech Industries — Commercial Waterproofing &amp; Sealants</span>
+        <span>Trusted · Tested · Approved since 1977</span>
+    </div>
+    <div class="pw-stripes"></div>
+    <div class="pw-hero-body">
+        <span class="pw-badge">Warranty Registration</span>
+        <h1>Product Warranty Request Form</h1>
+        <p class="pw-hero-intro">
+            Register your completed Durotech application to activate coverage. Fill in every field below —
+            the more precise the detail, the faster your certificate is issued.
+        </p>
+        <div class="pw-meta-row">
+            <div><span>Processing time</span><strong>3–5 business days</strong></div>
+            <div><span>Sent to</span><strong>sales@durotechindustries.com.au</strong></div>
+            <div><span>Reference</span><strong>Retain for your records</strong></div>
+        </div>
+    </div>
+</section>
+
+<div class="pw-wrap">
+    
+    <form method="post" accept-charset="utf-8" id="product-warranty-v2-form" action="/cake3app/product_warranty_v2"><div style="display:none;"><input type="hidden" name="_method" value="POST"/><input type="hidden" name="_csrfToken" autocomplete="off" value="ed8155e13fa870f7294185022bfd72ac276521d91108e2829d3b36c7702999ae6f67e5ebc947c9290d226cd5ce52820bf29a2efa6f82b76ee016edd2beb12278"/></div>
+    <div class="pw-section">
+        <div class="pw-section-head">
+            <span class="pw-section-num">1</span>
+            <div class="pw-section-head-text">
+                <h2 class="pw-section-title">Registration Details</h2>
+                <p class="pw-section-sub">Product identification from your purchase.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="pw-field">
+                    <div class="pw-label-row">
+                        <label class="pw-label" for="serialnumber">Warranty Serial No.</label>
+                        <span class="pw-hint">from product packaging</span>
+                    </div>
+                    <input type="text" class="pw-control" name="ProductWarrantyRequest[serialnumber]" id="serialnumber" value="" placeholder="e.g. DT-2024-54321">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="pw-field">
+                    <label class="pw-label" for="dateofpurchase">Date of Purchase</label>
+                    <input type="text" class="pw-control datepicker" name="ProductWarrantyRequest[dateofpurchase]" id="dateofpurchase" value="" placeholder="mm/dd/yyyy" required>
+                                    </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pw-section">
+        <div class="pw-section-head">
+            <span class="pw-section-num">2</span>
+            <div class="pw-section-head-text">
+                <h2 class="pw-section-title">Product Used</h2>
+                <p class="pw-section-sub">What was applied and how it was used on site.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="pw-field">
+                    <div class="pw-label-row">
+                        <label class="pw-label" for="product">Product</label>
+                        <span class="pw-hint">include the amount used</span>
+                    </div>
+                    <input type="text" class="pw-control" name="ProductWarrantyRequest[product]" id="product" value="" placeholder="e.g. Durotech PPM STD — 100L" required>
+                                    </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="pw-field">
+                    <div class="pw-label-row">
+                        <label class="pw-label" for="used_as">Used As</label>
+                        <span class="pw-hint">how the product relates to the warranted area</span>
+                    </div>
+                    <textarea class="pw-control" name="ProductWarrantyRequest[used_as]" id="used_as" placeholder="Describe how the product was used..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pw-section">
+        <div class="pw-section-head">
+            <span class="pw-section-num">3</span>
+            <div class="pw-section-head-text">
+                <h2 class="pw-section-title">Application Method</h2>
+                <p class="pw-section-sub">How the product was applied on site.</p>
+            </div>
+        </div>
+        <div class="pw-field">
+            <label class="pw-label" for="application">Application Description</label>
+            <textarea class="pw-control" name="ProductWarrantyRequest[application]" id="application" placeholder="Describe how the product was applied — surface prep, coats, coverage rate, curing conditions..."></textarea>
+        </div>
+    </div>
+
+    <div class="pw-section">
+        <div class="pw-section-head">
+            <span class="pw-section-num">4</span>
+            <div class="pw-section-head-text">
+                <h2 class="pw-section-title">Warranted Area &amp; Location</h2>
+                <p class="pw-section-sub">Where the application was carried out.</p>
+            </div>
+        </div>
+        <div class="pw-field">
+            <div class="pw-label-row">
+                <label class="pw-label" for="area_warranted">Area Warranted</label>
+                <span class="pw-hint">specific measurements</span>
+            </div>
+            <input type="text" class="pw-control" name="ProductWarrantyRequest[area_warranted]" id="area_warranted" value="" placeholder="e.g. Balconies and Terraces — 240 m²">
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="pw-field">
+                    <div class="pw-label-row">
+                        <label class="pw-label" for="building_name">Building Name</label>
+                        <span class="pw-hint">optional</span>
+                    </div>
+                    <input type="text" class="pw-control" name="ProductWarrantyRequest[building_name]" id="building_name" value="" placeholder="e.g. Palmerston Residences">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="pw-field">
+                    <label class="pw-label" for="building_address">Building Address</label>
+                    <input type="text" class="pw-control" name="ProductWarrantyRequest[building_address]" id="building_address" value="" placeholder="Street, suburb, state, postcode" required>
+                                    </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pw-section">
+        <div class="pw-section-head">
+            <span class="pw-section-num">5</span>
+            <div class="pw-section-head-text">
+                <h2 class="pw-section-title">Requested Warranty Period</h2>
+                <p class="pw-section-sub">Coverage dates for the warranted area.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="pw-field">
+                    <label class="pw-label" for="start_requested_warranty">Start Date</label>
+                    <input type="text" class="pw-control datepicker" name="ProductWarrantyRequest[start_requested_warranty]" id="start_requested_warranty" value="" placeholder="mm/dd/yyyy">
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="pw-field">
+                    <label class="pw-label" for="end_requested_warranty">End Date</label>
+                    <input type="text" class="pw-control datepicker" name="ProductWarrantyRequest[end_requested_warranty]" id="end_requested_warranty" value="" placeholder="mm/dd/yyyy">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pw-section">
+        <div class="pw-section-head">
+            <span class="pw-section-num">6</span>
+            <div class="pw-section-head-text">
+                <h2 class="pw-section-title">Contractor Certification</h2>
+                <p class="pw-section-sub">Company details and certification agreement.</p>
+            </div>
+        </div>
+        <div class="pw-cert-box">
+            I confirm that I am the Contractor in charge of the building/development/construction of the location stated above and I am properly authorised and in a fully informed position to make these statements. I certify that the Durotech Product Application was implemented and I confirm that no Durotech representative or employee were present prior or during the application process. I understand that Durotech will rely on this certificate and that improper use or application of Durotech Products may result in legal action. By signing below I indemnify Durotech against any claim arising from errors in the information provided.
+            <div class="pw-cert-stripes"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="pw-field">
+                    <label class="pw-label" for="contract_company_name">Contractor Company Name</label>
+                    <input type="text" class="pw-control" name="ProductWarrantyRequest[contract_company_name]" id="contract_company_name" value="" placeholder="e.g. Proper Sealing Solutions Pty Ltd" required>
+                                    </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="pw-field">
+                    <label class="pw-label" for="applicator_active_abn">ABN No.</label>
+                    <input type="text" class="pw-control" name="ProductWarrantyRequest[applicator_active_abn]" id="applicator_active_abn" value="" placeholder="e.g. 12 345 678 901">
+                </div>
+            </div>
+        </div>
+        <div class="pw-field">
+            <label class="pw-label" for="applicator_address">Company Address</label>
+            <textarea class="pw-control" name="ProductWarrantyRequest[applicator_address]" id="applicator_address" rows="3" placeholder="Street, suburb, state, postcode"></textarea>
+        </div>
+        <label class="pw-checkbox">
+            <input type="checkbox" name="certify_agree" id="certify_agree" value="1" required>
+            <span>I have read, understood and agree to the certification above, and I indemnify Durotech against any claim arising from errors in the information provided.</span>
+        </label>
+    </div>
+
+    <div class="pw-section">
+        <div class="pw-section-head">
+            <span class="pw-section-num">7</span>
+            <div class="pw-section-head-text">
+                <h2 class="pw-section-title">Signature</h2>
+                <p class="pw-section-sub">Contractor sign-off and date.</p>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="pw-field">
+                    <label class="pw-label">Draw signature</label>
+                    <div class="pw-signature-box">
+                        <canvas id="signature-pad"></canvas>
+                    </div>
+                    <div class="pw-signature-actions">
+                        <button type="button" class="btn btn-default btn-xs" id="clear-signature">Clear</button>
+                    </div>
+                    <input type="hidden" name="sigimage" id="sigimage" value="">
+                                    </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="pw-field">
+                    <label class="pw-label" for="contract_name">Contractor Full Name</label>
+                    <input type="text" class="pw-control" name="ProductWarrantyRequest[contract_name]" id="contract_name" value="" placeholder="Your full name" required>
+                                    </div>
+                <div class="pw-field">
+                    <label class="pw-label" for="sign_date">Date Signed</label>
+                    <input type="text" class="pw-control datepicker" name="ProductWarrantyRequest[sign_date]" id="sign_date" value="" placeholder="mm/dd/yyyy" required>
+                                    </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pw-submit-bar">
+        <div class="pw-submit-note">
+            Once submitted, this form and your product proof-of-purchase will be sent to Durotech's warranty team for review.
+        </div>
+        <button type="submit" class="pw-btn-submit" id="add_ser_prd_btn">
+            Submit Warranty Request <i class="fa fa-arrow-right"></i>
+        </button>
+    </div>
+
+    </form></div>
+
+<footer class="pw-page-footer">
+    Durotech Industries · 14 Essex Street, Minto NSW 2566 · Fax 02 9475 5059 · sales@durotechindustries.com.au · http://localhost/cake3app</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/js/bootstrap-datepicker.min.js"></script>
+<script src="http://localhost/cake3app/signature_pad-master/signature_pad-master/js/signature_pad.js"></script>
+<script>
+jQuery(function ($) {
+    $('.datepicker').datepicker({ format: 'yyyy-mm-dd', autoclose: true });
+
+    var signatureCanvas = document.getElementById('signature-pad');
+    var signaturePad = null;
+    if (signatureCanvas && typeof SignaturePad !== 'undefined') {
+        signaturePad = new SignaturePad(signatureCanvas, { backgroundColor: 'rgb(255, 255, 255)' });
+        function resizeSignaturePad() {
+            var ratio = Math.max(window.devicePixelRatio || 1, 1);
+            var width = signatureCanvas.offsetWidth || 360;
+            signatureCanvas.width = width * ratio;
+            signatureCanvas.height = 120 * ratio;
+            signatureCanvas.getContext('2d').scale(ratio, ratio);
+            signaturePad.clear();
+        }
+        resizeSignaturePad();
+        $(window).on('resize', resizeSignaturePad);
+        $('#clear-signature').on('click', function () {
+            signaturePad.clear();
+            $('#sigimage').val('');
+        });
+    }
+
+    $('#product-warranty-v2-form').on('submit', function (e) {
+        if (!$('#certify_agree').is(':checked')) {
+            e.preventDefault();
+            alert('Please agree to the contractor certification before submitting.');
+            return false;
+        }
+        if (signaturePad) {
+            if (signaturePad.isEmpty()) {
+                e.preventDefault();
+                alert('Please sign in the signature box before submitting.');
+                return false;
+            }
+            $('#sigimage').val(signaturePad.toDataURL('image/png'));
+        } else if ($.trim($('#sigimage').val()) === '') {
+            e.preventDefault();
+            alert('Signature pad failed to load. Please refresh the page and try again.');
+            return false;
+        }
+    });
+});
+</script>
+</body>
+</html>

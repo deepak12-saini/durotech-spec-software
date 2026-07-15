@@ -149,7 +149,7 @@
 					<li><i class="fa fa-phone" aria-hidden="true"></i><a href="<?= $this->Url->build('/contact') ?>"><?= h(PHONE) ?></a></li>
 					<li><i class="fa fa-envelope" aria-hidden="true"></i><a href="<?= $this->Url->build('/contact') ?>"><?= h(MAILTO) ?></a></li>
 					<li>
-						<a href="<?= $this->Url->build('/product_warranty') ?>" target="_blank">Product Warranty Request Form</a>
+						<a href="<?= $this->Url->build('/product_warranty_v2') ?>" target="_blank">Product Warranty Request Form</a>
 					</li>
 				</ul>
 

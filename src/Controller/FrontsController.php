@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\Utility\ProductWarrantyPdfGenerator;
+use App\Utility\ProductWarrantyPortalToken;
+use App\Utility\SafeDate;
 use Cake\Cache\Cache;
 use Cake\Core\Configure;
 use Cake\Event\EventInterface;
@@ -12,6 +15,7 @@ use Cake\Http\Response;
 use Cake\Log\Log;
 use Cake\Mailer\Email;
 use Cake\Mailer\MailerAwareTrait;
+use Cake\Routing\Router;
 
 /**
  * FrontsController – CakePHP 3.10
@@ -1502,13 +1506,14 @@ class FrontsController extends AppController
                 // Notify internal team for new Product Warranty Request submissions.
                 $baseUrl = defined('SITEURL') ? (string)SITEURL : (string)(Configure::read('App.fullBaseUrl') ?? '');
                 $adminListUrl = rtrim($baseUrl, '/') . '/admin/stocks/product_warranty_request';
-                $recipients = $this->collectWarrantyEmailRecipients();
+                $recipients = $this->collectProductWarrantyAdminRecipients();
+                $requestAdminUrl = $adminListUrl . '?q=' . (int)$entity->id;
 
                 if (!empty($recipients)) {
                     try {
                         $contactName = trim((string)($data['contract_name'] ?? $data['applicator'] ?? ''));
                         $contactEmail = trim((string)($data['email'] ?? ''));
-                        $contactPhone = trim((string)($data['applicator_contact'] ?? $data['phone'] ?? ''));
+                        $contactPhone = trim((string)($data['phone'] ?? $data['applicator_contact'] ?? ''));
                         $warrantyPeriod = trim((string)($data['start_requested_warranty'] ?? ''))
                             . ' to '
                             . trim((string)($data['end_requested_warranty'] ?? ''));
@@ -1543,14 +1548,14 @@ class FrontsController extends AppController
 
                         $this->sendemail(
                             $recipients,
-                            'New Product Warranty Request Submitted',
+                            'Action required: Product Warranty Request #' . (int)$entity->id,
                             'product_warranty_admin_notify',
                             [
                                 'siteName' => $siteName,
                                 'logoUrl' => $logoUrl,
-                                'introLine' => 'A new product warranty request was submitted from the website.',
+                                'introLine' => 'A new product warranty request was submitted from the website. Please review and approve it in the admin panel.',
                                 'detailRows' => $detailRows,
-                                'adminListUrl' => $adminListUrl,
+                                'adminListUrl' => $requestAdminUrl,
                             ]
                         );
                     } catch (\Throwable $e) {
@@ -1569,6 +1574,264 @@ class FrontsController extends AppController
 
         $this->set(compact('warrantyLog', 'entity'));
         return null;
+    }
+
+    /**
+     * Product Warranty v2 — new request form (Rajan design).
+     * View: Fronts/product_warranty_v2.php
+     */
+    public function productWarrantyV2(): ?Response
+    {
+        $this->viewBuilder()->setLayout(false);
+        $this->set('title_for_layout', (defined('SITENAME') ? SITENAME : 'Durotech') . ' | Product Warranty Request Form');
+
+        $warrantyLog = ['ProductWarrantyRequest' => []];
+        $this->loadModel('ProductWarrantyRequests');
+        $entity = $this->ProductWarrantyRequests->newEntity();
+
+        if ($this->request->is('post')) {
+            $data = $this->request->getData('ProductWarrantyRequest') ?? $this->request->getData();
+            $data = $this->normalizeProductWarrantyRequestData($data);
+            if (isset($data['application']) && is_array($data['application'])) {
+                $data['application'] = implode(', ', array_filter($data['application']));
+            }
+            if (isset($data['applicator_address']) && is_array($data['applicator_address'])) {
+                $data['applicator_address'] = implode("\n", array_filter($data['applicator_address']));
+            }
+            $signatureName = $this->saveContractorSignatureImage((string)$this->request->getData('sigimage'));
+            if ($signatureName !== '') {
+                $data['contractor_signature'] = $signatureName;
+            }
+            $data['form_version'] = 'v2';
+            $entity = $this->ProductWarrantyRequests->patchEntity($entity, $data);
+            if (empty($entity->status)) {
+                $entity->status = 'Pending';
+            }
+            if ($this->ProductWarrantyRequests->save($entity)) {
+                $baseUrl = defined('SITEURL') ? (string)SITEURL : (string)(Configure::read('App.fullBaseUrl') ?? '');
+                $adminListUrl = rtrim($baseUrl, '/') . '/admin/stocks/product_warranty_request';
+                $recipients = $this->collectProductWarrantyAdminRecipients();
+                $requestAdminUrl = $adminListUrl . '?q=' . (int)$entity->id;
+
+                if (!empty($recipients)) {
+                    try {
+                        $contactName = trim((string)($data['contract_name'] ?? $data['applicator'] ?? ''));
+                        $contactEmail = trim((string)($data['email'] ?? ''));
+                        $contactPhone = trim((string)($data['phone'] ?? $data['applicator_contact'] ?? ''));
+                        $warrantyPeriod = trim((string)($data['start_requested_warranty'] ?? ''))
+                            . ' to '
+                            . trim((string)($data['end_requested_warranty'] ?? ''));
+
+                        $logoUrl = $baseUrl !== ''
+                            ? (rtrim($baseUrl, '/') . '/customdurotech/images/durotech_logo_new.png')
+                            : '';
+                        $siteName = defined('SITENAME') ? (string)SITENAME : 'Durotech Industries';
+
+                        $detailRows = [
+                            'Request ID' => (string)$entity->id,
+                            'Form version' => 'v2',
+                            'Serial number' => trim((string)($data['serialnumber'] ?? '')),
+                            'Product' => trim((string)($data['product'] ?? '')),
+                            'Date of purchase' => trim((string)($data['dateofpurchase'] ?? '')),
+                            'Used as' => trim((string)($data['used_as'] ?? '')),
+                            'Application' => trim((string)($data['application'] ?? '')),
+                            'Primary contact' => $contactName,
+                            'Contractor company' => trim((string)($data['contract_company_name'] ?? '')),
+                            'Contractor name' => trim((string)($data['contract_name'] ?? '')),
+                            'Applicator' => trim((string)($data['applicator'] ?? '')),
+                            'Email' => $contactEmail,
+                            'Phone' => $contactPhone,
+                            'Building address' => trim((string)($data['building_address'] ?? '')),
+                            'Applicator address' => trim((string)($data['applicator_address'] ?? '')),
+                            'Applicator ABN' => trim((string)($data['applicator_active_abn'] ?? '')),
+                            'Building name' => trim((string)($data['building_name'] ?? '')),
+                            'Building / area name' => trim((string)($data['building_area_name'] ?? '')),
+                            'Area warranted' => trim((string)($data['area_warranted'] ?? '')),
+                            'Requested warranty' => $warrantyPeriod,
+                            'Certificate sign date' => trim((string)($data['sign_date'] ?? '')),
+                        ];
+
+                        $this->sendemail(
+                            $recipients,
+                            'Action required: Product Warranty Request #' . (int)$entity->id . ' (v2)',
+                            'product_warranty_admin_notify',
+                            [
+                                'siteName' => $siteName,
+                                'logoUrl' => $logoUrl,
+                                'introLine' => 'A new product warranty request was submitted from the website. Please review and approve it in the admin panel.',
+                                'detailRows' => $detailRows,
+                                'adminListUrl' => $requestAdminUrl,
+                            ]
+                        );
+                    } catch (\Throwable $e) {
+                        Log::error('Product warranty v2 notification email failed: ' . $e->getMessage());
+                    }
+                } else {
+                    Log::warning('Product warranty v2: no admin notification recipients configured.');
+                }
+
+                $this->Flash->success(__('Thank you for your application. A Durotech representative will be in touch shortly.'));
+                return $this->redirect(['controller' => 'Fronts', 'action' => 'productWarrantyV2']);
+            }
+            $this->Flash->error(__($this->firstProductWarrantyValidationMessage($entity)));
+            $warrantyLog['ProductWarrantyRequest'] = $entity->toArray();
+        }
+
+        $this->set(compact('warrantyLog', 'entity'));
+        return null;
+    }
+
+    /**
+     * Product Warranty v2 portal — shown after admin approval (email link).
+     * View: Fronts/product_warranty_v2_portal.php
+     */
+    public function productWarrantyV2Portal($token = null): ?Response
+    {
+        $this->viewBuilder()->setLayout(false);
+        $this->set('title_for_layout', (defined('SITENAME') ? SITENAME : 'Durotech') . ' | Product Warranty');
+
+        $entity = $this->loadProductWarrantyByPortalToken($token);
+        if ($entity === null) {
+            throw new \Cake\Http\Exception\NotFoundException('Warranty portal link is invalid or has expired.');
+        }
+
+        $log = $entity->toArray();
+        $status = trim((string)($log['status'] ?? ''));
+        if ($status === '') {
+            $status = 'Pending';
+        }
+
+        $start = SafeDate::format('d M Y', $log['start_requested_warranty'] ?? null);
+        $end = SafeDate::format('d M Y', $log['end_requested_warranty'] ?? null);
+        $coverage = trim($start . ($start !== '' && $end !== '' ? ' – ' : '') . $end);
+
+        $portalToken = ProductWarrantyPortalToken::generate((int)$entity->id);
+        $certificateUrl = Router::url([
+            'controller' => 'Fronts',
+            'action' => 'productWarrantyV2PortalDownload',
+            $portalToken,
+        ], true);
+
+        $this->set([
+            'portalToken' => $portalToken,
+            'requestId' => (int)$entity->id,
+            'status' => $status,
+            'product' => trim((string)($log['product'] ?? '')),
+            'coverage' => $coverage,
+            'area' => trim((string)($log['area_warranted'] ?? '')),
+            'contractName' => trim((string)($log['contract_name'] ?? '')),
+            'companyName' => trim((string)($log['contract_company_name'] ?? '')),
+            'customerEmail' => trim((string)($log['email'] ?? '')),
+            'certificateUrl' => $certificateUrl,
+            'hasCertificate' => !empty($log['certificate']),
+        ]);
+
+        return null;
+    }
+
+    /**
+     * Download approved product warranty certificate (portal).
+     */
+    public function productWarrantyV2PortalDownload($token = null): ?Response
+    {
+        $this->request->allowMethod(['get']);
+        $this->autoRender = false;
+
+        $entity = $this->loadProductWarrantyByPortalToken($token);
+        if ($entity === null) {
+            throw new \Cake\Http\Exception\NotFoundException('Certificate not found.');
+        }
+
+        $status = strtolower(trim((string)($entity->status ?? '')));
+        if ($status !== 'approved') {
+            throw new \Cake\Http\Exception\ForbiddenException('This warranty has not been approved yet.');
+        }
+
+        $rid = (int)$entity->id;
+        $pdfBinary = ProductWarrantyPdfGenerator::generatePdfBinaryForRequest($rid);
+        if (!is_string($pdfBinary) || $pdfBinary === '') {
+            throw new \Cake\Http\Exception\InternalErrorException('Certificate could not be generated.');
+        }
+
+        $filename = ProductWarrantyPdfGenerator::certificateFilename($rid, $entity->toArray());
+
+        return $this->response
+            ->withType('application/pdf')
+            ->withHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->withStringBody($pdfBinary);
+    }
+
+    /**
+     * Email certificate PDF to customer (portal).
+     */
+    public function productWarrantyV2PortalEmail($token = null): ?Response
+    {
+        $this->request->allowMethod(['post']);
+
+        $entity = $this->loadProductWarrantyByPortalToken($token);
+        if ($entity === null) {
+            throw new \Cake\Http\Exception\NotFoundException('Warranty portal link is invalid.');
+        }
+
+        $status = strtolower(trim((string)($entity->status ?? '')));
+        if ($status !== 'approved') {
+            $this->Flash->error(__('Your warranty is not approved yet.'));
+            return $this->redirect(['action' => 'productWarrantyV2Portal', $token]);
+        }
+
+        $email = trim((string)$this->request->getData('email'));
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->Flash->error(__('Please enter a valid email address.'));
+            return $this->redirect(['action' => 'productWarrantyV2Portal', $token]);
+        }
+
+        $rid = (int)$entity->id;
+        $pdfBinary = ProductWarrantyPdfGenerator::generatePdfBinaryForRequest($rid);
+        if (!is_string($pdfBinary) || $pdfBinary === '') {
+            $this->Flash->error(__('Certificate could not be generated. Please try again later.'));
+            return $this->redirect(['action' => 'productWarrantyV2Portal', $token]);
+        }
+
+        $filename = ProductWarrantyPdfGenerator::certificateFilename($rid, $entity->toArray());
+        $log = $entity->toArray();
+        $siteName = defined('SITENAME') ? (string)SITENAME : 'Durotech Industries';
+        $portalUrl = Router::url(['controller' => 'Fronts', 'action' => 'productWarrantyV2Portal', $token], true);
+
+        try {
+            [$from, $fromName] = \App\Utility\EmailFrom::resolve($siteName);
+            $smtpAuthFrom = \App\Utility\EmailFrom::smtpAuthAddressIfAllowed();
+            if ($smtpAuthFrom !== null) {
+                $from = $smtpAuthFrom;
+            }
+
+            $mail = new Email('default');
+            $mail->viewBuilder()
+                ->setClassName('App\View\AppView')
+                ->setTemplate('product_warranty_customer_approved');
+            $mail->setFrom([$from => $fromName])
+                ->setTo($email)
+                ->setSubject($siteName . ' | Your Product Warranty Certificate')
+                ->setEmailFormat('html')
+                ->setViewVars([
+                    'siteName' => $siteName,
+                    'contractName' => trim((string)($log['contract_name'] ?? '')),
+                    'product' => trim((string)($log['product'] ?? '')),
+                    'portalUrl' => $portalUrl,
+                ])
+                ->setAttachments([
+                    $filename => [
+                        'data' => $pdfBinary,
+                        'mimetype' => 'application/pdf',
+                    ],
+                ])
+                ->send();
+            $this->Flash->success(__('Your certificate has been emailed to ') . $email);
+        } catch (\Throwable $e) {
+            Log::error('Product warranty portal email failed: ' . $e->getMessage());
+            $this->Flash->error(__('Unable to send email right now. Please download the certificate instead.'));
+        }
+
+        return $this->redirect(['action' => 'productWarrantyV2Portal', $token]);
     }
 
     /**
@@ -1914,6 +2177,66 @@ class FrontsController extends AppController
     }
 
     /**
+     * Normalize website product warranty form values before validation.
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    protected function normalizeProductWarrantyRequestData(array $data): array
+    {
+        $optionalDates = ['start_requested_warranty', 'end_requested_warranty'];
+        foreach ($optionalDates as $field) {
+            if (array_key_exists($field, $data) && trim((string)$data[$field]) === '') {
+                $data[$field] = null;
+            }
+        }
+
+        foreach ($data as $key => $value) {
+            if (is_string($value)) {
+                $data[$key] = trim($value);
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param \Cake\Datasource\EntityInterface $entity
+     */
+    protected function firstProductWarrantyValidationMessage($entity): string
+    {
+        $errors = method_exists($entity, 'getErrors') ? $entity->getErrors() : [];
+        foreach ($errors as $fieldErrors) {
+            foreach ((array)$fieldErrors as $message) {
+                if (is_string($message) && $message !== '') {
+                    return $message;
+                }
+            }
+        }
+
+        return 'Please fill in all required fields.';
+    }
+
+    /**
+     * @return \Cake\Datasource\EntityInterface|null
+     */
+    protected function loadProductWarrantyByPortalToken($token)
+    {
+        $requestId = ProductWarrantyPortalToken::resolveRequestId($token !== null ? (string)$token : null);
+        if ($requestId === null) {
+            return null;
+        }
+
+        $this->loadModel('ProductWarrantyRequests');
+
+        try {
+            return $this->ProductWarrantyRequests->get($requestId);
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    /**
      * Save a base64 canvas signature PNG to webroot/signature and return filename.
      */
     protected function saveContractorSignatureImage(string $sigimage): string
@@ -1940,6 +2263,31 @@ class FrontsController extends AppController
         }
 
         return $signatureName;
+    }
+
+    /**
+     * Collect admin recipients for product warranty form submissions (v1 + v2).
+     * Always includes kal@durotechindustries.com.au so approvals can be actioned.
+     *
+     * @return string[]
+     */
+    protected function collectProductWarrantyAdminRecipients(): array
+    {
+        $recipients = $this->collectWarrantyEmailRecipients();
+        $kal = 'kal@durotechindustries.com.au';
+        if (!in_array($kal, $recipients, true)) {
+            $recipients[] = $kal;
+        }
+        if ($recipients === []) {
+            $fallback = defined('MAILTO') ? (string)MAILTO : $kal;
+            if ($fallback !== '' && filter_var($fallback, FILTER_VALIDATE_EMAIL)) {
+                $recipients[] = $fallback;
+            } else {
+                $recipients[] = $kal;
+            }
+        }
+
+        return array_values(array_unique($recipients));
     }
 
     /**

@@ -163,7 +163,7 @@
 					<li><i class="fa fa-envelope" aria-hidden="true"></i><a href="<?php echo SITEURL . 'contact'; ?>"><?php echo MAILTO;  ?></a></li>
 
 					<li>
-						<a href="<?php echo SITEURL; ?>product_warranty" target="_blank">
+						<a href="<?php echo SITEURL; ?>product_warranty_v2" target="_blank">
 							Product Warranty Request Form
 						</a>
 					</li>

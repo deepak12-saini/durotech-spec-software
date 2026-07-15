@@ -3,9 +3,13 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Utility\ProductWarrantyCustomerNotifier;
 use App\Utility\ProductWarrantyPdfGenerator;
+use App\Utility\ProductWarrantyPortalToken;
+use App\Utility\WarrantyCertificateHtmlV2Generator;
 use Cake\Event\EventInterface;
 use Cake\Http\Response;
+use Cake\Routing\Router;
 
 /**
  * Stocks Controller (Stock Return, Warranty Request - CakePHP 3.10)
@@ -641,6 +645,45 @@ class StocksController extends AppController
 		return null;
 	}
 
+	/** CamelCase alias for routing */
+	public function adminWarrantRequestV2($type = null): ?Response
+	{
+		return $this->admin_warrant_request_v2($type);
+	}
+
+	/**
+	 * Warrant Request v2 list (same data as admin_warrant_request; Preview uses HTML certificate).
+	 */
+	public function admin_warrant_request_v2($type = null): ?Response
+	{
+		$this->viewBuilder()->setLayout('admin_layout');
+		$this->set('title_for_layout', SITENAME . ' Warranty Request List v2');
+		$this->checkAdminSession();
+
+		$results = $this->WarrantyRequests->find()
+			->contain(['WarrantyRequestLogs'])
+			->orderDesc('WarrantyRequests.id')
+			->limit(25)
+			->all();
+
+		$WarrantyRequest = [];
+		foreach ($results as $row) {
+			$logs = $row->warranty_request_logs ?? $row->warrantyRequestLogs ?? [];
+			$logsArray = [];
+			foreach ($logs as $log) {
+				$logsArray[] = is_object($log) ? $log->toArray() : $log;
+			}
+			$rowArray = $row->toArray();
+			unset($rowArray['warranty_request_logs'], $rowArray['warrantyRequestLogs']);
+			$WarrantyRequest[] = [
+				'WarrantyRequest' => $rowArray,
+				'WarrantyRequestLog' => $logsArray,
+			];
+		}
+		$this->set('WarrantyRequest', $WarrantyRequest);
+		return null;
+	}
+
 
 	/** CamelCase alias for routing */
 	public function adminProductWarrantyRequest(): ?Response
@@ -669,6 +712,8 @@ class StocksController extends AppController
 				['ProductWarrantyRequests.used_as LIKE' => $like],
 				['ProductWarrantyRequests.applicator LIKE' => $like],
 				['ProductWarrantyRequests.contract_name LIKE' => $like],
+				['ProductWarrantyRequests.email LIKE' => $like],
+				['ProductWarrantyRequests.phone LIKE' => $like],
 			];
 			if (ctype_digit($q)) {
 				$or[] = ['ProductWarrantyRequests.id' => (int)$q];
@@ -766,7 +811,17 @@ class StocksController extends AppController
 		$entity->status = 'Approved';
 		if ($this->ProductWarrantyRequests->save($entity)) {
 			$this->_includeProductWarrantyCertificateScript($id);
-			$this->response = $this->response->withStringBody('success');
+			$token = ProductWarrantyPortalToken::generate($id);
+			$portalUrl = Router::url(['controller' => 'Fronts', 'action' => 'productWarrantyV2Portal', $token], true);
+			$emailSent = ProductWarrantyCustomerNotifier::sendApprovedCertificateEmail($id, $token);
+			$this->response = $this->response->withType('application/json');
+			$this->response = $this->response->withStringBody(json_encode([
+				'status' => 'success',
+				'portalUrl' => $portalUrl,
+				'emailSent' => $emailSent,
+				'customerEmail' => trim((string)($entity->email ?? '')),
+			]));
+
 			return $this->response;
 		}
 		$this->response = $this->response->withStringBody('error');
@@ -870,6 +925,64 @@ class StocksController extends AppController
 			->withStringBody($pdfBinary);
 	}
 
+	/**
+	 * Browser HTML preview — same template/Dompdf HTML as PDF pages 1–2 (no PDF render).
+	 * ?raw=1 streams certificate HTML only (for iframe). Otherwise shows toolbar wrapper.
+	 */
+	public function admin_preview_product_warranty_certificate_html($id = null): ?Response
+	{
+		$this->request->allowMethod(['get']);
+		$this->checkAdminSession();
+		$rid = $id !== null ? (int)$id : (int)$this->request->getQuery('id');
+		if ($rid <= 0) {
+			$this->Flash->error('Invalid request.');
+			return $this->redirect(['action' => 'admin_product_warranty_request']);
+		}
+		try {
+			$this->ProductWarrantyRequests->get($rid);
+		} catch (\Throwable $e) {
+			$this->Flash->error('Request not found.');
+			return $this->redirect(['action' => 'admin_product_warranty_request']);
+		}
+
+		$html = ProductWarrantyPdfGenerator::buildHtmlForRequest($rid);
+		if (!is_string($html) || $html === '') {
+			$this->Flash->error('Certificate HTML preview could not be generated. Check logs/error.log.');
+			return $this->redirect(['action' => 'admin_product_warranty_request']);
+		}
+
+		if ($this->request->getQuery('raw')) {
+			$this->autoRender = false;
+
+			return $this->response
+				->withType('text/html')
+				->withStringBody($html);
+		}
+
+		$this->viewBuilder()->setLayout(false);
+		$this->set('requestId', $rid);
+		$this->set('rawPreviewUrl', Router::url([
+			'controller' => 'Stocks',
+			'action' => 'admin_preview_product_warranty_certificate_html',
+			$rid,
+			'?' => ['raw' => '1'],
+		], true));
+		$this->set('pdfPreviewUrl', Router::url([
+			'controller' => 'Stocks',
+			'action' => 'admin_preview_product_warranty_certificate',
+			$rid,
+		], true));
+		$this->set('listUrl', Router::url(['action' => 'admin_product_warranty_request'], true));
+
+		return null;
+	}
+
+	/** CamelCase alias for HTML certificate preview. */
+	public function adminPreviewProductWarrantyCertificateHtml($id = null): ?Response
+	{
+		return $this->admin_preview_product_warranty_certificate_html($id);
+	}
+
 	/** CamelCase alias for routing / dispatcher. */
 	public function adminPreviewProductWarrantyCertificate($id = null): ?Response
 	{
@@ -909,6 +1022,82 @@ class StocksController extends AppController
 	public function warrantRequest($type = null)
 	{
 		return $this->warrant_request($type);
+	}
+
+	/** CamelCase alias for stocks/warrant_request_v2 */
+	public function warrantRequestV2($type = null)
+	{
+		return $this->warrant_request_v2($type);
+	}
+
+	/**
+	 * Staff Warrant Request v2 list (Preview uses HTML Dompdf certificate).
+	 */
+	public function warrant_request_v2($type = null)
+	{
+		$this->viewBuilder()->setLayout('staff_inner_layout');
+		$this->set('title_for_layout', SITENAME . ' Warranty Request List v2');
+		$this->checkSatffSession();
+
+		$results = $this->WarrantyRequests->find()
+			->contain(['WarrantyRequestLogs'])
+			->orderDesc('WarrantyRequests.id')
+			->limit(25)
+			->all();
+
+		$WarrantyRequest = [];
+		foreach ($results as $row) {
+			$logs = $row->warranty_request_logs ?? $row->warrantyRequestLogs ?? [];
+			$logsArray = [];
+			foreach ($logs as $log) {
+				$logsArray[] = is_object($log) ? $log->toArray() : $log;
+			}
+			$rowArray = $row->toArray();
+			unset($rowArray['warranty_request_logs'], $rowArray['warrantyRequestLogs']);
+			$WarrantyRequest[] = [
+				'WarrantyRequest' => $rowArray,
+				'WarrantyRequestLog' => $logsArray,
+			];
+		}
+		$this->set('WarrantyRequest', $WarrantyRequest);
+	}
+
+	/**
+	 * Staff preview — HTML certificate v2 (stream PDF; does not save).
+	 */
+	public function preview_warranty_certificate_v2($id = null): ?Response
+	{
+		$this->request->allowMethod(['get']);
+		$this->autoRender = false;
+		$this->checkSatffSession();
+		$uniqueId = $id ? (int)base64_decode(base64_decode(base64_decode((string)$id))) : 0;
+		if ($uniqueId <= 0) {
+			$this->Flash->error('Invalid request.');
+			return $this->redirect(['action' => 'warrant_request_v2']);
+		}
+		try {
+			$this->WarrantyRequests->get($uniqueId);
+		} catch (\Throwable $e) {
+			$this->Flash->error('Request not found.');
+			return $this->redirect(['action' => 'warrant_request_v2']);
+		}
+
+		$pdfBinary = WarrantyCertificateHtmlV2Generator::generatePdfBinary($uniqueId);
+		if (!is_string($pdfBinary) || $pdfBinary === '') {
+			$this->Flash->error('Certificate preview could not be generated. Check logs/error.log.');
+			return $this->redirect(['action' => 'warrant_request_v2']);
+		}
+
+		return $this->response
+			->withType('application/pdf')
+			->withHeader('Content-Disposition', 'inline; filename="warranty-v2-' . $uniqueId . '.pdf"')
+			->withStringBody($pdfBinary);
+	}
+
+	/** CamelCase alias for staff preview v2 */
+	public function previewWarrantyCertificateV2($id = null): ?Response
+	{
+		return $this->preview_warranty_certificate_v2($id);
 	}
 	
 	function warranty($id=null){
@@ -1187,6 +1376,44 @@ class StocksController extends AppController
 	public function adminPreviewWarrantyCertificate($id = null): ?Response
 	{
 		return $this->admin_preview_warranty_certificate($id);
+	}
+
+	/**
+	 * Admin Preview — Warrant Request v2 HTML certificate (stream only; no FPDI, no DB write).
+	 */
+	public function admin_preview_warranty_certificate_v2($id = null): ?Response
+	{
+		$this->request->allowMethod(['get']);
+		$this->autoRender = false;
+		$this->checkAdminSession();
+		$uniqueId = $id ? (int)base64_decode(base64_decode(base64_decode((string)$id))) : 0;
+		if ($uniqueId <= 0) {
+			$this->Flash->error('Invalid request.');
+			return $this->redirect(['action' => 'admin_warrant_request_v2']);
+		}
+		try {
+			$this->WarrantyRequests->get($uniqueId);
+		} catch (\Throwable $e) {
+			$this->Flash->error('Request not found.');
+			return $this->redirect(['action' => 'admin_warrant_request_v2']);
+		}
+
+		$pdfBinary = WarrantyCertificateHtmlV2Generator::generatePdfBinary($uniqueId);
+		if (!is_string($pdfBinary) || $pdfBinary === '') {
+			$this->Flash->error('Certificate preview could not be generated. Ensure form details exist. Check logs/error.log.');
+			return $this->redirect(['action' => 'admin_warrant_request_v2']);
+		}
+
+		return $this->response
+			->withType('application/pdf')
+			->withHeader('Content-Disposition', 'inline; filename="warranty-v2-' . $uniqueId . '.pdf"')
+			->withStringBody($pdfBinary);
+	}
+
+	/** CamelCase alias for admin preview v2 */
+	public function adminPreviewWarrantyCertificateV2($id = null): ?Response
+	{
+		return $this->admin_preview_warranty_certificate_v2($id);
 	}
 
 	/** Approve submitted warranty request and generate certificate PDF first. */

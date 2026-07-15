@@ -291,6 +291,12 @@
 								<span class="menu-text">Warrant Request</span></b>
 							</a>
 						</li>
+						<li class="<?php if ($this->params['controller']=='stocks' && ($this->params['action']=='warrant_request_v2' || $this->params['action']=='warrantRequestV2')) {echo 'active';}?>">
+							<a href="<?php echo SITEURL?>stocks/warrant_request_v2">
+								<i class="menu-icon fa fa-file-pdf-o "></i>
+								<span class="menu-text">Warrant Request v2</span></b>
+							</a>
+						</li>
 					<?php } ?>
 					<?php						
 						if(in_array(26,$chkuserpermission)){

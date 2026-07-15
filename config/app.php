@@ -306,13 +306,14 @@ return [
 
     /*
      * Product warranty + project warranty form notification emails.
-     * Edit recipients and sender here — FrontsController reads WarrantyEmail only.
+     * kal@durotechindustries.com.au is always notified on product warranty submissions.
+     * Edit additional recipients and sender here — FrontsController reads WarrantyEmail.
      */
     'WarrantyEmail' => [
         'from' => ['info@durotechindustries.com.au' => 'Durotech Industries'],
         'to' => [
-            'info@durotechindustries.com.au',
             'kal@durotechindustries.com.au',
+            'info@durotechindustries.com.au',
             'sales@durotechindustries.com.au',
             // 'deepaksaini10036@gmail.com',
             // 'deepak543saini@gmail.com',

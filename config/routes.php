@@ -653,10 +653,15 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/stocks/delete/:id/:type', ['controller' => 'Stocks', 'action' => 'admin_delete'], ['pass' => ['id', 'type']]);
     $routes->connect('/admin/stocks/comment/:id', ['controller' => 'Stocks', 'action' => 'admin_comment'], ['pass' => ['id']]);
     $routes->connect('/admin/stocks/warrant_request', ['controller' => 'Stocks', 'action' => 'admin_warrant_request']);
+    $routes->connect('/admin/stocks/warrant_request_v2', ['controller' => 'Stocks', 'action' => 'admin_warrant_request_v2']);
     $routes->connect('/admin/stocks/preview_warranty_certificate/:id', ['controller' => 'Stocks', 'action' => 'admin_preview_warranty_certificate'], ['pass' => ['id']]);
+    $routes->connect('/admin/stocks/preview_warranty_certificate_v2/:id', ['controller' => 'Stocks', 'action' => 'admin_preview_warranty_certificate_v2'], ['pass' => ['id']]);
     $routes->connect('/admin/stocks/approve_warranty_request/:id', ['controller' => 'Stocks', 'action' => 'admin_approve_warranty_request'], ['pass' => ['id']]);
+    $routes->connect('/stocks/warrant_request_v2', ['controller' => 'Stocks', 'action' => 'warrant_request_v2']);
+    $routes->connect('/stocks/preview_warranty_certificate_v2/:id', ['controller' => 'Stocks', 'action' => 'preview_warranty_certificate_v2'], ['pass' => ['id']]);
     $routes->connect('/admin/stocks/product_warranty_request', ['controller' => 'Stocks', 'action' => 'admin_product_warranty_request']);
     $routes->connect('/admin/stocks/preview_product_warranty_certificate/:id', ['controller' => 'Stocks', 'action' => 'admin_preview_product_warranty_certificate'], ['pass' => ['id']]);
+    $routes->connect('/admin/stocks/preview_product_warranty_certificate_html/:id', ['controller' => 'Stocks', 'action' => 'admin_preview_product_warranty_certificate_html'], ['pass' => ['id']]);
     $routes->connect('/admin/stocks/delete_product_warranty/:id', ['controller' => 'Stocks', 'action' => 'admin_delete_product_warranty'], ['pass' => ['id']]);
     $routes->connect('/admin/stocks/approveWarranty', ['controller' => 'Stocks', 'action' => 'admin_approve_warranty']);
     $routes->connect('/admin/stocks/admin-approve-warranty', ['controller' => 'Stocks', 'action' => 'admin_approve_warranty']);
@@ -666,6 +671,11 @@ Router::scope('/', function (RouteBuilder $routes) {
 
     $routes->connect('/warranty/*', ['controller' => 'Stocks', 'action' => 'warranty']);
     $routes->connect('/product_warranty', ['controller' => 'Fronts', 'action' => 'productWarranty']);
+    $routes->connect('/product_warranty_v2', ['controller' => 'Fronts', 'action' => 'productWarrantyV2']);
+    $routes->connect('/product_warranty_v2/portal', ['controller' => 'Fronts', 'action' => 'productWarrantyV2Portal']);
+    $routes->connect('/product_warranty_v2/portal/:token', ['controller' => 'Fronts', 'action' => 'productWarrantyV2Portal'], ['pass' => ['token']]);
+    $routes->connect('/product_warranty_v2/portal/:token/download', ['controller' => 'Fronts', 'action' => 'productWarrantyV2PortalDownload'], ['pass' => ['token']]);
+    $routes->connect('/product_warranty_v2/portal/:token/email', ['controller' => 'Fronts', 'action' => 'productWarrantyV2PortalEmail'], ['pass' => ['token']]);
 
     $routes->connect('/durotech-institute-of-waterproofing', [
         'controller' => 'Fronts',

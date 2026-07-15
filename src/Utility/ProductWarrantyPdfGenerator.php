@@ -123,6 +123,24 @@ final class ProductWarrantyPdfGenerator
      */
     public static function generatePdfBinary(int $requestId): ?string
     {
+        return self::generatePdfBinaryForRequest($requestId);
+    }
+
+    /**
+     * Pick v1 or v2 PDF layout based on request data.
+     *
+     * @return string|null PDF binary or null on failure
+     */
+    public static function generatePdfBinaryForRequest(int $requestId): ?string
+    {
+        $log = self::loadRequestLog($requestId);
+        if ($log === null) {
+            return null;
+        }
+        if (self::shouldUseV2Pdf($log)) {
+            return ProductWarrantyPdfV2Generator::generatePdfBinary($requestId);
+        }
+
         $html = self::buildHtml($requestId);
         if ($html === null || $html === '') {
             return null;
@@ -153,7 +171,15 @@ final class ProductWarrantyPdfGenerator
      */
     public static function generateAndSave(int $requestId): bool
     {
-        $pdfBinary = self::generatePdfBinary($requestId);
+        $log = self::loadRequestLog($requestId);
+        if ($log === null) {
+            return false;
+        }
+        if (self::shouldUseV2Pdf($log)) {
+            return ProductWarrantyPdfV2Generator::generateAndSave($requestId);
+        }
+
+        $pdfBinary = self::generatePdfBinaryForRequest($requestId);
         if ($pdfBinary === null || $pdfBinary === '') {
             return false;
         }
@@ -307,5 +333,43 @@ final class ProductWarrantyPdfGenerator
         }
 
         return '';
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public static function loadRequestLog(int $requestId): ?array
+    {
+        try {
+            $table = TableRegistry::getTableLocator()->get('ProductWarrantyRequests');
+
+            return $table->get($requestId)->toArray();
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $log
+     */
+    public static function shouldUseV2Pdf(array $log): bool
+    {
+        return true;
+    }
+
+    /**
+     * Same HTML as used for Dompdf (v1 or v2 layout).
+     */
+    public static function buildHtmlForRequest(int $requestId): ?string
+    {
+        $log = self::loadRequestLog($requestId);
+        if ($log === null) {
+            return null;
+        }
+        if (self::shouldUseV2Pdf($log)) {
+            return ProductWarrantyPdfV2Generator::buildHtml($requestId);
+        }
+
+        return self::buildHtml($requestId);
     }
 }

@@ -357,6 +357,12 @@
 							<span class="menu-text">Warrant Request</span>
 						</a>
 					</li>
+					<li class="<?php if ($reqController=='stocks' && ($reqAction=='admin_warrant_request_v2' || $reqAction=='adminWarrantRequestV2')) {echo 'active';}?>">
+						<a href="<?php echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_warrant_request_v2']); ?>">
+							<i class="menu-icon fa fa-file-pdf-o "></i>
+							<span class="menu-text">Warrant Request v2</span>
+						</a>
+					</li>
 
 
 					<li class="<?php if ($reqController=='stocks' && $reqAction=='admin_product_warranty_request') {echo 'active';}?>">

@@ -13,6 +13,13 @@ class ProductWarrantyRequestsTable extends Table
         parent::initialize($config);
         $this->setTable('product_warranty_request');
         $this->setPrimaryKey('id');
+        $this->addBehavior('Timestamp', [
+            'events' => [
+                'Model.beforeSave' => [
+                    'created_at' => 'new',
+                ],
+            ],
+        ]);
     }
 
     public function validationDefault(Validator $validator): Validator
@@ -54,6 +61,19 @@ class ProductWarrantyRequestsTable extends Table
             ->notEmptyString('contract_name', 'Contractor full name is required.');
 
         $validator
+            ->scalar('email')
+            ->maxLength('email', 255)
+            ->requirePresence('email', 'create')
+            ->notEmptyString('email', 'Email is required.')
+            ->email('email', false, 'Enter a valid email address.');
+
+        $validator
+            ->scalar('phone')
+            ->maxLength('phone', 32)
+            ->requirePresence('phone', 'create')
+            ->notEmptyString('phone', 'Mobile number is required.');
+
+        $validator
             ->scalar('sign_date')
             ->maxLength('sign_date', 32)
             ->requirePresence('sign_date', 'create')
@@ -83,13 +103,11 @@ class ProductWarrantyRequestsTable extends Table
             ->scalar('building_name');
 
         $validator
-            ->allowEmptyString('start_requested_warranty')
-            ->scalar('start_requested_warranty')
+            ->allowEmptyDate('start_requested_warranty')
             ->date('start_requested_warranty', ['ymd'], 'Enter a valid warranty start date (YYYY-MM-DD).');
 
         $validator
-            ->allowEmptyString('end_requested_warranty')
-            ->scalar('end_requested_warranty')
+            ->allowEmptyDate('end_requested_warranty')
             ->date('end_requested_warranty', ['ymd'], 'Enter a valid warranty end date (YYYY-MM-DD).');
 
         $validator
@@ -107,6 +125,15 @@ class ProductWarrantyRequestsTable extends Table
         $validator
             ->allowEmptyString('applicator_address')
             ->scalar('applicator_address');
+
+        $validator
+            ->allowEmptyString('status')
+            ->scalar('status');
+
+        $validator
+            ->allowEmptyString('form_version')
+            ->scalar('form_version')
+            ->maxLength('form_version', 10);
 
         return $validator;
     }

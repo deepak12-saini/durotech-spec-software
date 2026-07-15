@@ -64,6 +64,7 @@ if (!empty($csrfToken)) {
                             <th>Product</th>
                             <th>Used As</th>
                             <th>Building Name</th>
+                            <th>Email</th>
                             <th>Status</th>
                             <th>Certificate</th>
                             <th>Date Submitted</th>
@@ -73,7 +74,7 @@ if (!empty($csrfToken)) {
                     <tbody>
                         <?php
                         if (empty($productWarrantyRequests)) {
-                            echo '<tr><td colspan="9" class="text-center text-muted">No records found.</td></tr>';
+                            echo '<tr><td colspan="10" class="text-center text-muted">No records found.</td></tr>';
                         } else {
                             foreach ($productWarrantyRequests as $request) {
                                 $rowId = (int)($request['ProductWarrantyRequest']['id'] ?? 0);
@@ -97,6 +98,7 @@ if (!empty($csrfToken)) {
                             <td><?= h($request['ProductWarrantyRequest']['product']); ?></td>
                             <td><?= h($request['ProductWarrantyRequest']['used_as']); ?></td>
                             <td><?= h($request['ProductWarrantyRequest']['building_name']); ?></td>
+                            <td><?= h($request['ProductWarrantyRequest']['email'] ?? ''); ?></td>
                             <td><span class="label <?= $statusClass; ?>"><?= h($statusVal); ?></span></td>
                             <td>
                                 <?php if (!empty($request['ProductWarrantyRequest']['certificate'])): ?>
@@ -179,7 +181,11 @@ if (!empty($productWarrantyRequests)) {
                     <tr><th>Start Warranty Date:</th><td><?= !empty($request['ProductWarrantyRequest']['start_requested_warranty']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['start_requested_warranty']) : ''; ?></td></tr>
                     <tr><th>End Warranty Date:</th><td><?= !empty($request['ProductWarrantyRequest']['end_requested_warranty']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['end_requested_warranty']) : ''; ?></td></tr>
                     <tr><th>Contractor Company Name:</th><td><?= h($request['ProductWarrantyRequest']['contract_company_name']); ?></td></tr>
+                    <tr><th>ABN No.:</th><td><?= h($request['ProductWarrantyRequest']['applicator_active_abn']); ?></td></tr>
+                    <tr><th>Company Address:</th><td><?= nl2br(h($request['ProductWarrantyRequest']['applicator_address'])); ?></td></tr>
                     <tr><th>Contractor Name:</th><td><?= h($request['ProductWarrantyRequest']['contract_name']); ?></td></tr>
+                    <tr><th>Email:</th><td><?= h($request['ProductWarrantyRequest']['email'] ?? ''); ?></td></tr>
+                    <tr><th>Mobile:</th><td><?= h($request['ProductWarrantyRequest']['phone'] ?? ''); ?></td></tr>
                     <tr><th>Sign Date:</th><td><?= !empty($request['ProductWarrantyRequest']['sign_date']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['sign_date']) : ''; ?></td></tr>
                     <tr><th>Signature:</th><td><?php if (!empty($request['ProductWarrantyRequest']['contractor_signature'])) : ?><img src="<?= h((defined('SITEURL') ? rtrim((string)SITEURL, '/') : '') . '/signature/' . $request['ProductWarrantyRequest']['contractor_signature']) ?>" alt="Signature" style="max-width:220px;max-height:80px;border:1px solid #ddd;"><?php else : ?>—<?php endif; ?></td></tr>
                     <tr><th>Status:</th><td><?= h($request['ProductWarrantyRequest']['status'] ?: 'Pending'); ?></td></tr>
@@ -217,7 +223,27 @@ $(document).ready(function() {
             data: { id: id, _csrfToken: csrfToken },
             headers: csrfToken ? { 'X-CSRF-Token': csrfToken } : {},
             success: function(response) {
-                if (response.trim() === 'success') {
+                var data = null;
+                try {
+                    data = typeof response === 'string' ? JSON.parse(response) : response;
+                } catch (e) {
+                    data = null;
+                }
+                if (data && data.status === 'success') {
+                    var msg = 'Warranty approved.';
+                    if (data.emailSent && data.customerEmail) {
+                        msg += '\n\nApproval email with certificate sent to:\n' + data.customerEmail;
+                    } else if (data.customerEmail) {
+                        msg += '\n\nCould not send email to ' + data.customerEmail + '. Share the portal link manually.';
+                    } else {
+                        msg += '\n\nNo customer email on file — share the portal link manually.';
+                    }
+                    if (data.portalUrl) {
+                        msg += '\n\nCustomer portal link:\n' + data.portalUrl;
+                    }
+                    alert(msg);
+                    location.reload();
+                } else if (String(response).trim() === 'success') {
                     location.reload();
                 } else {
                     alert('Unable to update this request.');
