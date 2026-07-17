@@ -335,6 +335,14 @@ $isApproved = strtolower((string)$status) === 'approved';
             text-align: center;
             color: var(--pw-muted);
             background: #fafbfc;
+            cursor: pointer;
+            position: relative;
+            transition: border-color 0.15s ease, background 0.15s ease;
+        }
+        .pw-upload:hover,
+        .pw-upload.is-dragover {
+            border-color: #2889c8;
+            background: #f0f7fc;
         }
         .pw-upload i {
             font-size: 28px;
@@ -345,6 +353,27 @@ $isApproved = strtolower((string)$status) === 'approved';
             display: block;
             color: var(--pw-text);
             margin-bottom: 4px;
+        }
+        .pw-upload-filename {
+            display: block;
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--pw-navy);
+            font-weight: 600;
+        }
+        .pw-upload-clear {
+            display: none;
+            margin-top: 8px;
+            background: none;
+            border: 0;
+            color: #c0392b;
+            font-size: 13px;
+            text-decoration: underline;
+            cursor: pointer;
+            padding: 0;
+        }
+        .pw-upload.has-file .pw-upload-clear {
+            display: inline-block;
         }
         .pw-update-footer {
             display: flex;
@@ -498,11 +527,15 @@ $isApproved = strtolower((string)$status) === 'approved';
             </div>
         </div>
 
-        <form id="pw-update-form" onsubmit="return false;">
+        <?= $this->Form->create(null, [
+            'id' => 'pw-update-form',
+            'url' => ['controller' => 'Fronts', 'action' => 'productWarrantyV2PortalUpdate', $portalToken],
+            'type' => 'file',
+        ]) ?>
             <div class="row">
                 <div class="col-sm-6">
                     <label class="pw-form-label" for="pw-update-name">Name</label>
-                    <input type="text" class="pw-form-control" id="pw-update-name" name="name" placeholder="Your full name" value="<?= h($contractName) ?>">
+                    <input type="text" class="pw-form-control" id="pw-update-name" name="name" placeholder="Your full name" value="<?= h($contractName) ?>" required>
                 </div>
                 <div class="col-sm-6">
                     <label class="pw-form-label" for="pw-update-company">Company Name</label>
@@ -514,26 +547,28 @@ $isApproved = strtolower((string)$status) === 'approved';
                     <label class="pw-form-label" for="pw-update-notes" style="margin:0;">Notes</label>
                     <span style="font-size:12px;color:var(--pw-muted);">what needs to be updated</span>
                 </div>
-                <textarea class="pw-form-control" id="pw-update-notes" name="notes" placeholder="Describe the change you'd like made to your warranty..."></textarea>
+                <textarea class="pw-form-control" id="pw-update-notes" name="notes" placeholder="Describe the change you'd like made to your warranty..." required></textarea>
             </div>
             <div style="margin-top:14px;">
                 <label class="pw-form-label">Attach Supporting PDF <span style="font-weight:400;color:var(--pw-muted);">(optional)</span></label>
-                <div class="pw-upload">
+                <div class="pw-upload" id="pw-upload-zone" role="button" tabindex="0" aria-label="Attach supporting PDF">
                     <i class="fa fa-file-pdf-o"></i>
-                    <strong>Click to attach a PDF or drag and drop here</strong>
+                    <strong id="pw-upload-title">Click to attach a PDF or drag and drop here</strong>
                     <span>max 10MB</span>
-                    <input type="file" accept="application/pdf" disabled style="display:none;">
+                    <span class="pw-upload-filename" id="pw-upload-filename" style="display:none;"></span>
+                    <button type="button" class="pw-upload-clear" id="pw-upload-clear">Remove file</button>
+                    <input type="file" id="pw-supporting-pdf" name="supporting_pdf" accept="application/pdf,.pdf" style="display:none;">
                 </div>
             </div>
             <div class="pw-update-footer">
                 <div class="pw-update-note">
                     Our warranty team typically responds to update requests within 2 business days.
                 </div>
-                <button type="button" class="pw-btn pw-btn-primary" id="pw-update-submit">
+                <button type="submit" class="pw-btn pw-btn-primary" id="pw-update-submit">
                     Send Update Request <i class="fa fa-arrow-right"></i>
                 </button>
             </div>
-        </form>
+        <?= $this->Form->end() ?>
     </div>
 </div>
 
@@ -548,8 +583,124 @@ $isApproved = strtolower((string)$status) === 'approved';
     $('#pw-email-toggle').on('click', function () {
         $('#pw-email-panel').slideToggle(150);
     });
-    $('#pw-update-submit').on('click', function () {
-        alert('Update requests will be enabled in the next phase.');
+
+    var $zone = $('#pw-upload-zone');
+    var $input = $('#pw-supporting-pdf');
+    var $filename = $('#pw-upload-filename');
+    var $title = $('#pw-upload-title');
+    var $clear = $('#pw-upload-clear');
+    var maxBytes = 10 * 1024 * 1024;
+
+    function setFile(file) {
+        if (!file) {
+            clearFile();
+            return;
+        }
+        var name = (file.name || '').toLowerCase();
+        var type = (file.type || '').toLowerCase();
+        if (name.slice(-4) !== '.pdf' && type !== 'application/pdf') {
+            alert('Please attach a PDF file only.');
+            clearFile();
+            return;
+        }
+        if (file.size > maxBytes) {
+            alert('PDF must be 10MB or smaller.');
+            clearFile();
+            return;
+        }
+
+        try {
+            var dt = new DataTransfer();
+            dt.items.add(file);
+            $input[0].files = dt.files;
+        } catch (e) {
+            // Fallback: only click-to-select works in older browsers without DataTransfer.
+            if (!$input[0].files || !$input[0].files.length) {
+                alert('Please use Click to attach a PDF (drag and drop is not supported in this browser).');
+                return;
+            }
+        }
+
+        $filename.text(file.name).show();
+        $title.text('PDF selected');
+        $zone.addClass('has-file');
+    }
+
+    function clearFile() {
+        $input.val('');
+        $filename.hide().text('');
+        $title.text('Click to attach a PDF or drag and drop here');
+        $zone.removeClass('has-file');
+    }
+
+    $zone.on('click', function (e) {
+        if ($(e.target).is($clear) || $(e.target).closest('#pw-upload-clear').length) {
+            return;
+        }
+        $input.trigger('click');
+    });
+
+    $zone.on('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            $input.trigger('click');
+        }
+    });
+
+    $input.on('click', function (e) {
+        e.stopPropagation();
+    });
+
+    $input.on('change', function () {
+        var file = this.files && this.files[0] ? this.files[0] : null;
+        if (file) {
+            setFile(file);
+        } else {
+            clearFile();
+        }
+    });
+
+    $clear.on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        clearFile();
+    });
+
+    $zone.on('drag dragstart dragend dragover dragenter dragleave drop', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    $zone.on('dragover dragenter', function () {
+        $zone.addClass('is-dragover');
+    });
+
+    $zone.on('dragleave dragend drop', function () {
+        $zone.removeClass('is-dragover');
+    });
+
+    $zone.on('drop', function (e) {
+        var files = e.originalEvent.dataTransfer && e.originalEvent.dataTransfer.files
+            ? e.originalEvent.dataTransfer.files
+            : null;
+        if (files && files.length) {
+            setFile(files[0]);
+        }
+    });
+
+    $('#pw-update-form').on('submit', function () {
+        var notes = $.trim($('#pw-update-notes').val() || '');
+        var name = $.trim($('#pw-update-name').val() || '');
+        if (!name) {
+            alert('Please enter your name.');
+            return false;
+        }
+        if (!notes) {
+            alert('Please describe what needs to be updated.');
+            return false;
+        }
+        $('#pw-update-submit').prop('disabled', true).html('Sending…');
+        return true;
     });
 })();
 </script>

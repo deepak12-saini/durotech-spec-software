@@ -134,7 +134,8 @@ $coverCardWidthMm = 140;
 $coverFieldsWidthMm = 116;
 $coverLabelIndentMm = 22;
 $coverBlockBottomMm = 12;
-$coverBlockHeightMm = 64;
+// Taller cover block so PRODUCT (2 lines) + PROJECT + APPLICATOR + DATE stay on page 1.
+$coverBlockHeightMm = 92;
 $coverSpacerTopMm = 297 - $coverBlockHeightMm - $coverBlockBottomMm;
 $coverFieldRowGapMm = 4;
 $detailProductLines = $wrapDetailFieldLines($product, 42, 6);
@@ -220,10 +221,13 @@ $detailEndLines = $splitDetailFieldLines($endDate, 3);
         .cover-block-cell {
             vertical-align: top;
             padding: 0 <?= (int)$coverInsetRightMm ?>mm <?= (int)$coverBlockBottomMm ?>mm <?= (int)$coverInsetLeftMm ?>mm;
+            page-break-inside: avoid;
         }
         .cover-title-wrap {
             width: <?= (int)$coverCardWidthMm ?>mm;
             border-collapse: collapse;
+            page-break-inside: avoid;
+            page-break-after: avoid;
         }
         .cover-title-wrap td {
             text-align: center;
@@ -248,6 +252,7 @@ $detailEndLines = $splitDetailFieldLines($endDate, 3);
             border-collapse: collapse;
             background-color: #ffffff;
             border-radius: 12px;
+            page-break-inside: avoid;
         }
         .cover-ov-card td {
             background-color: #ffffff;

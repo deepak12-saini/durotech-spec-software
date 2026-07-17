@@ -676,6 +676,7 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/product_warranty_v2/portal/:token', ['controller' => 'Fronts', 'action' => 'productWarrantyV2Portal'], ['pass' => ['token']]);
     $routes->connect('/product_warranty_v2/portal/:token/download', ['controller' => 'Fronts', 'action' => 'productWarrantyV2PortalDownload'], ['pass' => ['token']]);
     $routes->connect('/product_warranty_v2/portal/:token/email', ['controller' => 'Fronts', 'action' => 'productWarrantyV2PortalEmail'], ['pass' => ['token']]);
+    $routes->connect('/product_warranty_v2/portal/:token/update', ['controller' => 'Fronts', 'action' => 'productWarrantyV2PortalUpdate'], ['pass' => ['token']]);
 
     $routes->connect('/durotech-institute-of-waterproofing', [
         'controller' => 'Fronts',

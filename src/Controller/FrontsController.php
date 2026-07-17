@@ -1835,6 +1835,136 @@ class FrontsController extends AppController
     }
 
     /**
+     * Customer portal: submit warranty update request (notes + optional PDF) to Kal / warranty team.
+     */
+    public function productWarrantyV2PortalUpdate($token = null): ?Response
+    {
+        $this->request->allowMethod(['post']);
+
+        $entity = $this->loadProductWarrantyByPortalToken($token);
+        if ($entity === null) {
+            throw new \Cake\Http\Exception\NotFoundException('Warranty portal link is invalid.');
+        }
+
+        $portalToken = ProductWarrantyPortalToken::generate((int)$entity->id);
+        $name = trim((string)$this->request->getData('name'));
+        $companyName = trim((string)$this->request->getData('company_name'));
+        $notes = trim((string)$this->request->getData('notes'));
+
+        if ($name === '') {
+            $this->Flash->error(__('Please enter your name.'));
+            return $this->redirect(['action' => 'productWarrantyV2Portal', $portalToken]);
+        }
+        if ($notes === '') {
+            $this->Flash->error(__('Please describe what needs to be updated.'));
+            return $this->redirect(['action' => 'productWarrantyV2Portal', $portalToken]);
+        }
+
+        $attachment = null;
+        $uploaded = $this->request->getUploadedFile('supporting_pdf');
+        if ($uploaded !== null && $uploaded->getError() !== UPLOAD_ERR_NO_FILE) {
+            if ($uploaded->getError() !== UPLOAD_ERR_OK) {
+                $this->Flash->error(__('The PDF upload failed. Please try again.'));
+                return $this->redirect(['action' => 'productWarrantyV2Portal', $portalToken]);
+            }
+
+            $maxBytes = 10 * 1024 * 1024;
+            $size = (int)$uploaded->getSize();
+            if ($size <= 0 || $size > $maxBytes) {
+                $this->Flash->error(__('PDF must be 10MB or smaller.'));
+                return $this->redirect(['action' => 'productWarrantyV2Portal', $portalToken]);
+            }
+
+            $clientName = (string)$uploaded->getClientFilename();
+            $ext = strtolower((string)pathinfo($clientName, PATHINFO_EXTENSION));
+            if ($ext !== 'pdf') {
+                $this->Flash->error(__('Please attach a PDF file only.'));
+                return $this->redirect(['action' => 'productWarrantyV2Portal', $portalToken]);
+            }
+
+            $stream = $uploaded->getStream();
+            $pdfData = $stream->getContents();
+            if ($pdfData === '' || strncmp($pdfData, '%PDF', 4) !== 0) {
+                $this->Flash->error(__('The uploaded file does not look like a valid PDF.'));
+                return $this->redirect(['action' => 'productWarrantyV2Portal', $portalToken]);
+            }
+
+            $safeBase = preg_replace('/[^a-zA-Z0-9._-]+/', '-', pathinfo($clientName, PATHINFO_FILENAME)) ?: 'supporting';
+            $attachName = $safeBase . '.pdf';
+            $attachment = [
+                $attachName => [
+                    'data' => $pdfData,
+                    'mimetype' => 'application/pdf',
+                ],
+            ];
+
+            // Keep a copy for audit under webroot.
+            $dir = WWW_ROOT . 'pdf' . DS . 'FPDI' . DS . 'warranty_updates' . DS;
+            if (!is_dir($dir)) {
+                @mkdir($dir, 0755, true);
+            }
+            $savedName = 'pwr-' . (int)$entity->id . '-' . date('Ymd-His') . '-' . $attachName;
+            @file_put_contents($dir . $savedName, $pdfData);
+        }
+
+        $log = $entity->toArray();
+        $recipients = $this->collectProductWarrantyAdminRecipients();
+        if ($recipients === []) {
+            $this->Flash->error(__('Unable to send your update request right now. Please try again later.'));
+            return $this->redirect(['action' => 'productWarrantyV2Portal', $portalToken]);
+        }
+
+        $baseUrl = defined('SITEURL') ? (string)SITEURL : (string)(Configure::read('App.fullBaseUrl') ?? '');
+        $adminListUrl = rtrim($baseUrl, '/') . '/admin/stocks/product_warranty_request?q=' . (int)$entity->id;
+        $logoUrl = $baseUrl !== ''
+            ? (rtrim($baseUrl, '/') . '/customdurotech/images/durotech_logo_new.png')
+            : '';
+        $siteName = defined('SITENAME') ? (string)SITENAME : 'Durotech Industries';
+
+        try {
+            [$from, $fromName] = \App\Utility\EmailFrom::resolve($siteName);
+            $smtpAuthFrom = \App\Utility\EmailFrom::smtpAuthAddressIfAllowed();
+            if ($smtpAuthFrom !== null) {
+                $from = $smtpAuthFrom;
+            }
+
+            $mail = new Email('default');
+            $mail->viewBuilder()
+                ->setClassName('App\View\AppView')
+                ->setTemplate('product_warranty_update_request');
+            $mail->setFrom([$from => $fromName])
+                ->setTo(count($recipients) === 1 ? $recipients[0] : $recipients)
+                ->setSubject($siteName . ' | Warranty update request #' . (int)$entity->id)
+                ->setEmailFormat('html')
+                ->setViewVars([
+                    'siteName' => $siteName,
+                    'logoUrl' => $logoUrl,
+                    'requestId' => (int)$entity->id,
+                    'product' => trim((string)($log['product'] ?? '')),
+                    'name' => $name,
+                    'companyName' => $companyName,
+                    'notes' => $notes,
+                    'customerEmail' => trim((string)($log['email'] ?? '')),
+                    'customerPhone' => trim((string)($log['phone'] ?? '')),
+                    'adminListUrl' => $adminListUrl,
+                    'hasAttachment' => $attachment !== null,
+                ]);
+
+            if ($attachment !== null) {
+                $mail->setAttachments($attachment);
+            }
+
+            $mail->send();
+            $this->Flash->success(__('Your update request has been sent. Our warranty team will follow up shortly.'));
+        } catch (\Throwable $e) {
+            Log::error('Product warranty portal update email failed: ' . $e->getMessage());
+            $this->Flash->error(__('Unable to send your update request right now. Please try again later.'));
+        }
+
+        return $this->redirect(['action' => 'productWarrantyV2Portal', $portalToken]);
+    }
+
+    /**
      * Submit project warranty request form (technical literature / warranty page).
      * Saves to warranty_requests and redirects back with flash.
      */
