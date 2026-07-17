@@ -15,6 +15,7 @@ class InstagramPostsController extends AppController
     public function initialize(): void
     {
         parent::initialize();
+        $this->loadComponent('Paginator');
         $this->loadModel('InstagramPosts');
     }
 
@@ -27,9 +28,14 @@ class InstagramPostsController extends AppController
         $this->set('title_for_layout', (defined('SITENAME') ? SITENAME : '') . ' Instagram Posts');
         $this->checkAdminSession();
 
-        $instagramPosts = $this->InstagramPosts->find()
-            ->orderDesc('InstagramPosts.id')
-            ->all();
+        $query = $this->InstagramPosts->find()
+            ->orderDesc('InstagramPosts.id');
+
+        $this->paginate = [
+            'limit' => 20,
+            'order' => ['InstagramPosts.id' => 'DESC'],
+        ];
+        $instagramPosts = $this->paginate($query);
 
         $this->set(compact('instagramPosts'));
         return null;

@@ -21,7 +21,7 @@
                 </tr>
             </thead>
             <tbody>
-                <?php if ($instagramPosts->count() > 0): ?>
+                <?php if (!$instagramPosts->isEmpty()): ?>
                     <?php foreach ($instagramPosts as $post): ?>
                         <tr>
                             <td><?= h($post->display_order) ?></td>
@@ -65,4 +65,19 @@
             </tbody>
         </table>
     </div>
+
+    <?php if (!$instagramPosts->isEmpty()) : ?>
+        <div class="clearfix" style="margin-top: 12px;">
+            <ul class="pagination pagination-sm pull-left" style="margin: 0;">
+                <?= $this->Paginator->first('&laquo;', ['escape' => false]); ?>
+                <?= $this->Paginator->prev('< ' . __('previous')); ?>
+                <?= $this->Paginator->numbers(['modulus' => 4]); ?>
+                <?= $this->Paginator->next(__('next') . ' >'); ?>
+                <?= $this->Paginator->last('&raquo;', ['escape' => false]); ?>
+            </ul>
+            <p class="text-muted pull-right" style="margin: 8px 0 0;">
+                <?= $this->Paginator->counter(__('Page {{page}} of {{pages}}, showing {{current}} record(s) out of {{count}} total')); ?>
+            </p>
+        </div>
+    <?php endif; ?>
 </div>
