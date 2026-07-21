@@ -32,6 +32,70 @@
 	.suggesstion-box {
 		display: block;
 	}
+	.addsection > .col-sm-9 {
+		background: #fff;
+		border: 1px solid #dbe5f1;
+		border-radius: 12px;
+		box-shadow: 0 6px 18px rgba(36, 92, 154, 0.08);
+		margin-bottom: 18px;
+		overflow-x: auto;
+		padding: 15px;
+		scroll-behavior: smooth;
+	}
+	.addsection > .col-sm-9:focus {
+		border-color: #9fb5ce;
+		outline: 2px solid rgba(159, 181, 206, 0.25);
+	}
+	.addsection table {
+		border-collapse: separate;
+		border-spacing: 0 8px;
+		width: 100%;
+	}
+	.addsection th {
+		color: #4f5f6f;
+		font-size: 12px;
+		font-weight: 600;
+		padding: 0 6px;
+	}
+	.addsection td {
+		padding: 0 6px;
+		vertical-align: top;
+	}
+	.addsection input[type="text"] {
+		background: #fff;
+		border: 1px solid #cfd8e3 !important;
+		border-radius: 7px !important;
+		box-shadow: none !important;
+		height: 34px;
+		line-height: 20px;
+		padding: 6px 8px;
+	}
+	@media (min-width: 768px) and (max-width: 1300px) {
+		.form-horizontal .form-group > .col-sm-3 {
+			width: 16%;
+		}
+		.form-horizontal .form-group > .col-sm-9 {
+			width: 84%;
+		}
+		.addsection > label {
+			display: none;
+		}
+		.addsection > .col-sm-9 {
+			margin-left: 8%;
+			width: 92%;
+		}
+		.addsection input[name="serial[]"] {
+			width: 55px !important;
+		}
+		.addsection input[name="coverage[]"],
+		.addsection input[name="product[]"] {
+			width: 190px !important;
+		}
+		.addsection input[name="coverage_by_pack[]"],
+		.addsection input[name="Warranty[]"] {
+			width: 90px !important;
+		}
+	}
 	
 	</style>
 	<div class="page-content">
@@ -157,7 +221,7 @@
 			?>
 			<div class="form-group addsection" id="section_<?php echo $i; ?>">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
-				<div class="col-sm-9">
+				<div class="col-sm-9" tabindex="0" aria-label="Product section; use left and right arrow keys to scroll">
 				<table>
 					<tbody>
 						<tr><td colspan="5">
@@ -446,7 +510,7 @@
 		var varhtml = '' +
 			'<div class="form-group addsection" id="section_'+newdiv+'">' +
 				'<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>' +
-				'<div class="col-sm-9">' +
+				'<div class="col-sm-9" tabindex="0" aria-label="Product section; use left and right arrow keys to scroll">' +
 					'<table>' +
 						'<tr>' +
 							'<td colspan="5">' +

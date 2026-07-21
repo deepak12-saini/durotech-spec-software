@@ -34,8 +34,14 @@
 			border:1px solid #dbe5f1;
 			border-radius:12px;
 			box-shadow:0 6px 18px rgba(36, 92, 154, 0.08);
+			overflow-x:auto;
 			padding:15px;
 			margin-bottom:18px;
+			scroll-behavior:smooth;
+		}
+		.addsection > .col-sm-9:focus{
+			border-color:#9fb5ce;
+			outline:2px solid rgba(159, 181, 206, 0.25);
 		}
 		.addsection table{
 			width:100%;
@@ -84,6 +90,32 @@
 			border-color:#9fb5ce;
 			box-shadow:0 0 0 2px rgba(159, 181, 206, 0.18) !important;
 			outline:none;
+		}
+		@media (min-width:768px) and (max-width:1300px){
+			.form-horizontal .form-group > .col-sm-3{
+				width:16%;
+			}
+			.form-horizontal .form-group > .col-sm-9{
+				width:84%;
+			}
+			.addsection > label{
+				display:none;
+			}
+			.addsection > .col-sm-9{
+				margin-left:8%;
+				width:92%;
+			}
+			.addsection input[name="serial[]"]{
+				width:55px !important;
+			}
+			.addsection input[name="coverage[]"],
+			.addsection input[name="product[]"]{
+				width:190px !important;
+			}
+			.addsection input[name="coverage_by_pack[]"],
+			.addsection input[name="Warranty[]"]{
+				width:90px !important;
+			}
 		}
 		.ui-datepicker{
 			background:#fff;
@@ -311,7 +343,7 @@
 			?>
 			<div class="form-group addsection" id="section_<?php echo $i; ?>">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
-				<div class="col-sm-9">
+				<div class="col-sm-9" tabindex="0" aria-label="Product section; use left and right arrow keys to scroll">
 				<table>
 					<tbody>
 						<tr><td colspan="5">
@@ -639,7 +671,7 @@
 		var varhtml = '' +
 			'<div class="form-group addsection" id="section_'+newdiv+'">' +
 				'<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>' +
-				'<div class="col-sm-9">' +
+				'<div class="col-sm-9" tabindex="0" aria-label="Product section; use left and right arrow keys to scroll">' +
 					'<table>' +
 						'<tr>' +
 							'<td colspan="5">' +
