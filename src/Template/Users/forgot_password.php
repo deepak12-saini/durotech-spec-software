@@ -3,7 +3,7 @@
 			<div class="login-container">
 				<div class="center">
 					<h1>
-						<a href="<?php echo SITEURL; ?>"><img src="<?php echo SITEURL; ?>customdurotech/images/durotech_logo.png"/></a>
+						<a href="<?php echo SITEURL; ?>"><img src="<?php echo SITEURL; ?>customdurotech/images/durotech_logo_new.png?v=20260520" alt="Durotech — Commercial Waterproofing &amp; Sealants"/></a>
 					</h1>
 					
 				</div>

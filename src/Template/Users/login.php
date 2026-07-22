@@ -1,11 +1,13 @@
 	<div class="row">
 		<div class="col-sm-10 col-sm-offset-1">
 			<div class="login-container">
-				<div class="center">
+				<div class="center dt-brand">
 					<h1>
-						<a href="<?= h($this->Url->build('/')) ?>"><img src="<?= h($this->Url->build('/customdurotech/images/durotech_logo.png')) ?>" alt="Logo"/></a>
+						<a href="<?= h($this->Url->build('/')) ?>">
+							<img src="<?= h(SITEURL) ?>customdurotech/images/durotech_logo_new.png?v=20260520" alt="Durotech — Commercial Waterproofing &amp; Sealants"/>
+						</a>
 					</h1>
-					
+					<h4 class="blue dt-panel-label">Staff Login</h4>
 				</div>
 
 				<div class="space-6"></div>
@@ -20,6 +22,7 @@
 								</h4>
 
 								<div class="space-6"></div>
+								<p class="dt-subtitle">Sign in to access the staff panel</p>
 
 								<?= $this->Form->create(null, ['url' => ['action' => 'login'], 'name' => 'loginForm', 'id' => 'loginForm']) ?>
 								<?= $this->Flash->render() ?>
