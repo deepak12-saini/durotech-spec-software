@@ -545,35 +545,34 @@ public function employee_send_v3() {
         $draftIdFromForm = isset($formData['draft_id']) ? (int)$formData['draft_id'] : 0;
         $hasSaveStatusColumn = $this->Mailer->getSchema()->getColumn('save_status');
 
-        // If final submit with valid draft: update that record to submitted (no duplicate)
-        if ($isFinalSubmit && $draftIdFromForm > 0 && $hasSaveStatusColumn) {
-            $existing = $this->Mailer->find()->where(['Mailer.id' => $draftIdFromForm])->first();
-            $notDeleted = !$this->Mailer->getSchema()->getColumn('deleted_at')
-                || ($existing && $existing->get('deleted_at') === null);
-            if ($existing && $notDeleted && (int)$existing->employee_id === (int)$employee_id && $existing->save_status === 'draft') {
-                $this->_saveEmployeeSpecAsSubmitted($draftIdFromForm, $formData, $employee_id);
-                $this->_markClaudeDraftAppliedIfRequested($formData, $draftIdFromForm);
+        // Final submit: prefer existing draft (by id, then latest open draft) so track stays reserved.
+        if ($isFinalSubmit && $hasSaveStatusColumn) {
+            $draftToSubmit = null;
+            if ($draftIdFromForm > 0) {
+                $existing = $this->Mailer->find()->where(['Mailer.id' => $draftIdFromForm])->first();
+                $notDeleted = !$this->Mailer->getSchema()->getColumn('deleted_at')
+                    || ($existing && $existing->get('deleted_at') === null);
+                if ($existing && $notDeleted && (int)$existing->employee_id === (int)$employee_id && $existing->save_status === 'draft') {
+                    $draftToSubmit = $existing;
+                }
+            }
+            if (!$draftToSubmit) {
+                $latestDraftQ = $this->Mailer->find()
+                    ->where([
+                        'Mailer.employee_id' => $employee_id,
+                        'Mailer.save_status' => 'draft',
+                        'Mailer.type' => 3,
+                    ])
+                    ->orderDesc('Mailer.id');
+                $this->_applyMailerNotDeletedToQuery($latestDraftQ);
+                $draftToSubmit = $latestDraftQ->first();
+            }
+            if ($draftToSubmit) {
+                $submitDraftId = (int)$draftToSubmit->id;
+                $this->_saveEmployeeSpecAsSubmitted($submitDraftId, $formData, $employee_id);
+                $this->_markClaudeDraftAppliedIfRequested($formData, $submitDraftId);
                 $this->Flash->success('Spec generated successfully.');
                 return $this->redirect(['action' => 'index']);
-            }
-        }
-
-        // When creating a new submitted spec, remove any leftover draft for this employee so we don't get two entries
-        if ($hasSaveStatusColumn && $isFinalSubmit) {
-            $draftCleanup = $this->Mailer->find()
-                ->where([
-                    'Mailer.employee_id' => $employee_id,
-                    'Mailer.save_status' => 'draft',
-                    'Mailer.type' => 3,
-                ]);
-            $this->_applyMailerNotDeletedToQuery($draftCleanup);
-            $draftIds = $draftCleanup->all()
-                ->extract('id')
-                ->toArray();
-            if (!empty($draftIds)) {
-                $this->MailerComment->deleteAll(['mailer_id IN' => $draftIds]);
-                $this->SpecUsearea->deleteAll(['mailer_id IN' => $draftIds]);
-                $this->Mailer->deleteAll(['id IN' => $draftIds]);
             }
         }
 
@@ -603,11 +602,11 @@ public function employee_send_v3() {
             $formattedDate = "$year-$month-$day";
 
 
-        // Collect form fields (new spec) – assign next track at submit (drafts excluded)
+        // Brand-new create only (no open draft): keep form track if present, else allocate next.
         $inserty['Mailer'] = array(
             'employee_id'   => $employee_id,
             'spec_v'        => 0,
-            'tracknumber'   => $this->Mailer->getNextSpecTrackNumber(),
+            'tracknumber'   => $this->_resolveSpecTrackNumber('', $formData),
             'name'          => $formData['name'] ?? '',
             'email'         => $formData['email'] ?? '',
             'company'       => $formData['company'] ?? '',
@@ -772,17 +771,35 @@ public function employee_send_v3() {
 
             $this->_markClaudeDraftAppliedIfRequested($formData, $lastinsertId);
 
+            // Cleanup leftover drafts only after a true non-draft create succeeded.
+            if ($hasSaveStatusColumn) {
+                $draftCleanup = $this->Mailer->find()
+                    ->where([
+                        'Mailer.employee_id' => $employee_id,
+                        'Mailer.save_status' => 'draft',
+                        'Mailer.type' => 3,
+                        'Mailer.id !=' => $lastinsertId,
+                    ]);
+                $this->_applyMailerNotDeletedToQuery($draftCleanup);
+                $draftIds = $draftCleanup->all()
+                    ->extract('id')
+                    ->toArray();
+                if (!empty($draftIds)) {
+                    $this->MailerComment->deleteAll(['mailer_id IN' => $draftIds]);
+                    $this->SpecUsearea->deleteAll(['mailer_id IN' => $draftIds]);
+                    $this->Mailer->deleteAll(['id IN' => $draftIds]);
+                }
+            }
+
             $this->Flash->success('Spec generated successfully.');
             return $this->redirect(array('action' => 'index'));
         }
     }
 
-    // Next track number (only submitted specs – drafts excluded; autosave/resume don't break sequence)
-    $refernce = $this->Mailer->getNextSpecTrackNumber();
-
-    // Load draft when user chose "Resume Draft" (?resume=1)
+    // Load draft first so reserved track is shown; only preview next if no reserved track.
     $draft = null;
     $draftId = null;
+    $refernce = '';
     $resumeDraft = $this->request->getQuery('resume') && $this->Mailer->getSchema()->getColumn('save_status');
     if ($resumeDraft) {
         $draftLoad = $this->Mailer->find()
@@ -792,9 +809,22 @@ public function employee_send_v3() {
         $draft = $draftLoad->first();
         if ($draft) {
             $draftId = $draft->id;
+            $draftTrack = trim((string)($draft->tracknumber ?? ''));
+            // Reserve track immediately on resume so submit keeps the same number (not only on autosave).
+            if ($draftTrack === '') {
+                $draft->tracknumber = $this->Mailer->getNextSpecTrackNumber();
+                $this->Mailer->save($draft);
+                $draftTrack = trim((string)$draft->tracknumber);
+            }
+            if ($draftTrack !== '') {
+                $refernce = $draftTrack;
+            }
             $draft->comments = $this->MailerComment->find()->where(['mailer_id' => $draftId])->all();
             $draft->spec_useareas = $this->SpecUsearea->find()->where(['mailer_id' => $draftId])->orderAsc('id')->all();
         }
+    }
+    if ($refernce === '') {
+        $refernce = $this->Mailer->getNextSpecTrackNumber();
     }
     $previousSpecs = [];
     $templatePresets = [];
@@ -1253,6 +1283,28 @@ public function edit_template_preset($id = null)
 }
 
 /**
+ * Keep draft/submitted spec on the same track: DB reserved track, then form field, then allocate.
+ */
+protected function _resolveSpecTrackNumber($mailerOrDbTrack, array $formData): string
+{
+    $dbTrack = '';
+    if (is_object($mailerOrDbTrack)) {
+        $dbTrack = trim((string)($mailerOrDbTrack->tracknumber ?? ''));
+    } elseif (is_string($mailerOrDbTrack)) {
+        $dbTrack = trim($mailerOrDbTrack);
+    }
+    $formTrack = trim((string)($formData['tracknumber'] ?? ''));
+    if ($dbTrack !== '') {
+        return $dbTrack;
+    }
+    if ($formTrack !== '') {
+        return $formTrack;
+    }
+
+    return $this->Mailer->getNextSpecTrackNumber();
+}
+
+/**
  * Save an existing draft mailer as submitted: set tracknumber, status, comments/spec_useareas, PDF, email.
  */
 protected function _saveEmployeeSpecAsSubmitted(int $mailerId, array $formData, $employee_id): void
@@ -1269,7 +1321,7 @@ protected function _saveEmployeeSpecAsSubmitted(int $mailerId, array $formData, 
     if (!$mailer) {
         return;
     }
-    $tracknumber = $this->Mailer->getNextSpecTrackNumber();
+    $tracknumber = $this->_resolveSpecTrackNumber($mailer, $formData);
 
     $dateInput = (string)($formData['date'] ?? date('d/m/Y'));
     $dateParts = explode('/', $dateInput);
@@ -1503,6 +1555,7 @@ public function specDraftAutosave()
     $subject = $data['subject'] ?? '';
     $use_area = $data['use_area'] ?? 1;
 
+    $reservedTrack = '';
     if ($mailer) {
         $mailer->name = $name;
         $mailer->email = $email;
@@ -1513,13 +1566,21 @@ public function specDraftAutosave()
         $mailer->type = $type;
         $mailer->subject = $subject;
         $mailer->use_area = $use_area;
+        // Legacy drafts with empty track: reserve once and keep on later autosaves.
+        if (trim((string)($mailer->tracknumber ?? '')) === '') {
+            $formTrack = trim((string)($data['tracknumber'] ?? ''));
+            $mailer->tracknumber = $formTrack !== '' ? $formTrack : $this->Mailer->getNextSpecTrackNumber();
+        }
         $this->Mailer->save($mailer);
         $draftId = $mailer->id;
+        $reservedTrack = (string)$mailer->tracknumber;
     } else {
+        $formTrack = trim((string)($data['tracknumber'] ?? ''));
+        $reservedTrack = $formTrack !== '' ? $formTrack : $this->Mailer->getNextSpecTrackNumber();
         $entity = $this->Mailer->newEntity([
             'employee_id' => $employee_id,
             'spec_v' => 0,
-            'tracknumber' => '',
+            'tracknumber' => $reservedTrack,
             'name' => $name,
             'email' => $email,
             'company' => $company,
@@ -1534,6 +1595,7 @@ public function specDraftAutosave()
         ]);
         if ($this->Mailer->save($entity)) {
             $draftId = $entity->id;
+            $reservedTrack = (string)$entity->tracknumber;
         } else {
             return $this->_specDraftJsonResponse(['success' => false, 'error' => 'Save failed.']);
         }
@@ -1591,7 +1653,11 @@ public function specDraftAutosave()
         }
     }
 
-    return $this->_specDraftJsonResponse(['success' => true, 'draft_id' => (int)$draftId]);
+    return $this->_specDraftJsonResponse([
+        'success' => true,
+        'draft_id' => (int)$draftId,
+        'tracknumber' => $reservedTrack,
+    ]);
 }
 
 /**
@@ -1713,7 +1779,8 @@ public function editsend_v3($id = null) {
 
         $tracknumber = ($form_type == 0) ? $this->request->data['tracknumber'] : '';
         if ($form_type != 0) {
-            $tracknumber = $this->Mailer->getNextAdminStyleSpecTrackNumber();
+            // Same employee DD-MM series as new specs / drafts (not admin yy-mm).
+            $tracknumber = $this->Mailer->getNextSpecTrackNumber();
         }
         // Revision column is optional in some migrated databases.
         $hasRevisionColumn = $this->Mailer->getSchema()->hasColumn('revision');

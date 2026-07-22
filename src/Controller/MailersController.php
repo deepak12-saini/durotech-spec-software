@@ -849,9 +849,10 @@ class MailersController extends AppController
 				return $this->redirect(\Cake\Routing\Router::url('/mailers/index_v3'));
 			}
 		}
-		$refernce = $this->Mailer->getNextSpecTrackNumber();
+		// Load draft first so reserved track is shown; only preview next if no reserved track.
 		$draft = null;
 		$draftId = null;
+		$refernce = '';
 		$previousSpecList = [];
 		$resumeDraft = $this->request->getQuery('resume') && $hasSaveStatusColumn;
 		if ($resumeDraft) {
@@ -866,9 +867,21 @@ class MailersController extends AppController
 			$draft = $draftQ->first();
 			if ($draft) {
 				$draftId = (int)$draft->id;
+				$draftTrack = trim((string)($draft->tracknumber ?? ''));
+				if ($draftTrack === '') {
+					$draft->tracknumber = $this->Mailer->getNextSpecTrackNumber();
+					$this->Mailer->save($draft);
+					$draftTrack = trim((string)$draft->tracknumber);
+				}
+				if ($draftTrack !== '') {
+					$refernce = $draftTrack;
+				}
 				$draft->comments = $this->MailerComment->find()->where(['mailer_id' => $draftId])->all();
 				$draft->spec_useareas = $this->SpecUsearea->find()->where(['mailer_id' => $draftId])->orderAsc('id')->all();
 			}
+		}
+		if ($refernce === '') {
+			$refernce = $this->Mailer->getNextSpecTrackNumber();
 		}
 		if ($adaptiveMode) {
 			$submittedConditions = [
@@ -1053,9 +1066,16 @@ class MailersController extends AppController
 			]);
 		}
 
+		// Reserve track on first draft save; never wipe an already reserved number.
+		$existingTrack = trim((string)($entity->tracknumber ?? ''));
+		$formTrack = trim((string)($data['tracknumber'] ?? ''));
+		$reservedTrack = $existingTrack !== ''
+			? $existingTrack
+			: ($formTrack !== '' ? $formTrack : $this->Mailer->getNextSpecTrackNumber());
+
 		$entity = $this->Mailer->patchEntity($entity, [
 			'name' => (string)($data['name'] ?? ''),
-			'tracknumber' => '',
+			'tracknumber' => $reservedTrack,
 			'address' => (string)($data['address'] ?? ''),
 			'specification' => (string)($data['specification'] ?? ''),
 			'date' => $date,
@@ -1126,7 +1146,11 @@ class MailersController extends AppController
 		}
 
 		$this->response = $this->response->withType('application/json')
-			->withStringBody(json_encode(['success' => true, 'draft_id' => $draftId]));
+			->withStringBody(json_encode([
+				'success' => true,
+				'draft_id' => $draftId,
+				'tracknumber' => (string)($entity->tracknumber ?? $reservedTrack),
+			]));
 		return $this->response;
 	}
 
@@ -2561,7 +2585,8 @@ class MailersController extends AppController
 				$inserty['Mailer']['id'] = $id;
 				$tracknumber = $this->request->getData()['tracknumber'];
 			}else{
-				$tracknumber = $this->Mailer->getNextAdminStyleSpecTrackNumber();
+				// Same DD-MM series as admin_send_v3 / employee specs (not admin yy-mm).
+				$tracknumber = $this->Mailer->getNextSpecTrackNumber();
 			}
 
 			//new_code deepak

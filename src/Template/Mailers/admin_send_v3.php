@@ -585,6 +585,9 @@
 						$('#draft_id').val(res.draft_id);
 						$('#spec-status-text').text('Draft');
 					}
+					if (res.tracknumber) {
+						$('#tracknumber').val(res.tracknumber);
+					}
 					var now = new Date();
 					var timeStr = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
 					$('#spec-last-saved').text('Last saved at ' + timeStr).css('color', '#333');
@@ -603,6 +606,9 @@
 
 	jQuery(function() {
 		specStartAutosave();
+		if ($('#draft_id').val() && parseInt($('#draft_id').val(), 10) > 0 && specHasData()) {
+			specDoAutosave();
+		}
 		$('#specForm').on('submit', function() {
 			var $btn = $('#add_ser_prd_btn');
 			if ($btn.length) {

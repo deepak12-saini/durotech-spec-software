@@ -845,6 +845,9 @@ function loadCommentsFromData(comments) {
 						$('#draft_id').val(res.draft_id);
 						$('#spec-status-text').text('Draft');
 					}
+					if (res.tracknumber) {
+						$('#tracknumber').val(res.tracknumber);
+					}
 					var now = new Date();
 					var timeStr = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
 					$('#spec-last-saved').text('Last saved at ' + timeStr).css('color', '#333');
@@ -863,6 +866,10 @@ function loadCommentsFromData(comments) {
 
 	jQuery(function() {
 		specStartAutosave();
+		// Sync draft_id + reserved track immediately when resuming a draft (do not wait 45s).
+		if ($('#draft_id').val() && parseInt($('#draft_id').val(), 10) > 0 && specHasData()) {
+			specDoAutosave();
+		}
 		// Prevent double submit: disable button once form is submitted
 		$('#specForm').on('submit', function() {
 			var $btn = $('#add_ser_prd_btn');

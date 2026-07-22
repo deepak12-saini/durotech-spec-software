@@ -4,7 +4,7 @@
 					<div class="footer-content">
 						<span class="bigger-120">
 							<span class="blue bolder"><?php echo SITENAME ; ?></span>
-							Application &copy; 2017
+							Application &copy; <?php echo date('Y'); ?>
 						</span>
 
 						&nbsp; &nbsp;
