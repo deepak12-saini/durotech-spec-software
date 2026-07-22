@@ -876,8 +876,14 @@ class MailersController extends AppController
 				if ($draftTrack !== '') {
 					$refernce = $draftTrack;
 				}
-				$draft->comments = $this->MailerComment->find()->where(['mailer_id' => $draftId])->all();
-				$draft->spec_useareas = $this->SpecUsearea->find()->where(['mailer_id' => $draftId])->orderAsc('id')->all();
+				$draft->comments = $this->MailerComment->find()
+					->where(['mailer_id' => $draftId])
+					->orderAsc('id')
+					->all();
+				$draft->spec_useareas = $this->SpecUsearea->find()
+					->where(['mailer_id' => $draftId])
+					->orderAsc('id')
+					->all();
 			}
 		}
 		if ($refernce === '') {
@@ -1115,33 +1121,61 @@ class MailersController extends AppController
 			$this->SpecUsearea->deleteAll(['mailer_id IN' => $otherDraftIds]);
 			$this->Mailer->deleteAll(['id IN' => $otherDraftIds]);
 		}
-		$this->MailerComment->deleteAll(['mailer_id' => $draftId]);
-		$this->SpecUsearea->deleteAll(['mailer_id' => $draftId]);
 
-		if (!empty($data['comment']) && is_array($data['comment'])) {
+		// Only replace comments/use-areas when posted with real content.
+		// Admin form always includes an empty comment[] input — empty-only payloads must not wipe DB.
+		if (array_key_exists('comment', $data) && is_array($data['comment'])) {
+			$incomingComments = [];
 			foreach ($data['comment'] as $comment) {
-				$this->MailerComment->save($this->MailerComment->newEntity([
-					'mailer_id' => $draftId,
-					'use_area' => 1,
-					'comment' => (string)$comment,
-				]));
+				$text = trim((string)$comment);
+				if ($text !== '') {
+					$incomingComments[] = $text;
+				}
+			}
+			if (!empty($incomingComments)) {
+				$this->MailerComment->deleteAll(['mailer_id' => $draftId]);
+				foreach ($incomingComments as $comment) {
+					$this->MailerComment->save($this->MailerComment->newEntity([
+						'mailer_id' => $draftId,
+						'use_area' => 1,
+						'comment' => $comment,
+					]));
+				}
 			}
 		}
-		if (!empty($data['product']) && is_array($data['product'])) {
-			foreach ($data['product'] as $key => $prodt) {
-				$typesKey = $data['types'][$key] ?? null;
-				$title = isset($data['title'][$typesKey]) ? $data['title'][$typesKey] : '';
-				$this->SpecUsearea->save($this->SpecUsearea->newEntity([
-					'mailer_id' => $draftId,
-					'use_area' => 1,
-					'title' => $title,
-					'product' => $prodt,
-					'types' => $data['types'][$key] ?? '',
-					'serial' => $data['serial'][$key] ?? '',
-					'coverage' => $data['coverage'][$key] ?? '',
-					'Warranty' => $data['Warranty'][$key] ?? '',
-					'coverage_by_pack' => $data['coverage_by_pack'][$key] ?? '',
-				]));
+		if (array_key_exists('product', $data) && is_array($data['product'])) {
+			$hasProductContent = false;
+			foreach ($data['product'] as $prodt) {
+				if (trim((string)$prodt) !== '') {
+					$hasProductContent = true;
+					break;
+				}
+			}
+			if (!$hasProductContent && !empty($data['title']) && is_array($data['title'])) {
+				foreach ($data['title'] as $titleVal) {
+					if (trim((string)$titleVal) !== '') {
+						$hasProductContent = true;
+						break;
+					}
+				}
+			}
+			if ($hasProductContent) {
+				$this->SpecUsearea->deleteAll(['mailer_id' => $draftId]);
+				foreach ($data['product'] as $key => $prodt) {
+					$typesKey = $data['types'][$key] ?? null;
+					$title = isset($data['title'][$typesKey]) ? $data['title'][$typesKey] : '';
+					$this->SpecUsearea->save($this->SpecUsearea->newEntity([
+						'mailer_id' => $draftId,
+						'use_area' => 1,
+						'title' => $title,
+						'product' => $prodt,
+						'types' => $data['types'][$key] ?? '',
+						'serial' => $data['serial'][$key] ?? '',
+						'coverage' => $data['coverage'][$key] ?? '',
+						'Warranty' => $data['Warranty'][$key] ?? '',
+						'coverage_by_pack' => $data['coverage_by_pack'][$key] ?? '',
+					]));
+				}
 			}
 		}
 

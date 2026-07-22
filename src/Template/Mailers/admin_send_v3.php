@@ -64,11 +64,22 @@
 		$isAdaptiveMode = !empty($adaptiveMode);
 		$draftSectionsJson = '[]';
 		$draftCommentsJson = '[]';
-		if (!empty($draft) && isset($draft->spec_useareas)) {
+		if (!empty($draft)) {
+			$useAreaRows = [];
+			if (isset($draft->spec_useareas)) {
+				foreach ($draft->spec_useareas as $row) {
+					$useAreaRows[] = $row;
+				}
+			}
 			$bySection = [];
-			foreach ($draft->spec_useareas as $row) {
-				$tid = (int)$row->types;
-				if (!isset($bySection[$tid])) $bySection[$tid] = ['title' => $row->title ?? '', 'rows' => []];
+			foreach ($useAreaRows as $row) {
+				$tid = (string)($row->types ?? '');
+				if ($tid === '') {
+					$tid = 'sec_' . (count($bySection) + 1);
+				}
+				if (!isset($bySection[$tid])) {
+					$bySection[$tid] = ['title' => $row->title ?? '', 'rows' => []];
+				}
 				$bySection[$tid]['rows'][] = [
 					'serial' => $row->serial ?? '',
 					'coverage' => $row->coverage ?? '',
@@ -77,10 +88,28 @@
 					'Warranty' => $row->Warranty ?? '',
 				];
 			}
-			$draftSectionsJson = json_encode(array_values($bySection));
-		}
-		if (!empty($draft) && isset($draft->comments)) {
-			$draftCommentsJson = json_encode(array_map(function ($c) { return $c->comment ?? ''; }, $draft->comments->toArray()));
+			$encodedSections = json_encode(array_values($bySection), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
+			$draftSectionsJson = ($encodedSections !== false) ? $encodedSections : '[]';
+
+			$commentList = [];
+			if (isset($draft->comments)) {
+				foreach ($draft->comments as $c) {
+					$text = trim((string)($c->comment ?? ''));
+					if ($text !== '') {
+						$commentList[] = $text;
+					}
+				}
+			}
+			if (empty($commentList) && isset($draft->mailer_comment)) {
+				foreach ($draft->mailer_comment as $c) {
+					$text = trim((string)($c->comment ?? ''));
+					if ($text !== '') {
+						$commentList[] = $text;
+					}
+				}
+			}
+			$encodedComments = json_encode($commentList, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE);
+			$draftCommentsJson = ($encodedComments !== false) ? $encodedComments : '[]';
 		}
 		?>
 		<?php echo $this->Form->create('Mailer',array('class'=>'form-horizontal','enctype'=>'multipart/form-data','id'=>'specForm')); ?>
@@ -606,9 +635,6 @@
 
 	jQuery(function() {
 		specStartAutosave();
-		if ($('#draft_id').val() && parseInt($('#draft_id').val(), 10) > 0 && specHasData()) {
-			specDoAutosave();
-		}
 		$('#specForm').on('submit', function() {
 			var $btn = $('#add_ser_prd_btn');
 			if ($btn.length) {
@@ -617,48 +643,23 @@
 		});
 	});
 
-	// Restore draft product sections
+	// Restore draft product sections + comments, then sync track (never autosave before restore).
 	var draftSections = <?php echo $draftSectionsJson; ?>;
-	if (draftSections && draftSections.length > 0) {
-		jQuery(function() {
-			var secIdx, rowIdx, sec, rows, sectionId;
-			for (secIdx = 0; secIdx < draftSections.length; secIdx++) {
-				sec = draftSections[secIdx];
-				rows = sec.rows || [];
-				if (rows.length === 0) continue;
-				addnewsection();
-				sectionId = $('.addsection').length;
-				$('#title_' + sectionId).val(sec.title || '');
-				$('#section_' + sectionId).find('input[name="serial[]"]').first().val(rows[0].serial || sectionId);
-				$('#coverage_' + sectionId + '_0').val(rows[0].coverage || '');
-				$('#pro_' + sectionId + '_0').val(rows[0].product || '');
-				$('#coverage_by_pack_' + sectionId + '_0').val(rows[0].coverage_by_pack || '');
-				$('#warranty_' + sectionId + '_0').val(rows[0].Warranty || '');
-
-				for (rowIdx = 1; rowIdx < rows.length; rowIdx++) {
-					addmore(sectionId);
-					$('#section_' + sectionId).find('input[name="serial[]"]').last().val(rows[rowIdx].serial || (sectionId + '.' + rowIdx));
-					$('#coverage_' + sectionId + '_' + rowIdx).val(rows[rowIdx].coverage || '');
-					$('#pro_' + sectionId + '_' + rowIdx).val(rows[rowIdx].product || '');
-					$('#coverage_by_pack_' + sectionId + '_' + rowIdx).val(rows[rowIdx].coverage_by_pack || '');
-					$('#warranty_' + sectionId + '_' + rowIdx).val(rows[rowIdx].Warranty || '');
-				}
-			}
-		});
-	}
-
-	// Restore draft comments
 	var draftComments = <?php echo $draftCommentsJson; ?>;
-	if (draftComments && draftComments.length > 0) {
-		jQuery(function() {
-			var i;
-			$('.commentdiv input[name="comment[]"]').eq(0).val(draftComments[0] || '');
-			for (i = 1; i < draftComments.length; i++) {
-				addmorecomment();
-				$('.commentdiv input[name="comment[]"]').eq(i).val(draftComments[i] || '');
+	jQuery(function() {
+		if (draftSections && draftSections.length > 0 && typeof loadSectionsFromData === 'function') {
+			loadSectionsFromData(draftSections);
+		}
+		if (draftComments && draftComments.length > 0 && typeof loadCommentsFromData === 'function') {
+			loadCommentsFromData(draftComments);
+		}
+		// Delay track sync so restored product/comment inputs are included in FormData.
+		setTimeout(function() {
+			if ($('#draft_id').val() && parseInt($('#draft_id').val(), 10) > 0 && specHasData()) {
+				specDoAutosave();
 			}
-		});
-	}
+		}, 300);
+	});
 
 	<?php if ($isAdaptiveMode): ?>
 	var adaptiveLoadBaseUrl = '<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'adminPreviousSpecDataV3']); ?>';

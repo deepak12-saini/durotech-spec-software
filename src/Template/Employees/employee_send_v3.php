@@ -866,10 +866,8 @@ function loadCommentsFromData(comments) {
 
 	jQuery(function() {
 		specStartAutosave();
-		// Sync draft_id + reserved track immediately when resuming a draft (do not wait 45s).
-		if ($('#draft_id').val() && parseInt($('#draft_id').val(), 10) > 0 && specHasData()) {
-			specDoAutosave();
-		}
+		// Do NOT autosave immediately on resume — product/comment DOM is restored later.
+		// Early autosave would POST without those fields and wipe DB rows.
 		// Prevent double submit: disable button once form is submitted
 		$('#specForm').on('submit', function() {
 			var $btn = $('#add_ser_prd_btn');
@@ -1016,19 +1014,21 @@ function loadCommentsFromData(comments) {
 
 	// Restore draft product sections (title + Product Type, Product, MFT, Warranty rows)
 	var draftSections = <?php echo $draftSectionsJson; ?>;
-	if (draftSections && draftSections.length > 0) {
-		jQuery(function() {
-			loadSectionsFromData(draftSections);
-		});
-	}
-
-	// Restore draft comments
 	var draftComments = <?php echo $draftCommentsJson; ?>;
-	if (draftComments && draftComments.length > 0) {
-		jQuery(function() {
+	jQuery(function() {
+		if (draftSections && draftSections.length > 0) {
+			loadSectionsFromData(draftSections);
+		}
+		if (draftComments && draftComments.length > 0) {
 			loadCommentsFromData(draftComments);
-		});
-	}
+		}
+		// After sections/comments are in the DOM, sync reserved track once (safe).
+		setTimeout(function() {
+			if ($('#draft_id').val() && parseInt($('#draft_id').val(), 10) > 0 && specHasData()) {
+				specDoAutosave();
+			}
+		}, 300);
+	});
 
 	<?php if (!empty($claudeMode) && !empty($claudePrefill) && is_array($claudePrefill)): ?>
 	jQuery(function() {
