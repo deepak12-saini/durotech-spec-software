@@ -54,17 +54,201 @@
 
 						<b class="arrow"></b>
 					</li>
+
+					<?php
+					$userid = $this->request->getSession()->read('User.id');
+					if ($userid != 7) {
+					?>
+
+					<?php /* Not used — DuroEzy Spec v3 is used instead
+					<li class="<?php if ($reqController=='mailers' && $reqAction=='admin_index') {echo 'active';}?>">
+						<a href="<?php echo SITEURL?>admin/mailers">
+							<i class="menu-icon fa fa-image "></i>
+							<span class="menu-text">DuroEzy Spec</span></b>
+						</a>
+					</li>
+					*/ ?>
+
+					<li class="<?php if ($reqController=='mailers' && $reqAction=='admin_index_v3') {echo 'active';}?>">
+						<a href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_index_v3']); ?>">
+							<i class="menu-icon fa fa-file-text"></i>
+							<span class="menu-text">DuroEzy Spec v3 <span class="label label-warning" style="margin-left:6px;">New</span></span></b>
+						</a>
+					</li>
+
+					<li class="<?php if ($reqController=='mailers' && ($reqAction=='admin_emp_spec_index' || $reqAction=='emp_spec_index')) {echo 'active';}?>">
+						<a href="<?php echo SITEURL?>admin/mailers/emp_spec_index">
+							<i class="menu-icon fa fa-users"></i>
+							<span class="menu-text">Employees Spec<?php
+								if ($empSpecPendingCount > 0) {
+									$n = (int)$empSpecPendingCount;
+									$badgeText = $n === 1 ? '(1)' : '(' . $n . ')';
+									echo ' <span class="label label-danger" style="margin-left:6px;font-size:11px;font-weight:600;white-space:nowrap;" title="New employee spec request(s) since you last opened this list — click to review">'
+										. h($badgeText)
+										. '</span>';
+								}
+							?></span>
+						</a>
+					</li>
+
+					<li class="<?php if ($reqController == 'aispecs' && strpos($reqAction, 'admin_') === 0) {echo 'active';} ?>">
+						<a href="<?php echo $this->Url->build(['controller' => 'AiSpecs', 'action' => 'admin_index']); ?>">
+							<i class="menu-icon fa fa-th"></i>
+							<span class="menu-text">AiSpec materials matrix</span></b>
+						</a>
+					</li>
+
+					<li class="<?php if ($reqController=='categories' || ($reqController=='products' && $reqAction=='admin_index')) {echo 'active';}?>">
+						<a href="#" class="dropdown-toggle">
+							<i class="menu-icon fa fa-cubes"></i>
+							<span class="menu-text"> Product</span>
+
+							<b class="arrow fa fa-angle-down"></b>
+						</a>
+
+						<b class="arrow"></b>
+
+						<ul class="submenu">
+							
+							<li class="<?php if ($reqController=='categories') {echo 'active';}?>">
+								<a href="<?php echo rtrim(SITEURL, '/') . '/admin/categories'; ?>">
+									<i class="menu-icon fa fa-setting"></i>
+									Category
+								</a>
+								<b class="arrow"></b>
+							</li>
+						
+							<li class="<?php if ($reqController=='products' && $reqAction=='admin_index') {echo 'active';}?>">
+								<a href="<?php echo SITEURL?>admin/products">
+									<i class="menu-icon fa fa-setting"></i>
+									Product List
+								</a>
+								<b class="arrow"></b>
+							</li>
+							
+							<li class="<?php if($reqController=='products'  && $reqAction=='admin_voc_vertificate') { echo 'active'; }?>">
+								<a href="<?php echo SITEURL?>admin/products/voc_vertificate">
+									<i class="menu-icon fa fa-setting"></i>
+									Voc Certificate
+								</a>
+								<b class="arrow"></b>
+							</li>
+						</ul>
+					</li>
+
+					<li class="<?php if ($reqController=='stocks' && $reqAction=='admin_product_warranty_request') {echo 'active';}?>">
+						<a href="<?php echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_product_warranty_request']); ?>">
+							<i class="menu-icon fa fa-certificate"></i>
+							<span class="menu-text">Product Warranty Req</span>
+						</a>
+					</li>
+
+					<li class="<?php if ($reqController=='casestudies' && $reqAction=='admin_index') {echo 'active';}?>">
+						<a href="<?= $this->Url->build(['controller' => 'CaseStudies', 'action' => 'adminIndex']); ?>">
+							<i class="menu-icon fa fa-briefcase"></i>
+							<span class="menu-text">Case Studies</span>
+						</a>
+					</li>
+
+					<li class="<?php if ($reqController=='instagramposts') {echo 'active';}?>">
+						<a href="<?= $this->Url->build(['controller' => 'InstagramPosts', 'action' => 'admin_index']); ?>">
+							<i class="menu-icon fa fa-instagram"></i>
+							<span class="menu-text">Instagram Posts</span>
+						</a>
+					</li>
+
+					<li class="<?php if ($reqController=='testimonials' && $reqAction=='admin_index') {echo 'active';}?>">
+						<a href="<?= $this->Url->build(['controller' => 'Testimonials', 'action' => 'admin_index']); ?>">
+							<i class="menu-icon fa fa-comments"></i>
+							<span class="menu-text">Testimonials</span>
+						</a>
+					</li>
+
+					<li class="<?php if ($reqController=='users' && $reqAction=='admin_staff') {echo 'active';}?>">
+						<a href="<?php echo SITEURL?>admin/users/staff">
+							<i class="menu-icon fa fa-user"></i>
+							<span class="menu-text">Staff List</span>
+						</a>
+					</li>
+
+					<li class="<?php if ($reqController=='users' && $reqAction=='admin_customer') {echo 'active';}?>">
+						<a href="<?php echo SITEURL?>admin/users/customer">
+							<i class="menu-icon fa fa-group"></i>
+							<span class="menu-text">Customers</span>
+						</a>
+					</li>
+
+					<li class="<?php if ($reqController=='users' && (($reqAction=='admin_subscriber_list') || ($reqAction=='admin_contactus') || ($reqAction=='admin_contact'))) {echo 'active';}?>">
+						<a href="#" class="dropdown-toggle">
+							<i class="menu-icon fa fa-newspaper-o"></i>
+							<span class="menu-text">Subscriber</span>
+							<b class="arrow fa fa-angle-down"></b>
+						</a>
+						<b class="arrow"></b>
+						<ul class="submenu">
+							<li class="<?php if ($reqController=='users' && $reqAction=='admin_subscriber_list') {echo 'active';}?>">
+								<a href="<?php echo SITEURL.'admin/users/subscriber_list'; ?>">
+									<i class="menu-icon fa fa-setting"></i>
+									Subscriber List
+								</a>
+								<b class="arrow"></b>
+							</li>
+							<li class="<?php if ($reqController=='users' && $reqAction=='admin_contactus') {echo 'active';}?>">
+								<a href="<?php echo SITEURL.'admin/users/contactus'; ?>">
+									<i class="menu-icon fa fa-setting"></i>
+									Contact List
+								</a>
+								<b class="arrow"></b>
+							</li>
+							<li class="<?php if ($reqController=='users' && $reqAction=='admin_contact') {echo 'active';}?>">
+								<a href="<?php echo SITEURL.'admin/users/contact'; ?>">
+									<i class="menu-icon fa fa-setting"></i>
+									Dept Members
+								</a>
+								<b class="arrow"></b>
+							</li>
+						</ul>
+					</li>
+
+					<li class="<?php if ($reqController=='mailers' && $reqAction=='admin_spec_index') {echo 'active';}?>">
+						<a href="<?php echo SITEURL?>admin/mailers/spec_index">
+							<i class="menu-icon fa fa-file"></i>
+							<span class="menu-text">DuroEzy Spec 1.01</span></b>
+						</a>
+					</li>
+
+					<li class="<?php if ($reqController=='mailers' && $reqAction=='admin_eoi') {echo 'active';}?>">
+						<a href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_eoi']); ?>">
+							<i class="menu-icon fa fa-envelope"></i>
+							<span class="menu-text">EOI Mailer</span>
+						</a>
+					</li>
+					<li class="<?php if ($reqController=='stocks' && $reqAction=='admin_warrant_request') {echo 'active';}?>">
+						<a href="<?php echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_warrant_request']); ?>">
+							<i class="menu-icon fa fa-shield"></i>
+							<span class="menu-text">Warrant Request</span>
+						</a>
+					</li>
+					<!-- <li class="<?php //if ($reqController=='stocks' && ($reqAction=='admin_warrant_request_v2' || $reqAction=='adminWarrantRequestV2')) {echo 'active';}?>">
+						<a href="<?php// echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_warrant_request_v2']); ?>">
+							<i class="menu-icon fa fa-file-pdf-o "></i>
+							<span class="menu-text">Warrant Request v2</span>
+						</a>
+					</li> -->
+
+					<?php } ?>
+
 					<li class="<?php if ($reqController=='mailers' && $reqAction=='admin_visitor') {echo 'active';}?>">
 						<a href="<?php echo SITEURL?>admin/mailers/visitor">
-							<i class="menu-icon fa fa-tachometer"></i>
+							<i class="menu-icon fa fa-building-o"></i>
 							<span class="menu-text"> Visitor Register </span>
 						</a>
 
 						<b class="arrow"></b>
 					</li>
-					<?php 
-					$userid = $this->request->getSession()->read('User.id');
-					if($userid != 7){ ?>
+					<?php
+					if ($userid != 7) {
+					?>
 					
 					
 					<li class="<?php if ($reqController=='duro_orders') { echo 'active';}?>">
@@ -230,173 +414,10 @@
 					</li>
 					<?php // } ?>
 
-
-					<li class="<?php if ($reqController=='mailers' && $reqAction=='admin_index') {echo 'active';}?>">
-						<a href="<?php echo SITEURL?>admin/mailers">
-							<i class="menu-icon fa fa-image "></i>
-							<span class="menu-text">DuroEzy Spec</span></b>
-						</a>
-					</li>
-
-
-					<!-- //new_code deepak -->
-
-					<li class="<?php if ($reqController=='mailers' && $reqAction=='admin_index_v3') {echo 'active';}?>">
-						<a href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_index_v3']); ?>">
-							<i class="menu-icon fa fa-image "></i>
-							<span class="menu-text">DuroEzy Spec v3 <span class="label label-warning" style="margin-left:6px;">New</span></span></b>
-						</a>
-					</li>
-
-					<li class="<?php if ($reqController == 'aispecs' && strpos($reqAction, 'admin_') === 0) {echo 'active';} ?>">
-						<a href="<?php echo $this->Url->build(['controller' => 'AiSpecs', 'action' => 'admin_index']); ?>">
-							<i class="menu-icon fa fa-table"></i>
-							<span class="menu-text">AiSpec materials matrix</span></b>
-						</a>
-					</li>
-
-					<!-- //new_code end deepak -->
-
-					<!-- //new_code deepak 14 june 2025 -->
-
-					<li class="<?php
-						if ($reqController == 'mailers' || $reqController == 'quickspecs' || $reqController == 'methodstatements') {
-							echo 'active';
-							if ($reqController == 'quickspecs' || $reqController == 'methodstatements') {
-								echo ' open';
-							}
-						}
-					?>">
-						<a href="#" class="dropdown-toggle">
-							<i class="menu-icon fa fa-image"></i>
-							<span class="menu-text">Easy Spec Request</span>
-							<b class="arrow fa fa-angle-down"></b>
-						</a>
-
-						<b class="arrow"></b>
-
-						<ul class="submenu">
-							<li class="<?php if ($reqController=='mailers' && $reqAction=='admin_specRequest_index') {echo 'active';} ?>">
-								<a href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_specRequest_index']); ?>">
-									<i class="menu-icon fa fa-plus"></i>
-									Add Spec Request
-								</a>
-								<b class="arrow"></b>
-							</li>
-
-							<li class="<?php if ($reqController=='mailers' && $reqAction=='admin_specRequest_approved') {echo 'active';} ?>">
-								<a href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_specRequest_approved']); ?>">
-									<i class="menu-icon fa fa-check-circle"></i>
-									Approved Specs
-								</a>
-								<b class="arrow"></b>
-							</li>
-
-							<li class="<?php if ($reqController=='mailers' && $reqAction=='admin_specRequest_disapproved') {echo 'active';} ?>">
-								<a href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_specRequest_disapproved']); ?>">
-									<i class="menu-icon fa fa-times-circle"></i>
-									Disapproved Specs
-								</a>
-								<b class="arrow"></b>
-							</li>
-
-							<li class="<?php if ($reqController == 'quickspecs' && strpos($reqAction, 'admin_') === 0) {echo 'active';} ?>">
-								<a href="<?php echo $this->Url->build(['controller' => 'QuickSpecs', 'action' => 'admin_index']); ?>">
-									<i class="menu-icon fa fa-file-text-o"></i>
-									Quick Spec requests
-								</a>
-								<b class="arrow"></b>
-							</li>
-
-							<li class="<?php if ($reqController == 'methodstatements' && strpos($reqAction, 'admin_') === 0) {echo 'active';} ?>">
-								<a href="<?php echo $this->Url->build(['controller' => 'MethodStatements', 'action' => 'admin_index']); ?>">
-									<i class="menu-icon fa fa-file-o"></i>
-									Method Statement requests
-								</a>
-								<b class="arrow"></b>
-							</li>
-						</ul>
-					</li>
-
-
-                   <!-- //new_code end deepak -->
-
-
-					<li class="<?php if ($reqController=='mailers' && $reqAction=='admin_spec_index') {echo 'active';}?>">
-						<a href="<?php echo SITEURL?>admin/mailers/spec_index">
-							<i class="menu-icon fa fa-image "></i>
-							<span class="menu-text">DuroEzy Spec 1.01</span></b>
-						</a>
-					</li> 
-
-
-					<li class="<?php if ($reqController=='mailers' && $reqAction=='emp_spec_index') {echo 'active';}?>">
-						<a href="<?php echo SITEURL?>admin/mailers/emp_spec_index">
-							<i class="menu-icon fa fa-image "></i>
-							<span class="menu-text">Employees Spec<?php
-								if ($empSpecPendingCount > 0) {
-									$n = (int)$empSpecPendingCount;
-									$badgeText = $n === 1 ? '(1)' : '(' . $n . ')';
-									echo ' <span class="label label-danger" style="margin-left:6px;font-size:11px;font-weight:600;white-space:nowrap;" title="New employee spec request(s) since you last opened this list — click to review">'
-										. h($badgeText)
-										. '</span>';
-								}
-							?></span>
-						</a>
-					</li>
-
-					<li class="<?php if ($reqController=='mailers' && $reqAction=='admin_eoi') {echo 'active';}?>">
-						<a href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_eoi']); ?>">
-							<i class="menu-icon fa fa-image "></i>
-							<span class="menu-text">EOI Mailer</span>
-						</a>
-					</li>
-					<li class="<?php if ($reqController=='stocks' && $reqAction=='admin_warrant_request') {echo 'active';}?>">
-						<a href="<?php echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_warrant_request']); ?>">
-							<i class="menu-icon fa fa-image "></i>
-							<span class="menu-text">Warrant Request</span>
-						</a>
-					</li>
-					<!-- <li class="<?php //if ($reqController=='stocks' && ($reqAction=='admin_warrant_request_v2' || $reqAction=='adminWarrantRequestV2')) {echo 'active';}?>">
-						<a href="<?php// echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_warrant_request_v2']); ?>">
-							<i class="menu-icon fa fa-file-pdf-o "></i>
-							<span class="menu-text">Warrant Request v2</span>
-						</a>
-					</li> -->
-
-
-					<li class="<?php if ($reqController=='stocks' && $reqAction=='admin_product_warranty_request') {echo 'active';}?>">
-						<a href="<?php echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_product_warranty_request']); ?>">
-							<i class="menu-icon fa fa-image "></i>
-							<span class="menu-text">Product Warranty Req</span>
-						</a>
-					</li>
-
-					<li class="<?php if ($reqController=='casestudies' && $reqAction=='admin_index') {echo 'active';}?>">
-						<a href="<?= $this->Url->build(['controller' => 'CaseStudies', 'action' => 'adminIndex']); ?>">
-							<i class="menu-icon fa fa-briefcase"></i>
-							<span class="menu-text">Case Studies</span>
-						</a>
-					</li>
-
-					<li class="<?php if ($reqController=='testimonials' && $reqAction=='admin_index') {echo 'active';}?>">
-						<a href="<?= $this->Url->build(['controller' => 'Testimonials', 'action' => 'admin_index']); ?>">
-							<i class="menu-icon fa fa-comments"></i>
-							<span class="menu-text">Testimonials</span>
-						</a>
-					</li>
-
 					<li class="<?php if ($reqController=='herosections' && $reqAction=='admin_index') {echo 'active';}?>">
 						<a href="<?= $this->Url->build(['controller' => 'HeroSections', 'action' => 'admin_index']); ?>">
 							<i class="menu-icon fa fa-video-camera"></i>
 							<span class="menu-text">Hero Section</span>
-						</a>
-					</li>
-
-					<li class="<?php if ($reqController=='instagramposts') {echo 'active';}?>">
-						<a href="<?= $this->Url->build(['controller' => 'InstagramPosts', 'action' => 'admin_index']); ?>">
-							<i class="menu-icon fa fa-instagram"></i>
-							<span class="menu-text">Instagram Posts</span>
 						</a>
 					</li>
 
@@ -496,55 +517,76 @@
 							
 						</ul>
 					</li>
-					<li class="<?php if ($reqController=='categories' || ($reqController=='products' && $reqAction=='admin_index')) {echo 'active';}?>">
+					<li class="<?php
+						$easySpecActions = [
+							'admin_spec_request_index',
+							'admin_specrequest_index',
+							'admin_spec_request_approved',
+							'admin_specrequest_approved',
+							'admin_spec_request_disapproved',
+							'admin_specrequest_disapproved',
+						];
+						$isEasySpecMailer = ($reqController == 'mailers' && (
+							in_array($reqAction, $easySpecActions, true)
+							|| strpos($reqAction, 'admin_spec_request') === 0
+							|| strpos($reqAction, 'admin_specrequest') === 0
+						));
+						if ($isEasySpecMailer || $reqController == 'quickspecs' || $reqController == 'methodstatements') {
+							echo 'active';
+							if ($reqController == 'quickspecs' || $reqController == 'methodstatements' || $isEasySpecMailer) {
+								echo ' open';
+							}
+						}
+					?>">
 						<a href="#" class="dropdown-toggle">
-							<i class="menu-icon fa fa-bars "></i>
-							<span class="menu-text"> Product</span>
-
+							<i class="menu-icon fa fa-inbox"></i>
+							<span class="menu-text">Easy Spec Request</span>
 							<b class="arrow fa fa-angle-down"></b>
 						</a>
 
 						<b class="arrow"></b>
 
 						<ul class="submenu">
-							
-							<li class="<?php if ($reqController=='categories') {echo 'active';}?>">
-								<a href="<?php echo rtrim(SITEURL, '/') . '/admin/categories'; ?>">
-									<i class="menu-icon fa fa-setting"></i>
-									Category
+							<li class="<?php if ($reqController=='mailers' && $reqAction=='admin_specRequest_index') {echo 'active';} ?>">
+								<a href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_specRequest_index']); ?>">
+									<i class="menu-icon fa fa-plus"></i>
+									Add Spec Request
 								</a>
 								<b class="arrow"></b>
 							</li>
-						
-							<li class="<?php if ($reqController=='products' && $reqAction=='admin_index') {echo 'active';}?>">
-								<a href="<?php echo SITEURL?>admin/products">
-									<i class="menu-icon fa fa-setting"></i>
-									Product List
+
+							<li class="<?php if ($reqController=='mailers' && $reqAction=='admin_specRequest_approved') {echo 'active';} ?>">
+								<a href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_specRequest_approved']); ?>">
+									<i class="menu-icon fa fa-check-circle"></i>
+									Approved Specs
 								</a>
 								<b class="arrow"></b>
 							</li>
-							
-							<li class="<?php if($reqController=='products'  && $reqAction=='admin_voc_vertificate') { echo 'active'; }?>">
-								<a href="<?php echo SITEURL?>admin/products/voc_vertificate">
-									<i class="menu-icon fa fa-setting"></i>
-									Voc Certificate
+
+							<li class="<?php if ($reqController=='mailers' && $reqAction=='admin_specRequest_disapproved') {echo 'active';} ?>">
+								<a href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_specRequest_disapproved']); ?>">
+									<i class="menu-icon fa fa-times-circle"></i>
+									Disapproved Specs
+								</a>
+								<b class="arrow"></b>
+							</li>
+
+							<li class="<?php if ($reqController == 'quickspecs' && strpos($reqAction, 'admin_') === 0) {echo 'active';} ?>">
+								<a href="<?php echo $this->Url->build(['controller' => 'QuickSpecs', 'action' => 'admin_index']); ?>">
+									<i class="menu-icon fa fa-file-text-o"></i>
+									Quick Spec requests
+								</a>
+								<b class="arrow"></b>
+							</li>
+
+							<li class="<?php if ($reqController == 'methodstatements' && strpos($reqAction, 'admin_') === 0) {echo 'active';} ?>">
+								<a href="<?php echo $this->Url->build(['controller' => 'MethodStatements', 'action' => 'admin_index']); ?>">
+									<i class="menu-icon fa fa-file-o"></i>
+									Method Statement requests
 								</a>
 								<b class="arrow"></b>
 							</li>
 						</ul>
-					</li>
-					<li class="<?php if ($reqController=='users' && $reqAction=='admin_staff') {echo 'active';}?>">
-						<a href="<?php echo SITEURL?>admin/users/staff">
-							<i class="menu-icon fa fa-user "></i>
-							<span class="menu-text"> Staff List</span></b>
-						</a>
-					</li>
-					<li class="<?php if ($reqController=='users' && $reqAction=='admin_customer') {echo 'active';}?>">
-						<a href="<?php echo SITEURL?>admin/users/customer">
-							<i class="menu-icon fa fa-user "></i>
-							<span class="menu-text">Customers </span></b>
-						</a>
-
 					</li>
 					<li class="<?php if ($reqController=='users' && $reqAction=='admin_labfile') {echo 'active';}?>">
 						<a href="<?php echo SITEURL?>admin/users/labfile">
@@ -830,41 +872,6 @@
 								<b class="arrow"></b>
 							</li>
 						</ul>	
-					</li>
-						<li class="<?php if ($reqController=='users' && (($reqAction=='admin_subscriber_list') || ($reqAction=='admin_contactus') || ($reqAction=='admin_contact'))) {echo 'active';}?>">
-						<a href="#" class="dropdown-toggle">
-							<i class="menu-icon fa fa-file "></i>
-							<span class="menu-text">Subscriber</span>
-
-							<b class="arrow fa fa-angle-down"></b>
-						</a>
-
-						<b class="arrow"></b>
-
-						<ul class="submenu">
-							
-							<li class="<?php if ($reqController=='users' && $reqAction=='admin_subscriber_list') {echo 'active';}?>">
-								<a href="<?php echo SITEURL.'admin/users/subscriber_list'; ?>">
-									<i class="menu-icon fa fa-setting"></i>
-									Subscriber List
-								</a>
-								<b class="arrow"></b>
-							</li>
-							<li class="<?php if ($reqController=='users' && $reqAction=='admin_contactus') {echo 'active';}?>">
-								<a href="<?php echo SITEURL.'admin/users/contactus'; ?>">
-									<i class="menu-icon fa fa-setting"></i>
-									Contact List
-								</a>
-								<b class="arrow"></b>
-							</li>
-							<li class="<?php if ($reqController=='users' && $reqAction=='admin_contact') {echo 'active';}?>">
-								<a href="<?php echo SITEURL.'admin/users/contact'; ?>">
-									<i class="menu-icon fa fa-setting"></i>
-									Dept Members
-								</a>
-								<b class="arrow"></b>
-							</li>
-						</ul>
 					</li>
 										
 					<li class="<?php if (($reqController=='users') && ($reqAction=='admin_payment_setting' ||	$reqAction=='admin_profile'  ||  $reqAction=='admin_change_password') ) {echo 'active';}?>">
