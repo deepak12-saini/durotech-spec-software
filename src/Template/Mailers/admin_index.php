@@ -64,7 +64,7 @@
 					<td><?php echo $mailer['Mailer']['date'] ?>&nbsp;</td>
 					<td>
 						<?php if (!empty($mailer['Mailer']['pdf_attachment'])): ?>
-							<a href="<?php echo h(\Cake\Routing\Router::url('/', true) . $mailer['Mailer']['pdf_attachment']); ?>" target="_blank">View PDF</a>
+							<a href="<?php echo h($this->Pdf->url(ltrim((string)$mailer['Mailer']['pdf_attachment'], '/'))); ?>" target="_blank">View PDF</a>
 						<?php else: ?>
 							No Attachment
 						<?php endif; ?>
@@ -117,7 +117,7 @@
 						<a class="btn btn-mini btn-primary" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_editsend', $mailer['Mailer']['id']]); ?>">Edit</a>
 						
 						 <?php if ($saveStatus !== 'draft'): ?>
-							<a class="btn btn-mini btn-info" href="<?php echo h(\Cake\Routing\Router::url('/', true) . 'dompdf/' . $pdffilename); ?>" target="_blank">Download</a>
+							<a class="btn btn-mini btn-info" href="<?php echo h($this->Pdf->url('dompdf/' . $pdffilename)); ?>" target="_blank">Download</a>
 						<?php endif; ?>
 							<a onclick="return confirm('Are you sure send email?')" class="<?php echo h($sendBtnClass); ?>" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_sendemail', $mailer['Mailer']['id']]); ?>">Send Mail</a>
 					</td>

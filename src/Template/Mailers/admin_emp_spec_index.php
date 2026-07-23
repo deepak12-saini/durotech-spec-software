@@ -83,7 +83,7 @@
 					<?php 
 					foreach ($mailers as $mailer):
 					$pdfUrl = !empty($mailer->pdf_attachment)
-						? (rtrim(SITEURL, '/') . '/' . ltrim($mailer->pdf_attachment, '/'))
+						? $this->Pdf->url(ltrim((string)$mailer->pdf_attachment, '/'))
 						: null;
 						$status = (int)($mailer->status ?? 0);
 						$is_review = (int)($mailer->is_review ?? 0);

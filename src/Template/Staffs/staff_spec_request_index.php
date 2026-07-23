@@ -55,7 +55,7 @@
 								<td><?php echo h($mailerData['date'] ?? ''); ?>&nbsp;</td>
 								<td>
 									<?php if (!empty($mailerData['pdf_attachment'])): ?>
-										<a href="<?php echo h(\Cake\Routing\Router::url('/', true) . ltrim((string)$mailerData['pdf_attachment'], '/')); ?>" target="_blank">View PDF</a>
+										<a href="<?php echo h($this->Pdf->url(ltrim((string)$mailerData['pdf_attachment'], '/'))); ?>" target="_blank">View PDF</a>
 									<?php else: ?>
 										No Attachment
 									<?php endif; ?>
@@ -95,14 +95,14 @@
 									$sendBtnClass = !empty($specSentAtBtn) ? 'btn btn-mini btn-warning' : 'btn btn-mini btn-danger';
 									$pdfHref = '';
 									if (!empty($mailerData['pdf_attachment'])) {
-										$pdfHref = \Cake\Routing\Router::url('/', true) . ltrim((string)$mailerData['pdf_attachment'], '/');
+										$pdfHref = $this->Pdf->url(ltrim((string)$mailerData['pdf_attachment'], '/'));
 									} else {
 										$pdfBaseName = (string)($mailerData['id'] ?? '') . '-' . (string)($mailerData['tracknumber'] ?? '');
 										$pdfBaseName = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $pdfBaseName);
 										$pdfBaseName = preg_replace('/_+/', '_', (string)$pdfBaseName);
 										$pdfBaseName = trim((string)$pdfBaseName, '_');
 										if ($pdfBaseName !== '') {
-											$pdfHref = \Cake\Routing\Router::url('/', true) . 'dompdf/' . $pdfBaseName . '.pdf';
+											$pdfHref = $this->Pdf->url('dompdf/' . $pdfBaseName . '.pdf');
 										}
 									}
 									?>

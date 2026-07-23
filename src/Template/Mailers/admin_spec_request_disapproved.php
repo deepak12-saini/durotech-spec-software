@@ -41,7 +41,7 @@
 						// CakePHP 3: $mailer is an Entity; use property access
 						foreach ($mailers as $mailer):
 							$pdfUrl = !empty($mailer->pdf_attachment)
-								? ($this->Url->build('/', true) . ltrim((string)$mailer->pdf_attachment, '/'))
+								? $this->Pdf->url(ltrim((string)$mailer->pdf_attachment, '/'))
 								: null;
 							if (!$pdfUrl) {
 								$pdfBaseName = (string)($mailer->id ?? '') . '-' . (string)($mailer->tracknumber ?? '');
@@ -49,7 +49,7 @@
 								$pdfBaseName = preg_replace('/_+/', '_', (string)$pdfBaseName);
 								$pdfBaseName = trim((string)$pdfBaseName, '_');
 								if ($pdfBaseName !== '') {
-									$pdfUrl = $this->Url->build('/', true) . 'dompdf/' . $pdfBaseName . '.pdf';
+									$pdfUrl = $this->Pdf->url('dompdf/' . $pdfBaseName . '.pdf');
 								}
 							}
 						?>

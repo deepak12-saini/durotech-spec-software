@@ -103,10 +103,11 @@
 							}
 							$pdffilename = $pdfBaseName . '.pdf';
 							// Prefer DB path after edit/regen so Download matches the latest PDF.
-							$pdfHref = SITEURL . 'dompdf/' . $pdffilename;
+							$pdfRel = 'dompdf/' . $pdffilename;
 							if (!empty($mailerData['pdf_attachment'])) {
-								$pdfHref = SITEURL . ltrim((string)$mailerData['pdf_attachment'], '/');
+								$pdfRel = ltrim((string)$mailerData['pdf_attachment'], '/');
 							}
+							$pdfHref = $this->Pdf->url($pdfRel);
 						?>
 						<tr>
 							<!-- Output data for each column -->
@@ -122,7 +123,7 @@
 							<!-- PDF View Link -->
 							<td>
 								<?php if (!empty($mailerData['pdf_attachment'])): ?>
-									<a href="<?php echo SITEURL . ltrim((string)$mailerData['pdf_attachment'], '/'); ?>" target="_blank">View PDF</a>
+									<a href="<?php echo h($this->Pdf->url(ltrim((string)$mailerData['pdf_attachment'], '/'))); ?>" target="_blank">View PDF</a>
 								<?php else: ?>
 									No Attachment
 								<?php endif; ?>
@@ -211,8 +212,6 @@
 									echo $this->Html->link('History', array('controller' => 'employees', 'action' => 'audit_log', $mailerId), array('class' => 'btn btn-mini btn-default')) . '&nbsp;';
 
 									$pdfDownloadUrl = $pdfHref;
-									$pdfVer = (string)((int)($mailerData['revision'] ?? 0));
-									$pdfDownloadUrl .= (strpos($pdfDownloadUrl, '?') === false ? '?' : '&') . 'v=' . rawurlencode($pdfVer !== '0' ? $pdfVer : (string)$mailerId);
 									echo $this->Html->link('Download', $pdfDownloadUrl, array('class' => 'btn btn-mini btn-info', 'target' => '_blank')) . '&nbsp;';
 
 									// Template Preset action hidden for now. Uncomment if client approves.

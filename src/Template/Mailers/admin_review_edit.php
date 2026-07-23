@@ -218,7 +218,7 @@
 				<div class="col-sm-9">
                          <input type="file" name="data[Mailer][datasheet_pdf]"  class="col-xs-10 col-sm-8" accept="application/pdf">
 					<?php if (!empty($MailerArr['Mailer']['pdf_attachment'])): ?>
-						<a href="<?php echo SITEURL . $MailerArr['Mailer']['pdf_attachment']; ?>" target="_blank">View Existing PDF</a>
+						<a href="<?php echo h($this->Pdf->url(ltrim((string)$MailerArr['Mailer']['pdf_attachment'], '/'))); ?>" target="_blank">View Existing PDF</a>
 					<?php endif; ?>
 				</div>
            </div>

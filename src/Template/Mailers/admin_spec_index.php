@@ -32,7 +32,7 @@
 				<?php 
 				foreach ($mailers as $mailer):
 				$pdfUrl = !empty($mailer->pdf_attachment)
-					? (rtrim(SITEURL, '/') . '/' . ltrim($mailer->pdf_attachment, '/'))
+					? $this->Pdf->url(ltrim((string)$mailer->pdf_attachment, '/'))
 					: null;
 				?>
 					<tr>
