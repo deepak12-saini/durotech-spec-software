@@ -1885,37 +1885,91 @@ public function editsend_v3($id = null) {
 
             // Delete old comments
             $this->MailerComment->deleteAll(['MailerComment.mailer_id' => $lastinsertId], false);
-            if (!empty($this->request->data['comment'])) {
-                foreach ($this->request->data['comment'] as $comment) {
+            $postedComments = $this->request->getData('comment');
+            if (!empty($postedComments) && is_array($postedComments)) {
+                foreach ($postedComments as $comment) {
+                    $commentText = trim((string)$comment);
+                    if ($commentText === '') {
+                        continue;
+                    }
                     $commentEntity = $this->MailerComment->newEntity([
                         'mailer_id' => $lastinsertId,
                         'use_area' => 1,
-                        'comment' => $comment
+                        'comment' => $commentText,
                     ]);
                     $this->MailerComment->save($commentEntity);
                 }
             }
 
-            // Delete old product sections
-            $this->SpecUsearea->deleteAll(['SpecUsearea.mailer_id' => $lastinsertId], false);
-            if (!empty($this->request->data['product'])) {
-                foreach ($this->request->data['product'] as $key => $prodt) {
-                    $typesKey = $this->request->data['types'][$key] ?? null;
-                    $title = ($typesKey !== null && isset($this->request->data['title'][$typesKey]))
-                        ? $this->request->data['title'][$typesKey]
-                        : '';
-                    $specEntity = $this->SpecUsearea->newEntity([
-                        'mailer_id' => $lastinsertId,
-                        'use_area' => 1,
-                        'title' => $title,
-                        'product' => $prodt,
-                        'types' => $this->request->data['types'][$key] ?? '',
-                        'serial' => $this->request->data['serial'][$key] ?? '',
-                        'coverage' => $this->request->data['coverage'][$key] ?? '',
-                        'Warranty' => $this->request->data['Warranty'][$key] ?? '',
-                        'coverage_by_pack' => $this->request->data['coverage_by_pack'][$key] ?? '',
-                    ]);
-                    $this->SpecUsearea->save($specEntity);
+            // Replace Use Area rows only when the form posted product rows.
+            // Never wipe existing rows on empty/partial POST (comment-only edits, max_input_vars truncation).
+            $data = (array)$this->request->getData();
+            $postedProducts = isset($data['product']) && is_array($data['product']) ? $data['product'] : null;
+            $postedSerials = isset($data['serial']) && is_array($data['serial']) ? $data['serial'] : [];
+            $postedTypes = isset($data['types']) && is_array($data['types']) ? $data['types'] : [];
+            $postedCoverage = isset($data['coverage']) && is_array($data['coverage']) ? $data['coverage'] : [];
+            $postedWarranty = isset($data['Warranty']) && is_array($data['Warranty']) ? $data['Warranty'] : [];
+            $postedMft = isset($data['coverage_by_pack']) && is_array($data['coverage_by_pack']) ? $data['coverage_by_pack'] : [];
+            $postedTitles = isset($data['title']) && is_array($data['title']) ? $data['title'] : [];
+
+            $existingUseAreaCount = (int)$this->SpecUsearea->find()
+                ->where(['mailer_id' => $lastinsertId])
+                ->count();
+
+            if ($postedProducts !== null) {
+                $postedRowCount = max(
+                    count($postedProducts),
+                    count($postedSerials),
+                    count($postedTypes),
+                    count($postedCoverage),
+                    count($postedWarranty),
+                    count($postedMft)
+                );
+
+                // Guard: max_input_vars often truncates later field arrays first,
+                // so lengths go out of sync. Intentionally fewer sections is OK when arrays match.
+                $fieldLengths = [
+                    count($postedProducts),
+                    count($postedSerials),
+                    count($postedTypes),
+                    count($postedCoverage),
+                    count($postedWarranty),
+                    count($postedMft),
+                ];
+                $looksTruncated = (
+                    $existingUseAreaCount > 0
+                    && $postedRowCount > 0
+                    && (max($fieldLengths) - min($fieldLengths)) >= 3
+                );
+
+                if ($postedRowCount === 0 && $existingUseAreaCount > 0) {
+                    // Comment/header-only save with no product fields — keep DB use areas.
+                    $this->Flash->warning('Use Area rows were not in the submit data; kept the previous Use Area list.');
+                } elseif ($looksTruncated) {
+                    $this->Flash->warning(
+                        'Use Area submit looked incomplete (' . $postedRowCount . ' of ' . $existingUseAreaCount .
+                        ' rows). Kept the previous Use Area list so data was not lost. Try saving again or ask IT to raise max_input_vars.'
+                    );
+                } else {
+                    $this->SpecUsearea->deleteAll(['SpecUsearea.mailer_id' => $lastinsertId], false);
+                    for ($key = 0; $key < $postedRowCount; $key++) {
+                        $typesKey = $postedTypes[$key] ?? null;
+                        $title = ($typesKey !== null && isset($postedTitles[$typesKey]))
+                            ? (string)$postedTitles[$typesKey]
+                            : '';
+                        $specEntity = $this->SpecUsearea->newEntity([
+                            'mailer_id' => $lastinsertId,
+                            'use_area' => 1,
+                            'title' => $title,
+                            'product' => (string)($postedProducts[$key] ?? ''),
+                            'types' => (string)($typesKey ?? ''),
+                            'serial' => (string)($postedSerials[$key] ?? ''),
+                            'coverage' => (string)($postedCoverage[$key] ?? ''),
+                            'Warranty' => (string)($postedWarranty[$key] ?? ''),
+                            'coverage_by_pack' => (string)($postedMft[$key] ?? ''),
+                        ]);
+                        $this->SpecUsearea->save($specEntity);
+                    }
                 }
             }
 

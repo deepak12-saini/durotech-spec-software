@@ -2694,33 +2694,87 @@ class MailersController extends AppController
 				$lastinsertId = ($form_type == 0) ? (int)$id : $mailerEntity->id;
 
 				$this->MailerComment->deleteAll(['mailer_id' => $lastinsertId]);
-				if (!empty($this->request->getData()['comment'])) {
-					foreach ($this->request->getData()['comment'] as $comment) {
+				$postedComments = $this->request->getData('comment');
+				if (!empty($postedComments) && is_array($postedComments)) {
+					foreach ($postedComments as $comment) {
+						$commentText = trim((string)$comment);
+						if ($commentText === '') {
+							continue;
+						}
 						$commentEntity = $this->MailerComment->newEntity([
 							'mailer_id' => $lastinsertId,
 							'use_area' => 1,
-							'comment' => $comment,
+							'comment' => $commentText,
 						]);
 						$this->MailerComment->save($commentEntity);
 					}
 				}
 
-				$this->SpecUsearea->deleteAll(['mailer_id' => $lastinsertId]);
-				if (!empty($this->request->getData()['product'])) {
-					$data = $this->request->getData();
-					foreach ($data['product'] as $key => $prodt) {
-						$title = isset($data['title'][$data['types'][$key]]) ? $data['title'][$data['types'][$key]] : '';
-						$specEntity = $this->SpecUsearea->newEntity([
-							'mailer_id' => $lastinsertId,
-							'title' => $title,
-							'product' => $prodt,
-							'types' => $data['types'][$key] ?? null,
-							'serial' => $data['serial'][$key] ?? '',
-							'coverage' => $data['coverage'][$key] ?? '',
-							'Warranty' => $data['Warranty'][$key] ?? '',
-							'coverage_by_pack' => $data['coverage_by_pack'][$key] ?? '',
-						]);
-						$this->SpecUsearea->save($specEntity);
+				// Replace Use Area only when product rows were posted completely.
+				// Avoid wiping DB on comment-only edits or truncated POST (max_input_vars).
+				$data = (array)$this->request->getData();
+				$postedProducts = isset($data['product']) && is_array($data['product']) ? $data['product'] : null;
+				$postedSerials = isset($data['serial']) && is_array($data['serial']) ? $data['serial'] : [];
+				$postedTypes = isset($data['types']) && is_array($data['types']) ? $data['types'] : [];
+				$postedCoverage = isset($data['coverage']) && is_array($data['coverage']) ? $data['coverage'] : [];
+				$postedWarranty = isset($data['Warranty']) && is_array($data['Warranty']) ? $data['Warranty'] : [];
+				$postedMft = isset($data['coverage_by_pack']) && is_array($data['coverage_by_pack']) ? $data['coverage_by_pack'] : [];
+				$postedTitles = isset($data['title']) && is_array($data['title']) ? $data['title'] : [];
+
+				$existingUseAreaCount = (int)$this->SpecUsearea->find()
+					->where(['mailer_id' => $lastinsertId])
+					->count();
+
+				if ($postedProducts !== null) {
+					$postedRowCount = max(
+						count($postedProducts),
+						count($postedSerials),
+						count($postedTypes),
+						count($postedCoverage),
+						count($postedWarranty),
+						count($postedMft)
+					);
+					$fieldLengths = [
+						count($postedProducts),
+						count($postedSerials),
+						count($postedTypes),
+						count($postedCoverage),
+						count($postedWarranty),
+						count($postedMft),
+					];
+					$looksTruncated = (
+						$existingUseAreaCount > 0
+						&& $postedRowCount > 0
+						&& (max($fieldLengths) - min($fieldLengths)) >= 3
+					);
+
+					if ($postedRowCount === 0 && $existingUseAreaCount > 0) {
+						$this->Flash->warning('Use Area rows were not in the submit data; kept the previous Use Area list.');
+					} elseif ($looksTruncated) {
+						$this->Flash->warning(
+							'Use Area submit looked incomplete (' . $postedRowCount . ' of ' . $existingUseAreaCount .
+							' rows). Kept the previous Use Area list so data was not lost. Try saving again or ask IT to raise max_input_vars.'
+						);
+					} else {
+						$this->SpecUsearea->deleteAll(['mailer_id' => $lastinsertId]);
+						for ($key = 0; $key < $postedRowCount; $key++) {
+							$typesKey = $postedTypes[$key] ?? null;
+							$title = ($typesKey !== null && isset($postedTitles[$typesKey]))
+								? (string)$postedTitles[$typesKey]
+								: '';
+							$specEntity = $this->SpecUsearea->newEntity([
+								'mailer_id' => $lastinsertId,
+								'use_area' => 1,
+								'title' => $title,
+								'product' => (string)($postedProducts[$key] ?? ''),
+								'types' => (string)($typesKey ?? ''),
+								'serial' => (string)($postedSerials[$key] ?? ''),
+								'coverage' => (string)($postedCoverage[$key] ?? ''),
+								'Warranty' => (string)($postedWarranty[$key] ?? ''),
+								'coverage_by_pack' => (string)($postedMft[$key] ?? ''),
+							]);
+							$this->SpecUsearea->save($specEntity);
+						}
 					}
 				}
 
