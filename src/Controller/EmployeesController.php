@@ -615,7 +615,10 @@ public function employee_send_v3() {
             'date'          => $formattedDate,
             'type'          => $formData['type'] ?? 3,
             'subject'       => $formData['subject'] ?? '',
-            'use_area'      => isset($formData['use_area']) ? $formData['use_area'] : 1,
+            // use_area: 0 = With Warranty, 1 = Without Warranty (inverse of form spectype).
+            'use_area'      => isset($formData['spectype'])
+                ? (((int)$formData['spectype'] === 1) ? 0 : 1)
+                : (isset($formData['use_area']) ? (int)$formData['use_area'] : 0),
             'created'       => date('Y-m-d H:i:s'),
         );
         if ($hasSaveStatusColumn) {
@@ -1339,7 +1342,10 @@ protected function _saveEmployeeSpecAsSubmitted(int $mailerId, array $formData, 
     $mailer->date = $formattedDate;
     $mailer->type = $formData['type'] ?? 3;
     $mailer->subject = $formData['subject'] ?? '';
-    $mailer->use_area = $formData['use_area'] ?? 1;
+    // use_area: 0 = With Warranty, 1 = Without Warranty (inverse of form spectype).
+    $mailer->use_area = isset($formData['spectype'])
+        ? (((int)$formData['spectype'] === 1) ? 0 : 1)
+        : (int)($formData['use_area'] ?? 0);
     $mailer->save_status = 'submitted';
 
     if (!empty($formData['datasheet_pdf']['tmp_name'])) {
@@ -1553,7 +1559,10 @@ public function specDraftAutosave()
     $specification = $data['specification'] ?? '';
     $type = $data['type'] ?? 3;
     $subject = $data['subject'] ?? '';
-    $use_area = $data['use_area'] ?? 1;
+    // use_area: 0 = With Warranty, 1 = Without Warranty (inverse of form spectype).
+    $use_area = isset($data['spectype'])
+        ? (((int)$data['spectype'] === 1) ? 0 : 1)
+        : (int)($data['use_area'] ?? 0);
 
     $reservedTrack = '';
     if ($mailer) {
@@ -1835,7 +1844,10 @@ public function editsend_v3($id = null) {
                 'company'       => $this->request->data['company'],
                 'type'          => $this->request->data['type'],
                 'subject'       => $this->request->data['subject'],
-                'use_area'      => isset($this->request->data['use_area']) ? $this->request->data['use_area'] : 0,
+                // use_area: 0 = With Warranty, 1 = Without Warranty (inverse of form spectype).
+                'use_area'      => isset($this->request->data['spectype'])
+                    ? (((int)$this->request->data['spectype'] === 1) ? 0 : 1)
+                    : (isset($this->request->data['use_area']) ? (int)$this->request->data['use_area'] : 0),
                 'created'       => date('Y-m-d H:i:s'),
 
             ]

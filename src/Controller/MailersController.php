@@ -687,7 +687,13 @@ class MailersController extends AppController
 			$subject = $this->request->getData()['subject'];
 			//$mft = $this->request->getData()['mft'];
 			//$warranty_period = $this->request->getData()['warranty_period'];
-			isset($this->request->getData()['use_area'])? $use_area = $this->request->getData()['use_area'] : $use_area =1;
+			// Spec Type (With/Without Warranty) → use_area (0=With, 1=Without).
+			$spectype = $this->request->getData('spectype');
+			if ($spectype !== null && $spectype !== '') {
+				$use_area = ((int)$spectype === 1) ? 0 : 1;
+			} else {
+				$use_area = isset($this->request->getData()['use_area']) ? (int)$this->request->getData()['use_area'] : 0;
+			}
 			
 			// Build full Mailer entity data (all fields in one array for newEntity)
 			$mailerData = [
@@ -1037,7 +1043,10 @@ class MailersController extends AppController
 		$draftIdFromForm = isset($data['draft_id']) ? (int)$data['draft_id'] : 0;
 		$exp = explode('/', (string)($data['date'] ?? date('d/m/Y')));
 		$date = (count($exp) === 3) ? ($exp[2] . '-' . $exp[1] . '-' . $exp[0]) : date('Y-m-d');
-		$use_area = isset($data['use_area']) ? (int)$data['use_area'] : 1;
+		// Spec Type (With/Without Warranty) → use_area (0=With, 1=Without).
+		$use_area = isset($data['spectype'])
+			? (((int)$data['spectype'] === 1) ? 0 : 1)
+			: (isset($data['use_area']) ? (int)$data['use_area'] : 0);
 
 		$entity = null;
 		if ($draftIdFromForm > 0) {
@@ -1246,7 +1255,13 @@ class MailersController extends AppController
 			$subject = $this->request->getData()['subject'];
 			//$mft = $this->request->getData()['mft'];
 			//$warranty_period = $this->request->getData()['warranty_period'];
-			isset($this->request->getData()['use_area'])? $use_area = $this->request->getData()['use_area'] : $use_area =1;
+			// Spec Type (With/Without Warranty) → use_area (0=With, 1=Without).
+			$spectype = $this->request->getData('spectype');
+			if ($spectype !== null && $spectype !== '') {
+				$use_area = ((int)$spectype === 1) ? 0 : 1;
+			} else {
+				$use_area = isset($this->request->getData()['use_area']) ? (int)$this->request->getData()['use_area'] : 0;
+			}
 			
 			$inserty['Mailer']['admin_id'] = $user_id;
 			$inserty['Mailer']['name'] = $name;
@@ -1654,7 +1669,13 @@ class MailersController extends AppController
 			//$mft = $this->request->getData()['mft'];
 			//$warranty_period = $this->request->getData()['warranty_period'];
 			//echo $date; die();
-			isset($this->request->getData()['use_area'])? $use_area = $this->request->getData()['use_area'] : $use_area =0;
+			// Spec Type (With/Without Warranty) → use_area (0=With, 1=Without).
+			$spectype = $this->request->getData('spectype');
+			if ($spectype !== null && $spectype !== '') {
+				$use_area = ((int)$spectype === 1) ? 0 : 1;
+			} else {
+				$use_area = isset($this->request->getData()['use_area']) ? (int)$this->request->getData()['use_area'] : 0;
+			}
 			
 			if($form_type == 0){
 				$inserty['Mailer']['id'] = $id;
@@ -1943,7 +1964,13 @@ class MailersController extends AppController
 			//$mft = $this->request->getData()['mft'];
 			//$warranty_period = $this->request->getData()['warranty_period'];
 			//echo $date; die();
-			isset($this->request->getData()['use_area'])? $use_area = $this->request->getData()['use_area'] : $use_area =0;
+			// Spec Type (With/Without Warranty) → use_area (0=With, 1=Without).
+			$spectype = $this->request->getData('spectype');
+			if ($spectype !== null && $spectype !== '') {
+				$use_area = ((int)$spectype === 1) ? 0 : 1;
+			} else {
+				$use_area = isset($this->request->getData()['use_area']) ? (int)$this->request->getData()['use_area'] : 0;
+			}
 			
 			if($form_type == 0){
 				$inserty['Mailer']['id'] = $id;
@@ -2139,7 +2166,13 @@ class MailersController extends AppController
 			//$mft = $this->request->getData()['mft'];
 			//$warranty_period = $this->request->getData()['warranty_period'];
 			//echo $date; die();
-			isset($this->request->getData()['use_area'])? $use_area = $this->request->getData()['use_area'] : $use_area =0;
+			// Spec Type (With/Without Warranty) → use_area (0=With, 1=Without).
+			$spectype = $this->request->getData('spectype');
+			if ($spectype !== null && $spectype !== '') {
+				$use_area = ((int)$spectype === 1) ? 0 : 1;
+			} else {
+				$use_area = isset($this->request->getData()['use_area']) ? (int)$this->request->getData()['use_area'] : 0;
+			}
 			
 			if($form_type == 0){
 				$inserty['Mailer']['id'] = $id;
@@ -2412,7 +2445,13 @@ class MailersController extends AppController
 			$subject = $this->request->getData()['subject'];
 			//$mft = $this->request->getData()['mft'];
 			//$warranty_period = $this->request->getData()['warranty_period'];
-			isset($this->request->getData()['use_area'])? $use_area = $this->request->getData()['use_area'] : $use_area =1;
+			// Spec Type (With/Without Warranty) → use_area (0=With, 1=Without).
+			$spectype = $this->request->getData('spectype');
+			if ($spectype !== null && $spectype !== '') {
+				$use_area = ((int)$spectype === 1) ? 0 : 1;
+			} else {
+				$use_area = isset($this->request->getData()['use_area']) ? (int)$this->request->getData()['use_area'] : 0;
+			}
 			
 			$inserty['Mailer']['admin_id'] = $user_id;
 			$inserty['Mailer']['name'] = $name;
@@ -2613,7 +2652,13 @@ class MailersController extends AppController
 			//$mft = $this->request->getData()['mft'];
 			//$warranty_period = $this->request->getData()['warranty_period'];
 			//echo $date; die();
-			isset($this->request->getData()['use_area'])? $use_area = $this->request->getData()['use_area'] : $use_area =0;
+			// Spec Type (With/Without Warranty) → use_area (0=With, 1=Without).
+			$spectype = $this->request->getData('spectype');
+			if ($spectype !== null && $spectype !== '') {
+				$use_area = ((int)$spectype === 1) ? 0 : 1;
+			} else {
+				$use_area = isset($this->request->getData()['use_area']) ? (int)$this->request->getData()['use_area'] : 0;
+			}
 			
 			if($form_type == 0){
 				$inserty['Mailer']['id'] = $id;

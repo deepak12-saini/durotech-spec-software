@@ -1838,7 +1838,10 @@ class StaffsController extends AppController {
 			}
 			$type = $data['type'] ?? '';
 			$subject = $data['subject'] ?? '';
-			$use_area = $data['use_area'] ?? 1;
+			// Spec Type (With/Without Warranty) → use_area (0=With, 1=Without).
+			$use_area = isset($data['spectype'])
+				? (((int)$data['spectype'] === 1) ? 0 : 1)
+				: (int)($data['use_area'] ?? 0);
 
 			$entity = $this->Mailer->newEntity([
 				'user_id' => $user_id,

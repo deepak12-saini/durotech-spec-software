@@ -188,9 +188,15 @@
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Spec Type:</label>
 				<div class="col-sm-9">
+					<?php
+					// use_area: 0=With Warranty → spectype 1; 1=Without Warranty → spectype 0
+					$savedSpectype = isset($MailerArr['Mailer']['use_area'])
+						? (string)(1 - (int)$MailerArr['Mailer']['use_area'])
+						: '1';
+					?>
 					<select name="spectype" class="col-xs-10 col-sm-8">						
-						<option value="1">With Warranty Column</option> 
-						<option value="0">Without Warranty Column</option> 
+						<option value="1"<?php echo $savedSpectype === '1' ? ' selected' : ''; ?>>With Warranty Column</option> 
+						<option value="0"<?php echo $savedSpectype === '0' ? ' selected' : ''; ?>>Without Warranty Column</option> 
 					</select>
 				</div>
 			</div>

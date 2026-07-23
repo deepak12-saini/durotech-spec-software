@@ -264,7 +264,10 @@
 		$draftType = isset($draft) ? (string)$draft->type : '3';
 		$draftSubject = isset($draft) ? h($draft->subject) : 'Durotech: External Liquid WPM';
 		$refernce = isset($refernce) ? $refernce : '';
-		$draftSpectype = '1'; // not stored in DB, default
+		// use_area: 0=With Warranty → spectype 1; 1=Without Warranty → spectype 0
+		$draftSpectype = (isset($draft) && isset($draft->use_area))
+			? (string)(1 - (int)$draft->use_area)
+			: '1';
 		$draftSectionsJson = '[]';
 		$draftCommentsJson = '[]';
 		if (!empty($draft) && isset($draft->spec_useareas)) {
