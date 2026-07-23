@@ -102,6 +102,11 @@
 								$pdfBaseName = 'spec_' . (string)$mailerId;
 							}
 							$pdffilename = $pdfBaseName . '.pdf';
+							// Prefer DB path after edit/regen so Download matches the latest PDF.
+							$pdfHref = SITEURL . 'dompdf/' . $pdffilename;
+							if (!empty($mailerData['pdf_attachment'])) {
+								$pdfHref = SITEURL . ltrim((string)$mailerData['pdf_attachment'], '/');
+							}
 						?>
 						<tr>
 							<!-- Output data for each column -->
@@ -205,7 +210,10 @@
 
 									echo $this->Html->link('History', array('controller' => 'employees', 'action' => 'audit_log', $mailerId), array('class' => 'btn btn-mini btn-default')) . '&nbsp;';
 
-									echo $this->Html->link('Download', SITEURL . 'dompdf/' . $pdffilename, array('class' => 'btn btn-mini btn-info', 'target' => '_blank')) . '&nbsp;';
+									$pdfDownloadUrl = $pdfHref;
+									$pdfVer = (string)((int)($mailerData['revision'] ?? 0));
+									$pdfDownloadUrl .= (strpos($pdfDownloadUrl, '?') === false ? '?' : '&') . 'v=' . rawurlencode($pdfVer !== '0' ? $pdfVer : (string)$mailerId);
+									echo $this->Html->link('Download', $pdfDownloadUrl, array('class' => 'btn btn-mini btn-info', 'target' => '_blank')) . '&nbsp;';
 
 									// Template Preset action hidden for now. Uncomment if client approves.
 									// echo $this->Form->postLink(

@@ -2763,6 +2763,30 @@ class MailersController extends AppController
 				//echo $url; die();
 				$response = file_get_contents($url, false, stream_context_create($arrContextOptions));
 
+				$generatedPdfFileName = $pdfname . '.pdf';
+				$pdfPath = 'dompdf/' . $generatedPdfFileName;
+				if ($response !== false && $response !== '') {
+					$pdfData = json_decode((string)$response, true);
+					if (is_array($pdfData) && !empty($pdfData['success'])) {
+						if (!empty($pdfData['filename'])) {
+							$generatedPdfFileName = (string)$pdfData['filename'];
+						}
+						if (!empty($pdfData['path'])) {
+							$pdfPath = (string)$pdfData['path'];
+						} else {
+							$pdfPath = 'dompdf/' . $generatedPdfFileName;
+						}
+					}
+				}
+				$oldPdfAttachment = (string)($mailerEntity->pdf_attachment ?? '');
+				$mailerEntity->pdf_attachment = $pdfPath;
+				$this->Mailer->save($mailerEntity);
+				if ($oldPdfAttachment !== '' && $oldPdfAttachment !== $pdfPath) {
+					$oldFull = WWW_ROOT . str_replace(['/', '\\'], DS, $oldPdfAttachment);
+					if (is_file($oldFull) && strpos(str_replace('\\', '/', $oldPdfAttachment), 'dompdf/') === 0) {
+						@unlink($oldFull);
+					}
+				}
 
 				//$result = file_get_contents($url);
 				$this->logSpecAudit([

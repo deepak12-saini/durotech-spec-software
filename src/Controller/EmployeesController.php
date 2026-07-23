@@ -1900,16 +1900,20 @@ public function editsend_v3($id = null) {
             $this->SpecUsearea->deleteAll(['SpecUsearea.mailer_id' => $lastinsertId], false);
             if (!empty($this->request->data['product'])) {
                 foreach ($this->request->data['product'] as $key => $prodt) {
-                    $title = isset($this->request->data['title'][$this->request->data['types'][$key]]) ? $this->request->data['title'][$this->request->data['types'][$key]] : '';
+                    $typesKey = $this->request->data['types'][$key] ?? null;
+                    $title = ($typesKey !== null && isset($this->request->data['title'][$typesKey]))
+                        ? $this->request->data['title'][$typesKey]
+                        : '';
                     $specEntity = $this->SpecUsearea->newEntity([
                         'mailer_id' => $lastinsertId,
+                        'use_area' => 1,
                         'title' => $title,
                         'product' => $prodt,
-                        'types' => $this->request->data['types'][$key],
-                        'serial' => $this->request->data['serial'][$key],
-                        'coverage' => $this->request->data['coverage'][$key],
-                        'Warranty' => $this->request->data['Warranty'][$key],
-                        'coverage_by_pack' => $this->request->data['coverage_by_pack'][$key]
+                        'types' => $this->request->data['types'][$key] ?? '',
+                        'serial' => $this->request->data['serial'][$key] ?? '',
+                        'coverage' => $this->request->data['coverage'][$key] ?? '',
+                        'Warranty' => $this->request->data['Warranty'][$key] ?? '',
+                        'coverage_by_pack' => $this->request->data['coverage_by_pack'][$key] ?? '',
                     ]);
                     $this->SpecUsearea->save($specEntity);
                 }
@@ -1942,10 +1946,42 @@ public function editsend_v3($id = null) {
                 ? SITEURL . 'dompdf/generatepdf.php?' . $fields_string 
                 : SITEURL . 'dompdf/generatewithoutpdf.php?' . $fields_string;
 
-            file_get_contents($pdf_url, false, stream_context_create(["ssl" => ["verify_peer" => false, "verify_peer_name" => false]]));
+            $pdfResponse = @file_get_contents($pdf_url, false, stream_context_create([
+                'http' => ['timeout' => 60, 'ignore_errors' => true],
+                'ssl' => ['verify_peer' => false, 'verify_peer_name' => false],
+            ]));
 
-            // --- After generating PDF ---
-            $pdfFilePath = WWW_ROOT . 'dompdf' . DS . $pdfname . '.pdf';
+            // generatepdf.php returns JSON with sanitized filename/path — must update DB
+            // or the list/view keeps linking to the previous PDF.
+            $generatedPdfFileName = $pdfname . '.pdf';
+            $pdfPath = 'dompdf/' . $generatedPdfFileName;
+            if ($pdfResponse !== false && $pdfResponse !== '') {
+                $json = json_decode($pdfResponse, true);
+                if (is_array($json) && !empty($json['success'])) {
+                    if (!empty($json['filename'])) {
+                        $generatedPdfFileName = (string)$json['filename'];
+                    }
+                    if (!empty($json['path'])) {
+                        $pdfPath = (string)$json['path'];
+                    } else {
+                        $pdfPath = 'dompdf/' . $generatedPdfFileName;
+                    }
+                }
+            }
+
+            $oldPdfAttachment = (string)($savedMailer->pdf_attachment ?? '');
+            $savedMailer->pdf_attachment = $pdfPath;
+            $this->Mailer->save($savedMailer);
+
+            // Remove previous generated PDF if path changed (avoid serving stale file).
+            if ($oldPdfAttachment !== '' && $oldPdfAttachment !== $pdfPath) {
+                $oldFull = WWW_ROOT . str_replace(['/', '\\'], DS, $oldPdfAttachment);
+                if (is_file($oldFull) && strpos(str_replace('\\', '/', $oldPdfAttachment), 'dompdf/') === 0) {
+                    @unlink($oldFull);
+                }
+            }
+
+            $pdfFilePath = WWW_ROOT . str_replace(['/', '\\'], DS, $pdfPath);
 
             // Check if PDF exists
             if (file_exists($pdfFilePath)) {
@@ -1960,9 +1996,9 @@ public function editsend_v3($id = null) {
                 $email->setSubject('Specification Edited – ' . $inserty['Mailer']['tracknumber']);
                 $email->setEmailFormat('html');
 
-                // Attach the PDF
+                // Attach the newly generated PDF
                 $email->setAttachments([
-                    $pdfname . '.pdf' => [
+                    $generatedPdfFileName => [
                         'file' => $pdfFilePath,
                         'mimetype' => 'application/pdf'
                     ]
@@ -1986,7 +2022,7 @@ public function editsend_v3($id = null) {
                     'date' => (string)($this->request->data['date'] ?? ''),
                     'revision' => $revision,
                     'created_by' => $createdBy,
-                    'pdf_attachment' => 'dompdf/' . (string)$pdfname . '.pdf',
+                    'pdf_attachment' => $pdfPath,
                 ]);
 
                 $email->send();
