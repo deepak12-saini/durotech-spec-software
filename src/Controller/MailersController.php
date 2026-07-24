@@ -47,9 +47,16 @@ class MailersController extends AppController
     {
         parent::beforeFilter($event);
         $this->callConstants();
-        // Use admin layout (with sidebar) for all admin actions except AJAX/partial responses
+        // Use admin layout (with sidebar) for all admin actions except AJAX/partial/print-export responses
         $action = $this->request->getParam('action');
-        $noLayoutActions = ['admin_title_list', 'admin_list', 'adminList', 'adminTitleList'];
+        $noLayoutActions = [
+            'admin_title_list',
+            'admin_list',
+            'adminList',
+            'adminTitleList',
+            'admin_export_specs',
+            'adminExportSpecs',
+        ];
         if (strpos((string)$action, 'admin') === 0 && !in_array($action, $noLayoutActions, true)) {
             $this->viewBuilder()->setLayout('admin_layout');
         }
@@ -67,7 +74,14 @@ class MailersController extends AppController
             return $result;
         }
         $action = $this->request->getParam('action');
-        $noLayoutActions = ['admin_title_list', 'admin_list', 'adminList', 'adminTitleList'];
+        $noLayoutActions = [
+            'admin_title_list',
+            'admin_list',
+            'adminList',
+            'adminTitleList',
+            'admin_export_specs',
+            'adminExportSpecs',
+        ];
         if (strpos((string)$action, 'admin') === 0 && !in_array($action, $noLayoutActions, true)) {
             $this->viewBuilder()->setLayout('admin_layout');
         }
