@@ -80,6 +80,15 @@
 	.spec-v3-panel .dataTables_wrapper .row:first-child {
 		margin-bottom: 8px;
 	}
+	/* Align table / length / search with export toolbar (remove Bootstrap col inset) */
+	.spec-v3-panel .dataTables_wrapper > .row {
+		margin-left: 0;
+		margin-right: 0;
+	}
+	.spec-v3-panel .dataTables_wrapper > .row > [class*="col-"] {
+		padding-left: 0;
+		padding-right: 0;
+	}
 	.spec-v3-panel .dataTables_length,
 	.spec-v3-panel .dataTables_filter {
 		margin-bottom: 6px;
@@ -121,10 +130,15 @@
 		background-color: #f5f9fc !important;
 	}
 
-	.spec-track {
-		font-weight: 600;
-		color: #393939;
+	.spec-sno {
+		width: 48px;
+		text-align: center;
 		white-space: nowrap;
+		font-weight: 600;
+		color: #666;
+	}
+	table#example.table > thead > tr > th.spec-sno {
+		text-align: center;
 	}
 	.spec-pdf-link {
 		display: inline-block;
@@ -229,6 +243,7 @@
 					<table class="table table-striped table-bordered table-hover" id="example">
 						<thead>
 							<tr>
+								<th class="spec-sno">S.No</th>
 								<th>Track Number</th>
 								<th>Send Name</th>
 								<th>Name/Attn</th>
@@ -244,7 +259,10 @@
 							</tr>
 						</thead>
 						<tbody>
-							<?php foreach ($mailers as $mailer):
+							<?php
+							$sno = 0;
+							foreach ($mailers as $mailer):
+								$sno++;
 								if (!empty($mailer['Mailer']['pdf_attachment'])) {
 									$pdffilename = basename($mailer['Mailer']['pdf_attachment']);
 								} else {
@@ -259,6 +277,7 @@
 								}
 							?>
 							<tr>
+								<td class="spec-sno"><?php echo (int)$sno; ?></td>
 								<td><span class="spec-track">#<?php echo h($mailer['Mailer']['tracknumber']); ?></span></td>
 								<td><?php
 									$user = $mailer['User'] ?? [];
@@ -346,8 +365,11 @@
 <script>
 $(document).ready(function() {
 	var dt = $('#example').DataTable({
-		"order": [[9, "desc"]],
-		"columnDefs": [{ "targets": 11, "orderable": false }],
+		"order": [[10, "desc"]],
+		"columnDefs": [
+			{ "targets": 0, "orderable": false, "searchable": false },
+			{ "targets": 12, "orderable": false }
+		],
 		// Distinct labels: top = page size, bottom = range; right = quick filter (no "Search:" vs Filter Specs clash)
 		"language": {
 			"lengthMenu": "Rows per page _MENU_",
@@ -363,7 +385,14 @@ $(document).ready(function() {
 		},
 		"dom": "<'row'<'col-xs-6'l><'col-xs-6'f>>" +
 			"<'row'<'col-xs-12'tr>>" +
-			"<'row'<'col-xs-6'i><'col-xs-6'p>>"
+			"<'row'<'col-xs-6'i><'col-xs-6'p>>",
+		"drawCallback": function () {
+			var api = this.api();
+			var start = api.page.info().start;
+			api.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+				cell.innerHTML = start + i + 1;
+			});
+		}
 	});
 
 	var params = new URLSearchParams(window.location.search || '');

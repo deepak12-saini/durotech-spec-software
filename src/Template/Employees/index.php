@@ -13,6 +13,14 @@
 	table#example.table > tbody > tr > td {
 		vertical-align: middle !important;
 	}
+	table#example.table > thead > tr > th.spec-sno,
+	table#example.table > tbody > tr > td.spec-sno {
+		width: 48px;
+		text-align: center;
+		white-space: nowrap;
+		font-weight: 600;
+		color: #666;
+	}
 </style>
 
 <div class="page-content">
@@ -70,6 +78,7 @@
 					<!-- Table header -->
 					<thead>
 						<tr>
+							<th class="spec-sno">S.No</th>
 							<th>TrackNumber</th>
 							<th>Employee Name</th>
 							<th>Name/Attn</th>
@@ -89,9 +98,12 @@
 
 					<!-- Table body -->
 					<tbody>
-						<?php 
+						<?php
+						$pagingParams = $this->Paginator->params();
+						$sno = max(0, (int)($pagingParams['start'] ?? 1) - 1);
 						// Loop through each mailer record from the controller
 						foreach ($mailers as $mailer):
+							$sno++;
 							// Support both CakePHP 2 arrays and CakePHP 3 entities.
 							if (is_array($mailer) && isset($mailer['Mailer'])) {
 								$mailerData = (array)$mailer['Mailer'];
@@ -127,6 +139,7 @@
 							$pdfHref = $this->Pdf->url($pdfRel);
 						?>
 						<tr>
+							<td class="spec-sno"><?php echo (int)$sno; ?></td>
 							<!-- Output data for each column -->
 							<td>#<?php echo h($tracknumber); ?>&nbsp;</td>
 							<td><?php echo h($employeeData['name'] ?? ''); ?>&nbsp;</td>
