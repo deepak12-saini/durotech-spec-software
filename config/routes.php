@@ -345,6 +345,7 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/mailers/eoi', ['controller' => 'Mailers', 'action' => 'admin_eoi']);
     $routes->connect('/admin/mailers/eoisend', ['controller' => 'Mailers', 'action' => 'eoisend']);
     $routes->connect('/admin/mailers/index_v3', ['controller' => 'Mailers', 'action' => 'admin_index_v3']);
+    $routes->connect('/admin/mailers/export_specs', ['controller' => 'Mailers', 'action' => 'admin_export_specs']);
     $routes->connect('/admin/mailers/send_v3', ['controller' => 'Mailers', 'action' => 'admin_send_v3']);
     $routes->connect('/admin/mailers/spec-draft-autosave-v3', ['controller' => 'Mailers', 'action' => 'admin_specDraftAutosaveV3']);
     $routes->connect('/admin/mailers/editsend_v3/:id', ['controller' => 'Mailers', 'action' => 'admin_editsend_v3'], ['pass' => ['id']]);

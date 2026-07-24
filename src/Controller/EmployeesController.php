@@ -337,17 +337,201 @@ public function index()
     $employee_id = $this->Session->read('Employee.id');
 
     $this->loadModel('Mailer');
-    $query = $this->Mailer->find()
-        ->where([
-            // 'Mailer.spec_v' => 0,
-            'Mailer.employee_id' => $employee_id,
-            // Specs only
-            'Mailer.type' => 3,
-        ])
-        ->contain(['Employee'])
-        ->orderDesc('Mailer.id');
+    $filters = $this->_employeeSpecListFilters();
+    $query = $this->_employeeSpecListQuery($employee_id, $filters);
 
-    $filters = [
+    $mailers = $this->paginate($query, [
+        'limit' => 20,
+    ]);
+
+    // Check if employee has a draft so we can show "Resume Draft" vs "Create New Spec"
+    $hasDraft = false;
+    if ($this->Mailer->getSchema()->getColumn('save_status')) {
+        $draftExists = [
+            'Mailer.employee_id' => $employee_id,
+            'Mailer.save_status' => 'draft',
+            'Mailer.type' => 3,
+        ];
+        if ($this->Mailer->getSchema()->getColumn('deleted_at')) {
+            $draftExists['Mailer.deleted_at IS'] = null;
+        }
+        $hasDraft = $this->Mailer->exists($draftExists);
+    }
+
+    $specSoftDelete = (bool)$this->Mailer->getSchema()->getColumn('deleted_at');
+
+    $this->set(compact('mailers', 'hasDraft', 'filters', 'specSoftDelete'));
+}
+
+/**
+ * Export all filtered specs (all pages) as CSV or printable HTML.
+ * Query: same filters as index + format=csv|print
+ */
+public function export_specs()
+{
+    $this->checkEmployeeSession();
+
+    $employee_id = $this->Session->read('Employee.id');
+    $this->loadModel('Mailer');
+
+    $filters = $this->_employeeSpecListFilters();
+    $format = strtolower(trim((string)$this->request->getQuery('format')));
+    if ($format !== 'csv' && $format !== 'print') {
+        $format = 'csv';
+    }
+
+    $query = $this->_employeeSpecListQuery($employee_id, $filters);
+    $mailers = $query->all();
+
+    $rows = [];
+    foreach ($mailers as $mailer) {
+        if (is_array($mailer) && isset($mailer['Mailer'])) {
+            $mailerData = (array)$mailer['Mailer'];
+            $employeeData = (array)($mailer['Employee'] ?? []);
+        } elseif (is_object($mailer) && method_exists($mailer, 'toArray')) {
+            $mailerData = (array)$mailer->toArray();
+            $employeeData = [];
+            if (!empty($mailer->employee) && method_exists($mailer->employee, 'toArray')) {
+                $employeeData = (array)$mailer->employee->toArray();
+            } elseif (!empty($mailerData['employee']) && is_array($mailerData['employee'])) {
+                $employeeData = $mailerData['employee'];
+            }
+        } else {
+            $mailerData = (array)$mailer;
+            $employeeData = [];
+        }
+
+        $status = (int)($mailerData['status'] ?? 0);
+        $isReview = (int)($mailerData['is_review'] ?? 0);
+        if ($isReview === 0) {
+            $approveStatus = 'Pending Review';
+        } elseif ($isReview === 1 && $status === 0) {
+            $approveStatus = 'Reviewed - Awaiting Approval';
+        } elseif ($isReview === 1 && $status === 1) {
+            $approveStatus = 'Approved';
+        } else {
+            $approveStatus = 'Unknown';
+        }
+
+        $created = $mailerData['created'] ?? null;
+        if ($created instanceof \DateTimeInterface) {
+            $createdStr = $created->format('d-M-Y h:i a');
+        } elseif (!empty($created)) {
+            $createdStr = function_exists('format_db_date')
+                ? format_db_date('d-M-Y h:i a', (string)$created)
+                : (string)$created;
+        } else {
+            $createdStr = '';
+        }
+
+        $specSentAt = $mailerData['spec_email_sent_at'] ?? null;
+        $specSentTo = (string)($mailerData['spec_email_sent_to'] ?? '');
+        if (!empty($specSentAt)) {
+            $at = $specSentAt instanceof \DateTimeInterface
+                ? $specSentAt->format('d-M-Y h:i a')
+                : (function_exists('format_db_date')
+                    ? format_db_date('d-M-Y h:i a', (string)$specSentAt)
+                    : (string)$specSentAt);
+            $customerEmail = 'Sent ' . $at . ($specSentTo !== '' ? (' to ' . $specSentTo) : '');
+        } else {
+            $customerEmail = 'Not sent';
+        }
+
+        $pdfAttachment = '';
+        $pdfUrl = '';
+        if (!empty($mailerData['pdf_attachment'])) {
+            $pdfRel = ltrim((string)$mailerData['pdf_attachment'], '/');
+            $pdfUrl = $this->_employeePdfPublicUrl($pdfRel);
+            $pdfAttachment = $pdfUrl;
+        } else {
+            $pdfAttachment = 'No Attachment';
+        }
+
+        $rows[] = [
+            'tracknumber' => '#' . (string)($mailerData['tracknumber'] ?? ''),
+            'employee_name' => (string)($employeeData['name'] ?? ''),
+            'name' => (string)($mailerData['name'] ?? ''),
+            'email' => (string)($mailerData['email'] ?? ''),
+            'company' => (string)($mailerData['company'] ?? ''),
+            'address' => (string)($mailerData['address'] ?? ''),
+            'specification' => (string)($mailerData['specification'] ?? ''),
+            'date' => (string)($mailerData['date'] ?? ''),
+            'pdf_attachment' => $pdfAttachment,
+            'pdf_url' => $pdfUrl,
+            'approve_status' => $approveStatus,
+            'revision' => (string)($mailerData['revision'] ?? '0'),
+            'created' => $createdStr,
+            'customer_email' => $customerEmail,
+        ];
+    }
+
+    if ($format === 'csv') {
+        $this->viewBuilder()->setLayout(false);
+        $this->autoRender = false;
+
+        $filename = 'duroozy-specs-' . date('Y-m-d') . '.csv';
+        $this->response = $this->response
+            ->withType('csv')
+            ->withHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->withHeader('Pragma', 'no-cache')
+            ->withHeader('Expires', '0');
+
+        $fh = fopen('php://temp', 'r+');
+        fputcsv($fh, [
+            'TrackNumber',
+            'Employee Name',
+            'Name/Attn',
+            'Email',
+            'Project',
+            'Address',
+            'Specification',
+            'Date',
+            'PDF Attachment',
+            'Approve Status',
+            'Revision',
+            'Created',
+            'Customer email',
+        ]);
+        foreach ($rows as $row) {
+            fputcsv($fh, [
+                $row['tracknumber'],
+                $row['employee_name'],
+                $row['name'],
+                $row['email'],
+                $row['company'],
+                $row['address'],
+                $row['specification'],
+                $row['date'],
+                $row['pdf_attachment'],
+                $row['approve_status'],
+                $row['revision'],
+                $row['created'],
+                $row['customer_email'],
+            ]);
+        }
+        rewind($fh);
+        $csv = stream_get_contents($fh);
+        fclose($fh);
+
+        return $this->response->withStringBody($csv !== false ? $csv : '');
+    }
+
+    $this->viewBuilder()->setLayout(false);
+    $this->set(compact('rows', 'filters'));
+    $this->render('export_specs');
+}
+
+public function exportSpecs()
+{
+    return $this->export_specs();
+}
+
+/**
+ * @return array{tracknumber:string,name:string,email:string,company:string,specification:string,date_from:string,date_to:string}
+ */
+protected function _employeeSpecListFilters(): array
+{
+    return [
         'tracknumber' => trim((string)$this->request->getQuery('tracknumber')),
         'name' => trim((string)$this->request->getQuery('name')),
         'email' => trim((string)$this->request->getQuery('email')),
@@ -356,6 +540,24 @@ public function index()
         'date_from' => trim((string)$this->request->getQuery('date_from')),
         'date_to' => trim((string)$this->request->getQuery('date_to')),
     ];
+}
+
+/**
+ * Same filtered specs query used by index + export (no pagination).
+ *
+ * @param int|string $employee_id
+ * @param array $filters
+ * @return \Cake\ORM\Query
+ */
+protected function _employeeSpecListQuery($employee_id, array $filters)
+{
+    $query = $this->Mailer->find()
+        ->where([
+            'Mailer.employee_id' => $employee_id,
+            'Mailer.type' => 3,
+        ])
+        ->contain(['Employee'])
+        ->orderDesc('Mailer.id');
 
     if ($filters['tracknumber'] !== '') {
         $query->andWhere(['Mailer.tracknumber LIKE' => '%' . $filters['tracknumber'] . '%']);
@@ -381,7 +583,6 @@ public function index()
 
     $this->_applyMailerNotDeletedToQuery($query);
 
-    // Exclude drafts from list so only submitted specs show (no duplicate-looking rows)
     if ($this->Mailer->getSchema()->getColumn('save_status')) {
         $query->andWhere([
             'OR' => [
@@ -391,27 +592,25 @@ public function index()
         ]);
     }
 
-    $mailers = $this->paginate($query, [
-        'limit' => 20,
-    ]);
+    return $query;
+}
 
-    // Check if employee has a draft so we can show "Resume Draft" vs "Create New Spec"
-    $hasDraft = false;
-    if ($this->Mailer->getSchema()->getColumn('save_status')) {
-        $draftExists = [
-            'Mailer.employee_id' => $employee_id,
-            'Mailer.save_status' => 'draft',
-            'Mailer.type' => 3,
-        ];
-        if ($this->Mailer->getSchema()->getColumn('deleted_at')) {
-            $draftExists['Mailer.deleted_at IS'] = null;
+/**
+ * Public PDF URL (same idea as PdfHelper::url).
+ */
+protected function _employeePdfPublicUrl(string $relativePath): string
+{
+    $relativePath = ltrim(str_replace('\\', '/', $relativePath), '/');
+    $base = defined('SITEURL') ? rtrim((string)SITEURL, '/') . '/' : '/';
+    $version = time();
+    if ($relativePath !== '') {
+        $abs = WWW_ROOT . str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
+        if (is_file($abs)) {
+            $version = (int)filemtime($abs);
         }
-        $hasDraft = $this->Mailer->exists($draftExists);
     }
-
-    $specSoftDelete = (bool)$this->Mailer->getSchema()->getColumn('deleted_at');
-
-    $this->set(compact('mailers', 'hasDraft', 'filters', 'specSoftDelete'));
+    $sep = (strpos($relativePath, '?') === false) ? '?' : '&';
+    return $base . $relativePath . $sep . 'v=' . $version;
 }
 
 public function audit_log($id = null)

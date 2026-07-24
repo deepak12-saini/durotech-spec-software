@@ -327,10 +327,194 @@ class MailersController extends AppController
 		$this->checkAdminSession();
 		$user_id = (int)$this->request->getSession()->read('User.id');
 
-		// DuroEzy Spec v3 list: only this admin's specs (admin_id = session User.id).
-		// type=3 = specification mailer; do not require spec_v=1 (many rows use 0/NULL).
+		$filters = $this->_adminSpecListV3Filters();
+		$results = $this->_adminSpecListV3Query($user_id, $filters)->all();
+
+		$mailers = [];
+		foreach ($results as $row) {
+			$mailers[] = [
+				'Mailer' => $row->toArray(),
+				'User' => $row->user ? $row->user->toArray() : [],
+				'NappUser' => $row->napp_user ? $row->napp_user->toArray() : [],
+			];
+		}
+		$hasDraft = false;
+		if ($this->Mailer->getSchema()->getColumn('save_status')) {
+			$draftCond = [
+				'Mailer.admin_id' => $user_id,
+				'Mailer.type' => 3,
+				'Mailer.save_status' => 'draft',
+			];
+			if ($this->Mailer->getSchema()->getColumn('deleted_at')) {
+				$draftCond['Mailer.deleted_at IS'] = null;
+			}
+			$hasDraft = $this->Mailer->exists($draftCond);
+		}
+		$specSoftDelete = (bool)$this->Mailer->getSchema()->getColumn('deleted_at');
+		$this->set(compact('mailers', 'hasDraft', 'filters', 'specSoftDelete'));
+		return null;
+	}
+
+	/** CamelCase alias for export action. */
+	public function adminExportSpecs(): ?Response
+	{
+		return $this->admin_export_specs();
+	}
+
+	/**
+	 * Export all filtered admin v3 specs as CSV or printable HTML (all pages / full filtered set).
+	 */
+	public function admin_export_specs(): ?Response
+	{
+		$this->checkAdminSession();
+		$user_id = (int)$this->request->getSession()->read('User.id');
+
+		$filters = $this->_adminSpecListV3Filters();
+		$format = strtolower(trim((string)$this->request->getQuery('format')));
+		if ($format !== 'csv' && $format !== 'print') {
+			$format = 'csv';
+		}
+
+		$results = $this->_adminSpecListV3Query($user_id, $filters)->all();
+		$rows = [];
+		foreach ($results as $row) {
+			$mailerData = $row->toArray();
+			$user = $row->user ? $row->user->toArray() : [];
+			$userName = (string)($user['name'] ?? $user['display_name'] ?? $user['username'] ?? '');
+			$userUsername = (string)($user['username'] ?? '');
+			$sendName = $userName . ($userUsername !== '' ? ('(' . $userUsername . ')') : '');
+
+			$created = $mailerData['created'] ?? null;
+			if ($created instanceof \DateTimeInterface) {
+				$createdStr = $created->format('d-M-Y h:i a');
+			} elseif (!empty($created)) {
+				$createdStr = function_exists('format_db_date')
+					? format_db_date('d-M-Y h:i a', (string)$created)
+					: (string)$created;
+			} else {
+				$createdStr = '';
+			}
+
+			$specSentAt = $mailerData['spec_email_sent_at'] ?? null;
+			$specSentTo = (string)($mailerData['spec_email_sent_to'] ?? '');
+			if (!empty($specSentAt)) {
+				$at = $specSentAt instanceof \DateTimeInterface
+					? $specSentAt->format('d-M-Y h:i a')
+					: (function_exists('format_db_date')
+						? format_db_date('d-M-Y h:i a', (string)$specSentAt)
+						: (string)$specSentAt);
+				$customerEmail = 'Sent ' . $at . ($specSentTo !== '' ? (' to ' . $specSentTo) : '');
+			} else {
+				$customerEmail = 'Not sent';
+			}
+
+			$pdfAttachment = 'No Attachment';
+			$pdfUrl = '';
+			if (!empty($mailerData['pdf_attachment'])) {
+				$pdfRel = ltrim((string)$mailerData['pdf_attachment'], '/');
+				$pdfUrl = $this->_adminPdfPublicUrl($pdfRel);
+				$pdfAttachment = $pdfUrl;
+			}
+
+			$rows[] = [
+				'tracknumber' => '#' . (string)($mailerData['tracknumber'] ?? ''),
+				'send_name' => $sendName,
+				'name' => (string)($mailerData['name'] ?? ''),
+				'email' => (string)($mailerData['email'] ?? ''),
+				'company' => (string)($mailerData['company'] ?? ''),
+				'address' => (string)($mailerData['address'] ?? ''),
+				'specification' => (string)($mailerData['specification'] ?? ''),
+				'date' => (string)($mailerData['date'] ?? ''),
+				'pdf_attachment' => $pdfAttachment,
+				'pdf_url' => $pdfUrl,
+				'created' => $createdStr,
+				'customer_email' => $customerEmail,
+			];
+		}
+
+		if ($format === 'csv') {
+			$this->viewBuilder()->setLayout(false);
+			$this->autoRender = false;
+
+			$filename = 'duroozy-admin-specs-' . date('Y-m-d') . '.csv';
+			$this->response = $this->response
+				->withType('csv')
+				->withHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+				->withHeader('Pragma', 'no-cache')
+				->withHeader('Expires', '0');
+
+			$fh = fopen('php://temp', 'r+');
+			fputcsv($fh, [
+				'TrackNumber',
+				'Send Name',
+				'Name/Attn',
+				'Email',
+				'Project',
+				'Address',
+				'Specification',
+				'Date',
+				'PDF Attachment',
+				'Created',
+				'Customer email',
+			]);
+			foreach ($rows as $row) {
+				fputcsv($fh, [
+					$row['tracknumber'],
+					$row['send_name'],
+					$row['name'],
+					$row['email'],
+					$row['company'],
+					$row['address'],
+					$row['specification'],
+					$row['date'],
+					$row['pdf_attachment'],
+					$row['created'],
+					$row['customer_email'],
+				]);
+			}
+			rewind($fh);
+			$csv = stream_get_contents($fh);
+			fclose($fh);
+
+			return $this->response->withStringBody($csv !== false ? $csv : '');
+		}
+
+		$this->viewBuilder()->setLayout(false);
+		$this->set(compact('rows', 'filters'));
+		$this->render('admin_export_specs');
+		return null;
+	}
+
+	/**
+	 * @return array{tracknumber:string,name:string,email:string,company:string,specification:string,date_from:string,date_to:string}
+	 */
+	protected function _adminSpecListV3Filters(): array
+	{
+		return [
+			'tracknumber' => trim((string)$this->request->getQuery('tracknumber')),
+			'name' => trim((string)$this->request->getQuery('name')),
+			'email' => trim((string)$this->request->getQuery('email')),
+			'company' => trim((string)$this->request->getQuery('company')),
+			'specification' => trim((string)$this->request->getQuery('specification')),
+			'date_from' => trim((string)$this->request->getQuery('date_from')),
+			'date_to' => trim((string)$this->request->getQuery('date_to')),
+		];
+	}
+
+	/**
+	 * Same filtered specs query used by admin_index_v3 + export.
+	 *
+	 * @param int $user_id
+	 * @param array $filters
+	 * @return \Cake\ORM\Query
+	 */
+	protected function _adminSpecListV3Query(int $user_id, array $filters)
+	{
 		$results = $this->Mailer->find()
-			->contain(['User' => function ($q) { return $q->select(['name', 'username']); }, 'NappUser' => function ($q) { return $q->select(['name', 'lname']); }])
+			->contain([
+				'User' => function ($q) { return $q->select(['name', 'username']); },
+				'NappUser' => function ($q) { return $q->select(['name', 'lname']); },
+			])
 			->where(['Mailer.type' => 3, 'Mailer.admin_id' => $user_id])
 			->andWhere([
 				'OR' => [
@@ -343,17 +527,8 @@ class MailersController extends AppController
 					],
 				],
 			])
-			->order(['Mailer.created' => 'DESC', 'Mailer.id' => 'DESC'])
-			;
-		$filters = [
-			'tracknumber' => trim((string)$this->request->getQuery('tracknumber')),
-			'name' => trim((string)$this->request->getQuery('name')),
-			'email' => trim((string)$this->request->getQuery('email')),
-			'company' => trim((string)$this->request->getQuery('company')),
-			'specification' => trim((string)$this->request->getQuery('specification')),
-			'date_from' => trim((string)$this->request->getQuery('date_from')),
-			'date_to' => trim((string)$this->request->getQuery('date_to')),
-		];
+			->order(['Mailer.created' => 'DESC', 'Mailer.id' => 'DESC']);
+
 		if ($filters['tracknumber'] !== '') {
 			$results->andWhere(['Mailer.tracknumber LIKE' => '%' . $filters['tracknumber'] . '%']);
 		}
@@ -386,31 +561,26 @@ class MailersController extends AppController
 		if ($this->Mailer->getSchema()->getColumn('deleted_at')) {
 			$results->andWhere(['Mailer.deleted_at IS' => null]);
 		}
-		$results = $results->all();
 
-		$mailers = [];
-		foreach ($results as $row) {
-			$mailers[] = [
-				'Mailer' => $row->toArray(),
-				'User' => $row->user ? $row->user->toArray() : [],
-				'NappUser' => $row->napp_user ? $row->napp_user->toArray() : [],
-			];
-		}
-		$hasDraft = false;
-		if ($this->Mailer->getSchema()->getColumn('save_status')) {
-			$draftCond = [
-				'Mailer.admin_id' => $user_id,
-				'Mailer.type' => 3,
-				'Mailer.save_status' => 'draft',
-			];
-			if ($this->Mailer->getSchema()->getColumn('deleted_at')) {
-				$draftCond['Mailer.deleted_at IS'] = null;
+		return $results;
+	}
+
+	/**
+	 * Public PDF URL (same idea as PdfHelper::url).
+	 */
+	protected function _adminPdfPublicUrl(string $relativePath): string
+	{
+		$relativePath = ltrim(str_replace('\\', '/', $relativePath), '/');
+		$base = defined('SITEURL') ? rtrim((string)SITEURL, '/') . '/' : '/';
+		$version = time();
+		if ($relativePath !== '') {
+			$abs = WWW_ROOT . str_replace('/', DIRECTORY_SEPARATOR, $relativePath);
+			if (is_file($abs)) {
+				$version = (int)filemtime($abs);
 			}
-			$hasDraft = $this->Mailer->exists($draftCond);
 		}
-		$specSoftDelete = (bool)$this->Mailer->getSchema()->getColumn('deleted_at');
-		$this->set(compact('mailers', 'hasDraft', 'filters', 'specSoftDelete'));
-		return null;
+		$sep = (strpos($relativePath, '?') === false) ? '?' : '&';
+		return $base . $relativePath . $sep . 'v=' . $version;
 	}
 
 	/** CamelCase alias for audit log action dispatcher compatibility. */

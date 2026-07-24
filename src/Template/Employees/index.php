@@ -1,6 +1,18 @@
 <style>
-	/* Adds some margin below all buttons */
-	.btn { margin-bottom: 5px; }
+	/* Keep action buttons on one horizontal row */
+	.action-btns {
+		display: inline-flex;
+		flex-wrap: nowrap;
+		gap: 4px;
+		align-items: center;
+		white-space: nowrap;
+	}
+	.action-btns .btn { margin-bottom: 0; margin-right: 0; }
+	/* Center cell content when Address/Project wrap (overrides Ace/Bootstrap top align) */
+	table#example.table > thead > tr > th,
+	table#example.table > tbody > tr > td {
+		vertical-align: middle !important;
+	}
 </style>
 
 <div class="page-content">
@@ -44,6 +56,11 @@
 			<!-- Makes the table scrollable if necessary -->
 			<div class="table-responsive">
 				<div class="clearfix" style="margin-bottom:8px;">
+					<div class="pull-left dt-buttons btn-group" style="margin-bottom:6px;">
+						<button type="button" class="btn btn-success btn-sm" id="empExportCsv" title="Download CSV of all filtered records">CSV</button>
+						<button type="button" class="btn btn-danger btn-sm" id="empExportPdf" title="PDF of all filtered records">PDF</button>
+						<button type="button" class="btn btn-default btn-sm" id="empExportPrint" title="Print all filtered records">Print</button>
+					</div>
 					<div class="pull-right" style="max-width:280px;">
 						<input type="text" id="employeeTableSearch" class="form-control input-sm" placeholder="Search in current table...">
 					</div>
@@ -183,8 +200,9 @@
 								?>
 							</td>
 
-							<!-- Action buttons -->
-							<td>
+							<!-- Action buttons (horizontal) -->
+							<td style="white-space: nowrap;">
+								<div class="action-btns">
 								<?php
 									$is_review = (int)($mailerData['is_review'] ?? 0);
 									$specSentAtBtn = $mailerData['spec_email_sent_at'] ?? null;
@@ -196,20 +214,20 @@
 											'Edit',
 											['controller' => 'employees', 'action' => 'editsend_v3', $mailerId, '?' => ['page' => max(1, (int)$this->request->getQuery('page'))]],
 											['class' => 'btn btn-mini btn-primary']
-										) . '&nbsp;';
+										);
 									} else {
 										echo $this->Html->link(
 											'Edit',
 											['controller' => 'employees', 'action' => 'editsend_v3', $mailerId, '?' => ['page' => max(1, (int)$this->request->getQuery('page'))]],
 											['class' => 'btn btn-mini btn-primary']
-										) . '&nbsp;';
+										);
 
 										// Only allow download once submitted
 										//echo $this->Html->link('Download', SITEURL . 'dompdf/' . $pdffilename, array('class' => 'btn btn-mini btn-info', 'target' => '_blank'));
 									}
 									echo $this->Html->link('Send Mail', ['controller' => 'employees', 'action' => 'emp_sendemail', $mailerId], ['class' => $sendBtnClass, 'onclick' => 'return confirm("Are you sure send email?")']);
 
-									echo $this->Html->link('History', array('controller' => 'employees', 'action' => 'audit_log', $mailerId), array('class' => 'btn btn-mini btn-default')) . '&nbsp;';
+									echo $this->Html->link('History', array('controller' => 'employees', 'action' => 'audit_log', $mailerId), array('class' => 'btn btn-mini btn-default'));
 
 									echo $this->Html->link(
 										'<i class="fa fa-eye"></i> Preview',
@@ -220,17 +238,17 @@
 											'title' => 'Preview PDF with current design',
 											'escape' => false,
 										]
-									) . '&nbsp;';
+									);
 
 									$pdfDownloadUrl = $pdfHref;
-									echo $this->Html->link('Download', $pdfDownloadUrl, array('class' => 'btn btn-mini btn-info', 'target' => '_blank')) . '&nbsp;';
+									echo $this->Html->link('Download', $pdfDownloadUrl, array('class' => 'btn btn-mini btn-info', 'target' => '_blank'));
 
 									// Template Preset action hidden for now. Uncomment if client approves.
 									// echo $this->Form->postLink(
 									// 	'Save Template',
 									// 	['controller' => 'employees', 'action' => 'saveTemplateFromSpec', $mailerId],
 									// 	['class' => 'btn btn-mini btn-success', 'confirm' => 'Save this spec as template preset?']
-									// ) . '&nbsp;';
+									// );
 
 									echo $this->Form->postLink('Delete', array('controller' => 'employees', 'action' => 'deleteSpec', $mailerId), array(
 										'class' => 'btn btn-mini btn-xs btn-default',
@@ -241,6 +259,7 @@
 									));
 
 								?>
+								</div>
 							</td>
 
 						</tr>
@@ -269,17 +288,54 @@
 (function () {
 	var input = document.getElementById('employeeTableSearch');
 	var table = document.getElementById('example');
-	if (!input || !table) return;
-	var tbody = table.getElementsByTagName('tbody')[0];
-	if (!tbody) return;
-
-	input.addEventListener('input', function () {
-		var q = (input.value || '').toLowerCase().trim();
-		var rows = tbody.getElementsByTagName('tr');
-		for (var i = 0; i < rows.length; i++) {
-			var text = (rows[i].innerText || rows[i].textContent || '').toLowerCase();
-			rows[i].style.display = (q === '' || text.indexOf(q) !== -1) ? '' : 'none';
+	if (table) {
+		var tbody = table.getElementsByTagName('tbody')[0];
+		if (input && tbody) {
+			input.addEventListener('input', function () {
+				var q = (input.value || '').toLowerCase().trim();
+				var rows = tbody.getElementsByTagName('tr');
+				for (var i = 0; i < rows.length; i++) {
+					var text = (rows[i].innerText || rows[i].textContent || '').toLowerCase();
+					rows[i].style.display = (q === '' || text.indexOf(q) !== -1) ? '' : 'none';
+				}
+			});
 		}
-	});
+	}
+
+	// Server export: all filtered pages (same filters as list), not just current page
+	var exportBase = <?php echo json_encode($this->Url->build(['controller' => 'employees', 'action' => 'export_specs'])); ?>;
+	var filterKeys = ['tracknumber', 'name', 'email', 'company', 'specification', 'date_from', 'date_to'];
+
+	function buildExportUrl(format) {
+		var params = new URLSearchParams(window.location.search || '');
+		var out = new URLSearchParams();
+		out.set('format', format);
+		for (var i = 0; i < filterKeys.length; i++) {
+			var key = filterKeys[i];
+			var val = params.get(key);
+			if (val) out.set(key, val);
+		}
+		return exportBase + '?' + out.toString();
+	}
+
+	var csvBtn = document.getElementById('empExportCsv');
+	var pdfBtn = document.getElementById('empExportPdf');
+	var printBtn = document.getElementById('empExportPrint');
+
+	if (csvBtn) {
+		csvBtn.addEventListener('click', function () {
+			window.location.href = buildExportUrl('csv');
+		});
+	}
+	if (pdfBtn) {
+		pdfBtn.addEventListener('click', function () {
+			window.open(buildExportUrl('print'), '_blank');
+		});
+	}
+	if (printBtn) {
+		printBtn.addEventListener('click', function () {
+			window.open(buildExportUrl('print'), '_blank');
+		});
+	}
 })();
 </script>
