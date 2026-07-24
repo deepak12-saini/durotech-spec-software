@@ -1,0 +1,231 @@
+{
+    "products": [
+        {
+            "id": "1",
+            "title": "Duromastic P15",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duromastic P15.pdf"
+        },
+        {
+            "id": "3",
+            "title": "Duromastic ACS Fibre",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duro Mastic ACS Fibre.pdf"
+        },
+        {
+            "id": "4",
+            "title": "Duromastic ACS-2",
+            "datasheet": "https://www.durotechindustries.com.au/files/datasheets/1753403494_NEW_Duro-Mastic-ACS-2-1.pdf"
+        },
+        {
+            "id": "5",
+            "title": "Duromastic BLW",
+            "datasheet": "https://durotechindustries.com.au/files/datasheets/1775097692_BLW_DT-0226-001.pdf"
+        },
+        {
+            "id": "7",
+            "title": "Duromastic SBR latex",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duromastic%20SBR%20latex.pdf"
+        },
+        {
+            "id": "8",
+            "title": "Duromastic WAM Rapid",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duromastic WAM Rapid.pdf"
+        },
+        {
+            "id": "9",
+            "title": "Duromastic \u00e2\u201e\u00a2ACS-3",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duro Mastic ACS 3.pdf"
+        },
+        {
+            "id": "10",
+            "title": "Duromastic Duropond",
+            "datasheet": "https://durotechindustries.com.au/files/datasheets/1775097655_Duropond_DT-0226-001.pdf"
+        },
+        {
+            "id": "23",
+            "title": "Duromastic ARW",
+            "datasheet": "https://durotechindustries.com.au/files/datasheets/1775098901_ARW_DT-0326-002.pdf"
+        },
+        {
+            "id": "35",
+            "title": "AC Clear",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duro Mastic AC - Clear.pdf"
+        },
+        {
+            "id": "36",
+            "title": "Duromastic AC",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/AC.pdf"
+        },
+        {
+            "id": "37",
+            "title": "Duromastic AC Non Slip",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/AC - Non-slip.pdf"
+        },
+        {
+            "id": "39",
+            "title": "Duromastic Duro Solar",
+            "datasheet": "https://durotechindustries.com.au/files/datasheets/1775097730_Durosolar_DT-0226-001.pdf"
+        },
+        {
+            "id": "89",
+            "title": "Duromastic \u00e2\u201e\u00a2ACS-3",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duro%20Mastic%20ACS%203.pdf"
+        },
+        {
+            "id": "90",
+            "title": "Duromastic ACS-2",
+            "datasheet": "https://durotechindustries.com.au/files/datasheets/1775099851_Duro_Mastic_ACS_2_DT-0226-001.pdf"
+        },
+        {
+            "id": "94",
+            "title": "DURO MASTICTM BLW 300",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/DURO%20MASTICTM%20BLW%20300_01.pdf"
+        },
+        {
+            "id": "101",
+            "title": "Duromastic Duraroof",
+            "datasheet": "https://durotechindustries.com.au/files/datasheets/1783399264_Duraroof_DT-0626-003.pdf"
+        },
+        {
+            "id": "107",
+            "title": "Duromastic WAM 400",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duromastic%20WAM%20400%20V01.pdf"
+        },
+        {
+            "id": "109",
+            "title": "DUROMASTICTM P15 UV",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/DUROMASTICTM%20P15%20UV%20002%20-%20data%20sheet.pdf"
+        },
+        {
+            "id": "110",
+            "title": "DURO MASTIC 350UV",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duromastic 350 UV.pdf"
+        },
+        {
+            "id": "114",
+            "title": "DUROMASTICTM BLW-AR (Anti-Root)",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/DUROMASTICTM%20BLW%20-%20AR%20antiroot.pdf"
+        },
+        {
+            "id": "117",
+            "title": "Duromastic BLW AR",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/DUROMASTICTM%20BLW%20-%20AR%20antiroot-1.pdf"
+        },
+        {
+            "id": "120",
+            "title": "Duromastic P15 Green ",
+            "datasheet": ""
+        },
+        {
+            "id": "121",
+            "title": "Duromastic Tank 600",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/TANK%20600%20V01%20TDS.pdf"
+        },
+        {
+            "id": "132",
+            "title": "Duromastic ACS Grey",
+            "datasheet": ""
+        },
+        {
+            "id": "133",
+            "title": "Duromastic Ac",
+            "datasheet": ""
+        },
+        {
+            "id": "139",
+            "title": "DUROMASTIC P15 DIAMOND FIBRE",
+            "datasheet": "https://durotechindustries.com.au/wp-content/uploads/datasheet/P15 Diamond - Fibre.pdf"
+        },
+        {
+            "id": "140",
+            "title": "Duromastic P15 Diamond",
+            "datasheet": "https://durotechindustries.com.au/files/datasheets/1781830566_P15_Diamond_DT-0626-004.pdf"
+        },
+        {
+            "id": "141",
+            "title": "Duromastic P15 UV FIBRE",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/P15%20UV%20Fibre.pdf"
+        },
+        {
+            "id": "143",
+            "title": "DuroMastic Undertile Membrane",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duromastic undertile membrane.pdf"
+        },
+        {
+            "id": "146",
+            "title": "Duromastic SBR 450 FC",
+            "datasheet": "https://durotechindustries.com.au/wp-content/uploads/datasheet/Duromastic SBR 450 FC.pdf"
+        }
+    ],
+    "broucher_products": [
+        {
+            "id": "1",
+            "title": "Duromastic P15 (System 5b)",
+            "datasheet": "http://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duro%20Mastic%20P15.pdf"
+        },
+        {
+            "id": "5",
+            "title": "Duroproof BLW (System 4b)",
+            "datasheet": "http://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duro Mastic BLW.pdf"
+        },
+        {
+            "id": "10",
+            "title": "Duromastic Duropond (System 11b)",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duromastic Duropond.pdf"
+        },
+        {
+            "id": "36",
+            "title": "Duromastic AC non slip (System 9b)",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duromastic AC.pdf"
+        },
+        {
+            "id": "38",
+            "title": "Duromastic Duroarmor (System 8a)",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duromastic Duroarmor.pdf"
+        },
+        {
+            "id": "39",
+            "title": "Duromastic DuroSolar (System 8a)",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/Durosolar_1213.pdf"
+        },
+        {
+            "id": "90",
+            "title": "Duromastic ACS-2 (System 6c)",
+            "datasheet": "http://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duromastic_ACS-2.pdf"
+        },
+        {
+            "id": "98",
+            "title": "Duroproof BLW (System 2b)",
+            "datasheet": "http://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duro Mastic BLW.pdf"
+        },
+        {
+            "id": "105",
+            "title": "Duroproof BLW (System 1b)",
+            "datasheet": "http://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duro Mastic BLW.pdf"
+        },
+        {
+            "id": "108",
+            "title": "Duroproof BLW (System 3b)",
+            "datasheet": "http://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duro Mastic BLW.pdf"
+        },
+        {
+            "id": "114",
+            "title": "Duromastic P15 (System 6b)",
+            "datasheet": "http://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duro%20Mastic%20P15.pdf"
+        },
+        {
+            "id": "116",
+            "title": "Duromastic P15 (System 7b)",
+            "datasheet": "http://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duro%20Mastic%20P15.pdf"
+        },
+        {
+            "id": "123",
+            "title": "Duromastic P15 (System 12b)",
+            "datasheet": "http://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duro%20Mastic%20P15.pdf"
+        },
+        {
+            "id": "126",
+            "title": "Duromastic AC non slip (System 13b)",
+            "datasheet": "https://www.durotechindustries.com.au/wp-content/uploads/datasheet/Duromastic AC.pdf"
+        }
+    ]
+}

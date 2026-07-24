@@ -1,0 +1,12 @@
+﻿Old URL to remove from Google:
+https://durotechindustries.com.au/wp-content/uploads/datasheet/Duro%20Mastic%20P15.pdf
+
+Current canonical URL to request indexing:
+https://durotechindustries.com.au/wp-content/uploads/datasheet/Duromastic%20P15.pdf
+
+Additional old URLs cleaned in DB/templates:
+https://durotechindustries.com.au/wp-content/uploads/datasheet/Duro%20Mastic%20BLW.pdf
+https://durotechindustries.com.au/wp-content/uploads/datasheet/Duro%20Mastic%20ACS.pdf
+https://durotechindustries.com.au/wp-content/uploads/datasheet/Duro%20Mastic%20ACS%203.pdf
+https://durotechindustries.com.au/wp-content/uploads/datasheet/Duro%20Mastic%20ACS%20Fibre.pdf
+https://durotechindustries.com.au/wp-content/uploads/datasheet/Duro%20Mastic%20Duraroof.pdf

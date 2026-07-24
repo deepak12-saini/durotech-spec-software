@@ -2244,6 +2244,105 @@ public function editsendV3($id = null) {
         return $this->emp_sendemail($id);
     }
 
+    /**
+     * Regenerate and open a fresh PDF for design review (does not update pdf_attachment).
+     */
+    public function preview_pdf($id = null)
+    {
+        $this->autoRender = false;
+
+        $redirect = $this->checkEmployeeSession();
+        if ($redirect instanceof Response) {
+            return $redirect;
+        }
+
+        $employee_id = (int)$this->Session->read('Employee.id');
+        $id = (int)$id;
+        if ($id <= 0) {
+            $this->Flash->error('Invalid spec.');
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $this->loadModel('Mailer');
+        $mailerQuery = $this->Mailer->find()
+            ->where([
+                'Mailer.id' => $id,
+                'Mailer.employee_id' => $employee_id,
+                'Mailer.type' => 3,
+            ]);
+        $this->_applyMailerNotDeletedToQuery($mailerQuery);
+        $mailer = $mailerQuery->first();
+
+        if (empty($mailer)) {
+            $this->Flash->error('Spec not found or no longer available.');
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $mailerId = (int)$mailer->id;
+        $tracknumber = (string)($mailer->tracknumber ?? '');
+        $safeTrack = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $tracknumber);
+        $safeTrack = trim((string)preg_replace('/_+/', '_', (string)$safeTrack), '_');
+        if ($safeTrack === '') {
+            $safeTrack = 'draft';
+        }
+
+        // Unique preview filename so official email/download PDF is not overwritten.
+        $pdfname = 'preview_' . $mailerId . '_' . $safeTrack;
+        $useArea = (int)($mailer->use_area ?? 0);
+
+        $fields = [
+            'tracknumber' => $tracknumber,
+            'mailer_id' => $mailerId,
+            'name' => (string)($mailer->name ?? ''),
+            'email' => (string)($mailer->email ?? ''),
+            'address' => (string)($mailer->address ?? ''),
+            'company' => (string)($mailer->company ?? ''),
+            'specification' => (string)($mailer->specification ?? ''),
+            'date' => (string)($mailer->date ?? ''),
+            'subject' => (string)($mailer->subject ?? ''),
+            'type' => (string)($mailer->type ?? '3'),
+            'pdfname' => $pdfname,
+            'use_area' => $useArea,
+        ];
+        $fields_string = http_build_query($fields);
+
+        // use_area: 0 = With Warranty column, 1 = Without.
+        $url = ($useArea === 0)
+            ? SITEURL . 'dompdf/generatepdf.php?' . $fields_string
+            : SITEURL . 'dompdf/generatewithoutpdf.php?' . $fields_string;
+
+        $arrContextOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false]];
+        $pdfResponse = @file_get_contents($url, false, stream_context_create($arrContextOptions));
+
+        $generatedPdfFileName = $pdfname . '.pdf';
+        if ($pdfResponse !== false) {
+            $json = json_decode($pdfResponse, true);
+            if (is_array($json) && !empty($json['filename'])) {
+                $generatedPdfFileName = (string)$json['filename'];
+            } elseif (is_array($json) && isset($json['success']) && $json['success'] === false) {
+                $this->Flash->error('Unable to generate PDF preview.');
+                return $this->redirect(['action' => 'index']);
+            }
+        }
+
+        $pdfFilePath = WWW_ROOT . 'dompdf' . DS . $generatedPdfFileName;
+        if (!is_file($pdfFilePath)) {
+            $this->Flash->error('PDF preview file was not created.');
+            return $this->redirect(['action' => 'index']);
+        }
+
+        $previewUrl = rtrim((string)SITEURL, '/') . '/dompdf/' . rawurlencode($generatedPdfFileName) . '?v=' . filemtime($pdfFilePath);
+        return $this->redirect($previewUrl);
+    }
+
+    /**
+     * CakePHP dashed/camelCase alias for preview_pdf().
+     */
+    public function previewPdf($id = null)
+    {
+        return $this->preview_pdf($id);
+    }
+
     function download($id){
 		
 		$this->autoRender = false ;

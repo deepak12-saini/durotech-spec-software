@@ -211,6 +211,17 @@
 
 									echo $this->Html->link('History', array('controller' => 'employees', 'action' => 'audit_log', $mailerId), array('class' => 'btn btn-mini btn-default')) . '&nbsp;';
 
+									echo $this->Html->link(
+										'<i class="fa fa-eye"></i> Preview',
+										['controller' => 'employees', 'action' => 'preview_pdf', $mailerId],
+										[
+											'class' => 'btn btn-mini btn-success',
+											'target' => '_blank',
+											'title' => 'Preview PDF with current design',
+											'escape' => false,
+										]
+									) . '&nbsp;';
+
 									$pdfDownloadUrl = $pdfHref;
 									echo $this->Html->link('Download', $pdfDownloadUrl, array('class' => 'btn btn-mini btn-info', 'target' => '_blank')) . '&nbsp;';
 
