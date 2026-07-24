@@ -1,3 +1,24 @@
+<style>
+	/* Bolder sidebar labels for clearer UI */
+	#sidebar.sidebar .nav-list > li > a .menu-text {
+		font-weight: 700;
+		color: #393939;
+	}
+	#sidebar.sidebar .nav-list > li.active > a .menu-text {
+		font-weight: 700;
+		color: #2b6a9b;
+	}
+	#sidebar.sidebar .nav-list > li > a:hover .menu-text {
+		font-weight: 700;
+	}
+	#sidebar.sidebar .nav-list > li .submenu > li > a {
+		font-weight: 600;
+	}
+	#sidebar.sidebar .nav-list > li .submenu > li.active > a {
+		font-weight: 700;
+		color: #478fca;
+	}
+</style>
 	<script type="text/javascript">
 				try{ace.settings.check('main-container' , 'fixed')}catch(e){}
 			</script>
