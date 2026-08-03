@@ -40,14 +40,61 @@
 		color: #2c6aa0;
 		font-weight: 600;
 	}
-	.spec-combo-wrap { position: relative; width: 100%; max-width: 560px; }
-	.spec-combo-input { width: 100% !important; height: 34px; padding: 4px 28px 4px 10px !important; }
-	.spec-combo-caret { position: absolute; right: 10px; top: 9px; color: #888; pointer-events: none; }
-	.spec-combo-list { display: none; position: absolute; z-index: 1000; left: 0; right: 0; max-height: 240px; overflow-y: auto; margin: 0; padding: 0; list-style: none; background: #fff; border: 1px solid #abbac3; box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
-	.spec-combo-list li { padding: 8px 10px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 12px; }
-	.spec-combo-list li:hover, .spec-combo-list li.active-suggest { background: #eaf3ff; }
-	.spec-combo-list li.empty { color: #999; cursor: default; }
-	.spec-load-scope { display: inline-flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+	.spec-combo-panel { position: relative; z-index: 20; overflow: visible; }
+	.spec-combo-wrap { position: relative; width: 100%; max-width: 640px; z-index: 30; overflow: visible; }
+	.spec-combo-input { width: 100% !important; height: 34px; padding: 4px 28px 4px 10px !important; background: #fff !important; }
+	.spec-combo-caret { position: absolute; right: 10px; top: 9px; color: #888; pointer-events: none; z-index: 2; }
+	ul.spec-combo-list,
+	.spec-combo-list {
+		display: none;
+		position: absolute !important;
+		top: 100% !important;
+		left: 0 !important;
+		width: 100% !important;
+		max-width: 640px;
+		max-height: 260px;
+		overflow-x: hidden;
+		overflow-y: auto;
+		margin: 2px 0 0 0 !important;
+		padding: 0 !important;
+		list-style: none !important;
+		background: #ffffff !important;
+		border: 1px solid #abbac3 !important;
+		border-radius: 4px;
+		box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+		z-index: 9999 !important;
+		float: none !important;
+	}
+	ul.spec-combo-list > li,
+	.spec-combo-list > li {
+		display: block !important;
+		float: none !important;
+		width: 100% !important;
+		height: auto !important;
+		min-height: 0 !important;
+		margin: 0 !important;
+		padding: 9px 12px !important;
+		line-height: 1.35 !important;
+		cursor: pointer;
+		border: 0 !important;
+		border-bottom: 1px solid #e8eef5 !important;
+		font-size: 12px !important;
+		font-weight: 500 !important;
+		color: #334155 !important;
+		background: #ffffff !important;
+		white-space: normal;
+		word-break: break-word;
+		list-style: none !important;
+	}
+	ul.spec-combo-list > li:last-child,
+	.spec-combo-list > li:last-child { border-bottom: 0 !important; }
+	ul.spec-combo-list > li:hover,
+	ul.spec-combo-list > li.active-suggest,
+	.spec-combo-list > li:hover,
+	.spec-combo-list > li.active-suggest { background: #e8f2fc !important; color: #1e3a5f !important; }
+	ul.spec-combo-list > li.empty,
+	.spec-combo-list > li.empty { color: #94a3b8 !important; cursor: default !important; background: #f8fafc !important; }
+	.spec-load-scope { display: inline-flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; position: relative; z-index: 1; }
 	.spec-load-scope label { margin: 0; font-weight: 600; font-size: 12px; padding: 4px 10px; border: 1px solid #c5d4e4; border-radius: 12px; background: #fff; cursor: pointer; }
 	.spec-load-scope input { margin: 0 4px 0 0; }
 	.spec-load-scope label.active-scope { background: #428bca; border-color: #428bca; color: #fff; }
@@ -151,13 +198,14 @@
 					];
 				}
 			?>
-			<div class="form-group">
+			<div class="form-group" style="position:relative;z-index:40;overflow:visible;">
 				<label class="col-sm-3 control-label no-padding-right" for="adaptive_combo_input">Smart Spec:</label>
-				<div class="col-sm-9">
+				<div class="col-sm-9" style="overflow:visible;">
+					<div class="spec-combo-panel">
 					<div class="spec-combo-wrap">
 						<input type="text" id="adaptive_combo_input" class="form-control input-sm spec-combo-input" placeholder="Type to search previous specs…" autocomplete="off">
 						<i class="fa fa-caret-down spec-combo-caret"></i>
-						<ul id="adaptive_combo_list" class="spec-combo-list"></ul>
+						<ul id="adaptive_combo_list" class="spec-combo-list" role="listbox"></ul>
 						<input type="hidden" id="adaptive_previous_spec_id" value="">
 					</div>
 					<div class="spec-load-scope" id="adaptive_load_scope">
@@ -165,6 +213,7 @@
 						<label><input type="radio" name="adaptive_scope" value="full"> Full spec</label>
 					</div>
 					<p class="spec-adaptive-help"><strong>Use Area only</strong> keeps client details blank; <strong>Full spec</strong> also copies Name/Project/Address/Email.</p>
+					</div>
 				</div>
 			</div>
 			<script type="application/json" id="adaptive-spec-choices-data"><?php echo json_encode($adminAdaptiveChoices, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE); ?></script>

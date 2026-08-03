@@ -76,14 +76,11 @@
 		font-weight: 600;
 	}
 	.adaptive-load-label {
-		height: 60px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-	.adaptive-load-col {
-		display: flex;
-		align-items: center;
+		height: auto;
+		min-height: 34px;
+		padding-top: 8px;
+		display: block;
+		text-align: right;
 	}
 	.spec-adaptive-help {
 		display: block;
@@ -94,16 +91,33 @@
 		font-size: 12px;
 		font-weight: 600;
 	}
+	.adaptive-load-col {
+		display: block;
+		overflow: visible;
+		position: relative;
+		z-index: 5;
+	}
+	.spec-adaptive-box.spec-combo-panel {
+		display: block;
+		overflow: visible;
+		position: relative;
+		z-index: 20;
+	}
 	.spec-combo-wrap {
 		position: relative;
 		width: 100%;
-		max-width: 560px;
+		max-width: 640px;
+		z-index: 30;
+		overflow: visible;
 	}
 	.spec-combo-input {
 		width: 100% !important;
 		height: 34px;
 		padding: 4px 28px 4px 10px !important;
 		border-radius: 6px !important;
+		position: relative;
+		z-index: 1;
+		background: #fff !important;
 	}
 	.spec-combo-caret {
 		position: absolute;
@@ -111,35 +125,68 @@
 		top: 9px;
 		color: #888;
 		pointer-events: none;
+		z-index: 2;
 	}
+	/* Solid overlay panel — reset Ace/theme ul/li rules that cause gaps & transparency */
+	ul.spec-combo-list,
 	.spec-combo-list {
 		display: none;
-		position: absolute;
-		z-index: 1000;
-		left: 0;
-		right: 0;
-		max-height: 240px;
+		position: absolute !important;
+		top: 100% !important;
+		left: 0 !important;
+		right: auto !important;
+		width: 100% !important;
+		max-width: 640px;
+		max-height: 260px;
+		overflow-x: hidden;
 		overflow-y: auto;
-		margin: 0;
-		padding: 0;
-		list-style: none;
-		background: #fff;
-		border: 1px solid #abbac3;
-		box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+		margin: 2px 0 0 0 !important;
+		padding: 0 !important;
+		list-style: none !important;
+		background: #ffffff !important;
+		border: 1px solid #abbac3 !important;
+		border-radius: 4px;
+		box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+		z-index: 9999 !important;
+		float: none !important;
 	}
-	.spec-combo-list li {
-		padding: 8px 10px;
+	ul.spec-combo-list > li,
+	.spec-combo-list > li {
+		display: block !important;
+		float: none !important;
+		width: 100% !important;
+		height: auto !important;
+		min-height: 0 !important;
+		margin: 0 !important;
+		padding: 9px 12px !important;
+		line-height: 1.35 !important;
 		cursor: pointer;
-		border-bottom: 1px solid #eee;
-		font-size: 12px;
+		border: 0 !important;
+		border-bottom: 1px solid #e8eef5 !important;
+		font-size: 12px !important;
+		font-weight: 500 !important;
+		color: #334155 !important;
+		background: #ffffff !important;
+		white-space: normal;
+		word-break: break-word;
+		list-style: none !important;
 	}
-	.spec-combo-list li:hover,
-	.spec-combo-list li.active-suggest {
-		background: #eaf3ff;
+	ul.spec-combo-list > li:last-child,
+	.spec-combo-list > li:last-child {
+		border-bottom: 0 !important;
 	}
-	.spec-combo-list li.empty {
-		color: #999;
-		cursor: default;
+	ul.spec-combo-list > li:hover,
+	ul.spec-combo-list > li.active-suggest,
+	.spec-combo-list > li:hover,
+	.spec-combo-list > li.active-suggest {
+		background: #e8f2fc !important;
+		color: #1e3a5f !important;
+	}
+	ul.spec-combo-list > li.empty,
+	.spec-combo-list > li.empty {
+		color: #94a3b8 !important;
+		cursor: default !important;
+		background: #f8fafc !important;
 	}
 	.spec-load-scope {
 		display: inline-flex;
@@ -147,6 +194,8 @@
 		margin-top: 8px;
 		flex-wrap: wrap;
 		align-items: center;
+		position: relative;
+		z-index: 1;
 	}
 	.spec-load-scope label {
 		margin: 0;
@@ -168,6 +217,9 @@
 	#country-list li.active-suggest,
 	.title-dropdown li.active-suggest {
 		background: #cfe6ff !important;
+	}
+	#specForm .form-group {
+		overflow: visible;
 	}
 	#specForm input[type="text"],
 	#specForm input[type="file"],
@@ -410,14 +462,14 @@
 				}
 				$adaptiveYearNote = ((int)date('Y') - 1) . '–' . (int)date('Y');
 			?>
-			<div class="form-group">
+			<div class="form-group" style="position:relative;z-index:40;overflow:visible;">
 				<label class="col-sm-3 control-label no-padding-right adaptive-load-label" for="adaptive_combo_input">Smart Spec:</label>
 				<div class="col-sm-9 adaptive-load-col">
-					<div class="spec-adaptive-inline spec-adaptive-box" style="display:block;">
+					<div class="spec-adaptive-box spec-combo-panel" style="display:block;">
 						<div class="spec-combo-wrap">
 							<input type="text" id="adaptive_combo_input" class="form-control input-sm spec-combo-input" placeholder="Type to search previous specs…" autocomplete="off">
 							<i class="fa fa-caret-down spec-combo-caret"></i>
-							<ul id="adaptive_combo_list" class="spec-combo-list"></ul>
+							<ul id="adaptive_combo_list" class="spec-combo-list" role="listbox"></ul>
 							<input type="hidden" id="adaptive_previous_spec_id" value="">
 						</div>
 						<div class="spec-load-scope" id="adaptive_load_scope">
@@ -464,14 +516,14 @@
 					}
 				}
 			?>
-			<div class="form-group">
+			<div class="form-group" style="position:relative;z-index:40;overflow:visible;">
 				<label class="col-sm-3 control-label no-padding-right adaptive-load-label" for="template_combo_input">Template Spec:</label>
 				<div class="col-sm-9 adaptive-load-col">
-					<div class="spec-adaptive-inline spec-adaptive-box" style="display:block;">
+					<div class="spec-adaptive-box spec-combo-panel" style="display:block;">
 						<div class="spec-combo-wrap">
 							<input type="text" id="template_combo_input" class="form-control input-sm spec-combo-input" placeholder="Type to search templates…" autocomplete="off">
 							<i class="fa fa-caret-down spec-combo-caret"></i>
-							<ul id="template_combo_list" class="spec-combo-list"></ul>
+							<ul id="template_combo_list" class="spec-combo-list" role="listbox"></ul>
 							<input type="hidden" id="template_preset_id" value="">
 							<input type="hidden" id="template_load_source" value="">
 						</div>
