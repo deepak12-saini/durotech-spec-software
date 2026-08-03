@@ -40,6 +40,18 @@
 		color: #2c6aa0;
 		font-weight: 600;
 	}
+	.spec-combo-wrap { position: relative; width: 100%; max-width: 560px; }
+	.spec-combo-input { width: 100% !important; height: 34px; padding: 4px 28px 4px 10px !important; }
+	.spec-combo-caret { position: absolute; right: 10px; top: 9px; color: #888; pointer-events: none; }
+	.spec-combo-list { display: none; position: absolute; z-index: 1000; left: 0; right: 0; max-height: 240px; overflow-y: auto; margin: 0; padding: 0; list-style: none; background: #fff; border: 1px solid #abbac3; box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+	.spec-combo-list li { padding: 8px 10px; cursor: pointer; border-bottom: 1px solid #eee; font-size: 12px; }
+	.spec-combo-list li:hover, .spec-combo-list li.active-suggest { background: #eaf3ff; }
+	.spec-combo-list li.empty { color: #999; cursor: default; }
+	.spec-load-scope { display: inline-flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+	.spec-load-scope label { margin: 0; font-weight: 600; font-size: 12px; padding: 4px 10px; border: 1px solid #c5d4e4; border-radius: 12px; background: #fff; cursor: pointer; }
+	.spec-load-scope input { margin: 0 4px 0 0; }
+	.spec-load-scope label.active-scope { background: #428bca; border-color: #428bca; color: #fff; }
+	#country-list li.active-suggest, .title-dropdown li.active-suggest { background: #cfe6ff !important; }
 
 	</style>	
 	<div class="page-content">
@@ -123,25 +135,39 @@
 			<?php endif; ?>
 		</div>
 		<?php if ($isAdaptiveMode): ?>
+			<?php
+				$adminAdaptiveChoices = [];
+				foreach (($previousSpecList ?? []) as $prev) {
+					$parts = [];
+					$parts[] = (string)($prev->tracknumber ?? ('#' . (int)$prev->id));
+					if (!empty($prev->company)) { $parts[] = (string)$prev->company; }
+					if (!empty($prev->name)) { $parts[] = (string)$prev->name; }
+					$label = implode(' | ', $parts);
+					$adminAdaptiveChoices[] = [
+						'id' => (int)$prev->id,
+						'label' => $label,
+						'search' => strtolower($label . ' ' . (int)$prev->id),
+						'source' => 'spec',
+					];
+				}
+			?>
 			<div class="form-group">
-				<label class="col-sm-3 control-label no-padding-right" for="adaptive_previous_spec_id">Load Previous Spec:</label>
+				<label class="col-sm-3 control-label no-padding-right" for="adaptive_combo_input">Smart Spec:</label>
 				<div class="col-sm-9">
-					<select id="adaptive_previous_spec_id" class="col-xs-10 col-sm-8">
-						<option value="">Select previous submitted spec...</option>
-						<?php foreach (($previousSpecList ?? []) as $prev): ?>
-							<?php
-								$parts = [];
-								$parts[] = (string)($prev->tracknumber ?? ('#' . (int)$prev->id));
-								if (!empty($prev->company)) { $parts[] = (string)$prev->company; }
-								if (!empty($prev->name)) { $parts[] = (string)$prev->name; }
-								$optionLabel = implode(' | ', $parts);
-							?>
-							<option value="<?php echo (int)$prev->id; ?>"><?php echo h($optionLabel); ?></option>
-						<?php endforeach; ?>
-					</select>
-					<p class="spec-adaptive-help">Loads previous submitted spec data into this form for faster creation.</p>
+					<div class="spec-combo-wrap">
+						<input type="text" id="adaptive_combo_input" class="form-control input-sm spec-combo-input" placeholder="Type to search previous specs…" autocomplete="off">
+						<i class="fa fa-caret-down spec-combo-caret"></i>
+						<ul id="adaptive_combo_list" class="spec-combo-list"></ul>
+						<input type="hidden" id="adaptive_previous_spec_id" value="">
+					</div>
+					<div class="spec-load-scope" id="adaptive_load_scope">
+						<label class="active-scope"><input type="radio" name="adaptive_scope" value="use_area" checked> Use Area only</label>
+						<label><input type="radio" name="adaptive_scope" value="full"> Full spec</label>
+					</div>
+					<p class="spec-adaptive-help"><strong>Use Area only</strong> keeps client details blank; <strong>Full spec</strong> also copies Name/Project/Address/Email.</p>
 				</div>
 			</div>
+			<script type="application/json" id="adaptive-spec-choices-data"><?php echo json_encode($adminAdaptiveChoices, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE); ?></script>
 		<?php endif; ?>
 		
 			<div class="form-group">
@@ -282,19 +308,33 @@
 	function commnetdivremove(newdiv){
 		$("#commentdiv_"+newdiv).remove();
 	}
-	var productSuggestMinChars = 3;
+	var productSuggestMinChars = 2;
+	var productSuggestDebounceMs = 220;
 	var productSuggestXhrByKey = {};
 	var lastProductKeywordByKey = {};
 	var productSuggestTimerByKey = {};
+	var productSuggestActiveIndex = {};
+
+	function highlightSuggestItems($box, index) {
+		var $items = $box.find('li').not('.empty');
+		$items.removeClass('active-suggest');
+		if (!$items.length) return;
+		if (index < 0) index = $items.length - 1;
+		if (index >= $items.length) index = 0;
+		$items.eq(index).addClass('active-suggest');
+		productSuggestActiveIndex[$box.attr('id')] = index;
+	}
 
 	function onkeyups(id,newdiv){
 		var fieldKey = id + '_' + newdiv;
-		var keyword = ($("#pro_"+id+"_"+newdiv).val() || '').trim();
+		var $input = $("#pro_"+id+"_"+newdiv);
+		var $box = $("#suggesstion-box_"+id+"_"+newdiv);
+		var keyword = ($input.val() || '').trim();
 		if (productSuggestTimerByKey[fieldKey]) {
 			clearTimeout(productSuggestTimerByKey[fieldKey]);
 		}
 		if (keyword.length < productSuggestMinChars) {
-			$("#suggesstion-box_"+id+"_"+newdiv+"").hide().html('');
+			$box.hide().html('');
 			lastProductKeywordByKey[fieldKey] = '';
 			if (productSuggestXhrByKey[fieldKey] && productSuggestXhrByKey[fieldKey].readyState !== 4) {
 				productSuggestXhrByKey[fieldKey].abort();
@@ -318,23 +358,48 @@
 					keyword: keyword,
 					_csrfToken: csrfToken
 				},
-				beforeSend: function(){
-					//$("#search-box").css("background","#FFF url(LoaderIcon.gif) no-repeat 165px");
-				},
 				success: function(data){
 					if(data != ''){
-						$("#suggesstion-box_"+id+"_"+newdiv+"").show();
-						$("#suggesstion-box_"+id+"_"+newdiv+"").html(data);
-						$("#pro_"+id+"_"+newdiv).css("background","#FFF");
+						$box.show().html(data);
+						$input.css("background","#FFF");
+						productSuggestActiveIndex[$box.attr('id')] = -1;
 					}else{
-						$("#suggesstion-box_"+id+"_"+newdiv+"").hide();
-						$("#suggesstion-box_"+id+"_"+newdiv+"").html('');
-						$("#pro_"+id+"_"+newdiv).css("background","#FFF");
+						$box.hide().html('');
+						$input.css("background","#FFF");
 					}
 				}
 			});
-		}, 500);
+		}, productSuggestDebounceMs);
 	}
+
+	$(document).on('keydown', 'input[name="product[]"]', function(e) {
+		var $input = $(this);
+		var idMatch = ($input.attr('id') || '').match(/^pro_(\d+)_(\d+)$/);
+		if (!idMatch) return;
+		var boxId = 'suggesstion-box_' + idMatch[1] + '_' + idMatch[2];
+		var $box = $('#' + boxId);
+		if (!$box.is(':visible')) return;
+		var $items = $box.find('li').not('.empty');
+		if (!$items.length) return;
+		var idx = productSuggestActiveIndex[boxId];
+		if (typeof idx !== 'number') idx = -1;
+		if (e.key === 'ArrowDown') {
+			e.preventDefault();
+			highlightSuggestItems($box, idx + 1);
+		} else if (e.key === 'ArrowUp') {
+			e.preventDefault();
+			highlightSuggestItems($box, idx - 1);
+		} else if (e.key === 'Enter' || e.key === 'Tab') {
+			var $active = $items.filter('.active-suggest').first();
+			if (!$active.length) $active = $items.first();
+			if ($active.length) {
+				e.preventDefault();
+				$active.trigger('click');
+			}
+		} else if (e.key === 'Escape') {
+			$box.hide();
+		}
+	});
 	function selectCountry(product,coverage,coverage_by_pack,Warranty,id,newdiv) {
 		var normalizedProduct = (product || '').toString().toLowerCase().replace(/\s+/g, ' ').trim();
 		var isWbeHiBuild = normalizedProduct.indexOf('wbe') !== -1 && normalizedProduct.indexOf('hi-build') !== -1;
@@ -482,9 +547,10 @@
 	};
   }
 
-	var titleSuggestMinChars = 3;
+	var titleSuggestMinChars = 2;
 	var titleSuggestXhrById = {};
 	var lastTitleKeywordById = {};
+	var titleSuggestActiveIndex = {};
 
 	function fetchTitleSuggestions(id) {
 		const keyword = ($("#title_" + id).val() || '').trim();
@@ -517,6 +583,7 @@
 				if (data.trim() !== '') {
 					suggestionBox.show().html(data);
 					$("#title_" + id).css("background", "#FFF");
+					titleSuggestActiveIndex[id] = -1;
 				} else {
 					suggestionBox.hide().html('');
 				}
@@ -525,7 +592,7 @@
 	}
 
 	// Debounce avoids request burst while user is typing.
-	const debouncedFetch = debounce(fetchTitleSuggestions, 500);
+	const debouncedFetch = debounce(fetchTitleSuggestions, 220);
 
 	// Change your onTitleSearch to just call the debounced function
 	function onTitleSearch(id) {
@@ -536,6 +603,43 @@
 		$("#title_" + id).val(title);
 		$("#title-suggestion-box_" + id).hide().html('');
 	}
+
+	$(document).on('keydown', 'input[id^="title_"]', function(e) {
+		var $input = $(this);
+		var idMatch = ($input.attr('id') || '').match(/^title_(\d+)$/);
+		if (!idMatch) return;
+		var id = idMatch[1];
+		var $box = $('#title-suggestion-box_' + id);
+		if (!$box.is(':visible')) return;
+		var $items = $box.find('li').not('.empty');
+		if (!$items.length) return;
+		var idx = titleSuggestActiveIndex[id];
+		if (typeof idx !== 'number') idx = -1;
+		if (e.key === 'ArrowDown') {
+			e.preventDefault();
+			$items.removeClass('active-suggest');
+			idx = idx + 1;
+			if (idx >= $items.length) idx = 0;
+			$items.eq(idx).addClass('active-suggest');
+			titleSuggestActiveIndex[id] = idx;
+		} else if (e.key === 'ArrowUp') {
+			e.preventDefault();
+			$items.removeClass('active-suggest');
+			idx = idx - 1;
+			if (idx < 0) idx = $items.length - 1;
+			$items.eq(idx).addClass('active-suggest');
+			titleSuggestActiveIndex[id] = idx;
+		} else if (e.key === 'Enter' || e.key === 'Tab') {
+			var $active = $items.filter('.active-suggest').first();
+			if (!$active.length) $active = $items.first();
+			if ($active.length) {
+				e.preventDefault();
+				$active.trigger('click');
+			}
+		} else if (e.key === 'Escape') {
+			$box.hide();
+		}
+	});
 	function clearAllSectionsAndComments() {
 		$('#addsection').empty();
 		$('#addcommentnew').empty();
@@ -653,6 +757,10 @@
 		if (draftComments && draftComments.length > 0 && typeof loadCommentsFromData === 'function') {
 			loadCommentsFromData(draftComments);
 		}
+		var isBlankCreate = <?php echo (!empty($draftId) || $isAdaptiveMode) ? 'false' : 'true'; ?>;
+		if (isBlankCreate && $('#addsection').children().length === 0) {
+			addnewsection();
+		}
 		// Delay track sync so restored product/comment inputs are included in FormData.
 		setTimeout(function() {
 			if ($('#draft_id').val() && parseInt($('#draft_id').val(), 10) > 0 && specHasData()) {
@@ -661,50 +769,122 @@
 		}, 300);
 	});
 
-	<?php if ($isAdaptiveMode): ?>
-	var adaptiveLoadBaseUrl = '<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'adminPreviousSpecDataV3']); ?>';
-	function adaptiveLoadSelectedSpec() {
-		var selectedId = $('#adaptive_previous_spec_id').val();
-		if (!selectedId) {
-			$('#spec-source-track').hide().text('');
-			$('#spec-status-text').text('New (Smart Spec mode)');
-			return;
+	function applyLoadedSpec(data, scope) {
+		scope = scope || 'use_area';
+		if (scope === 'full') {
+			$('#name').val(data.name || '');
+			$('input[name="company"]').val(data.company || '');
+			$('input[name="address"]').val(data.address || '');
+			$('input[name="specification"]').val(data.specification || '');
+			$('#email').val(data.email || '');
+			$('#subject').val(data.subject || '');
+			$('select[name="type"]').val(data.type || '3');
 		}
-		$.ajax({
-			type: 'GET',
-			url: adaptiveLoadBaseUrl.replace(/\/$/, '') + '/' + selectedId,
-			dataType: 'json',
-			success: function(res) {
-				if (!res || !res.success || !res.data) {
-					alert((res && res.error) ? res.error : 'Unable to load previous spec.');
-					return;
-				}
-				var data = res.data;
-				$('#name').val(data.name || '');
-				$('input[name="company"]').val(data.company || '');
-				$('input[name="address"]').val(data.address || '');
-				$('input[name="specification"]').val(data.specification || '');
-				$('#email').val(data.email || '');
-				$('#subject').val(data.subject || '');
-				$('select[name="type"]').val(data.type || '3');
-				clearAllSectionsAndComments();
-				loadSectionsFromData(data.sections || []);
-				loadCommentsFromData(data.comments || []);
-				$('#spec-status-text').text('Loaded from previous spec');
-				var selectedText = $('#adaptive_previous_spec_id option:selected').text() || '';
-				var sourceTrack = selectedText.split('|')[0].trim();
-				if (sourceTrack) {
-					$('#spec-source-track').text('Source: ' + sourceTrack).show();
-				} else {
-					$('#spec-source-track').hide().text('');
-				}
-			},
-			error: function() {
-				alert('Unable to load previous spec right now.');
-			}
-		});
+		clearAllSectionsAndComments();
+		loadSectionsFromData(data.sections || []);
+		loadCommentsFromData(data.comments || []);
 	}
-	$('#adaptive_previous_spec_id').on('change', adaptiveLoadSelectedSpec);
+
+	function initSpecCombobox(opts) {
+		var $input = $(opts.input);
+		var $list = $(opts.list);
+		var $hidden = $(opts.hidden);
+		var choices = opts.choices || [];
+		var onSelect = opts.onSelect || function() {};
+		var activeIdx = -1;
+		function render(filterText) {
+			var q = (filterText || '').toLowerCase().trim();
+			$list.empty();
+			var shown = 0;
+			for (var i = 0; i < choices.length; i++) {
+				var row = choices[i];
+				if (!q || (row.search && row.search.indexOf(q) !== -1) || (row.label && row.label.toLowerCase().indexOf(q) !== -1)) {
+					$list.append($('<li></li>').attr('data-id', row.id).text(row.label || ('#' + row.id)));
+					shown++;
+				}
+			}
+			if (!shown) $list.append($('<li class="empty"></li>').text('No matches'));
+			activeIdx = -1;
+			$list.show();
+		}
+		function pick($li) {
+			if (!$li.length || $li.hasClass('empty')) return;
+			$hidden.val($li.attr('data-id'));
+			$input.val($li.text());
+			$list.hide();
+			onSelect($li.attr('data-id'));
+		}
+		$input.on('focus click', function() { render($input.val()); });
+		$input.on('input', function() { $hidden.val(''); render($input.val()); });
+		$input.on('keydown', function(e) {
+			var $items = $list.find('li').not('.empty');
+			if (!$list.is(':visible')) { if (e.key === 'ArrowDown') { render($input.val()); } return; }
+			if (e.key === 'ArrowDown') { e.preventDefault(); activeIdx = Math.min(activeIdx + 1, $items.length - 1); $items.removeClass('active-suggest'); $items.eq(activeIdx).addClass('active-suggest'); }
+			else if (e.key === 'ArrowUp') { e.preventDefault(); activeIdx = Math.max(activeIdx - 1, 0); $items.removeClass('active-suggest'); $items.eq(activeIdx).addClass('active-suggest'); }
+			else if (e.key === 'Enter') { e.preventDefault(); var $a = $items.filter('.active-suggest').first(); if (!$a.length) $a = $items.first(); pick($a); }
+			else if (e.key === 'Escape') { $list.hide(); }
+		});
+		$list.on('mousedown', 'li', function(e) { e.preventDefault(); pick($(this)); });
+		$(document).on('click.adminspeccombo', function(e) { if (!$(e.target).closest($input.parent()).length) $list.hide(); });
+	}
+
+	<?php if ($isAdaptiveMode): ?>
+	jQuery(function() {
+		var adaptiveLoadBaseUrl = '<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'adminPreviousSpecDataV3']); ?>';
+		var adaptiveChoices = [];
+		try {
+			var raw = document.getElementById('adaptive-spec-choices-data');
+			if (raw && raw.textContent) adaptiveChoices = JSON.parse(raw.textContent);
+		} catch (e) { adaptiveChoices = []; }
+
+		function getAdaptiveScope() {
+			return $('input[name="adaptive_scope"]:checked').val() || 'use_area';
+		}
+		function syncScopeLabels() {
+			$('#adaptive_load_scope label').removeClass('active-scope');
+			$('#adaptive_load_scope input:checked').closest('label').addClass('active-scope');
+		}
+		syncScopeLabels();
+		$('#adaptive_load_scope input').on('change', function() {
+			syncScopeLabels();
+			if ($('#adaptive_previous_spec_id').val()) adaptiveLoadSelectedSpec();
+		});
+
+		function adaptiveLoadSelectedSpec() {
+			var selectedId = $('#adaptive_previous_spec_id').val();
+			if (!selectedId) {
+				$('#spec-source-track').hide().text('');
+				$('#spec-status-text').text('New (Smart Spec mode)');
+				return;
+			}
+			$.ajax({
+				type: 'GET',
+				url: adaptiveLoadBaseUrl.replace(/\/$/, '') + '/' + selectedId,
+				dataType: 'json',
+				success: function(res) {
+					if (!res || !res.success || !res.data) {
+						alert((res && res.error) ? res.error : 'Unable to load previous spec.');
+						return;
+					}
+					var scope = getAdaptiveScope();
+					applyLoadedSpec(res.data, scope);
+					$('#spec-status-text').text(scope === 'full' ? 'Loaded full previous spec' : 'Loaded Use Area from previous spec');
+					var sourceTrack = ($('#adaptive_combo_input').val() || '').split('|')[0].trim();
+					if (sourceTrack) $('#spec-source-track').text('Source: ' + sourceTrack).show();
+					else $('#spec-source-track').hide().text('');
+				},
+				error: function() { alert('Unable to load previous spec right now.'); }
+			});
+		}
+
+		initSpecCombobox({
+			input: '#adaptive_combo_input',
+			list: '#adaptive_combo_list',
+			hidden: '#adaptive_previous_spec_id',
+			choices: adaptiveChoices,
+			onSelect: function() { adaptiveLoadSelectedSpec(); }
+		});
+	});
 	<?php endif; ?>
 
 

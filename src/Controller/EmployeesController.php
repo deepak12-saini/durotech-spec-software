@@ -689,7 +689,9 @@ public function employee_send_v3() {
     $mode = (string)$this->request->getQuery('mode');
     $adaptiveMode = $mode === 'adaptive';
     $templateMode = $mode === 'template';
+    $cloneMode = $mode === 'clone';
     $claudeMode = $mode === 'claude';
+    $cloneFromId = (int)$this->request->getQuery('from_id');
 
     $hasSaveStatusColumn = $this->Mailer->getSchema()->getColumn('save_status');
     // "Start New Spec (discard this draft)" must delete drafts first; otherwise the next block
@@ -714,7 +716,7 @@ public function employee_send_v3() {
         return $this->redirect(['action' => 'employee_send_v3']);
     }
 
-    if (!$this->request->is('post') && !$adaptiveMode && !$templateMode && !$claudeMode && !$this->request->getQuery('resume') && $hasSaveStatusColumn) {
+    if (!$this->request->is('post') && !$adaptiveMode && !$templateMode && !$cloneMode && !$claudeMode && !$this->request->getQuery('resume') && $hasSaveStatusColumn) {
         $existingDraft = $this->Mailer->find()
             ->select(['id'])
             ->where([
@@ -1083,6 +1085,56 @@ public function employee_send_v3() {
             ->orderDesc('SpecTemplate.id')
             ->all()
             ->toArray();
+
+        // Fallback: when no saved presets, offer recent submitted specs (Use Area load only in UI).
+        if (empty($templatePresets)) {
+            $fallbackQuery = $this->Mailer->find()
+                ->select(['id', 'tracknumber', 'name', 'company', 'specification', 'date', 'admin_id', 'employee_id', 'created'])
+                ->where([
+                    'Mailer.type' => 3,
+                    'Mailer.employee_id' => $employee_id,
+                ])
+                ->orderDesc('Mailer.id')
+                ->limit(100);
+            $this->_applyMailerNotDeletedToQuery($fallbackQuery);
+            if ($this->Mailer->getSchema()->getColumn('save_status')) {
+                $fallbackQuery->andWhere([
+                    'OR' => [
+                        ['Mailer.save_status' => 'submitted'],
+                        ['Mailer.save_status IS' => null],
+                    ],
+                ]);
+            }
+            $previousSpecs = $fallbackQuery->all()->toArray();
+        }
+    }
+
+    // Clone: validate from_id is own non-draft spec (any year).
+    if ($cloneMode) {
+        if ($cloneFromId <= 0) {
+            $this->Flash->error('Invalid clone source.');
+            return $this->redirect(['action' => 'index']);
+        }
+        $cloneQuery = $this->Mailer->find()
+            ->select(['id'])
+            ->where([
+                'Mailer.id' => $cloneFromId,
+                'Mailer.type' => 3,
+                'Mailer.employee_id' => $employee_id,
+            ]);
+        $this->_applyMailerNotDeletedToQuery($cloneQuery);
+        if ($this->Mailer->getSchema()->getColumn('save_status')) {
+            $cloneQuery->andWhere([
+                'OR' => [
+                    ['Mailer.save_status' => 'submitted'],
+                    ['Mailer.save_status IS' => null],
+                ],
+            ]);
+        }
+        if (!$cloneQuery->first()) {
+            $this->Flash->error('Spec not found or not available to clone.');
+            return $this->redirect(['action' => 'index']);
+        }
     }
 
     $claudePrefill = null;
@@ -1097,7 +1149,20 @@ public function employee_send_v3() {
         }
     }
 
-    $this->set(compact('refernce', 'draft', 'draftId', 'adaptiveMode', 'templateMode', 'claudeMode', 'claudePrefill', 'claudeDraftId', 'previousSpecs', 'templatePresets'));
+    $this->set(compact(
+        'refernce',
+        'draft',
+        'draftId',
+        'adaptiveMode',
+        'templateMode',
+        'cloneMode',
+        'cloneFromId',
+        'claudeMode',
+        'claudePrefill',
+        'claudeDraftId',
+        'previousSpecs',
+        'templatePresets'
+    ));
 }
 
 /**
@@ -1122,18 +1187,19 @@ public function previousSpecData($id = null)
     $createdFrom = sprintf('%d-01-01 00:00:00', $yearPrev);
     $createdTo = sprintf('%d-12-31 23:59:59', $yearNow);
 
+    // Own specs: any year (clone / older jobs). Admin templates: still limited to current+prev year.
     $query = $this->Mailer->find()
         ->where([
             'Mailer.id' => $id,
             'Mailer.type' => 3,
-            'Mailer.created >=' => $createdFrom,
-            'Mailer.created <=' => $createdTo,
         ])
         ->andWhere([
             'OR' => [
                 ['Mailer.employee_id' => $employee_id],
                 [
                     'Mailer.admin_id >' => 0,
+                    'Mailer.created >=' => $createdFrom,
+                    'Mailer.created <=' => $createdTo,
                     'OR' => [
                         ['Mailer.employee_id IS' => null],
                         ['Mailer.employee_id <=' => 0],
@@ -1485,25 +1551,31 @@ public function edit_template_preset($id = null)
 }
 
 /**
- * Keep draft/submitted spec on the same track: DB reserved track, then form field, then allocate.
+ * Keep draft/submitted spec on the same track: DB reserved track, else unique allocate
+ * (form preview is used only when not already taken — prevents duplicate DTSPEC numbers).
  */
-protected function _resolveSpecTrackNumber($mailerOrDbTrack, array $formData): string
+protected function _resolveSpecTrackNumber($mailerOrDbTrack, array $formData, ?int $excludeId = null): string
 {
     $dbTrack = '';
     if (is_object($mailerOrDbTrack)) {
-        $dbTrack = trim((string)($mailerOrDbTrack->tracknumber ?? ''));
+        $dbTrack = (string)($mailerOrDbTrack->tracknumber ?? '');
+        if ($excludeId === null && !empty($mailerOrDbTrack->id)) {
+            $excludeId = (int)$mailerOrDbTrack->id;
+        }
     } elseif (is_string($mailerOrDbTrack)) {
-        $dbTrack = trim($mailerOrDbTrack);
+        $dbTrack = $mailerOrDbTrack;
     }
-    $formTrack = trim((string)($formData['tracknumber'] ?? ''));
+    $dbTrack = $this->Mailer->normalizeSpecTrackNumber($dbTrack);
     if ($dbTrack !== '') {
         return $dbTrack;
     }
-    if ($formTrack !== '') {
-        return $formTrack;
-    }
 
-    return $this->Mailer->getNextSpecTrackNumber();
+    $formTrack = $this->Mailer->normalizeSpecTrackNumber((string)($formData['tracknumber'] ?? ''));
+
+    return $this->Mailer->allocateUniqueSpecTrackNumber(
+        $formTrack !== '' ? $formTrack : null,
+        $excludeId
+    );
 }
 
 /**
@@ -1774,17 +1846,21 @@ public function specDraftAutosave()
         $mailer->type = $type;
         $mailer->subject = $subject;
         $mailer->use_area = $use_area;
-        // Legacy drafts with empty track: reserve once and keep on later autosaves.
-        if (trim((string)($mailer->tracknumber ?? '')) === '') {
-            $formTrack = trim((string)($data['tracknumber'] ?? ''));
-            $mailer->tracknumber = $formTrack !== '' ? $formTrack : $this->Mailer->getNextSpecTrackNumber();
+        // Legacy drafts with empty track: reserve once (unique) and keep on later autosaves.
+        if ($this->Mailer->normalizeSpecTrackNumber((string)($mailer->tracknumber ?? '')) === '') {
+            $mailer->tracknumber = $this->Mailer->allocateUniqueSpecTrackNumber(
+                (string)($data['tracknumber'] ?? ''),
+                (int)$mailer->id
+            );
         }
         $this->Mailer->save($mailer);
         $draftId = $mailer->id;
         $reservedTrack = (string)$mailer->tracknumber;
     } else {
-        $formTrack = trim((string)($data['tracknumber'] ?? ''));
-        $reservedTrack = $formTrack !== '' ? $formTrack : $this->Mailer->getNextSpecTrackNumber();
+        $reservedTrack = $this->Mailer->allocateUniqueSpecTrackNumber(
+            (string)($data['tracknumber'] ?? ''),
+            null
+        );
         $entity = $this->Mailer->newEntity([
             'employee_id' => $employee_id,
             'spec_v' => 0,
@@ -2013,8 +2089,10 @@ public function editsend_v3($id = null) {
 
         $tracknumber = ($form_type == 0) ? $this->request->data['tracknumber'] : '';
         if ($form_type != 0) {
-            // Same employee DD-MM series as new specs / drafts (not admin yy-mm).
-            $tracknumber = $this->Mailer->getNextSpecTrackNumber();
+            // New / revised spec: unique DTSPEC DD-MM + global continuous NNN.
+            $tracknumber = $this->Mailer->allocateUniqueSpecTrackNumber(null, null);
+        } else {
+            $tracknumber = $this->Mailer->normalizeSpecTrackNumber((string)$tracknumber);
         }
         // Revision column is optional in some migrated databases.
         $hasRevisionColumn = $this->Mailer->getSchema()->hasColumn('revision');

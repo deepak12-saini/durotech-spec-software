@@ -37,9 +37,8 @@
 			}
 			echo ' ';
 			echo $this->Html->link('Smart Spec (from Previous)', ['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'adaptive']], ['class' => 'btn btn-primary btn-xs top-button']);
-			// Template Preset entry hidden for now. Uncomment if client approves.
-			// echo ' ';
-			// echo $this->Html->link('Template Spec', ['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'template']], ['class' => 'btn btn-success btn-xs top-button']);
+			echo ' ';
+			echo $this->Html->link('Template Spec', ['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'template']], ['class' => 'btn btn-success btn-xs top-button']);
 			?>
 		</h1>
 	</div>
@@ -256,12 +255,17 @@
 									$pdfDownloadUrl = $pdfHref;
 									echo $this->Html->link('Download', $pdfDownloadUrl, array('class' => 'btn btn-mini btn-info', 'target' => '_blank'));
 
-									// Template Preset action hidden for now. Uncomment if client approves.
-									// echo $this->Form->postLink(
-									// 	'Save Template',
-									// 	['controller' => 'employees', 'action' => 'saveTemplateFromSpec', $mailerId],
-									// 	['class' => 'btn btn-mini btn-success', 'confirm' => 'Save this spec as template preset?']
-									// );
+									echo $this->Html->link(
+										'Clone Spec',
+										['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'clone', 'from_id' => $mailerId]],
+										['class' => 'btn btn-mini btn-warning', 'title' => 'Copy Use Area + comments into a new blank client form']
+									);
+
+									echo $this->Form->postLink(
+										'Save Template',
+										['controller' => 'employees', 'action' => 'saveTemplateFromSpec', $mailerId],
+										['class' => 'btn btn-mini btn-success', 'confirm' => 'Save this spec as template preset?']
+									);
 
 									echo $this->Form->postLink('Delete', array('controller' => 'employees', 'action' => 'deleteSpec', $mailerId), array(
 										'class' => 'btn btn-mini btn-xs btn-default',

@@ -857,7 +857,43 @@ class MailersController extends AppController
 				$pdfAttachment = 'uploads/datasheets/' . $filename;
 			}
 			
-			$tracknumber = $this->request->getData()['tracknumber'];
+			$tracknumber = $this->Mailer->normalizeSpecTrackNumber(
+				(string)($this->request->getData('tracknumber') ?? '')
+			);
+			$excludeTrackId = null;
+			if ($hasSaveStatusColumn && $draftIdFromForm > 0) {
+				$draftForTrackQ = $this->Mailer->find()
+					->select(['id', 'tracknumber'])
+					->where([
+						'Mailer.id' => $draftIdFromForm,
+						'Mailer.admin_id' => $user_id,
+						'Mailer.save_status' => 'draft',
+					]);
+				$this->_applyMailerNotDeletedToQuery($draftForTrackQ);
+				$draftForTrack = $draftForTrackQ->first();
+				if ($draftForTrack) {
+					$excludeTrackId = (int)$draftForTrack->id;
+					$dbTrack = $this->Mailer->normalizeSpecTrackNumber((string)($draftForTrack->tracknumber ?? ''));
+					if ($dbTrack !== '') {
+						$tracknumber = $dbTrack;
+					} else {
+						$tracknumber = $this->Mailer->allocateUniqueSpecTrackNumber(
+							$tracknumber !== '' ? $tracknumber : null,
+							$excludeTrackId
+						);
+					}
+				} else {
+					$tracknumber = $this->Mailer->allocateUniqueSpecTrackNumber(
+						$tracknumber !== '' ? $tracknumber : null,
+						null
+					);
+				}
+			} else {
+				$tracknumber = $this->Mailer->allocateUniqueSpecTrackNumber(
+					$tracknumber !== '' ? $tracknumber : null,
+					null
+				);
+			}
 			$name = $this->request->getData()['name'];
 			$email = $this->request->getData()['email'];
 			$company = $this->request->getData()['company'];
@@ -1266,11 +1302,15 @@ class MailersController extends AppController
 		}
 
 		// Reserve track on first draft save; never wipe an already reserved number.
-		$existingTrack = trim((string)($entity->tracknumber ?? ''));
-		$formTrack = trim((string)($data['tracknumber'] ?? ''));
+		// Form preview is used only when free — prevents duplicate DTSPEC DD-MM-NNN.
+		$existingTrack = $this->Mailer->normalizeSpecTrackNumber((string)($entity->tracknumber ?? ''));
+		$excludeId = !empty($entity->id) ? (int)$entity->id : null;
 		$reservedTrack = $existingTrack !== ''
 			? $existingTrack
-			: ($formTrack !== '' ? $formTrack : $this->Mailer->getNextSpecTrackNumber());
+			: $this->Mailer->allocateUniqueSpecTrackNumber(
+				(string)($data['tracknumber'] ?? ''),
+				$excludeId
+			);
 
 		$entity = $this->Mailer->patchEntity($entity, [
 			'name' => (string)($data['name'] ?? ''),

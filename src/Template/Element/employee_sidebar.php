@@ -102,15 +102,13 @@
 						<b class="arrow"></b>
 					</li>
 
-					<?php /* Template Presets menu hidden for now. Uncomment if client approves.
-					<li class="<?php if ($this->params['controller']=='employees' && in_array($this->params['action'], ['template_presets', 'editTemplatePreset', 'edit_template_preset'])) {echo 'active';}?>">
-						<a href="<?php echo SITEURL?>employees/template_presets">
+					<li class="<?php echo ($activeController === 'employees' && in_array($activeAction, ['template_presets', 'templatepresets', 'edit_template_preset', 'edittemplatepreset'], true)) ? 'active' : ''; ?>">
+						<a href="<?php echo SITEURL; ?>employees/template_presets" title="Template Presets">
 							<i class="menu-icon fa fa-bookmark"></i>
 							<span class="menu-text">Template Presets</span>
 						</a>
 						<b class="arrow"></b>
 					</li>
-					*/ ?>
 
 
 					<li class="<?php echo $isCaseStudiesActive ? 'active' : ''; ?>">

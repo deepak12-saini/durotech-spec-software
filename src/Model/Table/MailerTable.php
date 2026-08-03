@@ -27,109 +27,140 @@ class MailerTable extends Table
     }
 
     /**
-     * Get next sequential track number for specs (type=3).
-     * Format: DTSPEC DD-MM-NNN (e.g. DTSPEC 22-07-675).
-     * MAX is scoped to today's DD-MM prefix only, so other series (e.g. yy-mm admin
-     * leftovers) cannot bump the sequence. Includes drafts that already reserved a number.
-     *
-     * @return string
+     * Normalize stored/posted track numbers (strip leading # / whitespace).
      */
-    public function getNextSpecTrackNumber(): string
+    public function normalizeSpecTrackNumber(string $track): string
     {
-        $dd = date('d');
-        $mm = date('m');
-        $prefix = 'DTSPEC ' . $dd . '-' . $mm . '-';
-        $like = $prefix . '%';
-        $conn = $this->getConnection();
-        $table = $this->getTable();
-        // Same day-month series only; include reserved drafts; ignore empty / 5000+ leftovers.
-        $where = 'type = 3 AND tracknumber LIKE ?'
-            . " AND CAST(SUBSTRING_INDEX(TRIM(tracknumber), '-', -1) AS UNSIGNED) <= 999";
-
-        if ($conn->getDriver() instanceof Mysql) {
-            $lockName = 'cake3_dtspec_employee_track';
-            $acquired = 0;
-            $stmt = $conn->execute('SELECT GET_LOCK(?, 15) AS acquired', [$lockName]);
-            $acquired = (int)($stmt->fetch('assoc')['acquired'] ?? 0);
-            if ($acquired !== 1) {
-                Log::warning('getNextSpecTrackNumber: GET_LOCK failed; allocating without lock.');
-            }
-            try {
-                $sql = 'SELECT MAX(CAST(SUBSTRING_INDEX(TRIM(`tracknumber`), \'-\', -1) AS UNSIGNED)) AS max_code'
-                    . ' FROM `' . $table . '` WHERE ' . $where;
-                $row = $conn->execute($sql, [$like])->fetch('assoc');
-                $next = (int)($row['max_code'] ?? 0) + 1;
-
-                return $prefix . str_pad((string)$next, 3, '0', STR_PAD_LEFT);
-            } finally {
-                if ($acquired === 1) {
-                    $conn->execute('SELECT RELEASE_LOCK(?)', [$lockName]);
-                }
-            }
+        $track = trim($track);
+        if ($track !== '' && isset($track[0]) && $track[0] === '#') {
+            $track = ltrim($track, "# \t");
         }
 
-        $maxCode = 0;
-        $rows = $this->find()
-            ->where(['type' => 3, 'tracknumber LIKE' => $like])
-            ->select(['tracknumber'])
-            ->all();
-        foreach ($rows as $r) {
-            $tn = trim((string)($r->tracknumber ?? ''));
-            if ($tn !== '' && preg_match('/-(\d+)$/', $tn, $m)) {
-                $n = (int)$m[1];
-                if ($n <= 999 && $n > $maxCode) {
-                    $maxCode = $n;
-                }
-            }
-        }
-
-        return $prefix . str_pad((string)($maxCode + 1), 3, '0', STR_PAD_LEFT);
+        return trim($track);
     }
 
     /**
-     * Admin-style spec track number: "DTSPEC yy-mm-NNN" (e.g. DTSPEC 26-04-596).
-     * Uses MAX existing suffix for the current year-month plus MySQL advisory lock so
-     * two simultaneous creates cannot receive the same number (count()+1 race).
+     * Today's date prefix: "DTSPEC DD-MM-" (e.g. DTSPEC 03-08-).
      */
-    public function getNextAdminStyleSpecTrackNumber(): string
+    public function currentSpecTrackPrefix(): string
     {
-        $yr = date('y');
-        $mm = date('m');
-        $prefix = 'DTSPEC ' . $yr . '-' . $mm . '-';
-        $like = $prefix . '%';
+        return 'DTSPEC ' . date('d') . '-' . date('m') . '-';
+    }
+
+    /**
+     * Whether another type=3 mailer already uses this track number.
+     */
+    public function isSpecTrackNumberTaken(string $track, ?int $excludeId = null): bool
+    {
+        $track = $this->normalizeSpecTrackNumber($track);
+        if ($track === '') {
+            return false;
+        }
+
+        $variants = array_values(array_unique([$track, '#' . $track]));
+        $query = $this->find()
+            ->select(['id'])
+            ->where([
+                'type' => 3,
+                'tracknumber IN' => $variants,
+            ]);
+        if ($excludeId !== null && $excludeId > 0) {
+            $query->andWhere(['id !=' => $excludeId]);
+        }
+
+        return (bool)$query->first();
+    }
+
+    /**
+     * Allocate a unique track. Prefers $preferred when free and matches today's DD-MM;
+     * otherwise DTSPEC DD-MM-{globalMax+1} continuing from all existing specs.
+     * Uses a MySQL advisory lock so concurrent creates cannot both claim the same number.
+     *
+     * @param string|null $preferred Form/display track (may be stale / duplicate)
+     * @param int|null $excludeId Current mailer id (draft) that may already own the track
+     */
+    public function allocateUniqueSpecTrackNumber(?string $preferred = null, ?int $excludeId = null): string
+    {
+        $preferred = $preferred !== null ? $this->normalizeSpecTrackNumber($preferred) : '';
         $conn = $this->getConnection();
-        $table = $this->getTable();
+        $lockName = 'cake3_dtspec_global_track';
+        $acquired = 0;
 
         if ($conn->getDriver() instanceof Mysql) {
-            $lockName = 'cake3_dtspec_admin_track';
-            $acquired = 0;
             $stmt = $conn->execute('SELECT GET_LOCK(?, 15) AS acquired', [$lockName]);
             $acquired = (int)($stmt->fetch('assoc')['acquired'] ?? 0);
             if ($acquired !== 1) {
-                Log::warning('getNextAdminStyleSpecTrackNumber: GET_LOCK failed; allocating without lock.');
+                Log::warning('allocateUniqueSpecTrackNumber: GET_LOCK failed; allocating without lock.');
             }
-            try {
-                $sql = 'SELECT MAX(CAST(SUBSTRING_INDEX(TRIM(`tracknumber`), \'-\', -1) AS UNSIGNED)) AS max_code'
-                    . ' FROM `' . $table . '` WHERE `type` = 3 AND `tracknumber` LIKE ?';
-                $row = $conn->execute($sql, [$like])->fetch('assoc');
-                $next = (int)($row['max_code'] ?? 0) + 1;
-                $suffix = $next <= 999 ? str_pad((string)$next, 3, '0', STR_PAD_LEFT) : (string)$next;
+        }
 
-                return $prefix . $suffix;
-            } finally {
-                if ($acquired === 1) {
-                    $conn->execute('SELECT RELEASE_LOCK(?)', [$lockName]);
+        try {
+            $currentPrefix = $this->currentSpecTrackPrefix();
+            // Keep preferred only when it is today's DD-MM series and not already used.
+            if (
+                $preferred !== ''
+                && strpos($preferred, $currentPrefix) === 0
+                && !$this->isSpecTrackNumberTaken($preferred, $excludeId)
+            ) {
+                return $preferred;
+            }
+
+            for ($i = 0; $i < 8; $i++) {
+                $next = $this->_nextDdMmGlobalTrackNumberUnlocked();
+                if (!$this->isSpecTrackNumberTaken($next, $excludeId)) {
+                    return $next;
                 }
             }
-        }
 
-        $sql = 'SELECT MAX(CAST(SUBSTRING_INDEX(TRIM(tracknumber), \'-\', -1) AS UNSIGNED)) AS max_code'
-            . ' FROM ' . $table . ' WHERE type = 3 AND tracknumber LIKE ?';
+            return $this->_nextDdMmGlobalTrackNumberUnlocked();
+        } finally {
+            if ($acquired === 1) {
+                $conn->execute('SELECT RELEASE_LOCK(?)', [$lockName]);
+            }
+        }
+    }
+
+    /**
+     * Next sequential track for specs (type=3).
+     * Format: DTSPEC DD-MM-NNN with NNN continuing globally from existing DB max
+     * (e.g. after DTSPEC 24-07-370 → DTSPEC 03-08-371; next day → DTSPEC 04-08-372).
+     */
+    public function getNextSpecTrackNumber(): string
+    {
+        return $this->allocateUniqueSpecTrackNumber(null, null);
+    }
+
+    /**
+     * Alias for older admin call sites — same DD-MM + global series.
+     */
+    public function getNextAdminStyleSpecTrackNumber(): string
+    {
+        return $this->getNextSpecTrackNumber();
+    }
+
+    /**
+     * Today’s DD-MM prefix + (MAX suffix across all type=3 DTSPEC tracks) + 1.
+     * Caller should hold the advisory lock when possible.
+     */
+    protected function _nextDdMmGlobalTrackNumberUnlocked(): string
+    {
+        $prefix = $this->currentSpecTrackPrefix();
+        $conn = $this->getConnection();
+        $table = $this->getTable();
+
+        // Global continuous sequence: max trailing number on any DTSPEC track (with/without #).
+        $sql = 'SELECT MAX(CAST(SUBSTRING_INDEX(TRIM(LEADING \'#\' FROM TRIM(`tracknumber`)), \'-\', -1) AS UNSIGNED)) AS max_code'
+            . ' FROM `' . $table . '` WHERE `type` = 3'
+            . ' AND (`tracknumber` LIKE ? OR `tracknumber` LIKE ?)'
+            . ' AND TRIM(LEADING \'#\' FROM TRIM(`tracknumber`)) <> \'\'';
+
         try {
-            $row = $conn->execute($sql, [$like])->fetch('assoc');
+            $row = $conn->execute($sql, ['DTSPEC %', '#DTSPEC %'])->fetch('assoc');
         } catch (\Throwable $e) {
+            Log::warning('_nextDdMmGlobalTrackNumberUnlocked failed: ' . $e->getMessage());
             $row = ['max_code' => 0];
         }
+
         $next = (int)($row['max_code'] ?? 0) + 1;
         $suffix = $next <= 999 ? str_pad((string)$next, 3, '0', STR_PAD_LEFT) : (string)$next;
 
