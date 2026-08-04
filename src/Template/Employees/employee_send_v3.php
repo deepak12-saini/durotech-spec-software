@@ -344,38 +344,11 @@
 		color:#b6c1cd;
 	}
 
-	</style>	
-	<div class="page-content">
-		<div class="page-header">
-		<div class="spec-page-heading">
-			<h1>DuroEzy Specification<small><i class="ace-icon fa fa-angle-double-right"></i>Create New Spec</small>
-			</h1>
-			<a href="javascript:window.history.back();" class="btn btn-inverse spec-back-btn">Back</a>
-		</div>
-		<div id="spec-draft-status" class="alert alert-info" style="margin-top:10px;margin-bottom:0;">
-			<strong>Status:</strong> <span id="spec-status-text"><?php
-				if (!empty($draftId)) {
-					echo 'Draft (restored)';
-				} elseif (!empty($claudeMode)) {
-					echo 'Loaded from Claude Spec Assistant';
-				} elseif ((string)$this->request->getQuery('mode') === 'adaptive') {
-					echo 'New (Smart Spec mode)';
-				} elseif ((string)$this->request->getQuery('mode') === 'template') {
-					echo 'New (Template mode)';
-				} elseif ((string)$this->request->getQuery('mode') === 'clone') {
-					echo 'New (Clone mode — Use Area only)';
-				} else {
-					echo 'New';
-				}
-			?></span>
-			<span id="spec-source-track" style="margin-left:15px;display:none;color:#2a88c8;font-weight:600;"></span>
-			<span id="spec-last-saved" style="margin-left:15px;"></span>
-			<?php if (!empty($draftId)): ?>
-				<span style="margin-left:15px;"><?php echo $this->Html->link('Start New Spec (discard this draft)', ['controller' => 'Employees', 'action' => 'employee_send_v3', '?' => ['discard_draft' => '1']], ['class' => 'btn btn-default btn-xs']); ?></span>
-			<?php endif; ?>
-		</div>
-	</div>
-	
+	</style>
+	<?php echo $this->element('spec_form_ui_styles'); ?>
+	<div class="page-content spec-ui-page">
+		<div class="page-header" style="display:none;"></div>
+
 	<div class="row">
 		<div class="col-xs-12">
 		<?php
@@ -419,8 +392,37 @@
 		if (!empty($draft) && isset($draft->comments)) {
 			$draftCommentsJson = json_encode(array_map(function ($c) { return $c->comment ?? ''; }, $draft->comments->toArray()));
 		}
+		$statusLabel = 'New';
+		if (!empty($draftId)) {
+			$statusLabel = 'Draft (restored)';
+		} elseif (!empty($claudeMode)) {
+			$statusLabel = 'Loaded from Claude Spec Assistant';
+		} elseif ((string)$this->request->getQuery('mode') === 'adaptive') {
+			$statusLabel = 'New (Smart Spec mode)';
+		} elseif ((string)$this->request->getQuery('mode') === 'template') {
+			$statusLabel = 'New (Template mode)';
+		} elseif ((string)$this->request->getQuery('mode') === 'clone') {
+			$statusLabel = 'New (Clone mode — Use Area only)';
+		}
 		?>
-		<?php echo $this->Form->create('Employee',array('class'=>'form-horizontal','enctype'=>'multipart/form-data','id'=>'specForm')); ?>
+		<div class="spec-ui-shell">
+			<div class="spec-ui-head">
+				<h1>
+					DuroEzy Specification
+					<small><i class="ace-icon fa fa-angle-double-right"></i> Create New Spec</small>
+				</h1>
+				<a href="javascript:window.history.back();" class="btn btn-inverse">Back</a>
+			</div>
+			<div id="spec-draft-status" class="spec-ui-status">
+				<span class="status-pill"><i class="fa fa-circle" style="font-size:8px;"></i> <span id="spec-status-text"><?php echo h($statusLabel); ?></span></span>
+				<span id="spec-source-track" style="display:none;color:#2a88c8;font-weight:600;"></span>
+				<span id="spec-last-saved"></span>
+				<?php if (!empty($draftId)): ?>
+					<?php echo $this->Html->link('Discard draft', ['controller' => 'Employees', 'action' => 'employee_send_v3', '?' => ['discard_draft' => '1']], ['class' => 'btn btn-default btn-xs']); ?>
+				<?php endif; ?>
+			</div>
+			<div class="spec-ui-body">
+		<?php echo $this->Form->create('Employee',array('class'=>'form-horizontal spec-ui-form','enctype'=>'multipart/form-data','id'=>'specForm')); ?>
 			<input type="hidden" name="draft_id" id="draft_id" value="<?php echo $draftIdVal; ?>">
 			<?php
 			$claudeDraftIdVal = !empty($claudeDraftId) ? (int)$claudeDraftId : 0;
@@ -462,10 +464,16 @@
 				}
 				$adaptiveYearNote = ((int)date('Y') - 1) . '–' . (int)date('Y');
 			?>
-			<div class="form-group" style="position:relative;z-index:40;overflow:visible;">
-				<label class="col-sm-3 control-label no-padding-right adaptive-load-label" for="adaptive_combo_input">Smart Spec:</label>
+			<div class="spec-ui-card" style="z-index:40;">
+				<div class="spec-ui-card-title">
+					<span>Smart Spec</span>
+					<span class="hint">Load Use Area from a previous job</span>
+				</div>
+				<div class="spec-ui-card-body">
+			<div class="form-group" style="position:relative;z-index:40;overflow:visible;margin-bottom:0 !important;">
+				<label class="col-sm-3 control-label no-padding-right adaptive-load-label" for="adaptive_combo_input">Search:</label>
 				<div class="col-sm-9 adaptive-load-col">
-					<div class="spec-adaptive-box spec-combo-panel" style="display:block;">
+					<div class="spec-adaptive-box spec-combo-panel" style="display:block;border:0;box-shadow:none;background:transparent;padding:0;">
 						<div class="spec-combo-wrap">
 							<input type="text" id="adaptive_combo_input" class="form-control input-sm spec-combo-input" placeholder="Type to search previous specs…" autocomplete="off">
 							<i class="fa fa-caret-down spec-combo-caret"></i>
@@ -478,6 +486,8 @@
 						</div>
 						<p class="help-block spec-adaptive-help">Shows submitted specs from <strong><?php echo h($adaptiveYearNote); ?></strong> (your own + admin templates). <strong>Use Area only</strong> keeps client details blank; <strong>Full spec</strong> also copies Name/Project/Address/Email.</p>
 					</div>
+				</div>
+			</div>
 				</div>
 			</div>
 			<script type="application/json" id="adaptive-spec-choices-data"><?php echo json_encode($adaptiveSpecChoices, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE); ?></script>
@@ -516,10 +526,16 @@
 					}
 				}
 			?>
-			<div class="form-group" style="position:relative;z-index:40;overflow:visible;">
-				<label class="col-sm-3 control-label no-padding-right adaptive-load-label" for="template_combo_input">Template Spec:</label>
+			<div class="spec-ui-card" style="z-index:40;">
+				<div class="spec-ui-card-title">
+					<span>Template Spec</span>
+					<span class="hint">Load Use Area + comments only</span>
+				</div>
+				<div class="spec-ui-card-body">
+			<div class="form-group" style="position:relative;z-index:40;overflow:visible;margin-bottom:0 !important;">
+				<label class="col-sm-3 control-label no-padding-right adaptive-load-label" for="template_combo_input">Search:</label>
 				<div class="col-sm-9 adaptive-load-col">
-					<div class="spec-adaptive-box spec-combo-panel" style="display:block;">
+					<div class="spec-adaptive-box spec-combo-panel" style="display:block;border:0;box-shadow:none;background:transparent;padding:0;">
 						<div class="spec-combo-wrap">
 							<input type="text" id="template_combo_input" class="form-control input-sm spec-combo-input" placeholder="Type to search templates…" autocomplete="off">
 							<i class="fa fa-caret-down spec-combo-caret"></i>
@@ -531,13 +547,73 @@
 					</div>
 				</div>
 			</div>
+				</div>
+			</div>
 			<script type="application/json" id="template-choices-data"><?php echo json_encode($templateChoices, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE); ?></script>
 			<?php endif; ?>
-		
+
+			<?php if (!empty($isCloneMode) && $cloneFromIdVal <= 0): ?>
+			<?php
+				$cloneSpecChoices = [];
+				foreach ($previousSpecList as $prev) {
+					$labelParts = [];
+					$labelParts[] = (string)($prev->tracknumber ?? ('#' . (int)$prev->id));
+					if (!empty($prev->company)) {
+						$labelParts[] = (string)$prev->company;
+					}
+					if (!empty($prev->name)) {
+						$labelParts[] = (string)$prev->name;
+					}
+					$label = implode(' | ', $labelParts);
+					$cloneSpecChoices[] = [
+						'id' => (int)$prev->id,
+						'label' => $label,
+						'search' => strtolower(
+							(string)($prev->tracknumber ?? '') . ' '
+							. (string)($prev->company ?? '') . ' '
+							. (string)($prev->name ?? '') . ' '
+							. (string)($prev->specification ?? '') . ' '
+							. (int)$prev->id
+						),
+						'source' => 'spec',
+					];
+				}
+			?>
+			<div class="spec-ui-card" style="z-index:40;">
+				<div class="spec-ui-card-title">
+					<span>Clone a Spec</span>
+					<span class="hint">Pick a submitted spec — Use Area + comments only</span>
+				</div>
+				<div class="spec-ui-card-body">
+			<div class="form-group" style="position:relative;z-index:40;overflow:visible;margin-bottom:0 !important;">
+				<label class="col-sm-3 control-label no-padding-right adaptive-load-label" for="clone_combo_input">Search:</label>
+				<div class="col-sm-9 adaptive-load-col">
+					<div class="spec-adaptive-box spec-combo-panel" style="display:block;border:0;box-shadow:none;background:transparent;padding:0;">
+						<div class="spec-combo-wrap">
+							<input type="text" id="clone_combo_input" class="form-control input-sm spec-combo-input" placeholder="Type to search your specs…" autocomplete="off">
+							<i class="fa fa-caret-down spec-combo-caret"></i>
+							<ul id="clone_combo_list" class="spec-combo-list" role="listbox"></ul>
+							<input type="hidden" id="clone_previous_spec_id" value="">
+						</div>
+						<p class="help-block spec-adaptive-help">Copies Use Area + comments only. Client Name/Project/Address/Email stay blank for the new job.</p>
+					</div>
+				</div>
+			</div>
+				</div>
+			</div>
+			<script type="application/json" id="clone-spec-choices-data"><?php echo json_encode($cloneSpecChoices, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE); ?></script>
+			<?php endif; ?>
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title">
+					<span>Client details</span>
+					<span class="hint">Who this spec is for</span>
+				</div>
+				<div class="spec-ui-card-body">
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Track Number:</label>
 				<div class="col-sm-9">
-					<input type="text" name="tracknumber" value="<?php echo $refernce; ?>" readonly id="tracknumber" class = "col-xs-10 col-sm-8" style="background:#ddd !important; cursor:pointer;" >
+					<input type="text" name="tracknumber" value="<?php echo $refernce; ?>" readonly id="tracknumber" class = "col-xs-10 col-sm-8" style="cursor:pointer;" >
 				</div>
 			</div>
 		
@@ -578,6 +654,15 @@
 					<input type="text" name="date" value="<?php echo $draftDate; ?>" id="date"  class = "datepicker col-xs-10 col-sm-8">
 				</div>
 			</div>
+				</div>
+			</div>
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title">
+					<span>Spec options</span>
+					<span class="hint">Type, subject, warranty</span>
+				</div>
+				<div class="spec-ui-card-body">
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Mailer Type:</label>
 				<div class="col-sm-9">
@@ -601,41 +686,54 @@
 					</select>
 				</div>
 			</div>
-						
-			
-			<div id="addsection"></div>
-			
-			<div class="form-group">
-				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
-				<div class="col-sm-1">
-					<a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addnewsection()"><i class="fa fa-plus"></i> Add Section</a>
 				</div>
 			</div>
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title">
+					<span>Use Area</span>
+					<span class="hint">Sections &amp; products</span>
+				</div>
+				<div class="spec-ui-card-body">
+					<p class="spec-ui-toolbar-note muted">Add sections, then products under each.</p>
+			<div id="addsection"></div>
 			<div id="newdiv"></div>
-			
-			<div class="form-group" style="margin-top:40px;">
+					<div class="spec-ui-add-section">
+						<a href="javascript:void(0);" class="btn btn-xs btn-primary" onclick="addnewsection()"><i class="fa fa-plus"></i> Add Section</a>
+					</div>
+				</div>
+			</div>
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title">
+					<span>Comments</span>
+					<span class="hint">Optional notes on the PDF</span>
+				</div>
+				<div class="spec-ui-card-body">
+			<div class="form-group" style="margin-top:0;">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
 				<div class="col-sm-9">				
-					<table  class="commentdiv">
+					<table class="commentdiv">
 						<tr>	
 							<th>Comments 1.</th>							
 						</tr>
 						<tr>							
-							<td><input type="text" style="width:400px;" name="comment[]" value=""></td>
+							<td><input type="text" class="spec-comment-input" name="comment[]" value=""></td>
 						</tr>
 					</table>
 					<div id="addcommentnew"></div>
 					<a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addmorecomment()"><i class="fa fa-plus"></i> Add More Comment</a>
 				</div>
 			</div>
-
-			<div class="form-group">
-				<div class="col-md-offset-3 col-md-9">
-					<button type="submit" name="submit_spec" value="1" class="btn btn-mini btn-success" id="add_ser_prd_btn">Submit / Publish</button>&nbsp;
-				
 				</div>
 			</div>
+
+			</div><!-- /.spec-ui-body -->
+			<div class="spec-ui-actions">
+					<button type="submit" name="submit_spec" value="1" class="btn btn-success" id="add_ser_prd_btn"><i class="fa fa-check"></i> Submit / Publish</button>
+			</div>
 			<?php echo $this->Form->end(); ?>
+		</div><!-- /.spec-ui-shell -->
 		</div>
 	</div>	
 	</div>	
@@ -645,7 +743,7 @@
 		var numItems = $('.commentdiv').length; 
 		var newdiv = 	numItems + 1;
 		//var dtserial = id+'.'+newdiv;	
-		var html = '<table class="commentdiv" id="commentdiv_'+newdiv+'"><tr><th>Comments '+newdiv+'.</th><th><th></tr><tr><td><input type="text" style="width:400px;" name="comment[]" value=""></td><td><a href="javascript:void(0);" style="color:red;" onclick="commnetdivremove('+newdiv+')">&nbsp;&nbsp; X </a></td></tr></table>';
+		var html = '<table class="commentdiv" id="commentdiv_'+newdiv+'"><tr><th colspan="2">Comments '+newdiv+'.</th></tr><tr><td><input type="text" class="spec-comment-input" name="comment[]" value=""></td><td><a href="javascript:void(0);" onclick="commnetdivremove('+newdiv+')" title="Remove">×</a></td></tr></table>';
 		$("#addcommentnew").append(html);
 	}	
 	function commnetdivremove(newdiv){
@@ -837,8 +935,7 @@
 
 		var varhtml = '' +
 			'<div class="form-group addsection" id="section_' + newdiv + '">' +
-				'<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>' +
-				'<div class="col-sm-9">' +
+				'<div class="col-xs-12">' +
 					'<table>' +
 						'<tr style="border-bottom: 15px solid #ffff;">' +
 							'<td colspan="5">' +
@@ -879,7 +976,7 @@
 								'<input type="text" style="width:100px;" name="Warranty[]" value="" id="warranty_' + newdiv + '_0">' +
 							'</td>' +
 							'<td>' +
-								'<a href="javascript:void(0);" style="color:red;" onclick="removesection(' + newdiv + ')" title="Remove" style="color: red; font-size: 22px;">&nbsp;&nbsp; <i class="fa fa-times"></i> </a>' +
+								'<a href="javascript:void(0);" style="color:red;" onclick="removesection(' + newdiv + ')" title="Remove">&nbsp;&nbsp; <i class="fa fa-times"></i> </a>' +
 							'</td>' +
 						'</tr>' +
 					'</table>' +
@@ -1395,6 +1492,58 @@ function loadCommentsFromData(comments) {
 			error: function() {
 				alert('Unable to clone spec right now.');
 			}
+		});
+	});
+	<?php elseif (!empty($isCloneMode)): ?>
+	jQuery(function() {
+		var cloneLoadBaseUrl = '<?php echo $this->Url->build(['controller' => 'Employees', 'action' => 'previousSpecData']); ?>';
+		var cloneChoices = [];
+		try {
+			var rawC = document.getElementById('clone-spec-choices-data');
+			if (rawC && rawC.textContent) {
+				cloneChoices = JSON.parse(rawC.textContent);
+			}
+		} catch (e) {
+			cloneChoices = [];
+		}
+
+		function cloneLoadSelectedSpec() {
+			var selectedId = $('#clone_previous_spec_id').val();
+			if (!selectedId) {
+				$('#spec-source-track').hide().text('');
+				$('#spec-status-text').text('New (Clone mode — Use Area only)');
+				return;
+			}
+			$.ajax({
+				type: 'GET',
+				url: cloneLoadBaseUrl.replace(/\/$/, '') + '/' + selectedId,
+				dataType: 'json',
+				success: function(res) {
+					if (!res || !res.success || !res.data) {
+						alert((res && res.error) ? res.error : 'Unable to clone spec.');
+						return;
+					}
+					applyLoadedSpec(res.data, 'use_area');
+					$('#spec-status-text').text('Cloned Use Area + comments (new client details)');
+					var sourceTrack = ($('#clone_combo_input').val() || '').split('|')[0].trim();
+					if (sourceTrack) {
+						$('#spec-source-track').text('Cloned from ' + sourceTrack).show();
+					} else {
+						$('#spec-source-track').text('Cloned from #' + selectedId).show();
+					}
+				},
+				error: function() {
+					alert('Unable to clone spec right now.');
+				}
+			});
+		}
+
+		initSpecCombobox({
+			input: '#clone_combo_input',
+			list: '#clone_combo_list',
+			hidden: '#clone_previous_spec_id',
+			choices: cloneChoices,
+			onSelect: function() { cloneLoadSelectedSpec(); }
 		});
 	});
 	<?php endif; ?>

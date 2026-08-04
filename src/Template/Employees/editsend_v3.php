@@ -98,23 +98,14 @@
 			.form-horizontal .form-group > .col-sm-9{
 				width:84%;
 			}
-			.addsection > label{
-				display:none;
+			/* Use Area stays full-width inside spec-ui cards (see spec_form_ui_styles) */
+			.spec-ui-form .addsection > label{
+				display:none !important;
 			}
-			.addsection > .col-sm-9{
-				margin-left:8%;
-				width:92%;
-			}
-			.addsection input[name="serial[]"]{
-				width:55px !important;
-			}
-			.addsection input[name="coverage[]"],
-			.addsection input[name="product[]"]{
-				width:190px !important;
-			}
-			.addsection input[name="coverage_by_pack[]"],
-			.addsection input[name="Warranty[]"]{
-				width:90px !important;
+			.spec-ui-form .addsection > .col-sm-9,
+			.spec-ui-form .addsection > .col-xs-12{
+				margin-left:0 !important;
+				width:100% !important;
 			}
 		}
 		.ui-datepicker{
@@ -202,12 +193,9 @@
 		}
 
 	</style>
-	<div class="page-content">
-		<div class="page-header">
-		<div class="right_btn pull-right" ><a href="javascript:window.history.back();" class="btn btn-inverse" >Back</a></div>
-		<h1>DuroEzy Specification  <small><i class="ace-icon fa fa-angle-double-right"></i>Edit Spec</small>
-		</h1>
-	</div>
+	<?php echo $this->element('spec_form_ui_styles'); ?>
+	<div class="page-content spec-ui-page">
+		<div class="page-header" style="display:none;"></div>
 	
 	<div class="row">
 		<div class="col-xs-12">
@@ -229,9 +217,28 @@
 			'use_area' => 0,
 		];
 		?>
-		<?php echo $this->Form->create('Employee',array('class'=>'form-horizontal','enctype'=>'multipart/form-data')); ?>
+		<div class="spec-ui-shell">
+			<div class="spec-ui-head">
+				<h1>
+					DuroEzy Specification
+					<small><i class="ace-icon fa fa-angle-double-right"></i> Edit Spec<?php echo $refernce !== '' ? ' · ' . h($refernce) : ''; ?></small>
+				</h1>
+				<a href="javascript:window.history.back();" class="btn btn-inverse">Back</a>
+			</div>
+			<div class="spec-ui-status">
+				<span class="status-pill" style="color:#8a5a12;border-color:#f0d59a;"><i class="fa fa-pencil" style="font-size:11px;"></i> Editing submitted spec</span>
+				<span>Track locked unless you choose “Create New One”</span>
+			</div>
+			<div class="spec-ui-body">
+		<?php echo $this->Form->create('Employee',array('class'=>'form-horizontal spec-ui-form','enctype'=>'multipart/form-data','id'=>'specForm')); ?>
 		<input type="hidden" name="return_page" value="<?php echo isset($returnPage) ? (int)$returnPage : 1; ?>">
-		
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title">
+					<span>Revision</span>
+					<span class="hint">Keep same track or create a new number</span>
+				</div>
+				<div class="spec-ui-card-body">
 			<div class="form-group">
 				<label for="form-field-2" class="col-sm-3 control-label no-padding-right"> Is Create New One: </label>
 					<div class="col-sm-9">					
@@ -245,11 +252,19 @@
 					</label></div>					
 				</div>
 			</div>
-					
+				</div>
+			</div>
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title">
+					<span>Client details</span>
+					<span class="hint">Update contact / project</span>
+				</div>
+				<div class="spec-ui-card-body">
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Track Number:</label>
 				<div class="col-sm-9">
-					<input type="text" name="tracknumber" value="<?php echo $refernce; ?>" readonly id="tracknumber" class = "col-xs-10 col-sm-8" style="background:#ddd !important; cursor:pointer;" >
+					<input type="text" name="tracknumber" value="<?php echo $refernce; ?>" readonly id="tracknumber" class = "col-xs-10 col-sm-8" style="cursor:pointer;" >
 				</div>
 			</div>
 		
@@ -290,6 +305,15 @@
 					<input type="text" name="date" id="date" value="<?php echo $MailerArr['Mailer']['date']; ?>"   class = "datepicker col-xs-10 col-sm-8">
 				</div>
 			</div>
+				</div>
+			</div>
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title">
+					<span>Spec options</span>
+					<span class="hint">Type, subject, warranty, datasheet</span>
+				</div>
+				<div class="spec-ui-card-body">
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Mailer Type:</label>
 				<div class="col-sm-9">
@@ -322,24 +346,25 @@
 					</select>
 				</div>
 			</div>
-			<!--div class="form-group">
-				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">MFT(Minimum Film Thickness):</label>
+			<div class="form-group">
+				<label class="col-sm-3 control-label no-padding-right" for="pdf_datasheet">PDF Datasheet:</label>
 				<div class="col-sm-9">
-					<input type="text" name="mft" placeholder="MFT(Minimum Film Thickness)" value="<?php echo $MailerArr['Mailer']['mft']; ?>" id="mft" class = "col-xs-10 col-sm-8">
+					<input type="file" name="datasheet_pdf" id="datasheet_pdf" class="col-xs-10 col-sm-8" accept="application/pdf">
+					<?php if (!empty($MailerArr['Mailer']['pdf_attachment'])): ?>
+						<a href="<?php echo h($this->Pdf->url(ltrim((string)$MailerArr['Mailer']['pdf_attachment'], '/'))); ?>" target="_blank">View Existing PDF</a>
+					<?php endif; ?>
+				</div>
+           </div>
 				</div>
 			</div>
-			<div class="form-group">
-				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Warrenty Period:</label>
-				<div class="col-sm-9">
-					<input type="text" name="warranty_period" value="<?php echo $MailerArr['Mailer']['warranty_period']; ?>" placeholder="Warrenty Period" id="warranty_period" class = "col-xs-10 col-sm-8">
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title">
+					<span>Use Area</span>
+					<span class="hint">Edit products in place</span>
 				</div>
-			</div-->
-			<!--div class="form-group">
-				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Is Use Area:</label>
-				<div class="col-sm-1">
-					<input type="checkbox" name="use_area" <?php if($MailerArr['Mailer']['use_area'] == 1){ echo 'checked'; } ?> value="1" id="use_area" class = "col-xs-10 col-sm-8" onclick="checkornot()" style="margin-top: 12px;">
-				</div>
-			</div-->
+				<div class="spec-ui-card-body">
+					<p class="spec-ui-toolbar-note muted">Existing sections loaded from this spec.</p>
 			<?php
 		
 			if(!empty($product)){
@@ -348,8 +373,7 @@
 				foreach($product as $products){
 			?>
 			<div class="form-group addsection" id="section_<?php echo $i; ?>">
-				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
-				<div class="col-sm-9" tabindex="0" aria-label="Product section; use left and right arrow keys to scroll">
+				<div class="col-xs-12" tabindex="0" aria-label="Product section">
 				<table>
 					<tbody>
 						<tr><td colspan="5">
@@ -405,15 +429,19 @@
 			</div>
 			<?php $i++; } }?>
 			<div id="addsection"></div>
-
-			<div class="form-group">
-				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
-				<div class="col-sm-9">
-					<a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addnewsection()"><i class="fa fa-plus"></i> Add Section</a>
+					<div class="spec-ui-add-section">
+						<a href="javascript:void(0);" class="btn btn-xs btn-primary" onclick="addnewsection()"><i class="fa fa-plus"></i> Add Section</a>
+					</div>
 				</div>
 			</div>
-			
-			<div class="form-group" style="margin-top:40px;">
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title">
+					<span>Comments</span>
+					<span class="hint">Optional notes on the PDF</span>
+				</div>
+				<div class="spec-ui-card-body">
+			<div class="form-group" style="margin-top:0;">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
 				<div class="col-sm-9">
 					<?php
@@ -423,12 +451,11 @@
 					?>			
 					<table  class="commentdiv" id="commentdiv_<?php echo $m; ?>">
 						<tr>	
-							<th>Comments <?php echo $m; ?>.</th>							
-							<th></th>							
+							<th colspan="2">Comments <?php echo $m; ?>.</th>
 						</tr>
 						<tr>							
-							<td><input type="text" style="width:400px;" name="comment[]" value="<?php echo $MailerComments['comment']; ?>"></td>
-							<td><a href="javascript:void(0);" style="color:red;" onclick="commnetdivremove('<?php echo $m; ?>')">&nbsp;&nbsp; X </a></td>
+							<td><input type="text" class="spec-comment-input" name="comment[]" value="<?php echo $MailerComments['comment']; ?>"></td>
+							<td><a href="javascript:void(0);" onclick="commnetdivremove('<?php echo $m; ?>')" title="Remove">×</a></td>
 						</tr>
 					</table>
 					<?php $m++; }}else{ ?>
@@ -437,7 +464,7 @@
 								<th>Comments 1.</th>							
 							</tr>
 							<tr>							
-								<td><input type="text" style="width:400px;" name="comment[]" value=""></td>
+								<td><input type="text" class="spec-comment-input" name="comment[]" value=""></td>
 								
 							</tr>
 						</table>
@@ -446,24 +473,15 @@
 					<a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addmorecomment()"><i class="fa fa-plus"></i> Add More Comment</a>
 				</div>
 			</div>
-
-			<div class="form-group">
-				<label class="col-sm-3 control-label no-padding-right" for="pdf_datasheet">PDF Datasheet:</label>
-				<div class="col-sm-9">
-					<input type="file" name="datasheet_pdf" id="datasheet_pdf" class="col-xs-10 col-sm-8" accept="application/pdf">
-					<?php if (!empty($MailerArr['Mailer']['pdf_attachment'])): ?>
-						<a href="<?php echo h($this->Pdf->url(ltrim((string)$MailerArr['Mailer']['pdf_attachment'], '/'))); ?>" target="_blank">View Existing PDF</a>
-					<?php endif; ?>
-				</div>
-           </div>
-			
-			<div class="form-group">
-				<div class="col-md-offset-3 col-md-9">
-					<?php echo $this->Form->submit('Submit',array('div'=>false,'label'=>false, 'class' => 'btn btn-mini  btn-success','id'=>'add_ser_prd_btn','value'=>'Submit'));?>&nbsp;
-				
 				</div>
 			</div>
+
+			</div><!-- /.spec-ui-body -->
+			<div class="spec-ui-actions">
+					<?php echo $this->Form->submit('Save Changes',array('div'=>false,'label'=>false, 'class' => 'btn btn-success','id'=>'add_ser_prd_btn','value'=>'Submit'));?>
+			</div>
 			<?php echo $this->Form->end(); ?>
+		</div><!-- /.spec-ui-shell -->
 		</div>
 	</div>	
 	</div>	
@@ -473,7 +491,7 @@
 		var numItems = $('.commentdiv').length; 
 		var newdiv = 	numItems + 1;
 		//var dtserial = id+'.'+newdiv;	
-		var html = '<table class="commentdiv" id="commentdiv_'+newdiv+'"><tr><th>Comments '+newdiv+'.</th><th><th></tr><tr><td><input type="text" style="width:400px;" name="comment[]" value=""></td><td><a href="javascript:void(0);" style="color:red;" onclick="commnetdivremove('+newdiv+')">&nbsp;&nbsp; X </a></td></tr></table>';
+		var html = '<table class="commentdiv" id="commentdiv_'+newdiv+'"><tr><th colspan="2">Comments '+newdiv+'.</th></tr><tr><td><input type="text" class="spec-comment-input" name="comment[]" value=""></td><td><a href="javascript:void(0);" onclick="commnetdivremove('+newdiv+')" title="Remove">×</a></td></tr></table>';
 		$("#addcommentnew").append(html);
 	}	
 	function commnetdivremove(newdiv){
@@ -676,8 +694,7 @@
 		var newdiv = 	numItems + 1;
 		var varhtml = '' +
 			'<div class="form-group addsection" id="section_'+newdiv+'">' +
-				'<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>' +
-				'<div class="col-sm-9" tabindex="0" aria-label="Product section; use left and right arrow keys to scroll">' +
+				'<div class="col-xs-12" tabindex="0" aria-label="Product section">' +
 					'<table>' +
 						'<tr>' +
 							'<td colspan="5">' +

@@ -1109,31 +1109,48 @@ public function employee_send_v3() {
         }
     }
 
-    // Clone: validate from_id is own non-draft spec (any year).
+    // Clone: optional from_id (row action). Without it, show picker of own submitted specs.
     if ($cloneMode) {
-        if ($cloneFromId <= 0) {
-            $this->Flash->error('Invalid clone source.');
-            return $this->redirect(['action' => 'index']);
-        }
-        $cloneQuery = $this->Mailer->find()
-            ->select(['id'])
-            ->where([
-                'Mailer.id' => $cloneFromId,
-                'Mailer.type' => 3,
-                'Mailer.employee_id' => $employee_id,
-            ]);
-        $this->_applyMailerNotDeletedToQuery($cloneQuery);
-        if ($this->Mailer->getSchema()->getColumn('save_status')) {
-            $cloneQuery->andWhere([
-                'OR' => [
-                    ['Mailer.save_status' => 'submitted'],
-                    ['Mailer.save_status IS' => null],
-                ],
-            ]);
-        }
-        if (!$cloneQuery->first()) {
-            $this->Flash->error('Spec not found or not available to clone.');
-            return $this->redirect(['action' => 'index']);
+        if ($cloneFromId > 0) {
+            $cloneQuery = $this->Mailer->find()
+                ->select(['id'])
+                ->where([
+                    'Mailer.id' => $cloneFromId,
+                    'Mailer.type' => 3,
+                    'Mailer.employee_id' => $employee_id,
+                ]);
+            $this->_applyMailerNotDeletedToQuery($cloneQuery);
+            if ($this->Mailer->getSchema()->getColumn('save_status')) {
+                $cloneQuery->andWhere([
+                    'OR' => [
+                        ['Mailer.save_status' => 'submitted'],
+                        ['Mailer.save_status IS' => null],
+                    ],
+                ]);
+            }
+            if (!$cloneQuery->first()) {
+                $this->Flash->error('Spec not found or not available to clone.');
+                return $this->redirect(['action' => 'index']);
+            }
+        } else {
+            $cloneListQuery = $this->Mailer->find()
+                ->select(['id', 'tracknumber', 'name', 'company', 'specification', 'date', 'admin_id', 'employee_id', 'created'])
+                ->where([
+                    'Mailer.type' => 3,
+                    'Mailer.employee_id' => $employee_id,
+                ])
+                ->orderDesc('Mailer.id')
+                ->limit(200);
+            $this->_applyMailerNotDeletedToQuery($cloneListQuery);
+            if ($this->Mailer->getSchema()->getColumn('save_status')) {
+                $cloneListQuery->andWhere([
+                    'OR' => [
+                        ['Mailer.save_status' => 'submitted'],
+                        ['Mailer.save_status IS' => null],
+                    ],
+                ]);
+            }
+            $previousSpecs = $cloneListQuery->all()->toArray();
         }
     }
 

@@ -21,6 +21,9 @@
 		font-weight: 600;
 		color: #666;
 	}
+	.top-button .fa-files-o {
+		margin-right: 3px;
+	}
 </style>
 
 <div class="page-content">
@@ -39,6 +42,16 @@
 			echo $this->Html->link('Smart Spec (from Previous)', ['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'adaptive']], ['class' => 'btn btn-primary btn-xs top-button']);
 			echo ' ';
 			echo $this->Html->link('Template Spec', ['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'template']], ['class' => 'btn btn-success btn-xs top-button']);
+			echo ' ';
+			echo $this->Html->link(
+				'<i class="ace-icon fa fa-files-o"></i> Clone a Spec',
+				['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'clone']],
+				[
+					'class' => 'btn btn-purple btn-xs top-button',
+					'title' => 'Clone Use Area + comments into a new blank client form',
+					'escape' => false,
+				]
+			);
 			?>
 		</h1>
 	</div>
@@ -256,9 +269,9 @@
 									echo $this->Html->link('Download', $pdfDownloadUrl, array('class' => 'btn btn-mini btn-info', 'target' => '_blank'));
 
 									echo $this->Html->link(
-										'Clone Spec',
+										'<i class="fa fa-files-o"></i> Clone Spec',
 										['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'clone', 'from_id' => $mailerId]],
-										['class' => 'btn btn-mini btn-warning', 'title' => 'Copy Use Area + comments into a new blank client form']
+										['class' => 'btn btn-mini btn-warning', 'title' => 'Copy Use Area + comments into a new blank client form', 'escape' => false]
 									);
 
 									echo $this->Form->postLink(
