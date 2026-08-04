@@ -1,12 +1,31 @@
 <?php
 $caseData = $case['CaseStudy'] ?? [];
-$featuredImage = !empty($caseData['featured_image']) ? SITEURL . $caseData['featured_image'] : 'https://www.durotechindustries.com.au/banner/Project.jpg';
+
+/**
+ * Build a public media URL; encodes path segments so spaces/special chars work.
+ */
+$caseMediaUrl = function ($path) {
+    $path = trim((string)$path);
+    if ($path === '') {
+        return '';
+    }
+    if (stripos($path, 'http://') === 0 || stripos($path, 'https://') === 0) {
+        return $path;
+    }
+    $segments = array_map('rawurlencode', explode('/', ltrim(str_replace('\\', '/', $path), '/')));
+    return rtrim(SITEURL, '/') . '/' . implode('/', $segments);
+};
+
+$featuredImage = !empty($caseData['featured_image'])
+    ? $caseMediaUrl($caseData['featured_image'])
+    : 'https://www.durotechindustries.com.au/banner/Project.jpg';
 ?>
 
 <style>
 .case-study-page-wrap {
     background: #eaf1f7;
     padding-bottom: 44px;
+    --case-sticky-offset: 220px;
 }
 
 .case-hero {
@@ -72,14 +91,16 @@ $featuredImage = !empty($caseData['featured_image']) ? SITEURL . $caseData['feat
 
 .case-quick-nav {
     position: sticky;
-    top: 74px;
-    z-index: 5;
-    background: rgba(255, 255, 255, 0.94);
+    top: 90px; /* JS syncs to real #header_top height */
+    z-index: 999; /* below fixed site header (1000), above page content */
+    background: #fff;
     border: 1px solid rgba(40, 137, 201, 0.18);
     border-radius: 12px;
     box-shadow: 0 6px 16px rgba(20, 33, 61, 0.08);
-    margin-bottom: 22px;
-    padding: 10px 12px;
+    margin-bottom: 28px;
+    padding: 12px;
+    overflow: visible;
+    isolation: isolate;
 }
 
 .case-quick-nav ul {
@@ -89,42 +110,76 @@ $featuredImage = !empty($caseData['featured_image']) ? SITEURL . $caseData['feat
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    align-items: stretch;
+    overflow: visible;
 }
 
-.case-quick-nav a {
-    display: inline-block;
-    text-decoration: none;
-    color: #2f4d66;
-    font-weight: 700;
-    font-size: 1.14rem;
-    padding: 11px 16px;
+.case-quick-nav li {
+    margin: 0;
+    padding: 0;
+    float: none;
+    list-style: none;
+    overflow: visible;
+}
+
+.case-study-page-wrap .case-quick-nav a,
+.case-study-page-wrap .case-quick-nav a:link,
+.case-study-page-wrap .case-quick-nav a:visited {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    text-decoration: none !important;
+    color: #243b4d !important;
+    font-weight: 700 !important;
+    font-size: 15px !important;
+    line-height: 1.35 !important;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    padding: 10px 16px !important;
+    min-height: 42px;
     border-radius: 999px;
-    transition: all 0.22s ease;
+    border: 1px solid transparent;
+    background: #f3f7fb;
+    overflow: visible;
+    text-overflow: clip;
+    max-width: none;
+    height: auto !important;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
-.case-quick-nav a:hover,
-.case-quick-nav a.is-active {
-    color: #fff;
-    background: linear-gradient(90deg, #2889c9, #5a1ea8);
+.case-study-page-wrap .case-quick-nav a:hover,
+.case-study-page-wrap .case-quick-nav a:focus,
+.case-study-page-wrap .case-quick-nav a.is-active {
+    color: #fff !important;
+    background: linear-gradient(90deg, #2889c9, #5a1ea8) !important;
+    border-color: transparent;
+    outline: none;
+}
+
+/* Keep section titles clear of sticky site header + tab bar */
+.case-section,
+#gallery,
+#products-used,
+#datasheet,
+#summary,
+#challenge,
+#solution,
+#outcome {
+    scroll-margin-top: var(--case-sticky-offset);
 }
 
 .case-section {
     background: #fff;
     border-radius: 12px;
     border-left: 4px solid #2889c9;
-    padding: 20px 22px;
+    padding: 22px 22px 20px;
     margin-bottom: 20px;
     box-shadow: 0 6px 16px rgba(20, 33, 61, 0.08);
-    transition: transform 0.24s ease, box-shadow 0.24s ease;
 }
 
 .case-section:nth-of-type(even) {
     border-left-color: #f2c23a;
-}
-
-.case-section:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 22px rgba(20, 33, 61, 0.13);
 }
 
 .case-section h4 {
@@ -158,12 +213,15 @@ $featuredImage = !empty($caseData['featured_image']) ? SITEURL . $caseData['feat
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 4px 12px rgba(20, 33, 61, 0.1);
+    background: #e8eef4;
+    min-height: 220px;
 }
 
 .project-gallery .gallery-item img {
     width: 100%;
     height: 260px;
     object-fit: cover;
+    display: block;
     transition: transform 0.32s ease;
 }
 
@@ -181,6 +239,8 @@ $featuredImage = !empty($caseData['featured_image']) ? SITEURL . $caseData['feat
 
 .products-used-section {
     margin: 30px 0 10px;
+    position: relative;
+    z-index: 1;
 }
 
 .products-used-grid {
@@ -204,11 +264,10 @@ $featuredImage = !empty($caseData['featured_image']) ? SITEURL . $caseData['feat
     overflow: hidden;
     box-shadow: 0 6px 16px rgba(20, 33, 61, 0.1);
     border: 1px solid rgba(40, 137, 201, 0.1);
-    transition: transform 0.24s ease, box-shadow 0.24s ease;
+    transition: box-shadow 0.24s ease;
 }
 
 .products-used-card:hover {
-    transform: translateY(-3px);
     box-shadow: 0 12px 24px rgba(20, 33, 61, 0.14);
 }
 
@@ -326,12 +385,33 @@ $featuredImage = !empty($caseData['featured_image']) ? SITEURL . $caseData['feat
         padding: 12px 12px 14px;
     }
     .case-quick-nav {
-        top: 66px;
-        padding: 8px;
+        top: 70px;
+        padding: 10px;
+        margin-bottom: 20px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
     }
-    .case-quick-nav a {
-        font-size: 1.03rem;
-        padding: 9px 13px;
+    .case-quick-nav ul {
+        flex-wrap: nowrap;
+        width: max-content;
+        min-width: 100%;
+    }
+    .case-study-page-wrap .case-quick-nav a,
+    .case-study-page-wrap .case-quick-nav a:link,
+    .case-study-page-wrap .case-quick-nav a:visited {
+        font-size: 14px !important;
+        padding: 9px 14px !important;
+        min-height: 40px;
+    }
+    .case-section,
+    #gallery,
+    #products-used,
+    #datasheet,
+    #summary,
+    #challenge,
+    #solution,
+    #outcome {
+        scroll-margin-top: var(--case-sticky-offset);
     }
     .case-section {
         padding: 16px;
@@ -432,44 +512,42 @@ $featuredImage = !empty($caseData['featured_image']) ? SITEURL . $caseData['feat
                 }
             }
             ?>
-            <?php if ($beforeImg || $afterImg): ?>
-            <section id="gallery">
-                <h4 class="gallery-title">Before / After Comparison</h4>
-                <div class="row project-gallery">
-                    <?php if ($beforeImg): ?>
-                        <div class="col-md-6 col-sm-6 mb-4">
-                            <p class="fw-bold mb-2">Before</p>
-                            <a href="<?= h(SITEURL . $beforeImg['filename']) ?>" class="gallery-item" data-lightbox="case-gallery">
-                                <img src="<?= h(SITEURL . $beforeImg['filename']) ?>" alt="Before" loading="lazy">
-                            </a>
-                        </div>
-                    <?php endif; ?>
-                    <?php if ($afterImg): ?>
-                        <div class="col-md-6 col-sm-6 mb-4">
-                            <p class="fw-bold mb-2">After</p>
-                            <a href="<?= h(SITEURL . $afterImg['filename']) ?>" class="gallery-item" data-lightbox="case-gallery">
-                                <img src="<?= h(SITEURL . $afterImg['filename']) ?>" alt="After" loading="lazy">
-                            </a>
-                        </div>
-                    <?php endif; ?>
-                </div>
-            </section>
-            <?php endif; ?>
+            <section id="gallery" class="case-section">
+                <?php if ($beforeImg || $afterImg): ?>
+                    <h4 class="gallery-title" style="margin-top:0;">Before / After Comparison</h4>
+                    <div class="row project-gallery">
+                        <?php if ($beforeImg): ?>
+                            <div class="col-md-6 col-sm-6 mb-4">
+                                <p class="fw-bold mb-2">Before</p>
+                                <a href="<?= h($caseMediaUrl($beforeImg['filename'] ?? '')) ?>" class="gallery-item" data-lightbox="case-gallery">
+                                    <img src="<?= h($caseMediaUrl($beforeImg['filename'] ?? '')) ?>" alt="Before" loading="lazy">
+                                </a>
+                            </div>
+                        <?php endif; ?>
+                        <?php if ($afterImg): ?>
+                            <div class="col-md-6 col-sm-6 mb-4">
+                                <p class="fw-bold mb-2">After</p>
+                                <a href="<?= h($caseMediaUrl($afterImg['filename'] ?? '')) ?>" class="gallery-item" data-lightbox="case-gallery">
+                                    <img src="<?= h($caseMediaUrl($afterImg['filename'] ?? '')) ?>" alt="After" loading="lazy">
+                                </a>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
 
-            <?php if (!empty($otherGalleryImages)): ?>
-            <section id="project-photos">
-                <h4 class="gallery-title">Project Photo Gallery</h4>
-                <div class="row project-gallery">
-                    <?php foreach ($otherGalleryImages as $img): ?>
-                        <div class="col-md-4 col-sm-6 mb-4">
-                            <a href="<?= h(SITEURL . $img['filename']) ?>" class="gallery-item" data-lightbox="case-gallery">
-                                <img src="<?= h(SITEURL . $img['filename']) ?>" alt="Project photo" loading="lazy">
-                            </a>
-                        </div>
-                    <?php endforeach; ?>
-                </div>
+                <?php if (!empty($otherGalleryImages)): ?>
+                    <h4 class="gallery-title"<?= ($beforeImg || $afterImg) ? '' : ' style="margin-top:0;"' ?>>Project Photo Gallery</h4>
+                    <div class="row project-gallery">
+                        <?php foreach ($otherGalleryImages as $img): ?>
+                            <div class="col-md-4 col-sm-6 mb-4">
+                                <a href="<?= h($caseMediaUrl($img['filename'] ?? '')) ?>" class="gallery-item" data-lightbox="case-gallery">
+                                    <img src="<?= h($caseMediaUrl($img['filename'] ?? '')) ?>" alt="Project photo" loading="lazy">
+                                </a>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
             </section>
-            <?php endif; ?>
         <?php endif; ?>
 
         <?php if (!empty($case['CaseProduct'])): ?>
@@ -483,14 +561,17 @@ $featuredImage = !empty($caseData['featured_image']) ? SITEURL . $caseData['feat
                         $prodTitle = $prod['title'] ?? 'Product';
                         $prodDesc = trim(strip_tags((string)($prod['brief_description'] ?? '')));
                         $prodImage = trim((string)($prod['image'] ?? ''));
-                        $imgUrl = ($prodImage !== '' && $prodImage !== '250250-defult.png')
-                            ? rtrim(SITEURL, '/') . '/productimg/' . $prodImage
-                            : rtrim(SITEURL, '/') . '/productimg/250250-defult.png';
+                        if ($prodImage !== '' && $prodImage !== '250250-defult.png') {
+                            $imgUrl = $caseMediaUrl('productimg/' . ltrim($prodImage, '/'));
+                        } else {
+                            $imgUrl = $caseMediaUrl('productimg/250250-defult.png');
+                        }
                         ?>
                         <div class="products-used-col">
                             <div class="products-used-card">
                                 <a href="<?= h($prodUrl) ?>" class="products-used-card__img-wrap">
-                                    <img src="<?= h($imgUrl) ?>" alt="<?= h($prodTitle) ?>" loading="lazy">
+                                    <img src="<?= h($imgUrl) ?>" alt="<?= h($prodTitle) ?>" loading="lazy"
+                                         onerror="this.onerror=null;this.src='<?= h($caseMediaUrl('productimg/250250-defult.png')) ?>';">
                                 </a>
                                 <div class="products-used-card__body">
                                     <h5 class="products-used-card__title"><?= h($prodTitle) ?></h5>
@@ -539,15 +620,46 @@ $featuredImage = !empty($caseData['featured_image']) ? SITEURL . $caseData['feat
 
 <script>
 (function () {
+    var nav = document.querySelector('.case-quick-nav');
+    var pageWrap = document.querySelector('.case-study-page-wrap');
     var links = document.querySelectorAll('.case-quick-nav a[href^="#"]');
+
+    function headerHeight() {
+        var header = document.getElementById('header_top');
+        if (!header) {
+            return window.matchMedia('(max-width: 768px)').matches ? 70 : 90;
+        }
+        return Math.max(60, Math.ceil(header.getBoundingClientRect().height));
+    }
+
+    function syncStickyMetrics() {
+        var headerH = headerHeight();
+        var navH = nav ? Math.ceil(nav.getBoundingClientRect().height) : 0;
+        if (nav) {
+            nav.style.top = headerH + 'px';
+        }
+        var offset = headerH + navH + 28;
+        if (pageWrap) {
+            pageWrap.style.setProperty('--case-sticky-offset', offset + 'px');
+        }
+        return offset;
+    }
+
+    function scrollOffset() {
+        return syncStickyMetrics();
+    }
+
     links.forEach(function (link) {
         link.addEventListener('click', function (e) {
             var id = this.getAttribute('href').slice(1);
             var target = document.getElementById(id);
             if (!target) return;
             e.preventDefault();
-            var top = target.getBoundingClientRect().top + window.pageYOffset - 120;
-            window.scrollTo({ top: top, behavior: 'smooth' });
+            var top = target.getBoundingClientRect().top + window.pageYOffset - scrollOffset();
+            window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+            if (history.replaceState) {
+                history.replaceState(null, '', '#' + id);
+            }
         });
     });
 
@@ -560,7 +672,7 @@ $featuredImage = !empty($caseData['featured_image']) ? SITEURL . $caseData['feat
         }
     });
     function updateActive() {
-        var scrollPos = window.pageYOffset + 150;
+        var scrollPos = window.pageYOffset + scrollOffset() + 8;
         var currentId = '';
         sections.forEach(function (item) {
             if (item.node.offsetTop <= scrollPos) {
@@ -572,6 +684,11 @@ $featuredImage = !empty($caseData['featured_image']) ? SITEURL . $caseData['feat
         });
     }
     window.addEventListener('scroll', updateActive, { passive: true });
+    window.addEventListener('resize', function () {
+        syncStickyMetrics();
+        updateActive();
+    }, { passive: true });
+    syncStickyMetrics();
     updateActive();
 
     var lightbox = document.getElementById('imageLightbox');
