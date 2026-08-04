@@ -52,13 +52,36 @@
 		font-weight: 700;
 		color: #478fca;
 	}
+
+	/*
+	 * Copyright .footer/.footer-content is position:absolute and paints over the
+	 * bottom of the sidebar, blocking #sidebar-collapse clicks. Keep sidebar (and
+	 * the » toggle) above the footer so expand/collapse always works.
+	 */
+	#main-container > #sidebar.sidebar {
+		position: relative;
+		z-index: 1026;
+	}
+	#main-container > #sidebar.sidebar .sidebar-toggle,
+	#main-container > #sidebar.sidebar #sidebar-collapse {
+		position: relative;
+		z-index: 1030;
+	}
+	#main-container > .footer {
+		position: relative;
+		z-index: 1;
+	}
+	#main-container > .footer .footer-inner,
+	#main-container > .footer .footer-content {
+		z-index: 1;
+	}
 </style>
 	<script type="text/javascript">
 				try{ace.settings.check('main-container' , 'fixed')}catch(e){}
 			</script>
 
 			<!-- #section:basics/sidebar -->
-			<div id="sidebar" class="sidebar responsive menu-min" data-sidebar="true" data-sidebar-scroll="true" data-sidebar-hover="true">
+			<div id="sidebar" class="sidebar responsive menu-min">
 				<script type="text/javascript">
 					try{ace.settings.check('sidebar' , 'fixed')}catch(e){}
 				</script>
@@ -945,21 +968,7 @@
 
 				<!-- /section:basics/sidebar.layout.minimize -->
 				<script type="text/javascript">
-					try{ace.settings.check('sidebar' , 'collapsed')}catch(e){}
-					/* Always start collapsed (icons only); user can expand with the toggle. */
-					(function () {
-						var sidebar = document.getElementById('sidebar');
-						if (!sidebar) return;
-						sidebar.classList.add('menu-min');
-						var icon = document.querySelector('#sidebar-collapse > i');
-						if (icon) {
-							icon.className = 'ace-icon fa fa-angle-double-right';
-						}
-						try {
-							if (window.ace && ace.settings && typeof ace.settings.saveState === 'function') {
-								ace.settings.saveState('sidebar', 'collapsed');
-							}
-						} catch (e) {}
-					})();
+					/* Do not run ace.settings.check('sidebar','collapsed') here —
+					   cookie can fight hardcoded menu-min and break the expand toggle. */
 				</script>
 			</div>

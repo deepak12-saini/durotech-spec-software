@@ -24,7 +24,7 @@
 			</script>
 
 			<!-- #section:basics/sidebar -->
-			<div id="sidebar" class="sidebar responsive menu-min" data-sidebar="true" data-sidebar-scroll="true" data-sidebar-hover="true">
+			<div id="sidebar" class="sidebar responsive menu-min">
 				<script type="text/javascript">
 					try{ace.settings.check('sidebar' , 'fixed')}catch(e){}
 				</script>
@@ -214,21 +214,7 @@
 
 				<!-- /section:basics/sidebar.layout.minimize -->
 				<script type="text/javascript">
-					try{ace.settings.check('sidebar' , 'collapsed')}catch(e){}
-					/* Always start collapsed (icons only); user can expand with the toggle. */
-					(function () {
-						var sidebar = document.getElementById('sidebar');
-						if (!sidebar) return;
-						sidebar.classList.add('menu-min');
-						var icon = document.querySelector('#sidebar-collapse > i');
-						if (icon) {
-							icon.className = 'ace-icon fa fa-angle-double-right';
-						}
-						try {
-							if (window.ace && ace.settings && typeof ace.settings.saveState === 'function') {
-								ace.settings.saveState('sidebar', 'collapsed');
-							}
-						} catch (e) {}
-					})();
+					/* Do not run ace.settings.check('sidebar','collapsed') here —
+					   cookie can fight hardcoded menu-min and break the expand toggle. */
 				</script>
 			</div>

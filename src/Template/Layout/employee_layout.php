@@ -143,5 +143,34 @@
 		<script src="<?php echo SITEURL ;?>theme/js/ace/ace.widget-on-reload.js"></script>
 		<script src="<?php echo SITEURL ;?>theme/js/ace/ace.searchbox-autocomplete.js"></script>
 	<?php //echo $this->element('sql_dump'); ?>
+	<script type="text/javascript">
+		jQuery(function($) {
+			/* Always start sidebar collapsed; keep ACE plugin state in sync so toggle can expand. */
+			(function forceSidebarCollapsed() {
+				var $sidebar = $('#sidebar');
+				if (!$sidebar.length) return;
+
+				try { ace.settings.remove('sidebar', 'collapsed'); } catch (e) {}
+
+				$sidebar.addClass('menu-min');
+
+				var api = $sidebar.data('ace_sidebar');
+				if (api && typeof api.set === 'function') {
+					api.set('minimized', true);
+				} else if (api) {
+					api.minimized = true;
+				}
+
+				var $icon = $('#sidebar-collapse').find('.ace-icon').first();
+				if ($icon.length) {
+					var icon1 = $icon.attr('data-icon1');
+					var icon2 = $icon.attr('data-icon2');
+					if (icon1 && icon2) {
+						$icon.removeClass(icon1).addClass(icon2);
+					}
+				}
+			})();
+		});
+	</script>
 </body>
 </html>
