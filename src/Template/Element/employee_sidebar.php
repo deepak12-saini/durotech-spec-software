@@ -102,6 +102,7 @@
 						<b class="arrow"></b>
 					</li>
 
+					<?php /* Template Presets — hidden until client confirms Template Spec. Uncomment to enable.
 					<li class="<?php echo ($activeController === 'employees' && in_array($activeAction, ['template_presets', 'templatepresets', 'edit_template_preset', 'edittemplatepreset'], true)) ? 'active' : ''; ?>">
 						<a href="<?php echo SITEURL; ?>employees/template_presets" title="Template Presets">
 							<i class="menu-icon fa fa-bookmark"></i>
@@ -109,6 +110,7 @@
 						</a>
 						<b class="arrow"></b>
 					</li>
+					*/ ?>
 
 
 					<li class="<?php echo $isCaseStudiesActive ? 'active' : ''; ?>">

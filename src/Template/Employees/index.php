@@ -40,8 +40,9 @@
 			}
 			echo ' ';
 			echo $this->Html->link('Smart Spec (from Previous)', ['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'adaptive']], ['class' => 'btn btn-primary btn-xs top-button']);
-			echo ' ';
-			echo $this->Html->link('Template Spec', ['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'template']], ['class' => 'btn btn-success btn-xs top-button']);
+			// Template Spec — hidden until client confirms. Uncomment to enable.
+			// echo ' ';
+			// echo $this->Html->link('Template Spec', ['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'template']], ['class' => 'btn btn-success btn-xs top-button']);
 			echo ' ';
 			echo $this->Html->link(
 				'<i class="ace-icon fa fa-files-o"></i> Clone a Spec',
@@ -274,11 +275,12 @@
 										['class' => 'btn btn-mini btn-warning', 'title' => 'Copy Use Area + comments into a new blank client form', 'escape' => false]
 									);
 
-									echo $this->Form->postLink(
-										'Save Template',
-										['controller' => 'employees', 'action' => 'saveTemplateFromSpec', $mailerId],
-										['class' => 'btn btn-mini btn-success', 'confirm' => 'Save this spec as template preset?']
-									);
+									// Save Template — hidden until client confirms Template Spec. Uncomment to enable.
+									// echo $this->Form->postLink(
+									// 	'Save Template',
+									// 	['controller' => 'employees', 'action' => 'saveTemplateFromSpec', $mailerId],
+									// 	['class' => 'btn btn-mini btn-success', 'confirm' => 'Save this spec as template preset?']
+									// );
 
 									echo $this->Form->postLink('Delete', array('controller' => 'employees', 'action' => 'deleteSpec', $mailerId), array(
 										'class' => 'btn btn-mini btn-xs btn-default',
