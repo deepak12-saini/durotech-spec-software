@@ -6,17 +6,30 @@
 	#search-box{padding: 10px;border: #a8d4b1 1px solid;border-radius:4px;}
 	
 	</style>
-	<div class="page-content">
-		<div class="page-header">
-		<div class="right_btn pull-right" ><a href="javascript:window.history.back();" class="btn btn-inverse" >Back</a></div>
-		<h1>DuroEzy Specification  <small><i class="ace-icon fa fa-angle-double-right"></i>Edit Spec</small>
-		</h1>
-	</div>
-	
+	<?php echo $this->element('spec_form_ui_styles'); ?>
+	<div class="page-content spec-ui-page">
+		<div class="page-header" style="display:none;"></div>
 	<div class="row">
 		<div class="col-xs-12">
-		<?php echo $this->Form->create('Mailer',array('class'=>'form-horizontal','enctype'=>'multipart/form-data')); ?>
-		
+		<div class="spec-ui-shell">
+			<div class="spec-ui-head">
+				<h1>
+					DuroEzy Specification
+					<small><i class="ace-icon fa fa-angle-double-right"></i> Review Spec<?php echo !empty($refernce) ? ' · ' . h($refernce) : ''; ?></small>
+				</h1>
+				<a href="javascript:window.history.back();" class="btn btn-inverse">Back</a>
+			</div>
+			<div class="spec-ui-status">
+				<span class="status-pill" style="color:#1f5fa8;border-color:#c7ddf5;"><i class="fa fa-check-square-o" style="font-size:11px;"></i> Employee Spec — Review</span>
+				<span>Save review only, or Review &amp; Approve in one step</span>
+			</div>
+			<div class="spec-ui-body">
+		<?php echo $this->Form->create('Mailer',array('class'=>'form-horizontal spec-ui-form','enctype'=>'multipart/form-data')); ?>
+		<input type="hidden" name="data[Mailer][is_review]" value="1" />
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title"><span>Revision</span><span class="hint">Keep same track or create a new number</span></div>
+				<div class="spec-ui-card-body">
 			<div class="form-group">
 				<label for="form-field-2" class="col-sm-3 control-label no-padding-right"> Is Create New One: </label>
 					<div class="col-sm-9">					
@@ -30,11 +43,16 @@
 					</label></div>					
 				</div>
 			</div>
-					
+				</div>
+			</div>
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title"><span>Client details</span><span class="hint">Contact / project</span></div>
+				<div class="spec-ui-card-body">
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Track Number:</label>
 				<div class="col-sm-9">
-					<input type="text" name="tracknumber" value="<?php echo $refernce; ?>" readonly id="tracknumber" class = "col-xs-10 col-sm-8" style="background:#ddd !important; cursor:pointer;" >
+					<input type="text" name="tracknumber" value="<?php echo $refernce; ?>" readonly id="tracknumber" class = "col-xs-10 col-sm-8" style="cursor:pointer;" >
 				</div>
 			</div>
 		
@@ -50,8 +68,6 @@
 					<input type="text" name="company" value="<?php echo $MailerArr['Mailer']['company']; ?>"  class = "col-xs-10 col-sm-8">
 				</div>
 			</div>
-
-			 <input type="hidden" name="data[Mailer][is_review]" value="1" />
 			
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Address:</label>
@@ -77,6 +93,12 @@
 					<input type="text" name="date" id="date" value="<?php echo $MailerArr['Mailer']['date']; ?>"   class = "datepicker col-xs-10 col-sm-8">
 				</div>
 			</div>
+				</div>
+			</div>
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title"><span>Spec options</span><span class="hint">Type and warranty column</span></div>
+				<div class="spec-ui-card-body">
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Mailer Type:</label>
 				<div class="col-sm-9">
@@ -109,6 +131,12 @@
 					</select>
 				</div>
 			</div>
+				</div>
+			</div>
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title"><span>Use Area</span><span class="hint">Sections and products</span></div>
+				<div class="spec-ui-card-body">
 			<!--div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">MFT(Minimum Film Thickness):</label>
 				<div class="col-sm-9">
@@ -135,8 +163,7 @@
 				foreach($product as $products){
 			?>
 			<div class="form-group addsection" id="section_<?php echo $i; ?>">
-				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
-				<div class="col-sm-9">
+				<div class="col-xs-12">
 				<table>
 					<tbody>
 						<tr><td colspan="5"><input class="newitem_<?php echo $i; ?>" type="text" style="width:100%;" name="title[<?php echo $i; ?>]" value="<?php echo $products[0]['title']; ?>" placeholder="enter title e,g Wet area or planter box" required></td></tr>
@@ -176,8 +203,20 @@
 			</div>
 			<?php $i++; } }?>
 			<div id="addsection"></div>
-			
-			<div class="form-group" style="margin-top:40px;">
+
+			<div class="form-group">
+				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
+				<div class="col-sm-1">
+					<a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addnewsection()"><i class="fa fa-plus"></i> Add Section</a>
+				</div>
+			</div>
+				</div>
+			</div>
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title"><span>Comments</span><span class="hint">Optional notes on the PDF</span></div>
+				<div class="spec-ui-card-body">
+			<div class="form-group" style="margin-top:0;">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
 				<div class="col-sm-9">
 					<?php
@@ -210,14 +249,8 @@
 					<a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addmorecomment()"><i class="fa fa-plus"></i> Add More Comment</a>
 				</div>
 			</div>
-			
-			<div class="form-group">
-				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
-				<div class="col-sm-1">
-					<a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addnewsection()"><i class="fa fa-plus"></i> Add Section</a>
 				</div>
 			</div>
-
 
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="pdf_datasheet">PDF Datasheet:</label>
@@ -241,9 +274,11 @@
 				</div>
 			</div>
 			<?php echo $this->Form->end(); ?>
+			</div><!-- .spec-ui-body -->
+		</div><!-- .spec-ui-shell -->
 		</div>
-	</div>	
-	</div>	
+	</div>
+	</div>
 	
 <script type="text/javascript">
 	function addmorecomment(){
@@ -345,7 +380,7 @@
 	function addnewsection(){
 		var numItems = $('.addsection').length;		
 		var newdiv = 	numItems + 1;
-		var varhtml = '<div class="form-group addsection" id="section_'+newdiv+'"><label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label><div class="col-sm-9"><table><tr><td colspan="5"><input type="text" style="width:100%;" name="title['+newdiv+']" value="" placeholder="enter title e,g Wet area or planter box" required></td></tr><tr><th></th><th>Product Type</th><th>Product</th><th>MFT</th><th>Warranty Period</th></tr><tr><td><input type="hidden" style="width:30px;" name="types[]" value="'+newdiv+'"><input type="text" style="width:63px;" name="serial[]" value="'+newdiv+'"></td><td><input type="text" style="width:225px;" name="coverage[]" value="" id="coverage_'+newdiv+'_0"></td><td><div class="frmSearch"><input type="text" autocomplete="off" style="width:225px;" name="product[]" id="pro_'+newdiv+'_0" value="" onkeyup="onkeyups('+newdiv+',0)" ><div id="suggesstion-box_'+newdiv+'_0"></div></div></td><td><input type="text" style="width:100px;" name="coverage_by_pack[]" value="" id="coverage_by_pack_'+newdiv+'_0"></td><td><input type="text" style="width:100px;" name="Warranty[]" value="" id="warranty_'+newdiv+'_0"></td><td><a href="javascript:void(0);" style="color:red;" onclick="removesection('+newdiv+')">&nbsp;&nbsp; X </a></td></tr></table><div id="addnew_'+newdiv+'"></div><a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addmore('+newdiv+')"><i class="fa fa-plus"></i> Add More</a></div></div>';	
+		var varhtml = '<div class="form-group addsection" id="section_'+newdiv+'"><div class="col-xs-12"><table><tr><td colspan="5"><input type="text" style="width:100%;" name="title['+newdiv+']" value="" placeholder="enter title e,g Wet area or planter box" required></td></tr><tr><th></th><th>Product Type</th><th>Product</th><th>MFT</th><th>Warranty Period</th></tr><tr><td><input type="hidden" style="width:30px;" name="types[]" value="'+newdiv+'"><input type="text" style="width:63px;" name="serial[]" value="'+newdiv+'"></td><td><input type="text" style="width:225px;" name="coverage[]" value="" id="coverage_'+newdiv+'_0"></td><td><div class="frmSearch"><input type="text" autocomplete="off" style="width:225px;" name="product[]" id="pro_'+newdiv+'_0" value="" onkeyup="onkeyups('+newdiv+',0)" ><div id="suggesstion-box_'+newdiv+'_0"></div></div></td><td><input type="text" style="width:100px;" name="coverage_by_pack[]" value="" id="coverage_by_pack_'+newdiv+'_0"></td><td><input type="text" style="width:100px;" name="Warranty[]" value="" id="warranty_'+newdiv+'_0"></td><td><a href="javascript:void(0);" style="color:red;" onclick="removesection('+newdiv+')">&nbsp;&nbsp; X </a></td></tr></table><div id="addnew_'+newdiv+'"></div><a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addmore('+newdiv+')"><i class="fa fa-plus"></i> Add More</a></div></div>';	
 		
 		$("#addsection").append(varhtml);	
 	}
