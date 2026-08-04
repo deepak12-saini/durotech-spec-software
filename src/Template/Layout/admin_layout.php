@@ -85,7 +85,7 @@
 		echo $this->element('admin_sidebar');
 	} catch (\Throwable $e) {
 		// Fallback so layout still shows; sidebar may be missing
-		echo '<div id="sidebar" class="sidebar responsive"><ul class="nav nav-list"><li><a href="' . (defined('SITEURL') ? SITEURL : '/') . 'admin/users/dashboard"><i class="menu-icon fa fa-tachometer"></i><span class="menu-text"> Dashboard </span></a></li><li><a href="' . (defined('SITEURL') ? SITEURL : '/') . 'admin/mailers"><i class="menu-icon fa fa-file"></i><span class="menu-text"> DuroEzy Spec </span></a></li></ul></div>';
+		echo '<div id="sidebar" class="sidebar responsive menu-min"><ul class="nav nav-list"><li><a href="' . (defined('SITEURL') ? SITEURL : '/') . 'admin/users/dashboard"><i class="menu-icon fa fa-tachometer"></i><span class="menu-text"> Dashboard </span></a></li><li><a href="' . (defined('SITEURL') ? SITEURL : '/') . 'admin/mailers"><i class="menu-icon fa fa-file"></i><span class="menu-text"> DuroEzy Spec </span></a></li></ul></div>';
 	}
 	?>
 	<div class="main-content">

@@ -58,7 +58,7 @@
 			</script>
 
 			<!-- #section:basics/sidebar -->
-			<div id="sidebar" class="sidebar                  responsive">
+			<div id="sidebar" class="sidebar responsive menu-min" data-sidebar="true" data-sidebar-scroll="true" data-sidebar-hover="true">
 				<script type="text/javascript">
 					try{ace.settings.check('sidebar' , 'fixed')}catch(e){}
 				</script>
@@ -940,11 +940,26 @@
 
 				<!-- #section:basics/sidebar.layout.minimize -->
 				<div class="sidebar-toggle sidebar-collapse" id="sidebar-collapse">
-					<i class="ace-icon fa fa-angle-double-left" data-icon1="ace-icon fa fa-angle-double-left" data-icon2="ace-icon fa fa-angle-double-right"></i>
+					<i class="ace-icon fa fa-angle-double-right" data-icon1="ace-icon fa fa-angle-double-left" data-icon2="ace-icon fa fa-angle-double-right"></i>
 				</div>
 
 				<!-- /section:basics/sidebar.layout.minimize -->
 				<script type="text/javascript">
 					try{ace.settings.check('sidebar' , 'collapsed')}catch(e){}
+					/* Always start collapsed (icons only); user can expand with the toggle. */
+					(function () {
+						var sidebar = document.getElementById('sidebar');
+						if (!sidebar) return;
+						sidebar.classList.add('menu-min');
+						var icon = document.querySelector('#sidebar-collapse > i');
+						if (icon) {
+							icon.className = 'ace-icon fa fa-angle-double-right';
+						}
+						try {
+							if (window.ace && ace.settings && typeof ace.settings.saveState === 'function') {
+								ace.settings.saveState('sidebar', 'collapsed');
+							}
+						} catch (e) {}
+					})();
 				</script>
 			</div>
