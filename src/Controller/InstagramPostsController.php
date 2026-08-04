@@ -28,8 +28,38 @@ class InstagramPostsController extends AppController
         $this->set('title_for_layout', (defined('SITENAME') ? SITENAME : '') . ' Instagram Posts');
         $this->checkAdminSession();
 
+        $filters = [
+            'keyword' => trim((string)$this->request->getQuery('keyword')),
+            'status' => trim((string)$this->request->getQuery('status')),
+            'date_from' => trim((string)$this->request->getQuery('date_from')),
+            'date_to' => trim((string)$this->request->getQuery('date_to')),
+        ];
+
         $query = $this->InstagramPosts->find()
             ->orderDesc('InstagramPosts.id');
+
+        if ($filters['keyword'] !== '') {
+            $keywordLike = '%' . $filters['keyword'] . '%';
+            $query->andWhere([
+                'OR' => [
+                    'InstagramPosts.permalink LIKE' => $keywordLike,
+                    'InstagramPosts.admin_note LIKE' => $keywordLike,
+                    'InstagramPosts.media_type LIKE' => $keywordLike,
+                ],
+            ]);
+        }
+
+        if ($filters['status'] !== '' && in_array($filters['status'], ['0', '1'], true)) {
+            $query->andWhere(['InstagramPosts.status' => (int)$filters['status']]);
+        }
+
+        if ($filters['date_from'] !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $filters['date_from'])) {
+            $query->andWhere(['InstagramPosts.created >=' => $filters['date_from'] . ' 00:00:00']);
+        }
+
+        if ($filters['date_to'] !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $filters['date_to'])) {
+            $query->andWhere(['InstagramPosts.created <=' => $filters['date_to'] . ' 23:59:59']);
+        }
 
         $this->paginate = [
             'limit' => 20,
@@ -37,7 +67,7 @@ class InstagramPostsController extends AppController
         ];
         $instagramPosts = $this->paginate($query);
 
-        $this->set(compact('instagramPosts'));
+        $this->set(compact('instagramPosts', 'filters'));
         return null;
     }
 
