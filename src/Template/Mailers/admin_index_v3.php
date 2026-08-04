@@ -25,6 +25,33 @@
 	.spec-v3-page .page-header .spec-v3-actions .btn {
 		margin: 0;
 	}
+	.spec-v3-page .page-header .spec-v3-actions .spec-tab-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding-left: 8px;
+		padding-right: 12px;
+	}
+	.spec-v3-page .spec-tab-icon-wrap {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 22px;
+		height: 22px;
+		background: #1b1b1b;
+		border-radius: 50%;
+		flex-shrink: 0;
+	}
+	.spec-v3-page .spec-tab-icon {
+		display: block;
+		width: 16px;
+		height: 16px;
+		object-fit: contain;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		background: transparent;
+	}
 
 	.spec-v3-filters {
 		background: #f8f9fb;
@@ -198,11 +225,40 @@
 		<h1>
 			<span>DuroEzy Specification <small>v3</small></span>
 			<span class="spec-v3-actions">
-				<?php echo $this->Html->link('Create New Spec', '/admin/mailers/send_v3', ['class' => 'btn btn-info btn-sm']); ?>
-				<?php if (!empty($hasDraft)): ?>
-					<?php echo $this->Html->link('Resume Draft', ['controller' => 'Mailers', 'action' => 'admin_send_v3', '?' => ['resume' => '1']], ['class' => 'btn btn-warning btn-sm']); ?>
-				<?php endif; ?>
-				<?php echo $this->Html->link('Smart Spec (from Previous)', ['controller' => 'Mailers', 'action' => 'admin_send_v3', '?' => ['mode' => 'adaptive']], ['class' => 'btn btn-primary btn-sm']); ?>
+				<?php
+				$cloneIcon = '<span class="spec-tab-icon-wrap">'
+					. $this->Html->image('clone_a_spec.png', ['alt' => '', 'class' => 'spec-tab-icon'])
+					. '</span>';
+				echo $this->Html->link(
+					$cloneIcon . 'Create New Spec',
+					'/admin/mailers/send_v3',
+					['class' => 'btn btn-info btn-sm spec-tab-btn', 'escape' => false]
+				);
+				if (!empty($hasDraft)) {
+					echo ' ';
+					echo $this->Html->link(
+						$cloneIcon . 'Resume Draft',
+						['controller' => 'Mailers', 'action' => 'admin_send_v3', '?' => ['resume' => '1']],
+						['class' => 'btn btn-warning btn-sm spec-tab-btn', 'escape' => false]
+					);
+				}
+				echo ' ';
+				echo $this->Html->link(
+					$cloneIcon . 'Smart Spec (from Previous)',
+					['controller' => 'Mailers', 'action' => 'admin_send_v3', '?' => ['mode' => 'adaptive']],
+					['class' => 'btn btn-primary btn-sm spec-tab-btn', 'escape' => false]
+				);
+				echo ' ';
+				echo $this->Html->link(
+					$cloneIcon . 'Clone a Spec',
+					['controller' => 'Mailers', 'action' => 'admin_send_v3', '?' => ['mode' => 'clone']],
+					[
+						'class' => 'btn btn-purple btn-sm spec-tab-btn',
+						'title' => 'Clone Use Area + comments into a new blank client form',
+						'escape' => false,
+					]
+				);
+				?>
 			</span>
 		</h1>
 	</div>
@@ -341,6 +397,10 @@
 									$sendBtnClass = !empty($specSentAtBtn) ? 'btn btn-mini btn-warning' : 'btn btn-mini btn-danger';
 									?>
 									<a class="btn btn-mini btn-primary js-edit-spec" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_editsend_v3', $mailer['Mailer']['id']]); ?>">Edit</a>
+									<a class="btn btn-mini btn-warning" title="Copy Use Area + comments into a new blank client form" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_send_v3', '?' => ['mode' => 'clone', 'from_id' => $mailer['Mailer']['id']]]); ?>" style="display:inline-flex;align-items:center;gap:4px;">
+										<?php echo $this->Html->image('clone_a_spec.png', ['alt' => '', 'style' => 'width:14px;height:14px;object-fit:contain;background:#1b1b1b;border-radius:50%;padding:1px;box-sizing:content-box;']); ?>
+										Clone Spec
+									</a>
 									<a class="btn btn-mini btn-info" href="<?php echo h($this->Pdf->url('dompdf/' . $pdffilename)); ?>" target="_blank">Download</a>
 									<a onclick="return confirm('Are you sure send email?')" class="<?php echo h($sendBtnClass); ?>" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_sendemail', $mailer['Mailer']['id']]); ?>">Send Mail</a>
 									<a class="btn btn-mini btn-default" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_audit_log', $mailer['Mailer']['id']]); ?>">Audit</a>

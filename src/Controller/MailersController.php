@@ -798,7 +798,10 @@ class MailersController extends AppController
 			return $this->redirect(rtrim(SITEURL, '/') . '/admin');
 		}
 		$hasSaveStatusColumn = $this->Mailer->getSchema()->getColumn('save_status');
-		$adaptiveMode = ((string)$this->request->getQuery('mode') === 'adaptive');
+		$mode = (string)$this->request->getQuery('mode');
+		$adaptiveMode = ($mode === 'adaptive');
+		$cloneMode = ($mode === 'clone');
+		$cloneFromId = (int)$this->request->getQuery('from_id');
 		// Discard draft before auto-resume, same as employee_send_v3 (link used to reload draft forever).
 		if (!$this->request->is('post') && $hasSaveStatusColumn && $this->request->getQuery('discard_draft')) {
 			$draftQ = $this->Mailer->find()
@@ -819,7 +822,7 @@ class MailersController extends AppController
 			$this->Flash->success('Draft discarded. You can start a new spec.');
 			return $this->redirect(['action' => 'admin_send_v3']);
 		}
-		if (!$this->request->is('post') && !$adaptiveMode && !$this->request->getQuery('resume') && $hasSaveStatusColumn) {
+		if (!$this->request->is('post') && !$adaptiveMode && !$cloneMode && !$this->request->getQuery('resume') && $hasSaveStatusColumn) {
 			$existingDraftQ = $this->Mailer->find()
 				->select(['id'])
 				->where([
@@ -1136,7 +1139,53 @@ class MailersController extends AppController
 			$this->_applyMailerNotDeletedToQuery($previousSpecList);
 			$previousSpecList = $previousSpecList->all();
 		}
-		$this->set(compact('refernce', 'draft', 'draftId', 'adaptiveMode', 'previousSpecList'));
+
+		// Clone: optional from_id (row action). Without it, show picker of own submitted specs.
+		if ($cloneMode) {
+			if ($cloneFromId > 0) {
+				$cloneQuery = $this->Mailer->find()
+					->select(['id'])
+					->where([
+						'Mailer.id' => $cloneFromId,
+						'Mailer.type' => 3,
+						'Mailer.admin_id' => $user_id,
+					]);
+				$this->_applyMailerNotDeletedToQuery($cloneQuery);
+				if ($hasSaveStatusColumn) {
+					$cloneQuery->andWhere([
+						'OR' => [
+							['Mailer.save_status' => 'submitted'],
+							['Mailer.save_status IS' => null],
+						],
+					]);
+				}
+				if (!$cloneQuery->first()) {
+					$this->Flash->error('Spec not found or not available to clone.');
+					return $this->redirect(['action' => 'admin_index_v3']);
+				}
+			} else {
+				$cloneListQuery = $this->Mailer->find()
+					->select(['id', 'tracknumber', 'name', 'company', 'specification', 'date', 'created'])
+					->where([
+						'Mailer.type' => 3,
+						'Mailer.admin_id' => $user_id,
+					])
+					->orderDesc('Mailer.id')
+					->limit(200);
+				$this->_applyMailerNotDeletedToQuery($cloneListQuery);
+				if ($hasSaveStatusColumn) {
+					$cloneListQuery->andWhere([
+						'OR' => [
+							['Mailer.save_status' => 'submitted'],
+							['Mailer.save_status IS' => null],
+						],
+					]);
+				}
+				$previousSpecList = $cloneListQuery->all();
+			}
+		}
+
+		$this->set(compact('refernce', 'draft', 'draftId', 'adaptiveMode', 'cloneMode', 'cloneFromId', 'previousSpecList'));
 	}
 
 	/** Load a previous submitted admin spec as JSON for Smart Spec mode. */
@@ -1368,13 +1417,13 @@ class MailersController extends AppController
 			if (!empty($incomingComments)) {
 				$this->MailerComment->deleteAll(['mailer_id' => $draftId]);
 				foreach ($incomingComments as $comment) {
-					$this->MailerComment->save($this->MailerComment->newEntity([
-						'mailer_id' => $draftId,
-						'use_area' => 1,
+				$this->MailerComment->save($this->MailerComment->newEntity([
+					'mailer_id' => $draftId,
+					'use_area' => 1,
 						'comment' => $comment,
-					]));
-				}
+				]));
 			}
+		}
 		}
 		if (array_key_exists('product', $data) && is_array($data['product'])) {
 			$hasProductContent = false;
@@ -1394,20 +1443,20 @@ class MailersController extends AppController
 			}
 			if ($hasProductContent) {
 				$this->SpecUsearea->deleteAll(['mailer_id' => $draftId]);
-				foreach ($data['product'] as $key => $prodt) {
-					$typesKey = $data['types'][$key] ?? null;
-					$title = isset($data['title'][$typesKey]) ? $data['title'][$typesKey] : '';
-					$this->SpecUsearea->save($this->SpecUsearea->newEntity([
-						'mailer_id' => $draftId,
-						'use_area' => 1,
-						'title' => $title,
-						'product' => $prodt,
-						'types' => $data['types'][$key] ?? '',
-						'serial' => $data['serial'][$key] ?? '',
-						'coverage' => $data['coverage'][$key] ?? '',
-						'Warranty' => $data['Warranty'][$key] ?? '',
-						'coverage_by_pack' => $data['coverage_by_pack'][$key] ?? '',
-					]));
+			foreach ($data['product'] as $key => $prodt) {
+				$typesKey = $data['types'][$key] ?? null;
+				$title = isset($data['title'][$typesKey]) ? $data['title'][$typesKey] : '';
+				$this->SpecUsearea->save($this->SpecUsearea->newEntity([
+					'mailer_id' => $draftId,
+					'use_area' => 1,
+					'title' => $title,
+					'product' => $prodt,
+					'types' => $data['types'][$key] ?? '',
+					'serial' => $data['serial'][$key] ?? '',
+					'coverage' => $data['coverage'][$key] ?? '',
+					'Warranty' => $data['Warranty'][$key] ?? '',
+					'coverage_by_pack' => $data['coverage_by_pack'][$key] ?? '',
+				]));
 				}
 			}
 		}
@@ -3025,24 +3074,24 @@ class MailersController extends AppController
 							' rows). Kept the previous Use Area list so data was not lost. Try saving again or ask IT to raise max_input_vars.'
 						);
 					} else {
-						$this->SpecUsearea->deleteAll(['mailer_id' => $lastinsertId]);
+				$this->SpecUsearea->deleteAll(['mailer_id' => $lastinsertId]);
 						for ($key = 0; $key < $postedRowCount; $key++) {
 							$typesKey = $postedTypes[$key] ?? null;
 							$title = ($typesKey !== null && isset($postedTitles[$typesKey]))
 								? (string)$postedTitles[$typesKey]
 								: '';
-							$specEntity = $this->SpecUsearea->newEntity([
-								'mailer_id' => $lastinsertId,
+						$specEntity = $this->SpecUsearea->newEntity([
+							'mailer_id' => $lastinsertId,
 								'use_area' => 1,
-								'title' => $title,
+							'title' => $title,
 								'product' => (string)($postedProducts[$key] ?? ''),
 								'types' => (string)($typesKey ?? ''),
 								'serial' => (string)($postedSerials[$key] ?? ''),
 								'coverage' => (string)($postedCoverage[$key] ?? ''),
 								'Warranty' => (string)($postedWarranty[$key] ?? ''),
 								'coverage_by_pack' => (string)($postedMft[$key] ?? ''),
-							]);
-							$this->SpecUsearea->save($specEntity);
+						]);
+						$this->SpecUsearea->save($specEntity);
 						}
 					}
 				}

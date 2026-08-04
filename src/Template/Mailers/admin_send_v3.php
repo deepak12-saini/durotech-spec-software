@@ -100,14 +100,10 @@
 	.spec-load-scope label.active-scope { background: #428bca; border-color: #428bca; color: #fff; }
 	#country-list li.active-suggest, .title-dropdown li.active-suggest { background: #cfe6ff !important; }
 
-	</style>	
-	<div class="page-content">
-		<div class="page-header">
-		<div class="right_btn pull-right" ><a href="javascript:window.history.back();" class="btn btn-inverse" >Back</a></div>
-		<h1>DuroEzy Specification v3 <small><i class="ace-icon fa fa-angle-double-right"></i>Create New Spec</small>
-		</h1>
-	</div>
-	
+	</style>
+	<?php echo $this->element('spec_form_ui_styles'); ?>
+	<div class="page-content spec-ui-page">
+		<div class="page-header" style="display:none;"></div>
 	<div class="row">
 		<div class="col-xs-12">
 		<?php
@@ -121,6 +117,16 @@
 		$draftType = isset($draft) ? (string)$draft->type : '3';
 		$draftSubject = isset($draft) ? h($draft->subject) : 'Durotech: External Liquid WPM';
 		$isAdaptiveMode = !empty($adaptiveMode);
+		$isCloneMode = !empty($cloneMode);
+		$cloneFromIdVal = isset($cloneFromId) ? (int)$cloneFromId : 0;
+		$statusLabel = 'New';
+		if (!empty($draftId)) {
+			$statusLabel = 'Draft (restored)';
+		} elseif ($isAdaptiveMode) {
+			$statusLabel = 'New (Smart Spec mode)';
+		} elseif ($isCloneMode) {
+			$statusLabel = 'New (Clone mode — Use Area only)';
+		}
 		$draftSectionsJson = '[]';
 		$draftCommentsJson = '[]';
 		if (!empty($draft)) {
@@ -171,16 +177,32 @@
 			$draftCommentsJson = ($encodedComments !== false) ? $encodedComments : '[]';
 		}
 		?>
-		<?php echo $this->Form->create('Mailer',array('class'=>'form-horizontal','enctype'=>'multipart/form-data','id'=>'specForm')); ?>
+		<div class="spec-ui-shell">
+			<div class="spec-ui-head">
+				<h1>
+					DuroEzy Specification v3
+					<small><i class="ace-icon fa fa-angle-double-right"></i>
+					<?php if (!empty($isCloneMode)): ?>
+						<?php echo $this->Html->image('clone_a_spec.png', ['alt' => '', 'style' => 'width:18px;height:18px;vertical-align:middle;margin:0 4px;background:#1b1b1b;border-radius:50%;padding:2px;box-sizing:content-box;']); ?>
+						Clone a Spec
+					<?php else: ?>
+						Create New Spec
+					<?php endif; ?>
+					</small>
+				</h1>
+				<a href="javascript:window.history.back();" class="btn btn-inverse">Back</a>
+			</div>
+			<div id="spec-draft-status" class="spec-ui-status">
+				<span class="status-pill"><i class="fa fa-circle" style="font-size:8px;"></i> <span id="spec-status-text"><?php echo h($statusLabel); ?></span></span>
+				<span id="spec-source-track" style="display:none;color:#2a88c8;font-weight:600;"></span>
+				<span id="spec-last-saved"></span>
+				<?php if (!empty($draftId)): ?>
+					<?php echo $this->Html->link('Start New Spec (discard this draft)', ['controller' => 'Mailers', 'action' => 'admin_send_v3', '?' => ['discard_draft' => '1']], ['class' => 'btn btn-default btn-xs']); ?>
+				<?php endif; ?>
+			</div>
+			<div class="spec-ui-body">
+		<?php echo $this->Form->create('Mailer',array('class'=>'form-horizontal spec-ui-form','enctype'=>'multipart/form-data','id'=>'specForm')); ?>
 		<input type="hidden" name="draft_id" id="draft_id" value="<?php echo $draftIdVal; ?>">
-		<div id="spec-draft-status" class="alert alert-info" style="margin-top:10px;margin-bottom:10px;">
-			<strong>Status:</strong> <span id="spec-status-text"><?php echo !empty($draftId) ? 'Draft (restored)' : ($isAdaptiveMode ? 'New (Smart Spec mode)' : 'New'); ?></span>
-			<span id="spec-last-saved" style="margin-left:15px;"></span>
-			<span id="spec-source-track"></span>
-			<?php if (!empty($draftId)): ?>
-				<span style="margin-left:15px;"><?php echo $this->Html->link('Start New Spec (discard this draft)', ['controller' => 'Mailers', 'action' => 'admin_send_v3', '?' => ['discard_draft' => '1']], ['class' => 'btn btn-default btn-xs']); ?></span>
-			<?php endif; ?>
-		</div>
 		<?php if ($isAdaptiveMode): ?>
 			<?php
 				$adminAdaptiveChoices = [];
@@ -198,10 +220,13 @@
 					];
 				}
 			?>
-			<div class="form-group" style="position:relative;z-index:40;overflow:visible;">
-				<label class="col-sm-3 control-label no-padding-right" for="adaptive_combo_input">Smart Spec:</label>
+			<div class="spec-ui-card" style="z-index:40;">
+				<div class="spec-ui-card-title"><span>Smart Spec</span><span class="hint">Load Use Area from a previous job</span></div>
+				<div class="spec-ui-card-body">
+			<div class="form-group" style="position:relative;z-index:40;overflow:visible;margin-bottom:0 !important;">
+				<label class="col-sm-3 control-label no-padding-right" for="adaptive_combo_input">Search:</label>
 				<div class="col-sm-9" style="overflow:visible;">
-					<div class="spec-combo-panel">
+					<div class="spec-combo-panel" style="display:block;border:0;box-shadow:none;background:transparent;padding:0;">
 					<div class="spec-combo-wrap">
 						<input type="text" id="adaptive_combo_input" class="form-control input-sm spec-combo-input" placeholder="Type to search previous specs…" autocomplete="off">
 						<i class="fa fa-caret-down spec-combo-caret"></i>
@@ -212,14 +237,64 @@
 						<label class="active-scope"><input type="radio" name="adaptive_scope" value="use_area" checked> Use Area only</label>
 						<label><input type="radio" name="adaptive_scope" value="full"> Full spec</label>
 					</div>
-					<p class="spec-adaptive-help"><strong>Use Area only</strong> keeps client details blank; <strong>Full spec</strong> also copies Name/Project/Address/Email.</p>
+					<p class="help-block spec-adaptive-help"><strong>Use Area only</strong> keeps client details blank; <strong>Full spec</strong> also copies Name/Project/Address/Email.</p>
 					</div>
+				</div>
+			</div>
 				</div>
 			</div>
 			<script type="application/json" id="adaptive-spec-choices-data"><?php echo json_encode($adminAdaptiveChoices, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE); ?></script>
 		<?php endif; ?>
+
+		<?php if (!empty($isCloneMode) && $cloneFromIdVal <= 0): ?>
+		<?php
+			$cloneSpecChoices = [];
+			foreach (($previousSpecList ?? []) as $prev) {
+				$parts = [];
+				$parts[] = (string)($prev->tracknumber ?? ('#' . (int)$prev->id));
+				if (!empty($prev->company)) { $parts[] = (string)$prev->company; }
+				if (!empty($prev->name)) { $parts[] = (string)$prev->name; }
+				$label = implode(' | ', $parts);
+				$cloneSpecChoices[] = [
+					'id' => (int)$prev->id,
+					'label' => $label,
+					'search' => strtolower($label . ' ' . (int)$prev->id),
+					'source' => 'spec',
+				];
+			}
+		?>
+			<div class="spec-ui-card" style="z-index:40;">
+				<div class="spec-ui-card-title">
+					<span>
+						<?php echo $this->Html->image('clone_a_spec.png', ['alt' => '', 'style' => 'width:22px;height:22px;vertical-align:middle;margin-right:6px;background:#1b1b1b;border-radius:50%;padding:2px;box-sizing:content-box;']); ?>
+						Clone a Spec
+					</span>
+					<span class="hint">Pick a submitted spec — Use Area + comments only</span>
+				</div>
+				<div class="spec-ui-card-body">
+			<div class="form-group" style="position:relative;z-index:40;overflow:visible;margin-bottom:0 !important;">
+				<label class="col-sm-3 control-label no-padding-right" for="clone_combo_input">Search:</label>
+				<div class="col-sm-9" style="overflow:visible;">
+					<div class="spec-combo-panel" style="display:block;border:0;box-shadow:none;background:transparent;padding:0;">
+						<div class="spec-combo-wrap">
+							<input type="text" id="clone_combo_input" class="form-control input-sm spec-combo-input" placeholder="Type to search your specs…" autocomplete="off">
+							<i class="fa fa-caret-down spec-combo-caret"></i>
+							<ul id="clone_combo_list" class="spec-combo-list" role="listbox"></ul>
+							<input type="hidden" id="clone_previous_spec_id" value="">
+						</div>
+						<p class="help-block spec-adaptive-help">Copies Use Area + comments only. Client Name/Project/Address/Email stay blank for the new job.</p>
+					</div>
+				</div>
+			</div>
+				</div>
+			</div>
+			<script type="application/json" id="clone-spec-choices-data"><?php echo json_encode($cloneSpecChoices, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE); ?></script>
+		<?php endif; ?>
 		
-			<div class="form-group">
+						<div class="spec-ui-card">
+				<div class="spec-ui-card-title"><span>Client details</span><span class="hint">Who this spec is for</span></div>
+				<div class="spec-ui-card-body">
+<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Track Number:</label>
 				<div class="col-sm-9">
 					<input type="text" name="tracknumber" value="<?php echo $refernce; ?>" readonly id="tracknumber" class = "col-xs-10 col-sm-8" style="background:#ddd !important; cursor:pointer;" >
@@ -263,6 +338,12 @@
 					<input type="text" name="date" value="<?php echo $draftDate; ?>" id="date"  class = "datepicker col-xs-10 col-sm-8">
 				</div>
 			</div>
+				</div>
+			</div>
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title"><span>Spec options</span><span class="hint">Type and warranty column</span></div>
+				<div class="spec-ui-card-body">
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Mailer Type:</label>
 				<div class="col-sm-9">
@@ -289,6 +370,12 @@
 					</select>
 				</div>
 			</div>
+				</div>
+			</div>
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title"><span>Use Area</span><span class="hint">Sections and products</span></div>
+				<div class="spec-ui-card-body">
 			<!--div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">MFT(Minimum Film Thickness):</label>
 				<div class="col-sm-9">
@@ -319,7 +406,13 @@
 			</div>
 			<div id="newdiv"></div>
 			
-			<div class="form-group" style="margin-top:40px;">
+				</div>
+			</div>
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title"><span>Comments</span><span class="hint">Optional notes on the PDF</span></div>
+				<div class="spec-ui-card-body">
+			<div class="form-group" style="margin-top:0;">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
 				<div class="col-sm-9">				
 					<table  class="commentdiv">
@@ -335,16 +428,20 @@
 				</div>
 			</div>
 
+				</div>
+			</div>
+
 			<div class="form-group">
 				<div class="col-md-offset-3 col-md-9">
 					<button type="submit" name="submit_spec" value="1" class="btn btn-mini btn-success" id="add_ser_prd_btn">Submit / Publish</button>&nbsp;
-				
 				</div>
 			</div>
 			<?php echo $this->Form->end(); ?>
+			</div><!-- .spec-ui-body -->
+		</div><!-- .spec-ui-shell -->
 		</div>
-	</div>	
-	</div>	
+	</div>
+	</div>
 	
 <script type="text/javascript">
 	function addmorecomment(){
@@ -806,7 +903,7 @@
 		if (draftComments && draftComments.length > 0 && typeof loadCommentsFromData === 'function') {
 			loadCommentsFromData(draftComments);
 		}
-		var isBlankCreate = <?php echo (!empty($draftId) || $isAdaptiveMode) ? 'false' : 'true'; ?>;
+		var isBlankCreate = <?php echo (!empty($draftId) || $isAdaptiveMode || !empty($isCloneMode)) ? 'false' : 'true'; ?>;
 		if (isBlankCreate && $('#addsection').children().length === 0) {
 			addnewsection();
 		}
@@ -936,7 +1033,67 @@
 	});
 	<?php endif; ?>
 
-
+	<?php if (!empty($isCloneMode) && $cloneFromIdVal > 0): ?>
+	jQuery(function() {
+		var cloneLoadUrl = '<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'adminPreviousSpecDataV3', $cloneFromIdVal]); ?>';
+		$.ajax({
+			type: 'GET',
+			url: cloneLoadUrl,
+			dataType: 'json',
+			success: function(res) {
+				if (!res || !res.success || !res.data) {
+					alert((res && res.error) ? res.error : 'Unable to clone spec.');
+					return;
+				}
+				applyLoadedSpec(res.data, 'use_area');
+				$('#spec-status-text').text('Cloned Use Area + comments (new client details)');
+				$('#spec-source-track').text('Cloned from #<?php echo (int)$cloneFromIdVal; ?>').show();
+			},
+			error: function() { alert('Unable to clone spec right now.'); }
+		});
+	});
+	<?php elseif (!empty($isCloneMode)): ?>
+	jQuery(function() {
+		var cloneLoadBaseUrl = '<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'adminPreviousSpecDataV3']); ?>';
+		var cloneChoices = [];
+		try {
+			var rawC = document.getElementById('clone-spec-choices-data');
+			if (rawC && rawC.textContent) cloneChoices = JSON.parse(rawC.textContent);
+		} catch (e) { cloneChoices = []; }
+		function cloneLoadSelectedSpec() {
+			var selectedId = $('#clone_previous_spec_id').val();
+			if (!selectedId) {
+				$('#spec-source-track').hide().text('');
+				$('#spec-status-text').text('New (Clone mode — Use Area only)');
+				return;
+			}
+			$.ajax({
+				type: 'GET',
+				url: cloneLoadBaseUrl.replace(/\/$/, '') + '/' + selectedId,
+				dataType: 'json',
+				success: function(res) {
+					if (!res || !res.success || !res.data) {
+						alert((res && res.error) ? res.error : 'Unable to clone spec.');
+						return;
+					}
+					applyLoadedSpec(res.data, 'use_area');
+					$('#spec-status-text').text('Cloned Use Area + comments (new client details)');
+					var sourceTrack = ($('#clone_combo_input').val() || '').split('|')[0].trim();
+					if (sourceTrack) $('#spec-source-track').text('Cloned from ' + sourceTrack).show();
+					else $('#spec-source-track').text('Cloned from #' + selectedId).show();
+				},
+				error: function() { alert('Unable to clone spec right now.'); }
+			});
+		}
+		initSpecCombobox({
+			input: '#clone_combo_input',
+			list: '#clone_combo_list',
+			hidden: '#clone_previous_spec_id',
+			choices: cloneChoices,
+			onSelect: function() { cloneLoadSelectedSpec(); }
+		});
+	});
+	<?php endif; ?>
 
 
 </script>

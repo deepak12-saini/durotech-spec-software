@@ -98,18 +98,30 @@
 	}
 	
 	</style>
-	<div class="page-content">
-		<div class="page-header">
-		<div class="right_btn pull-right" ><a href="javascript:window.history.back();" class="btn btn-inverse" >Back</a></div>
-		<h1>DuroEzy Specification  <small><i class="ace-icon fa fa-angle-double-right"></i>Edit Spec</small>
-		</h1>
-	</div>
-	
+	<?php echo $this->element('spec_form_ui_styles'); ?>
+	<div class="page-content spec-ui-page">
+		<div class="page-header" style="display:none;"></div>
 	<div class="row">
 		<div class="col-xs-12">
-		<?php echo $this->Form->create('Mailer',array('class'=>'form-horizontal','enctype'=>'multipart/form-data')); ?>
+		<div class="spec-ui-shell">
+			<div class="spec-ui-head">
+				<h1>
+					DuroEzy Specification
+					<small><i class="ace-icon fa fa-angle-double-right"></i> Edit Spec<?php echo !empty($refernce) ? ' · ' . h($refernce) : ''; ?></small>
+				</h1>
+				<a href="javascript:window.history.back();" class="btn btn-inverse">Back</a>
+			</div>
+			<div class="spec-ui-status">
+				<span class="status-pill" style="color:#8a5a12;border-color:#f0d59a;"><i class="fa fa-pencil" style="font-size:11px;"></i> Editing submitted spec</span>
+				<span>Track locked unless you choose “Create New One”</span>
+			</div>
+			<div class="spec-ui-body">
+		<?php echo $this->Form->create('Mailer',array('class'=>'form-horizontal spec-ui-form','enctype'=>'multipart/form-data')); ?>
 		<input type="hidden" name="return_page" value="<?php echo isset($returnPage) ? (int)$returnPage : 1; ?>">
-		
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title"><span>Revision</span><span class="hint">Keep same track or create a new number</span></div>
+				<div class="spec-ui-card-body">
 			<div class="form-group">
 				<label for="form-field-2" class="col-sm-3 control-label no-padding-right"> Is Create New One: </label>
 					<div class="col-sm-9">					
@@ -123,7 +135,12 @@
 					</label></div>					
 				</div>
 			</div>
-					
+				</div>
+			</div>
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title"><span>Client details</span><span class="hint">Update contact / project</span></div>
+				<div class="spec-ui-card-body">
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Track Number:</label>
 				<div class="col-sm-9">
@@ -168,6 +185,12 @@
 					<input type="text" name="date" id="date" value="<?php echo $MailerArr['Mailer']['date']; ?>"   class = "datepicker col-xs-10 col-sm-8">
 				</div>
 			</div>
+				</div>
+			</div>
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title"><span>Spec options</span><span class="hint">Type and warranty column</span></div>
+				<div class="spec-ui-card-body">
 			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Mailer Type:</label>
 				<div class="col-sm-9">
@@ -200,6 +223,12 @@
 					</select>
 				</div>
 			</div>
+				</div>
+			</div>
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title"><span>Use Area</span><span class="hint">Sections and products</span></div>
+				<div class="spec-ui-card-body">
 			<!--div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">MFT(Minimum Film Thickness):</label>
 				<div class="col-sm-9">
@@ -278,8 +307,20 @@
 			</div>
 			<?php $i++; } }?>
 			<div id="addsection"></div>
-			
-			<div class="form-group" style="margin-top:40px;">
+
+			<div class="form-group">
+				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
+				<div class="col-sm-1">
+					<a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addnewsection()"><i class="fa fa-plus"></i> Add Section</a>
+				</div>
+			</div>
+				</div>
+			</div>
+
+			<div class="spec-ui-card">
+				<div class="spec-ui-card-title"><span>Comments</span><span class="hint">Optional notes on the PDF</span></div>
+				<div class="spec-ui-card-body">
+			<div class="form-group" style="margin-top:0;">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
 				<div class="col-sm-9">
 					<?php
@@ -312,11 +353,6 @@
 					<a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addmorecomment()"><i class="fa fa-plus"></i> Add More Comment</a>
 				</div>
 			</div>
-			
-			<div class="form-group">
-				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
-				<div class="col-sm-1">
-					<a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addnewsection()"><i class="fa fa-plus"></i> Add Section</a>
 				</div>
 			</div>
 
@@ -336,10 +372,13 @@
 				
 				</div>
 			</div>
+
 			<?php echo $this->Form->end(); ?>
+			</div><!-- .spec-ui-body -->
+		</div><!-- .spec-ui-shell -->
 		</div>
-	</div>	
-	</div>	
+	</div>
+	</div>
 	
 <script type="text/javascript">
 	function addmorecomment(){
