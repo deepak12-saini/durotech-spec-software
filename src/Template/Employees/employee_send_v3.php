@@ -409,7 +409,17 @@
 			<div class="spec-ui-head">
 				<h1>
 					DuroEzy Specification
-					<small><i class="ace-icon fa fa-angle-double-right"></i> Create New Spec</small>
+					<small><i class="ace-icon fa fa-angle-double-right"></i>
+					<?php if (!empty($isCloneMode)): ?>
+						<?php echo $this->Html->image('clone_a_spec.png', [
+							'alt' => '',
+							'style' => 'width:18px;height:18px;vertical-align:middle;margin:0 4px;background:#1b1b1b;border-radius:50%;padding:2px;box-sizing:content-box;',
+						]); ?>
+						Clone a Spec
+					<?php else: ?>
+						Create New Spec
+					<?php endif; ?>
+					</small>
 				</h1>
 				<a href="javascript:window.history.back();" class="btn btn-inverse">Back</a>
 			</div>
@@ -581,7 +591,13 @@
 			?>
 			<div class="spec-ui-card" style="z-index:40;">
 				<div class="spec-ui-card-title">
-					<span>Clone a Spec</span>
+					<span>
+						<?php echo $this->Html->image('clone_a_spec.png', [
+							'alt' => '',
+							'style' => 'width:22px;height:22px;vertical-align:middle;margin-right:6px;background:#1b1b1b;border-radius:50%;padding:2px;box-sizing:content-box;',
+						]); ?>
+						Clone a Spec
+					</span>
 					<span class="hint">Pick a submitted spec — Use Area + comments only</span>
 				</div>
 				<div class="spec-ui-card-body">

@@ -21,8 +21,52 @@
 		font-weight: 600;
 		color: #666;
 	}
-	.top-button .fa-files-o {
-		margin-right: 3px;
+	/* Spec top action buttons — Clone Trooper hat icon */
+	.top-button.spec-tab-btn,
+	.btn.spec-tab-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		vertical-align: middle;
+		padding-left: 6px;
+		padding-right: 10px;
+	}
+	.top-button.spec-tab-btn .clone-btn-icon-wrap,
+	.btn.spec-tab-btn .clone-btn-icon-wrap {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 26px;
+		height: 26px;
+		background: #1b1b1b;
+		border-radius: 50%;
+		box-shadow: 0 0 0 1px rgba(0,0,0,0.25);
+		flex-shrink: 0;
+	}
+	.top-button.spec-tab-btn .clone-btn-icon,
+	.btn.spec-tab-btn .clone-btn-icon {
+		display: block;
+		width: 20px;
+		height: 20px;
+		object-fit: contain;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		border-radius: 0;
+		background: transparent;
+	}
+	.btn-mini.spec-tab-btn {
+		gap: 4px;
+		padding-left: 5px;
+		padding-right: 8px;
+	}
+	.btn-mini.spec-tab-btn .clone-btn-icon-wrap {
+		width: 20px;
+		height: 20px;
+	}
+	.btn-mini.spec-tab-btn .clone-btn-icon {
+		width: 15px;
+		height: 15px;
 	}
 </style>
 
@@ -31,24 +75,46 @@
 	<div class="page-header">
 		<h1>DuroEzy Specification
 			<?php
+			$cloneIcon = '<span class="clone-btn-icon-wrap">'
+				. $this->Html->image('clone_a_spec.png', [
+					'alt' => '',
+					'class' => 'clone-btn-icon',
+				])
+				. '</span>';
 			// Create New Spec: always opens an empty form (no draft loaded)
-			echo $this->Html->link('Create New Spec', ['controller' => 'employees', 'action' => 'employee_send_v3'], ['class' => 'btn btn-info btn-xs top-button']);
+			echo $this->Html->link(
+				$cloneIcon . 'Create New Spec',
+				['controller' => 'employees', 'action' => 'employee_send_v3'],
+				['class' => 'btn btn-info btn-xs top-button spec-tab-btn', 'escape' => false]
+			);
 			// Resume Draft: only when a draft exists; loads the saved draft
 			if (!empty($hasDraft)) {
 				echo ' ';
-				echo $this->Html->link('Resume Draft', ['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['resume' => '1']], ['class' => 'btn btn-warning btn-xs top-button']);
+				echo $this->Html->link(
+					$cloneIcon . 'Resume Draft',
+					['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['resume' => '1']],
+					['class' => 'btn btn-warning btn-xs top-button spec-tab-btn', 'escape' => false]
+				);
 			}
 			echo ' ';
-			echo $this->Html->link('Smart Spec (from Previous)', ['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'adaptive']], ['class' => 'btn btn-primary btn-xs top-button']);
+			echo $this->Html->link(
+				$cloneIcon . 'Smart Spec (from Previous)',
+				['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'adaptive']],
+				['class' => 'btn btn-primary btn-xs top-button spec-tab-btn', 'escape' => false]
+			);
 			// Template Spec — hidden until client confirms. Uncomment to enable.
 			// echo ' ';
-			// echo $this->Html->link('Template Spec', ['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'template']], ['class' => 'btn btn-success btn-xs top-button']);
+			// echo $this->Html->link(
+			// 	$cloneIcon . 'Template Spec',
+			// 	['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'template']],
+			// 	['class' => 'btn btn-success btn-xs top-button spec-tab-btn', 'escape' => false]
+			// );
 			echo ' ';
 			echo $this->Html->link(
-				'<i class="ace-icon fa fa-files-o"></i> Clone a Spec',
+				$cloneIcon . 'Clone a Spec',
 				['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'clone']],
 				[
-					'class' => 'btn btn-purple btn-xs top-button',
+					'class' => 'btn btn-purple btn-xs top-button spec-tab-btn',
 					'title' => 'Clone Use Area + comments into a new blank client form',
 					'escape' => false,
 				]
@@ -270,9 +336,9 @@
 									echo $this->Html->link('Download', $pdfDownloadUrl, array('class' => 'btn btn-mini btn-info', 'target' => '_blank'));
 
 									echo $this->Html->link(
-										'<i class="fa fa-files-o"></i> Clone Spec',
+										$cloneIcon . 'Clone Spec',
 										['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'clone', 'from_id' => $mailerId]],
-										['class' => 'btn btn-mini btn-warning', 'title' => 'Copy Use Area + comments into a new blank client form', 'escape' => false]
+										['class' => 'btn btn-mini btn-warning spec-tab-btn', 'title' => 'Copy Use Area + comments into a new blank client form', 'escape' => false]
 									);
 
 									// Save Template — hidden until client confirms Template Spec. Uncomment to enable.
