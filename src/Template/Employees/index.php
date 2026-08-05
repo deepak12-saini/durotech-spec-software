@@ -1,4 +1,36 @@
 <style>
+	/* Spec list filters — one clean inline row */
+	.spec-emp-filters {
+		background: #f8f9fb;
+		border: 1px solid #e3e6ea;
+		border-radius: 4px;
+		padding: 12px;
+		margin-bottom: 12px;
+	}
+	.spec-emp-filters-form {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px;
+		margin: 0;
+	}
+	.spec-emp-filters-form .form-control {
+		margin: 0;
+		min-width: 130px;
+		flex: 0 1 140px;
+		height: 30px;
+	}
+	.spec-emp-filters-form input[type="date"].form-control {
+		min-width: 145px;
+		flex: 0 0 145px;
+	}
+	.spec-emp-filters-form .btn {
+		margin: 0;
+		height: 30px;
+		padding-top: 4px;
+		padding-bottom: 4px;
+		flex: 0 0 auto;
+	}
 	/* Keep action buttons on one horizontal row */
 	.action-btns {
 		display: inline-flex;
@@ -21,33 +53,52 @@
 		font-weight: 600;
 		color: #666;
 	}
-	/* Spec top action buttons — Clone Trooper hat icon */
-	.top-button.spec-tab-btn,
-	.btn.spec-tab-btn {
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		vertical-align: middle;
-		padding-left: 6px;
-		padding-right: 10px;
-	}
-	.top-button.spec-tab-btn .clone-btn-icon-wrap,
-	.btn.spec-tab-btn .clone-btn-icon-wrap {
+	/* Spec top action buttons — match admin btn-sm height */
+	.page-header h1 .top-button.spec-tab-btn,
+	.page-header h1 .btn.spec-tab-btn {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		width: 26px;
-		height: 26px;
+		gap: 6px;
+		vertical-align: middle;
+		box-sizing: border-box;
+		height: 30px;
+		min-height: 30px;
+		max-height: 30px;
+		line-height: 1.3;
+		font-size: 12px;
+		padding-top: 0;
+		padding-bottom: 0;
+		padding-left: 10px;
+		padding-right: 12px;
+		margin-top: 0;
+		margin-bottom: 0;
+	}
+	.page-header h1 .top-button.spec-tab-btn .fa,
+	.page-header h1 .btn.spec-tab-btn .fa {
+		font-size: 13px;
+		line-height: 1;
+		width: 14px;
+		text-align: center;
+		margin-right: 0 !important;
+	}
+	.page-header h1 .top-button.spec-tab-btn .clone-btn-icon-wrap,
+	.page-header h1 .btn.spec-tab-btn .clone-btn-icon-wrap {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 20px;
+		height: 20px;
 		background: #1b1b1b;
 		border-radius: 50%;
 		box-shadow: 0 0 0 1px rgba(0,0,0,0.25);
 		flex-shrink: 0;
 	}
-	.top-button.spec-tab-btn .clone-btn-icon,
-	.btn.spec-tab-btn .clone-btn-icon {
+	.page-header h1 .top-button.spec-tab-btn .clone-btn-icon,
+	.page-header h1 .btn.spec-tab-btn .clone-btn-icon {
 		display: block;
-		width: 20px;
-		height: 20px;
+		width: 14px;
+		height: 14px;
 		object-fit: contain;
 		margin: 0;
 		padding: 0;
@@ -55,18 +106,79 @@
 		border-radius: 0;
 		background: transparent;
 	}
+	/* Row-level Clone button (mini) */
 	.btn-mini.spec-tab-btn {
+		display: inline-flex;
+		align-items: center;
 		gap: 4px;
 		padding-left: 5px;
 		padding-right: 8px;
+		height: 24px;
+		min-height: 24px;
+		line-height: 1.2;
+		box-sizing: border-box;
 	}
 	.btn-mini.spec-tab-btn .clone-btn-icon-wrap {
-		width: 20px;
-		height: 20px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 16px;
+		height: 16px;
+		background: #1b1b1b;
+		border-radius: 50%;
+		flex-shrink: 0;
 	}
 	.btn-mini.spec-tab-btn .clone-btn-icon {
-		width: 15px;
-		height: 15px;
+		width: 12px;
+		height: 12px;
+		object-fit: contain;
+		display: block;
+		margin: 0;
+		padding: 0;
+		background: transparent;
+	}
+	/* Distinct Spec action colors (Create=teal, Smart=blue, Clone=purple) */
+	.page-header h1 .btn.spec-tab-btn.btn-spec-create,
+	.btn.spec-tab-btn.btn-spec-create {
+		background-color: #6fb3e0 !important;
+		border-color: #5aa3d4 !important;
+		color: #fff !important;
+	}
+	.page-header h1 .btn.spec-tab-btn.btn-spec-create:hover,
+	.page-header h1 .btn.spec-tab-btn.btn-spec-create:focus,
+	.btn.spec-tab-btn.btn-spec-create:hover,
+	.btn.spec-tab-btn.btn-spec-create:focus {
+		background-color: #5aa3d4 !important;
+		border-color: #4a93c4 !important;
+		color: #fff !important;
+	}
+	.page-header h1 .btn.spec-tab-btn.btn-spec-smart,
+	.btn.spec-tab-btn.btn-spec-smart {
+		background-color: #2563eb !important;
+		border-color: #1d4ed8 !important;
+		color: #fff !important;
+	}
+	.page-header h1 .btn.spec-tab-btn.btn-spec-smart:hover,
+	.page-header h1 .btn.spec-tab-btn.btn-spec-smart:focus,
+	.btn.spec-tab-btn.btn-spec-smart:hover,
+	.btn.spec-tab-btn.btn-spec-smart:focus {
+		background-color: #1d4ed8 !important;
+		border-color: #1e40af !important;
+		color: #fff !important;
+	}
+	.page-header h1 .btn.spec-tab-btn.btn-spec-clone,
+	.btn.spec-tab-btn.btn-spec-clone {
+		background-color: #7c3aed !important;
+		border-color: #6d28d9 !important;
+		color: #fff !important;
+	}
+	.page-header h1 .btn.spec-tab-btn.btn-spec-clone:hover,
+	.page-header h1 .btn.spec-tab-btn.btn-spec-clone:focus,
+	.btn.spec-tab-btn.btn-spec-clone:hover,
+	.btn.spec-tab-btn.btn-spec-clone:focus {
+		background-color: #6d28d9 !important;
+		border-color: #5b21b6 !important;
+		color: #fff !important;
 	}
 </style>
 
@@ -81,31 +193,34 @@
 					'class' => 'clone-btn-icon',
 				])
 				. '</span>';
+			$faIcon = function ($faClass) {
+				return '<i class="fa ' . h($faClass) . '" style="margin-right:5px;"></i>';
+			};
 			// Create New Spec: always opens an empty form (no draft loaded)
 			echo $this->Html->link(
-				$cloneIcon . 'Create New Spec',
+				$faIcon('fa-plus') . 'Create New Spec',
 				['controller' => 'employees', 'action' => 'employee_send_v3'],
-				['class' => 'btn btn-info btn-xs top-button spec-tab-btn', 'escape' => false]
+				['class' => 'btn btn-xs top-button spec-tab-btn btn-spec-create', 'escape' => false]
 			);
 			// Resume Draft: only when a draft exists; loads the saved draft
 			if (!empty($hasDraft)) {
 				echo ' ';
 				echo $this->Html->link(
-					$cloneIcon . 'Resume Draft',
+					$faIcon('fa-pencil') . 'Resume Draft',
 					['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['resume' => '1']],
 					['class' => 'btn btn-warning btn-xs top-button spec-tab-btn', 'escape' => false]
 				);
 			}
 			echo ' ';
 			echo $this->Html->link(
-				$cloneIcon . 'Smart Spec (from Previous)',
+				$faIcon('fa-magic') . 'Smart Spec (from Previous)',
 				['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'adaptive']],
-				['class' => 'btn btn-primary btn-xs top-button spec-tab-btn', 'escape' => false]
+				['class' => 'btn btn-xs top-button spec-tab-btn btn-spec-smart', 'escape' => false]
 			);
 			// Template Spec — hidden until client confirms. Uncomment to enable.
 			// echo ' ';
 			// echo $this->Html->link(
-			// 	$cloneIcon . 'Template Spec',
+			// 	$faIcon('fa-file-text-o') . 'Template Spec',
 			// 	['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'template']],
 			// 	['class' => 'btn btn-success btn-xs top-button spec-tab-btn', 'escape' => false]
 			// );
@@ -114,7 +229,7 @@
 				$cloneIcon . 'Clone a Spec',
 				['controller' => 'employees', 'action' => 'employee_send_v3', '?' => ['mode' => 'clone']],
 				[
-					'class' => 'btn btn-purple btn-xs top-button spec-tab-btn',
+					'class' => 'btn btn-xs top-button spec-tab-btn btn-spec-clone',
 					'title' => 'Clone Use Area + comments into a new blank client form',
 					'escape' => false,
 				]
@@ -126,17 +241,16 @@
 	<!-- Main content row -->
 	<div class="row">
 		<div class="col-xs-12">
-			<div class="well well-sm" style="margin-bottom:12px;">
-				<?php echo $this->Form->create(null, ['type' => 'get', 'class' => 'form-inline']); ?>
-					<input type="text" name="tracknumber" class="form-control input-sm" placeholder="Track Number" value="<?php echo h($filters['tracknumber'] ?? ''); ?>" style="margin-right:6px;margin-bottom:6px;">
-					<input type="text" name="name" class="form-control input-sm" placeholder="Name/Attn" value="<?php echo h($filters['name'] ?? ''); ?>" style="margin-right:6px;margin-bottom:6px;">
-					<input type="text" name="email" class="form-control input-sm" placeholder="Email" value="<?php echo h($filters['email'] ?? ''); ?>" style="margin-right:6px;margin-bottom:6px;">
-					<input type="text" name="company" class="form-control input-sm" placeholder="Project" value="<?php echo h($filters['company'] ?? ''); ?>" style="margin-right:6px;margin-bottom:6px;">
-					<input type="text" name="specification" class="form-control input-sm" placeholder="Specification" value="<?php echo h($filters['specification'] ?? ''); ?>" style="margin-right:6px;margin-bottom:6px;">
-					<input type="date" name="date_from" class="form-control input-sm" value="<?php echo h($filters['date_from'] ?? ''); ?>" style="margin-right:6px;margin-bottom:6px;">
-					<input type="date" name="date_to" class="form-control input-sm" value="<?php echo h($filters['date_to'] ?? ''); ?>" style="margin-right:6px;margin-bottom:6px;">
-					<button type="submit" class="btn btn-primary btn-xs" style="margin-right:6px;margin-bottom:6px;">Filter</button>
-					<?php echo $this->Html->link('Reset', ['controller' => 'employees', 'action' => 'index'], ['class' => 'btn btn-default btn-xs', 'style' => 'margin-bottom:6px;']); ?>
+			<div class="spec-emp-filters">
+				<?php echo $this->Form->create(null, ['type' => 'get', 'class' => 'spec-emp-filters-form']); ?>
+					<input type="text" name="tracknumber" class="form-control input-sm" placeholder="Track Number" value="<?php echo h($filters['tracknumber'] ?? ''); ?>">
+					<input type="text" name="name" class="form-control input-sm" placeholder="Name/Attn" value="<?php echo h($filters['name'] ?? ''); ?>">
+					<input type="text" name="email" class="form-control input-sm" placeholder="Email" value="<?php echo h($filters['email'] ?? ''); ?>">
+					<input type="text" name="company" class="form-control input-sm" placeholder="Project" value="<?php echo h($filters['company'] ?? ''); ?>">
+					<input type="date" name="date_from" class="form-control input-sm" title="Date from" value="<?php echo h($filters['date_from'] ?? ''); ?>">
+					<input type="date" name="date_to" class="form-control input-sm" title="Date to" value="<?php echo h($filters['date_to'] ?? ''); ?>">
+					<button type="submit" class="btn btn-primary btn-sm">Filter</button>
+					<?php echo $this->Html->link('Reset', ['controller' => 'employees', 'action' => 'index'], ['class' => 'btn btn-default btn-sm']); ?>
 				<?php echo $this->Form->end(); ?>
 			</div>
 
@@ -402,7 +516,7 @@
 
 	// Server export: all filtered pages (same filters as list), not just current page
 	var exportBase = <?php echo json_encode($this->Url->build(['controller' => 'employees', 'action' => 'export_specs'])); ?>;
-	var filterKeys = ['tracknumber', 'name', 'email', 'company', 'specification', 'date_from', 'date_to'];
+	var filterKeys = ['tracknumber', 'name', 'email', 'company', 'date_from', 'date_to'];
 
 	function buildExportUrl(format) {
 		var params = new URLSearchParams(window.location.search || '');

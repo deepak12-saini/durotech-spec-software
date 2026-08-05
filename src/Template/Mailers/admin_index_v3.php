@@ -68,17 +68,31 @@
 		letter-spacing: 0.04em;
 		margin: 0 0 10px;
 	}
+	.spec-v3-filters form.form-inline,
+	.spec-v3-filters form {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px;
+	}
 	.spec-v3-filters .form-control {
-		margin: 0 8px 8px 0;
-		min-width: 140px;
+		margin: 0;
+		min-width: 130px;
+		flex: 0 1 140px;
+		height: 30px;
 		vertical-align: middle;
 	}
 	.spec-v3-filters input[type="date"].form-control {
-		min-width: 150px;
+		min-width: 145px;
+		flex: 0 0 145px;
 	}
 	.spec-v3-filters .btn {
-		margin: 0 6px 8px 0;
+		margin: 0;
+		height: 30px;
+		padding-top: 4px;
+		padding-bottom: 4px;
 		vertical-align: middle;
+		flex: 0 0 auto;
 	}
 
 	.spec-v3-panel {
@@ -229,22 +243,25 @@
 				$cloneIcon = '<span class="spec-tab-icon-wrap">'
 					. $this->Html->image('clone_a_spec.png', ['alt' => '', 'class' => 'spec-tab-icon'])
 					. '</span>';
+				$faIcon = function ($faClass) {
+					return '<i class="fa ' . h($faClass) . '" style="margin-right:5px;"></i>';
+				};
 				echo $this->Html->link(
-					$cloneIcon . 'Create New Spec',
+					$faIcon('fa-plus') . 'Create New Spec',
 					'/admin/mailers/send_v3',
 					['class' => 'btn btn-info btn-sm spec-tab-btn', 'escape' => false]
 				);
 				if (!empty($hasDraft)) {
 					echo ' ';
 					echo $this->Html->link(
-						$cloneIcon . 'Resume Draft',
+						$faIcon('fa-pencil') . 'Resume Draft',
 						['controller' => 'Mailers', 'action' => 'admin_send_v3', '?' => ['resume' => '1']],
 						['class' => 'btn btn-warning btn-sm spec-tab-btn', 'escape' => false]
 					);
 				}
 				echo ' ';
 				echo $this->Html->link(
-					$cloneIcon . 'Smart Spec (from Previous)',
+					$faIcon('fa-magic') . 'Smart Spec (from Previous)',
 					['controller' => 'Mailers', 'action' => 'admin_send_v3', '?' => ['mode' => 'adaptive']],
 					['class' => 'btn btn-primary btn-sm spec-tab-btn', 'escape' => false]
 				);
@@ -272,7 +289,6 @@
 					<input type="text" name="name" class="form-control input-sm" placeholder="Name/Attn" value="<?php echo h($filters['name'] ?? ''); ?>">
 					<input type="text" name="email" class="form-control input-sm" placeholder="Email" value="<?php echo h($filters['email'] ?? ''); ?>">
 					<input type="text" name="company" class="form-control input-sm" placeholder="Project" value="<?php echo h($filters['company'] ?? ''); ?>">
-					<input type="text" name="specification" class="form-control input-sm" placeholder="Specification" value="<?php echo h($filters['specification'] ?? ''); ?>">
 					<input type="date" name="date_from" class="form-control input-sm" title="Date from" value="<?php echo h($filters['date_from'] ?? ''); ?>">
 					<input type="date" name="date_to" class="form-control input-sm" title="Date to" value="<?php echo h($filters['date_to'] ?? ''); ?>">
 					<button type="submit" class="btn btn-primary btn-sm">Filter</button>
@@ -472,7 +488,7 @@ $(document).ready(function() {
 	});
 
 	var exportBase = <?php echo json_encode($this->Url->build('/admin/mailers/export_specs')); ?>;
-	var filterKeys = ['tracknumber', 'name', 'email', 'company', 'specification', 'date_from', 'date_to'];
+	var filterKeys = ['tracknumber', 'name', 'email', 'company', 'date_from', 'date_to'];
 
 	function buildExportUrl(format) {
 		var q = new URLSearchParams(window.location.search || '');
