@@ -168,7 +168,7 @@
 					<tbody>
 						<tr><td colspan="5"><input class="newitem_<?php echo $i; ?>" type="text" style="width:100%;" name="title[<?php echo $i; ?>]" value="<?php echo $products[0]['title']; ?>" placeholder="enter title e,g Wet area or planter box" required></td></tr>
 						<tr>
-							<th></th>
+							<th>S.No</th>
 							<th>Product Type</th>
 							<th>Product</th>
 							
@@ -380,7 +380,7 @@
 	function addnewsection(){
 		var numItems = $('.addsection').length;		
 		var newdiv = 	numItems + 1;
-		var varhtml = '<div class="form-group addsection" id="section_'+newdiv+'"><div class="col-xs-12"><table><tr><td colspan="5"><input type="text" style="width:100%;" name="title['+newdiv+']" value="" placeholder="enter title e,g Wet area or planter box" required></td></tr><tr><th></th><th>Product Type</th><th>Product</th><th>MFT</th><th>Warranty Period</th></tr><tr><td><input type="hidden" style="width:30px;" name="types[]" value="'+newdiv+'"><input type="text" style="width:63px;" name="serial[]" value="'+newdiv+'"></td><td><input type="text" style="width:225px;" name="coverage[]" value="" id="coverage_'+newdiv+'_0"></td><td><div class="frmSearch"><input type="text" autocomplete="off" style="width:225px;" name="product[]" id="pro_'+newdiv+'_0" value="" onkeyup="onkeyups('+newdiv+',0)" ><div id="suggesstion-box_'+newdiv+'_0"></div></div></td><td><input type="text" style="width:100px;" name="coverage_by_pack[]" value="" id="coverage_by_pack_'+newdiv+'_0"></td><td><input type="text" style="width:100px;" name="Warranty[]" value="" id="warranty_'+newdiv+'_0"></td><td><a href="javascript:void(0);" style="color:red;" onclick="removesection('+newdiv+')">&nbsp;&nbsp; X </a></td></tr></table><div id="addnew_'+newdiv+'"></div><a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addmore('+newdiv+')"><i class="fa fa-plus"></i> Add More</a></div></div>';	
+		var varhtml = '<div class="form-group addsection" id="section_'+newdiv+'"><div class="col-xs-12"><table><tr><td colspan="5"><input type="text" style="width:100%;" name="title['+newdiv+']" value="" placeholder="enter title e,g Wet area or planter box" required></td></tr><tr><th>S.No</th><th>Product Type</th><th>Product</th><th>MFT</th><th>Warranty Period</th></tr><tr><td><input type="hidden" style="width:30px;" name="types[]" value="'+newdiv+'"><input type="text" style="width:63px;" name="serial[]" value="'+newdiv+'"></td><td><input type="text" style="width:225px;" name="coverage[]" value="" id="coverage_'+newdiv+'_0"></td><td><div class="frmSearch"><input type="text" autocomplete="off" style="width:225px;" name="product[]" id="pro_'+newdiv+'_0" value="" onkeyup="onkeyups('+newdiv+',0)" ><div id="suggesstion-box_'+newdiv+'_0"></div></div></td><td><input type="text" style="width:100px;" name="coverage_by_pack[]" value="" id="coverage_by_pack_'+newdiv+'_0"></td><td><input type="text" style="width:100px;" name="Warranty[]" value="" id="warranty_'+newdiv+'_0"></td><td><a href="javascript:void(0);" style="color:red;" onclick="removesection('+newdiv+')">&nbsp;&nbsp; X </a></td></tr></table><div id="addnew_'+newdiv+'"></div><a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addmore('+newdiv+')"><i class="fa fa-plus"></i> Add More</a></div></div>';	
 		
 		$("#addsection").append(varhtml);	
 	}

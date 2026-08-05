@@ -953,7 +953,7 @@
 			'<div class="form-group addsection" id="section_' + newdiv + '">' +
 				'<div class="col-xs-12">' +
 					'<table>' +
-						'<tr style="border-bottom: 15px solid #ffff;">' +
+						'<tr>' +
 							'<td colspan="5">' +
 								'<div class="frmSearch">' +
 									'<input type="text" style="width:100%;" name="title[' + newdiv + ']" id="title_' + newdiv + '" ' +
@@ -964,7 +964,7 @@
 							'</td>' +
 						'</tr>' +
 						'<tr>' +
-							'<th></th>' +
+							'<th>S.No</th>' +
 							'<th>Product Type</th>' +
 							'<th>Product</th>' +
 							'<th>MFT</th>' +

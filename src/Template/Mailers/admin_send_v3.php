@@ -631,7 +631,7 @@
 				'<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>' +
 				'<div class="col-sm-9">' +
 					'<table>' +
-						'<tr style="border-bottom: 15px solid #ffff;">' +
+						'<tr>' +
 							'<td colspan="5">' +
 								'<div class="frmSearch">' +
 									'<input type="text" style="width:100%;" name="title[' + newdiv + ']" id="title_' + newdiv + '" ' +
@@ -642,7 +642,7 @@
 							'</td>' +
 						'</tr>' +
 						'<tr>' +
-							'<th></th>' +
+							'<th>S.No</th>' +
 							'<th>Product Type</th>' +
 							'<th>Product</th>' +
 							'<th>MFT</th>' +

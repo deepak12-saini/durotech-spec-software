@@ -5,10 +5,15 @@
  */
 ?>
 <style>
+	.spec-ui-page.page-content,
+	.page-content.spec-ui-page {
+		padding-top: 18px;
+	}
 	.spec-ui-page .page-header {
 		border-bottom: 0;
 		margin-bottom: 0;
 		padding-bottom: 0;
+		padding-top: 6px;
 	}
 	.spec-ui-shell {
 		background: #fff;
@@ -122,7 +127,7 @@
 		font-size: 12px;
 	}
 	.spec-ui-card > .spec-ui-card-body {
-		padding: 16px 16px 8px;
+		padding: 20px 16px 10px;
 	}
 	.spec-ui-card .form-group {
 		margin-bottom: 12px !important;
@@ -170,7 +175,7 @@
 	.spec-ui-toolbar-note.muted {
 		font-size: 13px;
 		color: #5b6f82;
-		margin: 0 0 12px;
+		margin: 2px 0 14px;
 	}
 	.spec-ui-add-section {
 		margin: 4px 0 12px;
@@ -239,11 +244,33 @@
 		border-collapse: separate;
 		border-spacing: 0 6px;
 	}
+	/* Space between Use Area title field and S.No / Product Type heading row */
+	.spec-ui-form .addsection table > tbody > tr:first-child > td,
+	.spec-ui-form .addsection table > tr:first-child > td {
+		padding-bottom: 8px;
+	}
+	.spec-ui-form .addsection input[name^="title"] {
+		width: 100% !important;
+		max-width: 100% !important;
+		margin-bottom: 0;
+		/* Soft PDF-style Use Area title bar only (not product rows) */
+		background: #e8f1f8 !important;
+		border-color: #b7c9dc !important;
+		color: #1f1f1f !important;
+		font-weight: 700 !important;
+		font-size: 14px !important;
+		font-family: Arial, Helvetica, sans-serif !important;
+	}
+	.spec-ui-form .addsection input[name^="title"]:focus {
+		background: #e8f1f8 !important;
+		border-color: #2f7bd7 !important;
+	}
 	.spec-ui-form .addsection th {
 		font-size: 11px;
+		font-weight: 700;
 		color: #46607a;
 		white-space: nowrap;
-		padding: 0 4px 4px;
+		padding: 0 4px 6px;
 	}
 	.spec-ui-form .addsection td {
 		padding: 0 4px;
@@ -265,10 +292,6 @@
 	.spec-ui-form .addsection input[name="coverage_by_pack[]"],
 	.spec-ui-form .addsection input[name="Warranty[]"] {
 		width: 90px !important;
-	}
-	.spec-ui-form .addsection input[name^="title"] {
-		width: 100% !important;
-		max-width: 100% !important;
 	}
 	/* Comments / empty-label rows inside cards: also left-align */
 	.spec-ui-form .spec-ui-card-body > .form-group > label.col-sm-3:empty {

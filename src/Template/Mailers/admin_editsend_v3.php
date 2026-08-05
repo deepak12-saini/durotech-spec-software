@@ -272,7 +272,7 @@
 							</div>
 						</td></tr>
 						<tr>
-							<th></th>
+							<th>S.No</th>
 							<th>Product Type</th>
 							<th>Product</th>
 							
@@ -565,7 +565,7 @@
 								'</div>' +
 							'</td>' +
 						'</tr>' +
-						'<tr><th></th><th>Product Type</th><th>Product</th><th>MFT</th><th>Warranty Period</th></tr>' +
+						'<tr><th>S.No</th><th>Product Type</th><th>Product</th><th>MFT</th><th>Warranty Period</th></tr>' +
 						'<tr><td><input type="hidden" style="width:30px;" name="types[]" value="'+newdiv+'"><input type="text" style="width:63px;" name="serial[]" value="'+newdiv+'"></td>' +
 							'<td><input type="text" style="width:225px;" name="coverage[]" value="" id="coverage_'+newdiv+'_0"></td>' +
 							'<td><div class="frmSearch"><input type="text" autocomplete="off" style="width:225px;" name="product[]" id="pro_'+newdiv+'_0" value="" onkeyup="onkeyups('+newdiv+',0)" ><div id="suggesstion-box_'+newdiv+'_0"></div></div></td>' +
