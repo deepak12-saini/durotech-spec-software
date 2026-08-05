@@ -12,6 +12,59 @@ $isHome = !empty($isProductListingHome);
 $pageTitle = $isHome ? 'Featured Products' : (string)($category_name ?? 'Products');
 $productsList = !empty($products) ? $products : [];
 $hasCategoryHero = (!$isHome && ($hasCategoryImage || $categoryDescription !== ''));
+$productPaging = (isset($productPaging) && is_array($productPaging)) ? $productPaging : [
+	'page' => 1,
+	'pageCount' => 1,
+	'count' => count($productsList),
+	'perPage' => 12,
+	'hasPrev' => false,
+	'hasNext' => false,
+];
+
+// Build pagination URLs while keeping current path/slug
+$productPageUrl = function ($pageNum) use ($isHome, $currentSlug) {
+	$pageNum = (int)$pageNum;
+	if ($isHome) {
+		$url = ['controller' => 'Products', 'action' => 'index'];
+		if ($pageNum > 1) {
+			$url['?'] = ['page' => $pageNum];
+		}
+		return $url;
+	}
+	$url = '/category/' . $currentSlug;
+	if ($pageNum > 1) {
+		$url .= '?page=' . $pageNum;
+	}
+	return $url;
+};
+
+/** Map category slug/name → Font Awesome 4 icon class */
+$categoryIconClass = function ($slug, $name) {
+	$key = strtolower(trim((string)$slug . ' ' . (string)$name));
+	$map = [
+		'primer' => 'fa-tint',
+		'cementitious' => 'fa-cubes',
+		'tape' => 'fa-tags',
+		'reinforcement' => 'fa-th',
+		'tile adhesive' => 'fa-th-large',
+		'tile adhesives' => 'fa-th-large',
+		'water based' => 'fa-paint-brush',
+		'water-based' => 'fa-paint-brush',
+		'polyurethane' => 'fa-flask',
+		'sealant' => 'fa-wrench',
+		'silicone' => 'fa-wrench',
+		'epoxy' => 'fa-cogs',
+		'flooring' => 'fa-cogs',
+		'sheet membrane' => 'fa-clone',
+		'sheet-membrane' => 'fa-clone',
+	];
+	foreach ($map as $needle => $icon) {
+		if ($needle !== '' && strpos($key, $needle) !== false) {
+			return $icon;
+		}
+	}
+	return 'fa-cube';
+};
 ?>
 <style>
 /* --- Page shell --- */
@@ -187,7 +240,9 @@ $hasCategoryHero = (!$isHome && ($hasCategoryImage || $categoryDescription !== '
 	list-style: none;
 }
 .products-sidebar__nav a {
-	display: block;
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
 	padding: 10px 12px;
 	border-radius: 8px;
 	color: #31485c !important;
@@ -197,16 +252,36 @@ $hasCategoryHero = (!$isHome && ($hasCategoryImage || $categoryDescription !== '
 	text-decoration: none !important;
 	transition: background 0.15s ease, color 0.15s ease;
 }
+.products-sidebar__nav a .cat-ico {
+	flex: 0 0 18px;
+	width: 18px;
+	margin-top: 1px;
+	text-align: center;
+	font-size: 14px;
+	color: #6a8aa8;
+	line-height: 1.35;
+}
+.products-sidebar__nav a .cat-label {
+	flex: 1 1 auto;
+	min-width: 0;
+}
 .products-sidebar__nav a:hover,
 .products-sidebar__nav a:focus {
 	background: #f3f7fb;
 	color: #1a6fb5 !important;
 	font-weight: 600;
 }
+.products-sidebar__nav a:hover .cat-ico,
+.products-sidebar__nav a:focus .cat-ico {
+	color: #1a6fb5;
+}
 .products-sidebar__nav a.is-active {
 	background: #e8f1f8;
 	color: #1565a8 !important;
 	font-weight: 700;
+}
+.products-sidebar__nav a.is-active .cat-ico {
+	color: #1565a8;
 }
 .products-main {
 	min-width: 0;
@@ -255,6 +330,62 @@ $hasCategoryHero = (!$isHome && ($hasCategoryImage || $categoryDescription !== '
 	color: #6a7f93;
 	font-size: 16px;
 	font-weight: 600;
+}
+.products-pagination {
+	clear: both;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	margin: 8px 0 4px;
+	padding: 16px 0 8px;
+}
+.products-pagination a,
+.products-pagination span {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 36px;
+	height: 36px;
+	padding: 0 10px;
+	border-radius: 8px;
+	border: 1px solid #d5dde6;
+	background: #fff;
+	color: #31485c !important;
+	font-size: 14px;
+	font-weight: 600;
+	text-decoration: none !important;
+	box-shadow: 0 2px 6px rgba(20, 33, 61, 0.04);
+}
+.products-pagination a:hover,
+.products-pagination a:focus {
+	border-color: #6fb3e0;
+	color: #1565a8 !important;
+	background: #f3f9fd;
+}
+.products-pagination .is-active {
+	background: #5a1ea8;
+	border-color: #5a1ea8;
+	color: #fff !important;
+}
+.products-pagination .is-disabled {
+	opacity: 0.45;
+	pointer-events: none;
+}
+.products-pagination__info {
+	width: 100%;
+	text-align: center;
+	margin-bottom: 4px;
+	color: #6a7f93;
+	font-size: 13px;
+	font-weight: 500;
+	border: 0 !important;
+	background: transparent !important;
+	box-shadow: none !important;
+	min-width: 0;
+	height: auto;
+	padding: 0;
 }
 
 /* Mobile category drawer */
@@ -407,7 +538,10 @@ $hasCategoryHero = (!$isHome && ($hasCategoryImage || $categoryDescription !== '
 				<h2 class="products-sidebar__title">Browse by Category</h2>
 				<ul class="products-sidebar__nav">
 					<li>
-						<a href="<?= h($this->Url->build('/product')) ?>" class="<?= $isHome ? 'is-active' : '' ?>">All Products</a>
+						<a href="<?= h($this->Url->build('/product')) ?>" class="<?= $isHome ? 'is-active' : '' ?>">
+							<i class="fa fa-th-list cat-ico" aria-hidden="true"></i>
+							<span class="cat-label">All Products</span>
+						</a>
 					</li>
 					<?php foreach ($categoryList as $categorys): ?>
 						<?php
@@ -417,10 +551,12 @@ $hasCategoryHero = (!$isHome && ($hasCategoryImage || $categoryDescription !== '
 								continue;
 							}
 							$isActive = (!$isHome && $catSlug !== '' && $catSlug === $currentSlug);
+							$ico = $categoryIconClass($catSlug, $catName);
 						?>
 						<li>
 							<a href="<?= h($this->Url->build('/category/' . $catSlug)) ?>" class="<?= $isActive ? 'is-active' : '' ?>">
-								<?= h($catName) ?>
+								<i class="fa <?= h($ico) ?> cat-ico" aria-hidden="true"></i>
+								<span class="cat-label"><?= h($catName) ?></span>
 							</a>
 						</li>
 					<?php endforeach; ?>
@@ -458,6 +594,38 @@ $hasCategoryHero = (!$isHome && ($hasCategoryImage || $categoryDescription !== '
 						</a>
 					<?php endforeach; ?>
 				</div>
+				<?php
+					$pageCount = (int)($productPaging['pageCount'] ?? 1);
+					$currentPage = (int)($productPaging['page'] ?? 1);
+					$totalCount = (int)($productPaging['count'] ?? 0);
+					$perPage = (int)($productPaging['perPage'] ?? 12);
+					if ($pageCount > 1):
+						$from = (($currentPage - 1) * $perPage) + 1;
+						$to = min($totalCount, $currentPage * $perPage);
+				?>
+				<nav class="products-pagination" aria-label="Product pages">
+					<span class="products-pagination__info">Showing <?= (int)$from ?>–<?= (int)$to ?> of <?= (int)$totalCount ?> products</span>
+					<?php if (!empty($productPaging['hasPrev'])): ?>
+						<?= $this->Html->link('‹ Prev', $productPageUrl($productPaging['prevPage']), ['escape' => false]) ?>
+					<?php else: ?>
+						<span class="is-disabled">‹ Prev</span>
+					<?php endif; ?>
+
+					<?php for ($p = 1; $p <= $pageCount; $p++): ?>
+						<?php if ($p === $currentPage): ?>
+							<span class="is-active" aria-current="page"><?= $p ?></span>
+						<?php else: ?>
+							<?= $this->Html->link((string)$p, $productPageUrl($p)) ?>
+						<?php endif; ?>
+					<?php endfor; ?>
+
+					<?php if (!empty($productPaging['hasNext'])): ?>
+						<?= $this->Html->link('Next ›', $productPageUrl($productPaging['nextPage']), ['escape' => false]) ?>
+					<?php else: ?>
+						<span class="is-disabled">Next ›</span>
+					<?php endif; ?>
+				</nav>
+				<?php endif; ?>
 				<?php else: ?>
 				<div class="products-empty">Coming Soon</div>
 				<?php endif; ?>
@@ -474,7 +642,10 @@ $hasCategoryHero = (!$isHome && ($hasCategoryImage || $categoryDescription !== '
 	</div>
 	<ul class="products-sidebar__nav">
 		<li>
-			<a href="<?= h($this->Url->build('/product')) ?>" class="<?= $isHome ? 'is-active' : '' ?>">All Products</a>
+			<a href="<?= h($this->Url->build('/product')) ?>" class="<?= $isHome ? 'is-active' : '' ?>">
+				<i class="fa fa-th-list cat-ico" aria-hidden="true"></i>
+				<span class="cat-label">All Products</span>
+			</a>
 		</li>
 		<?php foreach ($categoryList as $categorys): ?>
 			<?php
@@ -484,10 +655,12 @@ $hasCategoryHero = (!$isHome && ($hasCategoryImage || $categoryDescription !== '
 					continue;
 				}
 				$isActive = (!$isHome && $catSlug !== '' && $catSlug === $currentSlug);
+				$ico = $categoryIconClass($catSlug, $catName);
 			?>
 			<li>
 				<a href="<?= h($this->Url->build('/category/' . $catSlug)) ?>" class="<?= $isActive ? 'is-active' : '' ?>">
-					<?= h($catName) ?>
+					<i class="fa <?= h($ico) ?> cat-ico" aria-hidden="true"></i>
+					<span class="cat-label"><?= h($catName) ?></span>
 				</a>
 			</li>
 		<?php endforeach; ?>

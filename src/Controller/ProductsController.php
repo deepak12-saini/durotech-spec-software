@@ -320,6 +320,19 @@ class ProductsController extends AppController
 			$meta_description = 'Waterproofing products for Melbourne, Brisbane & Sydney. Membranes, sealants & coatings. Quality Australian-made. Call 02 9603 1177 or browse categories.';
 		}
 
+		// Paginate product list: 12 per page (All Products + category pages)
+		$productPaging = [
+			'page' => 1,
+			'pageCount' => 1,
+			'count' => 0,
+			'perPage' => 12,
+			'hasPrev' => false,
+			'hasNext' => false,
+		];
+		if (!empty($products)) {
+			list($products, $productPaging) = $this->_paginateProductsArray($products, 12);
+		}
+
 		if (empty($isProductListingHome)) {
 			$isProductListingHome = false;
 		}
@@ -332,7 +345,7 @@ class ProductsController extends AppController
 			$isBrand[] = ['Category' => $row->toArray()];
 		}
 
-		$this->set(compact('products', 'category', 'slug', 'categoryname', 'isBrand', 'category_name', 'isProductListingHome', 'currentCategory'));
+		$this->set(compact('products', 'category', 'slug', 'categoryname', 'isBrand', 'category_name', 'isProductListingHome', 'currentCategory', 'productPaging'));
 		if (!empty($meta_title)) {
 			$this->set('meta_title', $meta_title);
 		}
@@ -342,6 +355,42 @@ class ProductsController extends AppController
 		if (!empty($meta_keyword)) {
 			$this->set('meta_keyword', $meta_keyword);
 		}
+	}
+
+	/**
+	 * Slice a product list into pages (12 per page by default).
+	 *
+	 * @param array<int, array<string, mixed>> $products
+	 * @return array{0: array<int, array<string, mixed>>, 1: array<string, mixed>}
+	 */
+	protected function _paginateProductsArray(array $products, int $perPage = 12): array
+	{
+		$perPage = max(1, $perPage);
+		$count = count($products);
+		$pageCount = max(1, (int)ceil($count / $perPage));
+		$page = (int)$this->request->getQuery('page', 1);
+		if ($page < 1) {
+			$page = 1;
+		}
+		if ($page > $pageCount) {
+			$page = $pageCount;
+		}
+		$offset = ($page - 1) * $perPage;
+		$pageItems = array_slice($products, $offset, $perPage);
+
+		$paging = [
+			'page' => $page,
+			'pageCount' => $pageCount,
+			'current' => count($pageItems),
+			'count' => $count,
+			'perPage' => $perPage,
+			'hasPrev' => $page > 1,
+			'hasNext' => $page < $pageCount,
+			'prevPage' => $page > 1 ? $page - 1 : null,
+			'nextPage' => $page < $pageCount ? $page + 1 : null,
+		];
+
+		return [$pageItems, $paging];
 	}
 
 	/**
