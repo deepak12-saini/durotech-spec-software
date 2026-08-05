@@ -94,7 +94,7 @@
 					<li><a target="_blank" href="<?php echo SITEURL; ?>Case-Study.pdf">Case studies</a></li>
 					<li><a href="<?php echo SITEURL; ?>wp-content/uploads/Durotech_Credit_pplication_Term_and_condition.pdf">Terms & Conditions of Use</a></li>
 					<li><a href="<?php echo SITEURL; ?>">Privacy Policy</a></li>
-					<li><a href="<?php echo SITEURL; ?>specifiers">Specifications</a></li>
+					<?php /* <li><a href="<?php echo SITEURL; ?>specifiers">Specifications</a></li> */ ?>
 					<li><a href="<?php echo SITEURL; ?>about">Our Mission</a></li>
 					<li><a href="<?php echo SITEURL; ?>video">Video Gallery</a></li>
 					<li><a href="<?php echo SITEURL; ?>durotech-institute-of-waterproofing">Durotech Institute of Waterproofing</a></li>
