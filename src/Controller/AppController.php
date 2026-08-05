@@ -244,7 +244,7 @@ class AppController extends Controller
     protected function getAndClearEmployeeIntendedUrl(): string
     {
         $session = $this->request->getSession();
-        $default = '/employees/monthly_specs';
+        $default = '/employees/index';
         $url = (string)$session->read('Employee.intended_url');
         $session->delete('Employee.intended_url');
         if ($url !== '' && $this->isSafeEmployeeRedirectUrl($url)) {

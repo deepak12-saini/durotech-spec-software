@@ -80,7 +80,7 @@ class EmployeesController extends AppController {
         $this->set('title_for_layout', SITENAME . ' Employee Login');
 
         if ($this->Session->read('is_employee')) {
-            return $this->redirect('/employees/monthly_specs');
+            return $this->redirect('/employees/index');
         }
 
         if ($this->request->is('post')) {
