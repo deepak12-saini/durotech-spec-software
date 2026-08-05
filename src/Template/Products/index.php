@@ -9,14 +9,17 @@ $hasCategoryImage = $categoryImage !== '' && $categoryImage !== '250250-defult.p
 $categoryList = (isset($category) && is_array($category)) ? $category : [];
 $currentSlug = (string)($slug ?? '');
 $isHome = !empty($isProductListingHome);
-$pageTitle = $isHome ? 'Waterproofing Products & Membranes' : (string)($category_name ?? 'Products');
+$pageTitle = $isHome ? 'Featured Products' : (string)($category_name ?? 'Products');
 $productsList = !empty($products) ? $products : [];
+$hasCategoryHero = (!$isHome && ($hasCategoryImage || $categoryDescription !== ''));
 ?>
 <style>
 /* --- Page shell --- */
 .products-bg-wrap {
 	background: #e4edf4;
-	padding: 16px 0 32px;
+	/* Clear fixed site header so page title is never clipped */
+	padding: 110px 0 32px;
+	overflow: visible;
 }
 .products-toolbar {
 	display: flex;
@@ -24,10 +27,21 @@ $productsList = !empty($products) ? $products : [];
 	align-items: center;
 	justify-content: space-between;
 	gap: 12px;
-	margin-bottom: 16px;
+	margin-bottom: 18px;
+	position: relative;
+	z-index: 2;
 }
 .products-toolbar__title {
 	margin: 0;
+	color: #5a1ea8;
+	font-size: 22px;
+	font-weight: 700;
+	line-height: 1.3;
+	display: block;
+	position: relative;
+	z-index: 2;
+}
+.products-toolbar__title.is-category {
 	color: #5a1ea8;
 	font-size: 17px;
 	font-weight: 600;
@@ -72,6 +86,20 @@ $productsList = !empty($products) ? $products : [];
 }
 
 /* --- Full-width category hero (previous style) --- */
+/* --- Featured Products heading (All Products) --- */
+.products-featured-heading {
+	margin: 0 0 18px;
+	padding: 4px 0 0;
+	color: #5a1ea8;
+	font-size: 22px;
+	font-weight: 700;
+	line-height: 1.35;
+	display: block;
+	position: relative;
+	z-index: 1;
+	overflow: visible;
+	clear: both;
+}
 .products-intro {
 	background: #fff;
 	border-radius: 10px;
@@ -286,6 +314,9 @@ $productsList = !empty($products) ? $products : [];
 }
 
 @media (max-width: 991px) {
+	.products-bg-wrap {
+		padding-top: 90px;
+	}
 	.products-layout {
 		grid-template-columns: 1fr;
 	}
@@ -329,7 +360,13 @@ $productsList = !empty($products) ? $products : [];
 	<div class="container">
 		<?php /* Full-width toolbar + category description/image (like previous) */ ?>
 		<div class="products-toolbar">
-			<h1 class="products-toolbar__title"><?= h($pageTitle) ?></h1>
+			<?php if ($isHome): ?>
+			<h1 class="products-toolbar__title products-featured-heading">Featured Products</h1>
+			<?php elseif (!$hasCategoryHero): ?>
+			<h1 class="products-toolbar__title is-category"><?= h($pageTitle) ?></h1>
+			<?php else: ?>
+			<div></div>
+			<?php endif; ?>
 			<div class="products-toolbar__actions">
 				<button type="button" class="products-mobile-cat-btn" id="productsMobileCatBtn" aria-controls="productsCategoryDrawer" aria-expanded="false">
 					<img src="<?= h(SITEURL) ?>img/menu.png" alt=""> Categories
@@ -342,11 +379,7 @@ $productsList = !empty($products) ? $products : [];
 			</div>
 		</div>
 
-		<?php if ($isHome): ?>
-		<div class="products-intro">
-			<p>Browse our range of Australian-made waterproofing membranes, sealants and construction coatings. We supply builders, contractors and specifiers across Sydney, Melbourne, Brisbane and Australia. Choose a category or search for the right product. For specifications and technical support, <a href="<?= h($this->Url->build('/contact')) ?>">contact us</a>.</p>
-		</div>
-		<?php elseif ($hasCategoryImage || $categoryDescription !== ''): ?>
+		<?php if ($hasCategoryHero): ?>
 		<div class="category-hero">
 			<div class="row">
 				<?php if ($hasCategoryImage): ?>
@@ -354,7 +387,7 @@ $productsList = !empty($products) ? $products : [];
 				<?php else: ?>
 				<div class="col-lg-12 col-md-12 col-sm-12 category-hero__content">
 				<?php endif; ?>
-					<h2 class="category-hero__title"><?= h($category_name ?? 'Products') ?></h2>
+					<h1 class="category-hero__title"><?= h($category_name ?? 'Products') ?></h1>
 					<?php if ($categoryDescription !== ''): ?>
 					<p class="category-hero__desc"><?= nl2br(h($categoryDescription)) ?></p>
 					<?php endif; ?>

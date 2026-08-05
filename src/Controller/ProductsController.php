@@ -289,22 +289,35 @@ class ProductsController extends AppController
 			}
 		} else {
 			$isProductListingHome = true;
-			$first = $category[0]['Category'] ?? null;
-			$currentCategory = $first ? ['Category' => $first] : [];
-			$slug = $first['slug'] ?? '';
-			$categoryname = $first['category_name'] ?? '';
-			$catId = $first['id'] ?? null;
-			$productsQuery = $this->Product->find('all')
-				->where(['Product.status' => 1, 'Product.category_id' => $catId])
-				->order($sorting);
-			$products = [];
-			foreach ($productsQuery as $row) {
-				$products[] = ['Product' => $row->toArray()];
+			$currentCategory = [];
+			$slug = '';
+			$categoryname = 'All Products';
+			$category_name = 'All Products';
+
+			// All active products across every active category (not just the first/sorted category)
+			$activeCatIds = [];
+			foreach ($category as $catRow) {
+				$id = $catRow['Category']['id'] ?? null;
+				if ($id !== null && $id !== '') {
+					$activeCatIds[] = $id;
+				}
 			}
+			$products = [];
+			if (!empty($activeCatIds)) {
+				$productsQuery = $this->Product->find('all')
+					->where([
+						'Product.status' => 1,
+						'Product.category_id IN' => $activeCatIds,
+					])
+					->order($sorting);
+				foreach ($productsQuery as $row) {
+					$products[] = ['Product' => $row->toArray()];
+				}
+			}
+
 			$meta_keyword = 'waterproofing products, membrane products, roof waterproofing, liquid waterproofing, Sydney, Melbourne, Brisbane, Australia';
 			$meta_title = 'Roof Waterproofing Membrane Products | Liquid Waterproofing Sydney | Durotech';
 			$meta_description = 'Waterproofing products for Melbourne, Brisbane & Sydney. Membranes, sealants & coatings. Quality Australian-made. Call 02 9603 1177 or browse categories.';
-			$category_name = $categoryname;
 		}
 
 		if (empty($isProductListingHome)) {
