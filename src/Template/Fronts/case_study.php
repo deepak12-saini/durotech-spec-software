@@ -34,23 +34,34 @@ $featuredImage = !empty($caseData['featured_image'])
     overflow: hidden;
     margin-bottom: 28px;
     box-shadow: 0 10px 28px rgba(20, 33, 61, 0.16);
-    background: #dfe8f0;
+    background: #c5d4e0;
+    aspect-ratio: 2.35 / 1;
+    max-height: 620px;
+    width: 100%;
 }
 
 .case-hero__img {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    height: auto;
-    max-height: none;
-    object-fit: contain;
-    object-position: center top;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
     display: block;
-    vertical-align: top;
 }
 
 .case-hero__overlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(to top, rgba(9, 21, 38, 0.74), rgba(9, 21, 38, 0.25) 44%, rgba(9, 21, 38, 0.05) 70%, transparent);
+    pointer-events: none;
+    /* Light fade only at bottom so title stays readable; photo stays clear */
+    background: linear-gradient(
+        to top,
+        rgba(9, 21, 38, 0.55) 0%,
+        rgba(9, 21, 38, 0.22) 28%,
+        rgba(9, 21, 38, 0.04) 52%,
+        transparent 72%
+    );
 }
 
 .case-hero__content {
@@ -68,7 +79,7 @@ $featuredImage = !empty($caseData['featured_image'])
     font-size: clamp(1.45rem, 2vw, 2.05rem);
     font-weight: 700;
     line-height: 1.25;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
 }
 
 .case-hero__meta {
@@ -81,8 +92,8 @@ $featuredImage = !empty($caseData['featured_image'])
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(15, 28, 45, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.28);
     border-radius: 999px;
     padding: 6px 12px;
     color: #fff;
@@ -380,10 +391,13 @@ $featuredImage = !empty($caseData['featured_image'])
     .case-study-page-wrap {
         padding-bottom: 26px;
     }
+    .case-hero {
+        aspect-ratio: 16 / 10;
+        max-height: 420px;
+    }
     .case-hero__img {
-        height: auto;
-        object-fit: contain;
-        object-position: center top;
+        object-fit: cover;
+        object-position: center center;
     }
     .case-hero__content {
         padding: 12px 12px 14px;
