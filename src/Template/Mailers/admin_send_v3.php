@@ -431,7 +431,7 @@
 				</div>
 			</div>
 
-			<div class="form-group">
+			<div class="form-group spec-ui-actions">
 				<div class="col-md-offset-3 col-md-9">
 					<button type="submit" name="submit_spec" value="1" class="btn btn-mini btn-success" id="add_ser_prd_btn">Submit / Publish</button>&nbsp;
 				</div>

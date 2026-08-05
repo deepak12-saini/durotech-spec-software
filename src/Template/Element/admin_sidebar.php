@@ -54,9 +54,9 @@
 	}
 
 	/*
-	 * Copyright .footer/.footer-content is position:absolute and paints over the
-	 * bottom of the sidebar, blocking #sidebar-collapse clicks. Keep sidebar (and
-	 * the » toggle) above the footer so expand/collapse always works.
+	 * Keep sidebar » toggle clickable above the ACE absolute footer.
+	 * Do NOT set position:relative on .footer — ACE uses .footer { width:0;height:0 }
+	 * with absolute .footer-inner; relative+zero width squeezes copyright into a column.
 	 */
 	#main-container > #sidebar.sidebar {
 		position: relative;
@@ -66,14 +66,6 @@
 	#main-container > #sidebar.sidebar #sidebar-collapse {
 		position: relative;
 		z-index: 1030;
-	}
-	#main-container > .footer {
-		position: relative;
-		z-index: 1;
-	}
-	#main-container > .footer .footer-inner,
-	#main-container > .footer .footer-content {
-		z-index: 1;
 	}
 </style>
 	<script type="text/javascript">

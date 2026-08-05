@@ -16,7 +16,25 @@
 		border-radius: 16px;
 		box-shadow: 0 10px 28px rgba(30, 51, 72, 0.08);
 		overflow: visible;
-		margin-bottom: 24px;
+		margin-bottom: 48px;
+	}
+	/* Keep ACE absolute footer from colliding with Submit / Publish */
+	.spec-ui-page {
+		padding-bottom: 72px;
+	}
+	.spec-ui-page .spec-ui-actions {
+		margin-top: 8px;
+		padding: 16px 0 8px;
+		border-top: 1px solid #e6eef5;
+	}
+	body.no-skin .main-container > .footer .footer-content {
+		white-space: nowrap;
+		text-align: center;
+	}
+	body.no-skin .main-container > .footer .footer-content .bigger-120,
+	body.no-skin .main-container > .footer .footer-content .blue.bolder {
+		display: inline !important;
+		white-space: nowrap;
 	}
 	.spec-ui-head {
 		padding: 18px 22px 14px;
