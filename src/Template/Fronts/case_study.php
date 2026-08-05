@@ -39,10 +39,12 @@ $featuredImage = !empty($caseData['featured_image'])
 
 .case-hero__img {
     width: 100%;
-    height: clamp(340px, 60vh, 760px);
-    object-fit: cover;
+    height: auto;
+    max-height: none;
+    object-fit: contain;
     object-position: center top;
     display: block;
+    vertical-align: top;
 }
 
 .case-hero__overlay {
@@ -379,7 +381,8 @@ $featuredImage = !empty($caseData['featured_image'])
         padding-bottom: 26px;
     }
     .case-hero__img {
-        height: clamp(260px, 42vh, 400px);
+        height: auto;
+        object-fit: contain;
         object-position: center top;
     }
     .case-hero__content {
