@@ -39,9 +39,9 @@ $featuredImage = !empty($caseData['featured_image'])
 
 .case-hero__img {
     width: 100%;
-    height: clamp(320px, 58vh, 720px);
+    height: clamp(340px, 60vh, 760px);
     object-fit: cover;
-    object-position: center;
+    object-position: center top;
     display: block;
 }
 
@@ -379,7 +379,8 @@ $featuredImage = !empty($caseData['featured_image'])
         padding-bottom: 26px;
     }
     .case-hero__img {
-        height: clamp(240px, 40vh, 370px);
+        height: clamp(260px, 42vh, 400px);
+        object-position: center top;
     }
     .case-hero__content {
         padding: 12px 12px 14px;
