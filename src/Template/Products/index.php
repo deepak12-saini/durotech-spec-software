@@ -290,16 +290,28 @@ $categoryIconClass = function ($slug, $name) {
 /* --- Previous product box styles (unchanged look) --- */
 .product_image_section {
 	text-align: center;
-	padding: 0 2%;
+	padding: 0;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+}
+.product_image_section > a {
+	display: block;
+	flex: 0 0 calc(33.333% - 4px);
+	max-width: calc(33.333% - 4px);
+	box-sizing: border-box;
+	text-decoration: none !important;
 }
 .product_page_list_section {
 	background: #ffffff;
 	border-radius: 14px;
 	box-shadow: 0 4px 14px rgba(0,0,0,0.08);
 	padding: 12px 12px 18px;
-	margin-bottom: 20px;
+	margin: 0;
+	width: 100%;
+	float: none;
 	transition: transform 0.2s ease, box-shadow 0.2s ease;
-	float: left;
+	box-sizing: border-box;
 }
 .product_page_list_section:hover {
 	transform: translateY(-4px);
@@ -457,6 +469,10 @@ $categoryIconClass = function ($slug, $name) {
 	.products-mobile-cat-btn {
 		display: inline-flex;
 	}
+	.product_image_section > a {
+		flex: 0 0 calc(50% - 3px);
+		max-width: calc(50% - 3px);
+	}
 	.category-hero__content {
 		min-height: 0;
 	}
@@ -482,7 +498,12 @@ $categoryIconClass = function ($slug, $name) {
 		flex: 1;
 	}
 	.product_image_section {
-		padding: 0 1%;
+		gap: 5px;
+		padding: 0;
+	}
+	.product_image_section > a {
+		flex: 0 0 100%;
+		max-width: 100%;
 	}
 }
 </style>
