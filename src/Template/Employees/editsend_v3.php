@@ -28,6 +28,8 @@
 			background-color:#f0f0f0;
 		}
 
+		/* Comment presets styles live in Element/spec_form_ui_styles.php */
+
 		.suggesstion-box{ display:block; }
 		.addsection > .col-sm-9{
 			background:#fff;
@@ -438,41 +440,18 @@
 			<div class="spec-ui-card">
 				<div class="spec-ui-card-title">
 					<span>Comments</span>
-					<span class="hint">Optional notes on the PDF</span>
+					<span class="hint">Click presets or type your own</span>
 				</div>
 				<div class="spec-ui-card-body">
-			<div class="form-group" style="margin-top:0;">
-				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
-				<div class="col-sm-9">
 					<?php
-					if(!empty($MailerArr['MailerComment'])){
-						$m=1;				
-						foreach($MailerArr['MailerComment'] as $MailerComments){
-					?>			
-					<table  class="commentdiv" id="commentdiv_<?php echo $m; ?>">
-						<tr>	
-							<th colspan="2">Comments <?php echo $m; ?>.</th>
-						</tr>
-						<tr>							
-							<td><input type="text" class="spec-comment-input" name="comment[]" value="<?php echo $MailerComments['comment']; ?>"></td>
-							<td><a href="javascript:void(0);" onclick="commnetdivremove('<?php echo $m; ?>')" title="Remove">×</a></td>
-						</tr>
-					</table>
-					<?php $m++; }}else{ ?>
-						<table  class="commentdiv">
-							<tr>	
-								<th>Comments 1.</th>							
-							</tr>
-							<tr>							
-								<td><input type="text" class="spec-comment-input" name="comment[]" value=""></td>
-								
-							</tr>
-						</table>
-					<?php } ?>
-					<div id="addcommentnew"></div>
-					<a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addmorecomment()"><i class="fa fa-plus"></i> Add More Comment</a>
-				</div>
-			</div>
+					$existingComments = [];
+					if (!empty($MailerArr['MailerComment'])) {
+						foreach ($MailerArr['MailerComment'] as $MailerComments) {
+							$existingComments[] = (string)($MailerComments['comment'] ?? '');
+						}
+					}
+					echo $this->element('spec_comments_block', ['existingComments' => $existingComments]);
+					?>
 				</div>
 			</div>
 
@@ -487,16 +466,98 @@
 	</div>	
 	
 <script type="text/javascript">
-	function addmorecomment(){
-		var numItems = $('.commentdiv').length; 
-		var newdiv = 	numItems + 1;
-		//var dtserial = id+'.'+newdiv;	
-		var html = '<table class="commentdiv" id="commentdiv_'+newdiv+'"><tr><th colspan="2">Comments '+newdiv+'.</th></tr><tr><td><input type="text" class="spec-comment-input" name="comment[]" value=""></td><td><a href="javascript:void(0);" onclick="commnetdivremove('+newdiv+')" title="Remove">×</a></td></tr></table>';
+	function renumberCommentRows() {
+		$('#specCommentsList .commentdiv.spec-comment-row').each(function (i) {
+			var n = i + 1;
+			$(this).attr('id', 'commentdiv_' + n);
+			$(this).find('.spec-comment-row__num').text(n);
+			var $rm = $(this).find('.spec-comment-row__remove');
+			if ($rm.length) {
+				$rm.attr('onclick', 'commnetdivremove(' + n + ')');
+			}
+		});
+		syncCommentPresetChips();
+	}
+
+	function addmorecomment(presetValue){
+		var newdiv = $('#specCommentsList .commentdiv.spec-comment-row').length + 1;
+		var val = (typeof presetValue === 'string') ? presetValue : '';
+		var safeVal = $('<div/>').text(val).html();
+		var html = ''
+			+ '<div class="commentdiv spec-comment-row" id="commentdiv_' + newdiv + '">'
+			+ '<span class="spec-comment-row__num">' + newdiv + '</span>'
+			+ '<input type="text" class="spec-comment-input" name="comment[]" value="' + safeVal + '" placeholder="Type a custom comment, or click a preset above">'
+			+ '<a href="javascript:void(0);" class="spec-comment-row__remove" onclick="commnetdivremove(' + newdiv + ')" title="Remove">×</a>'
+			+ '</div>';
 		$("#addcommentnew").append(html);
+		syncCommentPresetChips();
 	}	
 	function commnetdivremove(newdiv){
 		$("#commentdiv_"+newdiv).remove();
+		renumberCommentRows();
 	}
+
+	function getExistingCommentTexts() {
+		var texts = [];
+		$('.commentdiv input[name="comment[]"]').each(function () {
+			var t = (($(this).val() || '') + '').trim();
+			if (t !== '') texts.push(t.toLowerCase());
+		});
+		return texts;
+	}
+
+	function syncCommentPresetChips() {
+		var existing = getExistingCommentTexts();
+		$('#specCommentPresetList .spec-comment-chip').each(function () {
+			var text = (($(this).attr('data-preset') || '') + '').trim().toLowerCase();
+			var used = text !== '' && existing.indexOf(text) !== -1;
+			$(this).toggleClass('is-used', used);
+			$(this).find('i.fa').toggleClass('fa-check', used).toggleClass('fa-plus', !used);
+			$(this).attr('title', used ? 'Already added' : 'Click to add this comment');
+		});
+	}
+
+	function appendCommentText(text) {
+		text = (text || '').trim();
+		if (!text) return false;
+		var existing = getExistingCommentTexts();
+		if (existing.indexOf(text.toLowerCase()) !== -1) {
+			return false;
+		}
+		var filled = false;
+		$('.commentdiv input[name="comment[]"]').each(function () {
+			if (filled) return;
+			if ((($(this).val() || '') + '').trim() === '') {
+				$(this).val(text);
+				filled = true;
+			}
+		});
+		if (!filled) {
+			addmorecomment(text);
+		} else {
+			syncCommentPresetChips();
+		}
+		return true;
+	}
+
+	$(document).on('click', '#specCommentPresetList .spec-comment-chip', function (e) {
+		e.preventDefault();
+		var $chip = $(this);
+		if ($chip.hasClass('is-used')) {
+			return;
+		}
+		var text = (($chip.attr('data-preset') || '') + '').trim();
+		if (!text) return;
+		if (!appendCommentText(text)) {
+			syncCommentPresetChips();
+		}
+	});
+	$(document).on('input change', '.commentdiv input[name="comment[]"]', function () {
+		syncCommentPresetChips();
+	});
+	$(function () {
+		syncCommentPresetChips();
+	});
 	var productSuggestMinChars = 3;
 	var productSuggestXhrByKey = {};
 	var lastProductKeywordByKey = {};

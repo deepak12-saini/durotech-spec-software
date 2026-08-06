@@ -410,24 +410,9 @@
 			</div>
 
 			<div class="spec-ui-card">
-				<div class="spec-ui-card-title"><span>Comments</span><span class="hint">Optional notes on the PDF</span></div>
+				<div class="spec-ui-card-title"><span>Comments</span><span class="hint">Click presets or type your own</span></div>
 				<div class="spec-ui-card-body">
-			<div class="form-group" style="margin-top:0;">
-				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
-				<div class="col-sm-9">				
-					<table  class="commentdiv">
-						<tr>	
-							<th>Comments 1.</th>							
-						</tr>
-						<tr>							
-							<td><input type="text" style="width:400px;" name="comment[]" value=""></td>
-						</tr>
-					</table>
-					<div id="addcommentnew"></div>
-					<a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addmorecomment()"><i class="fa fa-plus"></i> Add More Comment</a>
-				</div>
-			</div>
-
+					<?php echo $this->element('spec_comments_block', ['existingComments' => []]); ?>
 				</div>
 			</div>
 
@@ -443,17 +428,8 @@
 	</div>
 	</div>
 	
+<?php echo $this->element('spec_comments_scripts'); ?>
 <script type="text/javascript">
-	function addmorecomment(){
-		var numItems = $('.commentdiv').length; 
-		var newdiv = 	numItems + 1;
-		//var dtserial = id+'.'+newdiv;	
-		var html = '<table class="commentdiv" id="commentdiv_'+newdiv+'"><tr><th>Comments '+newdiv+'.</th><th><th></tr><tr><td><input type="text" style="width:400px;" name="comment[]" value=""></td><td><a href="javascript:void(0);" style="color:red;" onclick="commnetdivremove('+newdiv+')">&nbsp;&nbsp; X </a></td></tr></table>';
-		$("#addcommentnew").append(html);
-	}	
-	function commnetdivremove(newdiv){
-		$("#commentdiv_"+newdiv).remove();
-	}
 	var productSuggestMinChars = 2;
 	var productSuggestDebounceMs = 220;
 	var productSuggestXhrByKey = {};
@@ -790,6 +766,11 @@
 		$('#addsection').empty();
 		$('#addcommentnew').empty();
 		$('.commentdiv input[name="comment[]"]').eq(0).val('');
+		if (typeof renumberCommentRows === 'function') {
+			renumberCommentRows();
+		} else if (typeof syncCommentPresetChips === 'function') {
+			syncCommentPresetChips();
+		}
 	}
 	function loadSectionsFromData(sections) {
 		if (!sections || !sections.length) return;
@@ -820,8 +801,10 @@
 		if (!comments || !comments.length) return;
 		$('.commentdiv input[name="comment[]"]').eq(0).val(comments[0] || '');
 		for (var i = 1; i < comments.length; i++) {
-			addmorecomment();
-			$('.commentdiv input[name="comment[]"]').eq(i).val(comments[i] || '');
+			addmorecomment(comments[i] || '');
+		}
+		if (typeof syncCommentPresetChips === 'function') {
+			syncCommentPresetChips();
 		}
 	}
 

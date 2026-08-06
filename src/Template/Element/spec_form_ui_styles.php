@@ -415,4 +415,168 @@
 			width: 72px !important;
 		}
 	}
+
+	/* ---- Spec Comments panel (presets chips + polished rows) ---- */
+	.spec-comments-panel {
+		width: 100%;
+	}
+	.spec-comment-presets {
+		border: 1px solid #d7e3ef;
+		border-radius: 12px;
+		background: linear-gradient(180deg, #f8fbff 0%, #eef5fb 100%);
+		padding: 14px;
+		margin: 0 0 16px;
+	}
+	.spec-comment-presets__head {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 6px 12px;
+		margin-bottom: 12px;
+	}
+	.spec-comment-presets__head strong {
+		color: #1f4f7a;
+		font-size: 13px;
+		letter-spacing: 0.02em;
+		text-transform: uppercase;
+	}
+	.spec-comment-presets__head span {
+		color: #6a7f93;
+		font-size: 12px;
+	}
+	.spec-comment-chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+	.spec-comment-chip {
+		display: inline-flex;
+		align-items: flex-start;
+		gap: 6px;
+		max-width: 100%;
+		margin: 0;
+		padding: 8px 12px;
+		border: 1px solid #c9daf0;
+		border-radius: 999px;
+		background: #fff;
+		color: #31485c;
+		font-size: 12px;
+		font-weight: 600;
+		line-height: 1.35;
+		text-align: left;
+		cursor: pointer;
+		box-shadow: 0 2px 6px rgba(20, 33, 61, 0.04);
+		transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+	}
+	.spec-comment-chip .fa {
+		margin-top: 1px;
+		color: #2f7bd7;
+		flex-shrink: 0;
+	}
+	.spec-comment-chip:hover,
+	.spec-comment-chip:focus {
+		border-color: #6fb3e0;
+		background: #eef7fd;
+		color: #1565a8;
+		transform: translateY(-1px);
+		outline: none;
+	}
+	.spec-comment-chip.is-used {
+		border-color: #b7cfc0;
+		background: #eef8f1;
+		color: #2f6b45;
+		cursor: default;
+		transform: none;
+	}
+	.spec-comment-chip.is-used .fa {
+		color: #2f6b45;
+	}
+	.spec-comment-chip.is-used:hover {
+		transform: none;
+	}
+	.spec-comments-list {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+	.spec-comment-row.commentdiv,
+	.commentdiv.spec-comment-row {
+		display: flex;
+		align-items: stretch;
+		gap: 10px;
+		width: 100%;
+		margin: 0;
+		padding: 10px 12px;
+		border: 1px solid #e1e8f0;
+		border-radius: 12px;
+		background: #fff;
+		box-shadow: 0 3px 10px rgba(20, 33, 61, 0.04);
+		box-sizing: border-box;
+	}
+	.spec-comment-row__num {
+		flex: 0 0 34px;
+		width: 34px;
+		height: 34px;
+		align-self: center;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+		background: #e8f1f8;
+		color: #1f4f7a;
+		font-size: 13px;
+		font-weight: 700;
+	}
+	.spec-comment-row .spec-comment-input,
+	.spec-comment-row input.spec-comment-input {
+		flex: 1 1 auto;
+		width: auto !important;
+		min-width: 0;
+		height: 40px;
+		margin: 0;
+		padding: 8px 12px;
+		border: 1px solid #d5dde6;
+		border-radius: 10px;
+		background: #fbfcfe;
+		color: #243b4d;
+		font-size: 13px;
+		box-shadow: none;
+	}
+	.spec-comment-row .spec-comment-input:focus {
+		border-color: #6fb3e0;
+		background: #fff;
+		box-shadow: 0 0 0 3px rgba(111, 179, 224, 0.2);
+		outline: none;
+	}
+	.spec-comment-row__remove {
+		flex: 0 0 34px;
+		width: 34px;
+		height: 34px;
+		align-self: center;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		border: 1px solid #f0c9c9;
+		border-radius: 10px;
+		background: #fff5f5;
+		color: #c0392b !important;
+		font-size: 18px;
+		line-height: 1;
+		text-decoration: none !important;
+		cursor: pointer;
+	}
+	.spec-comment-row__remove:hover {
+		background: #fde8e8;
+		border-color: #e0a0a0;
+	}
+	.spec-comments-add-btn {
+		margin-top: 12px;
+	}
+	@media (max-width: 575px) {
+		.spec-comment-chip {
+			border-radius: 12px;
+			width: 100%;
+		}
+	}
 </style>

@@ -318,41 +318,17 @@
 			</div>
 
 			<div class="spec-ui-card">
-				<div class="spec-ui-card-title"><span>Comments</span><span class="hint">Optional notes on the PDF</span></div>
+				<div class="spec-ui-card-title"><span>Comments</span><span class="hint">Click presets or type your own</span></div>
 				<div class="spec-ui-card-body">
-			<div class="form-group" style="margin-top:0;">
-				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"></label>
-				<div class="col-sm-9">
 					<?php
-					if(!empty($MailerArr['MailerComment'])){
-						$m=1;				
-						foreach($MailerArr['MailerComment'] as $MailerComments){
-					?>			
-					<table  class="commentdiv" id="commentdiv_<?php echo $m; ?>">
-						<tr>	
-							<th>Comments <?php echo $m; ?>.</th>							
-							<th></th>							
-						</tr>
-						<tr>							
-							<td><input type="text" style="width:400px;" name="comment[]" value="<?php echo $MailerComments['comment']; ?>"></td>
-							<td><a href="javascript:void(0);" style="color:red;" onclick="commnetdivremove('<?php echo $m; ?>')">&nbsp;&nbsp; X </a></td>
-						</tr>
-					</table>
-					<?php $m++; }}else{ ?>
-						<table  class="commentdiv">
-							<tr>	
-								<th>Comments 1.</th>							
-							</tr>
-							<tr>							
-								<td><input type="text" style="width:400px;" name="comment[]" value=""></td>
-								
-							</tr>
-						</table>
-					<?php } ?>
-					<div id="addcommentnew"></div>
-					<a href="javascript:void(0);" class="btn btn-xs btn-primary" style="margin-top:10px;" onclick="addmorecomment()"><i class="fa fa-plus"></i> Add More Comment</a>
-				</div>
-			</div>
+					$existingComments = [];
+					if (!empty($MailerArr['MailerComment'])) {
+						foreach ($MailerArr['MailerComment'] as $MailerComments) {
+							$existingComments[] = (string)($MailerComments['comment'] ?? '');
+						}
+					}
+					echo $this->element('spec_comments_block', ['existingComments' => $existingComments]);
+					?>
 				</div>
 			</div>
 
@@ -380,17 +356,8 @@
 	</div>
 	</div>
 	
+<?php echo $this->element('spec_comments_scripts'); ?>
 <script type="text/javascript">
-	function addmorecomment(){
-		var numItems = $('.commentdiv').length; 
-		var newdiv = 	numItems + 1;
-		//var dtserial = id+'.'+newdiv;	
-		var html = '<table class="commentdiv" id="commentdiv_'+newdiv+'"><tr><th>Comments '+newdiv+'.</th><th><th></tr><tr><td><input type="text" style="width:400px;" name="comment[]" value=""></td><td><a href="javascript:void(0);" style="color:red;" onclick="commnetdivremove('+newdiv+')">&nbsp;&nbsp; X </a></td></tr></table>';
-		$("#addcommentnew").append(html);
-	}	
-	function commnetdivremove(newdiv){
-		$("#commentdiv_"+newdiv).remove();
-	}
 	function onkeyups(id,newdiv){
 		var csrfToken = $('input[name="_csrfToken"]').val() || '';
 		$.ajax({
