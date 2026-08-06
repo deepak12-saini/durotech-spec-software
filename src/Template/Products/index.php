@@ -325,13 +325,15 @@ $categoryIconClass = function ($slug, $name) {
 	transform: translateY(-4px);
 	box-shadow: 0 10px 26px rgba(0,0,0,0.14);
 }
-.product_page_list_section h2 {
+/* Outer title under image (keep visible when not hovering figure) */
+.product_page_list_section > h2 {
 	font-size: 15px;
 	margin-top: 10px;
 	color: #777797;
 	font-weight: 500;
 	border-bottom-color: #fff;
 }
+/* Grid-safe sizing only — do NOT kill snip0077 hover (bg / overlays) */
 .product_page_list_section figure.snip0077,
 .product_page_list_section figure {
 	float: none !important;
@@ -340,9 +342,18 @@ $categoryIconClass = function ($slug, $name) {
 	max-width: 100% !important;
 	width: 100% !important;
 	max-height: none !important;
-	background: transparent !important;
+	position: relative;
+	overflow: hidden;
+	/* Keep default snip0077.blue fill; hover sets #2889c9 */
 }
-.product_page_list_section img {
+.product_page_list_section figure.snip0077.blue {
+	background: #f4f4f4;
+}
+.product_page_list_section figure.snip0077.blue:hover,
+.product_page_list_section:hover figure.snip0077.blue {
+	background: #2889c9;
+}
+.product_page_list_section figure.snip0077 img {
 	width: 100% !important;
 	max-width: 220px !important;
 	height: auto !important;
@@ -350,6 +361,82 @@ $categoryIconClass = function ($slug, $name) {
 	object-fit: contain;
 	display: block;
 	margin: 0 auto;
+	opacity: 1;
+	-webkit-transition: all 0.5s;
+	transition: all 0.5s;
+}
+/* Restore previous hover: dim/blur image + white title + frame */
+.product_page_list_section figure.snip0077:hover img,
+.product_page_list_section:hover figure.snip0077 img {
+	opacity: 0.2;
+	-webkit-filter: blur(5px);
+	filter: blur(5px);
+	-webkit-transform: scale(1.1);
+	transform: scale(1.1);
+}
+.product_page_list_section figure.snip0077 figcaption {
+	top: 50%;
+	left: 24px;
+	right: 24px;
+	position: absolute;
+	-webkit-transform: translateY(-50%);
+	transform: translateY(-50%);
+	pointer-events: none;
+	z-index: 2;
+}
+.product_page_list_section figure.snip0077 figcaption h2,
+.product_page_list_section figure.snip0077 figcaption h2 span {
+	margin: 0;
+	color: rgba(255, 255, 255, 0);
+	text-shadow: 0 0 40px #ffffff;
+	-webkit-transition: all 0.5s linear;
+	transition: all 0.5s linear;
+	font-size: 15px;
+	font-weight: 600;
+	text-transform: none;
+	border-bottom: none !important;
+}
+.product_page_list_section figure.snip0077:hover figcaption h2,
+.product_page_list_section figure.snip0077:hover figcaption h2 span,
+.product_page_list_section:hover figure.snip0077 figcaption h2,
+.product_page_list_section:hover figure.snip0077 figcaption h2 span {
+	color: #ffffff !important;
+	text-shadow: none;
+}
+.product_page_list_section figure.snip0077:before,
+.product_page_list_section figure.snip0077:after {
+	position: absolute;
+	top: 16px;
+	right: 16px;
+	bottom: 16px;
+	left: 16px;
+	content: '';
+	opacity: 0;
+	box-shadow: 0 0 0 30px rgba(255, 255, 255, 0.15);
+	-webkit-transition: opacity 0.5s, transform 0.5s;
+	transition: opacity 0.5s, transform 0.5s;
+	z-index: 1;
+	pointer-events: none;
+}
+.product_page_list_section figure.snip0077:before {
+	border-top: 2px solid #fff;
+	border-bottom: 2px solid #fff;
+	-webkit-transform: scale(0, 1);
+	transform: scale(0, 1);
+}
+.product_page_list_section figure.snip0077:after {
+	border-right: 2px solid #fff;
+	border-left: 2px solid #fff;
+	-webkit-transform: scale(1, 0);
+	transform: scale(1, 0);
+}
+.product_page_list_section figure.snip0077:hover:before,
+.product_page_list_section figure.snip0077:hover:after,
+.product_page_list_section:hover figure.snip0077:before,
+.product_page_list_section:hover figure.snip0077:after {
+	opacity: 0.8;
+	-webkit-transform: scale(1);
+	transform: scale(1);
 }
 .product_page_list_section .product-placeholder {
 	width: 100% !important;
@@ -362,6 +449,14 @@ $categoryIconClass = function ($slug, $name) {
 	justify-content: center;
 	margin: 0 auto;
 	box-sizing: border-box;
+	-webkit-transition: all 0.5s;
+	transition: all 0.5s;
+}
+.product_page_list_section figure.snip0077:hover .product-placeholder,
+.product_page_list_section:hover figure.snip0077 .product-placeholder {
+	opacity: 0.2;
+	-webkit-filter: blur(5px);
+	filter: blur(5px);
 }
 .products-main a {
 	color: #777797;
