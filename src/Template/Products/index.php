@@ -287,18 +287,25 @@ $categoryIconClass = function ($slug, $name) {
 	min-width: 0;
 }
 
-/* --- Previous product box styles (unchanged look) --- */
+/* --- Product cards: fixed 3-column grid + 5px gap --- */
 .product_image_section {
 	text-align: center;
 	padding: 0;
-	display: flex;
-	flex-wrap: wrap;
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 5px;
+}
+/* Bootstrap .clearfix ::before/::after become grid items and leave an empty first cell */
+.product_image_section::before,
+.product_image_section::after {
+	content: none !important;
+	display: none !important;
 }
 .product_image_section > a {
 	display: block;
-	flex: 0 0 calc(33.333% - 4px);
-	max-width: calc(33.333% - 4px);
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
 	box-sizing: border-box;
 	text-decoration: none !important;
 }
@@ -308,10 +315,11 @@ $categoryIconClass = function ($slug, $name) {
 	box-shadow: 0 4px 14px rgba(0,0,0,0.08);
 	padding: 12px 12px 18px;
 	margin: 0;
-	width: 100%;
-	float: none;
+	width: 100% !important;
+	float: none !important;
 	transition: transform 0.2s ease, box-shadow 0.2s ease;
 	box-sizing: border-box;
+	overflow: hidden;
 }
 .product_page_list_section:hover {
 	transform: translateY(-4px);
@@ -323,6 +331,37 @@ $categoryIconClass = function ($slug, $name) {
 	color: #777797;
 	font-weight: 500;
 	border-bottom-color: #fff;
+}
+.product_page_list_section figure.snip0077,
+.product_page_list_section figure {
+	float: none !important;
+	margin: 0 auto !important;
+	min-width: 0 !important;
+	max-width: 100% !important;
+	width: 100% !important;
+	max-height: none !important;
+	background: transparent !important;
+}
+.product_page_list_section img {
+	width: 100% !important;
+	max-width: 220px !important;
+	height: auto !important;
+	aspect-ratio: 1 / 1;
+	object-fit: contain;
+	display: block;
+	margin: 0 auto;
+}
+.product_page_list_section .product-placeholder {
+	width: 100% !important;
+	max-width: 220px !important;
+	height: auto !important;
+	aspect-ratio: 1 / 1;
+	padding-top: 0 !important;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0 auto;
+	box-sizing: border-box;
 }
 .products-main a {
 	color: #777797;
@@ -469,9 +508,9 @@ $categoryIconClass = function ($slug, $name) {
 	.products-mobile-cat-btn {
 		display: inline-flex;
 	}
-	.product_image_section > a {
-		flex: 0 0 calc(50% - 3px);
-		max-width: calc(50% - 3px);
+	.product_image_section {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 5px;
 	}
 	.category-hero__content {
 		min-height: 0;
@@ -498,11 +537,11 @@ $categoryIconClass = function ($slug, $name) {
 		flex: 1;
 	}
 	.product_image_section {
+		grid-template-columns: 1fr;
 		gap: 5px;
 		padding: 0;
 	}
 	.product_image_section > a {
-		flex: 0 0 100%;
 		max-width: 100%;
 	}
 }
@@ -588,7 +627,7 @@ $categoryIconClass = function ($slug, $name) {
 				<?= $this->Flash->render() ?>
 
 				<?php if (!empty($productsList)): ?>
-				<div class="product_image_section clearfix">
+				<div class="product_image_section">
 					<?php foreach ($productsList as $product): ?>
 						<?php
 							$pTitle = (string)($product['Product']['title'] ?? '');
@@ -597,14 +636,14 @@ $categoryIconClass = function ($slug, $name) {
 							$isDefaultImage = (($product['Product']['is_image'] ?? '') == '250250-defult.png' || ($product['Product']['is_image'] ?? '') == 1);
 						?>
 						<a href="<?= h($this->Url->build('/product/' . $pSlug)) ?>">
-							<div class="product_page_list_section col-lg-4 col-md-4 col-sm-6">
+							<div class="product_page_list_section">
 								<figure class="snip0077 blue">
 									<?php if ($isDefaultImage): ?>
-										<div style="padding-top:100px; width:250px !important; height:250px !important; color:#000 !important; margin:0 auto;">
-											<span style="font-size:25px; font-weight:bold; color:#2889c9 !important;"><?= h($pTitle) ?></span>
+										<div class="product-placeholder" style="color:#000 !important;">
+											<span style="font-size:25px; font-weight:bold; color:  #2889c9 !important;"><?= h($pTitle) ?></span>
 										</div>
 									<?php else: ?>
-										<img src="<?= h(SITEURL) ?>productimg/<?= h($pImage) ?>" alt="<?= h($pTitle) ?>" style="width:250px !important; height:250px !important;" />
+										<img src="<?= h(SITEURL) ?>productimg/<?= h($pImage) ?>" alt="<?= h($pTitle) ?>" />
 									<?php endif; ?>
 									<figcaption>
 										<h2><span><?= h($pTitle) ?></span></h2>
