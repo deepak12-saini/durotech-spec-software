@@ -376,7 +376,7 @@
 <script src='<?php echo SITEURL; ?>jquery.elevatezoom.js'></script>
 
 <div class="banner_durolab col-lg-12 col-md-12 col-sm-12">
-	<img src="<?php echo SITEURL; ?>customdurotech/images/durotoll_banner.jpg">
+	<img src="<?php echo SITEURL; ?>customdurotech/images/durotoll_banner.jpeg">
 </div>
 
 <div class="container">
