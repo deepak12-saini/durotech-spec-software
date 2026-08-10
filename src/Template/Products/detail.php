@@ -167,7 +167,7 @@
 		}
 		.related_product_detail_page .related-slider-wrap {
 			position: relative;
-			padding: 0 36px;
+			padding: 0 48px;
 		}
 		.related_product_detail_page .related-slider {
 			margin: 0;
@@ -220,33 +220,37 @@
 			line-height: 1.35;
 			color: #009688;
 		}
-		.related_product_detail_page .slick-prev,
-		.related_product_detail_page .slick-next {
-			width: 40px;
-			height: 40px;
+		.related_product_detail_page .related-slider-wrap .slick-prev,
+		.related_product_detail_page .related-slider-wrap .slick-next {
+			width: 42px;
+			height: 42px;
 			border-radius: 50%;
 			background: #fff !important;
 			border: 1px solid rgba(0, 150, 136, 0.25);
 			box-shadow: 0 4px 14px rgba(0, 51, 102, 0.1);
-			z-index: 3;
+			z-index: 5;
+			top: 50%;
+			transform: translateY(-50%);
+			cursor: pointer;
+			pointer-events: auto;
 			transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 		}
-		.related_product_detail_page .slick-prev:hover,
-		.related_product_detail_page .slick-prev:focus,
-		.related_product_detail_page .slick-next:hover,
-		.related_product_detail_page .slick-next:focus {
+		.related_product_detail_page .related-slider-wrap .slick-prev:hover,
+		.related_product_detail_page .related-slider-wrap .slick-prev:focus,
+		.related_product_detail_page .related-slider-wrap .slick-next:hover,
+		.related_product_detail_page .related-slider-wrap .slick-next:focus {
 			background: #f3fbfa !important;
 			border-color: #009688;
 			box-shadow: 0 6px 16px rgba(0, 150, 136, 0.18);
 		}
-		.related_product_detail_page .slick-prev {
+		.related_product_detail_page .related-slider-wrap .slick-prev {
 			left: 0;
 		}
-		.related_product_detail_page .slick-next {
+		.related_product_detail_page .related-slider-wrap .slick-next {
 			right: 0;
 		}
-		.related_product_detail_page .slick-prev:before,
-		.related_product_detail_page .slick-next:before {
+		.related_product_detail_page .related-slider-wrap .slick-prev:before,
+		.related_product_detail_page .related-slider-wrap .slick-next:before {
 			color: #009688;
 			opacity: 1;
 			font-size: 22px;
@@ -266,7 +270,7 @@
 		}
 		@media (max-width: 767px) {
 			.related_product_detail_page .related-slider-wrap {
-				padding: 0 28px;
+				padding: 0 40px;
 			}
 			.heading-related {
 				font-size: 22px;
@@ -759,7 +763,7 @@
 								<h5 class="text-purple">Product Datasheet</h5>
 								<iframe 
 									src="<?= $products['Product']['datasheet']; ?>" 
-									style="width:100%; height:300px; border:1px solid #ddd; border-radius:5px;" 
+									style="width:100%; height:700px; border:1px solid #ddd; border-radius:5px;" 
 									frameborder="0">
 								</iframe>
 								<br>
@@ -776,7 +780,7 @@
 										<h5 class="text-purple">MSDS <?= chr(65 + $index); ?> Download</h5>
 										<iframe 
 											src="<?= $msdsFile; ?>" 
-											style="width:100%; height:300px; border:1px solid #ddd; border-radius:5px;" 
+											style="width:100%; height:700px; border:1px solid #ddd; border-radius:5px;" 
 											frameborder="0">
 										</iframe>
 										<br>
@@ -804,7 +808,7 @@
 								<h5 class="text-purple">Voc Certificate</h5>
 								<iframe 
 									src="<?= $products['Product']['voc_pdf']; ?>" 
-									style="width:100%; height:300px; border:1px solid #ddd; border-radius:5px;" 
+									style="width:100%; height:700px; border:1px solid #ddd; border-radius:5px;" 
 									frameborder="0">
 								</iframe>
 								<br>
@@ -1035,42 +1039,61 @@
 <script>
 $(document).ready(function(){
     var $section = $('.related_product_detail_page');
-    var $slider = $('.related-slider');
-    if (!$slider.length || !$slider.children('.related-slide').length) {
+    var $wrap = $section.find('.related-slider-wrap');
+    var $slider = $section.find('.related-slider');
+    var slideCount = $slider.children('.related-slide').length;
+    if (!$slider.length || !slideCount) {
         return;
     }
     if (!$.fn.slick) {
         return;
     }
+
+    /* Keep slidesToShow below slide count so infinite + autoplay actually move. */
+    function showCount(preferred) {
+        return Math.max(1, Math.min(preferred, Math.max(1, slideCount - 1)));
+    }
+
     $slider.slick({
-        /* If slidesToShow >= number of slides, nothing visibly moves — keep below slide count. */
-        slidesToShow: 3,
+        slidesToShow: showCount(3),
         slidesToScroll: 1,
         arrows: true,
-        dots: true,
-        infinite: true,
+        dots: slideCount > 1,
+        infinite: slideCount > 1,
         draggable: true,
+        swipe: true,
         swipeToSlide: true,
-        autoplay: true,
-        autoplaySpeed: 3500,
+        touchMove: true,
+        autoplay: slideCount > 1,
+        autoplaySpeed: 3000,
         speed: 500,
         pauseOnHover: true,
+        pauseOnFocus: false,
+        pauseOnDotsHover: true,
         adaptiveHeight: false,
+        appendArrows: $wrap,
+        appendDots: $wrap,
+        prevArrow: '<button type="button" class="slick-prev" aria-label="Previous related product">Previous</button>',
+        nextArrow: '<button type="button" class="slick-next" aria-label="Next related product">Next</button>',
         responsive: [
             {
                 breakpoint: 992,
                 settings: {
-                    slidesToShow: 2,
+                    slidesToShow: showCount(2),
                     slidesToScroll: 1,
-                    dots: true
+                    arrows: true,
+                    dots: slideCount > 1,
+                    autoplay: slideCount > 1
                 }
             },
             {
                 breakpoint: 768,
                 settings: {
-                    slidesToShow: 2,
+                    slidesToShow: showCount(2),
                     slidesToScroll: 1,
-                    dots: true
+                    arrows: true,
+                    dots: slideCount > 1,
+                    autoplay: slideCount > 1
                 }
             },
             {
@@ -1078,17 +1101,25 @@ $(document).ready(function(){
                 settings: {
                     slidesToShow: 1,
                     slidesToScroll: 1,
-                    dots: true
+                    arrows: true,
+                    dots: slideCount > 1,
+                    autoplay: slideCount > 1
                 }
             }
         ]
     });
-    $slider.slick('slickPlay');
-    $section.on('mouseenter', function() {
-        $slider.slick('slickPause');
-    });
-    $section.on('mouseleave', function() {
+
+    if (slideCount > 1) {
         $slider.slick('slickPlay');
+    }
+
+    /* Manual arrow / dot click — then resume auto-rotate */
+    $wrap.on('click', '.slick-prev, .slick-next, .slick-dots button', function() {
+        if (slideCount > 1) {
+            setTimeout(function() {
+                $slider.slick('slickPlay');
+            }, 50);
+        }
     });
 });
 </script>
