@@ -94,42 +94,26 @@ class CategoriesController extends AppController
             }
 
             if (!empty($data['image']['name'])) {
-                $file = $data['image'];
-                $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-                $arrExt = ['jpg', 'jpeg', 'gif', 'png'];
-                if (in_array($ext, $arrExt)) {
-                    $uploadPath = WWW_ROOT . 'category' . DS;
-                    if (!is_dir($uploadPath)) {
-                        mkdir($uploadPath, 0755, true);
-                    }
-                    $dest = $uploadPath . $file['name'];
-                    if (move_uploaded_file($file['tmp_name'], $dest)) {
-                        $categoryData['image'] = $file['name'];
-                    }
-                } else {
+                $savedName = $this->saveCategoryUpload($data['image'], 'cat');
+                if ($savedName === false) {
                     $this->Flash->error('Please upload a valid image extension (jpg, jpeg, gif, png).');
                     return $this->redirect(rtrim(SITEURL, '/') . '/admin/categories/add');
+                }
+                if ($savedName !== null) {
+                    $categoryData['image'] = $savedName;
                 }
             } else {
                 $categoryData['image'] = '250250-defult.png';
             }
 
             if (!empty($data['category_page_image']['name'])) {
-                $file = $data['category_page_image'];
-                $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-                $arrExt = ['jpg', 'jpeg', 'gif', 'png'];
-                if (in_array($ext, $arrExt)) {
-                    $uploadPath = WWW_ROOT . 'category' . DS;
-                    if (!is_dir($uploadPath)) {
-                        mkdir($uploadPath, 0755, true);
-                    }
-                    $dest = $uploadPath . $file['name'];
-                    if (move_uploaded_file($file['tmp_name'], $dest)) {
-                        $categoryData['category_page_image'] = $file['name'];
-                    }
-                } else {
+                $savedName = $this->saveCategoryUpload($data['category_page_image'], 'page');
+                if ($savedName === false) {
                     $this->Flash->error('Please upload a valid category page image extension (jpg, jpeg, gif, png).');
                     return $this->redirect(rtrim(SITEURL, '/') . '/admin/categories/add');
+                }
+                if ($savedName !== null) {
+                    $categoryData['category_page_image'] = $savedName;
                 }
             }
 
@@ -174,11 +158,14 @@ class CategoriesController extends AppController
                     'meta_description', 'status', 'is_brand', 'id', 'sort'
                 ]));
             }
+            // Do not merge raw upload arrays (image / category_page_image) into text fields.
             if (!empty($data) && is_array($data)) {
                 $categoryData = array_merge($categoryData, array_intersect_key($data, array_flip([
-                    'category_name', 'description', 'meta_title', 'meta_keyword', 'meta_description', 'status', 'is_brand', 'sort', 'category_page_image'
+                    'category_name', 'description', 'meta_title', 'meta_keyword', 'meta_description', 'status', 'is_brand', 'sort'
                 ])));
             }
+            // Keep existing image fields unless a new file is uploaded below.
+            unset($categoryData['image'], $categoryData['category_page_image']);
 
             $categoryName = (string)($categoryData['category_name'] ?? '');
             $catSlug = str_replace(' ', '-', strtolower($categoryName));
@@ -186,42 +173,26 @@ class CategoriesController extends AppController
             $categoryData['slug'] = $catSlug;
 
             if (!empty($data['image']['name'])) {
-                $file = $data['image'];
-                $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-                $arrExt = ['jpg', 'jpeg', 'gif', 'png'];
-                if (in_array($ext, $arrExt)) {
-                    $uploadPath = WWW_ROOT . 'category' . DS;
-                    if (!is_dir($uploadPath)) {
-                        mkdir($uploadPath, 0755, true);
-                    }
-                    $dest = $uploadPath . $file['name'];
-                    if (move_uploaded_file($file['tmp_name'], $dest)) {
-                        $categoryData['image'] = $file['name'];
-                    }
-                } else {
+                $savedName = $this->saveCategoryUpload($data['image'], 'cat', $id);
+                if ($savedName === false) {
                     $this->Flash->error('Please upload a valid image extension.');
                     return $this->redirect(rtrim(SITEURL, '/') . '/admin/categories/edit/' . $id);
+                }
+                if ($savedName !== null) {
+                    $categoryData['image'] = $savedName;
                 }
             } else {
                 $categoryData['image'] = $category->get('image') ?? '250250-defult.png';
             }
 
             if (!empty($data['category_page_image']['name'])) {
-                $file = $data['category_page_image'];
-                $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-                $arrExt = ['jpg', 'jpeg', 'gif', 'png'];
-                if (in_array($ext, $arrExt)) {
-                    $uploadPath = WWW_ROOT . 'category' . DS;
-                    if (!is_dir($uploadPath)) {
-                        mkdir($uploadPath, 0755, true);
-                    }
-                    $dest = $uploadPath . $file['name'];
-                    if (move_uploaded_file($file['tmp_name'], $dest)) {
-                        $categoryData['category_page_image'] = $file['name'];
-                    }
-                } else {
+                $savedName = $this->saveCategoryUpload($data['category_page_image'], 'page', $id);
+                if ($savedName === false) {
                     $this->Flash->error('Please upload a valid category page image extension.');
                     return $this->redirect(rtrim(SITEURL, '/') . '/admin/categories/edit/' . $id);
+                }
+                if ($savedName !== null) {
+                    $categoryData['category_page_image'] = $savedName;
                 }
             } else {
                 $categoryData['category_page_image'] = $category->get('category_page_image') ?? '';
@@ -262,6 +233,46 @@ class CategoriesController extends AppController
             $this->set(compact('Category', 'category'));
         }
         return null;
+    }
+
+    /**
+     * Save category upload with a unique filename so Category Image and Category Page Image never overwrite each other.
+     *
+     * @param array $file Uploaded file array from request
+     * @param string $prefix Short prefix: "cat" (listing image) or "page" (category page hero)
+     * @param int|null $categoryId Optional category id for edit
+     * @return string|null|false Saved basename on success, null if empty upload, false if invalid extension/failed move
+     */
+    private function saveCategoryUpload(array $file, string $prefix, ?int $categoryId = null)
+    {
+        $original = (string)($file['name'] ?? '');
+        if ($original === '') {
+            return null;
+        }
+        $ext = strtolower(pathinfo($original, PATHINFO_EXTENSION));
+        if (!in_array($ext, ['jpg', 'jpeg', 'gif', 'png'], true)) {
+            return false;
+        }
+
+        $uploadPath = WWW_ROOT . 'category' . DS;
+        if (!is_dir($uploadPath)) {
+            mkdir($uploadPath, 0755, true);
+        }
+
+        $safeBase = preg_replace('/[^a-zA-Z0-9_-]+/', '-', pathinfo($original, PATHINFO_FILENAME));
+        $safeBase = trim((string)$safeBase, '-');
+        if ($safeBase === '') {
+            $safeBase = 'image';
+        }
+        $idPart = $categoryId ? (string)$categoryId : 'new';
+        $savedName = $prefix . '-' . $idPart . '-' . date('YmdHis') . '-' . substr(uniqid('', true), -6) . '-' . $safeBase . '.' . $ext;
+        $dest = $uploadPath . $savedName;
+
+        if (!is_uploaded_file($file['tmp_name'] ?? '') || !move_uploaded_file($file['tmp_name'], $dest)) {
+            return false;
+        }
+
+        return $savedName;
     }
 
     /**

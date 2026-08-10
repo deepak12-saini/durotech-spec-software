@@ -50,16 +50,17 @@
 				</div>
 			</div>
 			<div class="form-group">
-				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Category Image: </label>
+				<label class="col-sm-3 control-label no-padding-right" for="category_image"> Category Image: </label>
 				<div class="col-sm-9">
-					<input type="file" name="image" id="image" >
+					<input type="file" name="image" id="category_image" accept=".jpg,.jpeg,.gif,.png,image/*">
+					<br><small>Used on category listing / browse cards.</small>
 				</div>
-		</div>
+			</div>
 			<div class="form-group">
-				<label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Category Page Image: </label>
+				<label class="col-sm-3 control-label no-padding-right" for="category_page_image"> Category Page Image: </label>
 				<div class="col-sm-9">
-					<input type="file" name="category_page_image" id="category_page_image" >
-					<br><small>Used on category detail page hero section.</small>
+					<input type="file" name="category_page_image" id="category_page_image" accept=".jpg,.jpeg,.gif,.png,image/*">
+					<br><small>Used on category detail page hero section. Saved with a different filename than Category Image.</small>
 				</div>
 			</div>
 			<div class="form-group">

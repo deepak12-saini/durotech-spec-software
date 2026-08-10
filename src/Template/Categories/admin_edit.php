@@ -48,20 +48,31 @@
 					</div>
 				</div>
 				<div class="form-group">
-					<label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Category Image: </label>
+					<label class="col-sm-3 control-label no-padding-right" for="category_image"> Category Image: </label>
 					<div class="col-sm-9">
-						<input type="file" name="image" id="image" >
+						<input type="file" name="image" id="category_image" accept=".jpg,.jpeg,.gif,.png,image/*">
 						<br/>
-						<?php $img = $Category['Category']['image'] ?? ''; if ($img): ?><p><img src="<?= h(rtrim(SITEURL, '/') . '/files/category/' . $img) ?>" alt=""/></p><?php endif; ?>
+						<?php $img = $Category['Category']['image'] ?? ''; if ($img): ?>
+							<p>
+								<img src="<?= h(rtrim(SITEURL, '/') . '/files/category/' . $img) ?>" alt="Category image" style="max-width:280px;height:auto;"/>
+								<br><small>File: <?= h($img) ?></small>
+							</p>
+						<?php endif; ?>
+						<small>Used on category listing / browse cards.</small>
 					</div>
 				</div>
 				<div class="form-group">
-					<label class="col-sm-3 control-label no-padding-right" for="form-field-1"> Category Page Image: </label>
+					<label class="col-sm-3 control-label no-padding-right" for="category_page_image"> Category Page Image: </label>
 					<div class="col-sm-9">
-						<input type="file" name="category_page_image" id="category_page_image" >
+						<input type="file" name="category_page_image" id="category_page_image" accept=".jpg,.jpeg,.gif,.png,image/*">
 						<br/>
-						<?php $pageImg = $Category['Category']['category_page_image'] ?? ''; if ($pageImg): ?><p><img src="<?= h(rtrim(SITEURL, '/') . '/files/category/' . $pageImg) ?>" alt=""/></p><?php endif; ?>
-						<small>Used on category detail page hero section.</small>
+						<?php $pageImg = $Category['Category']['category_page_image'] ?? ''; if ($pageImg): ?>
+							<p>
+								<img src="<?= h(rtrim(SITEURL, '/') . '/files/category/' . $pageImg) ?>" alt="Category page image" style="max-width:280px;height:auto;"/>
+								<br><small>File: <?= h($pageImg) ?></small>
+							</p>
+						<?php endif; ?>
+						<small>Used on category detail page hero section. Saved with a different filename than Category Image.</small>
 					</div>
 				</div>
 				<div class="form-group">
