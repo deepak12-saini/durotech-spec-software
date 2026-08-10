@@ -139,23 +139,140 @@
 		}
 		.heading-related {
 			color: #009688 !important;
+			margin: 0;
+			font-size: 26px;
+			font-weight: 600;
+			letter-spacing: 0.01em;
+		}
+		.related_product_detail_page {
+			padding: 28px 0 36px;
+			margin-top: 28px !important;
+		}
+		.related_product_detail_page .related-head {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			text-align: center;
+			gap: 6px;
+			margin-bottom: 22px;
+		}
+		.related_product_detail_page .related-eyebrow {
+			margin: 0;
+			font-size: 12px;
+			font-weight: 600;
+			letter-spacing: 0.12em;
+			text-transform: uppercase;
+			color: #009688;
+			opacity: 0.85;
+		}
+		.related_product_detail_page .related-slider-wrap {
+			position: relative;
+			padding: 0 36px;
 		}
 		.related_product_detail_page .related-slider {
-			margin: 0 -8px;
+			margin: 0;
 		}
 		.related_product_detail_page .related-slide {
-			padding: 0 8px;
+			padding: 8px 10px 12px;
 			box-sizing: border-box;
 		}
+		.related_product_detail_page .related-card {
+			background: #fff;
+			border: 1px solid rgba(0, 150, 136, 0.12);
+			border-radius: 14px;
+			box-shadow: 0 6px 18px rgba(0, 51, 102, 0.06);
+			padding: 14px 14px 16px;
+			height: 100%;
+			transition: box-shadow 0.25s ease, border-color 0.25s ease;
+		}
+		.related_product_detail_page .related-card:hover {
+			box-shadow: 0 10px 26px rgba(0, 51, 102, 0.1);
+			border-color: rgba(0, 150, 136, 0.28);
+		}
+		.related_product_detail_page .related-card > a {
+			display: block;
+			text-decoration: none !important;
+			color: inherit;
+		}
+		.related_product_detail_page .related-card figure.snip0077 {
+			float: none !important;
+			margin: 0 auto !important;
+			min-width: 0 !important;
+			max-width: 100% !important;
+			width: 100% !important;
+			max-height: none !important;
+			border-radius: 10px;
+			overflow: hidden;
+		}
+		.related_product_detail_page .related-card figure.snip0077 img {
+			width: 100%;
+			max-width: 220px;
+			height: auto;
+			aspect-ratio: 1 / 1;
+			object-fit: contain;
+			margin: 0 auto;
+			display: block;
+		}
+		.related_product_detail_page .related-card .text-highlight {
+			margin: 12px 0 0;
+			font-size: 15px;
+			font-weight: 600;
+			line-height: 1.35;
+			color: #009688;
+		}
+		.related_product_detail_page .slick-prev,
+		.related_product_detail_page .slick-next {
+			width: 40px;
+			height: 40px;
+			border-radius: 50%;
+			background: #fff !important;
+			border: 1px solid rgba(0, 150, 136, 0.25);
+			box-shadow: 0 4px 14px rgba(0, 51, 102, 0.1);
+			z-index: 3;
+			transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+		}
+		.related_product_detail_page .slick-prev:hover,
+		.related_product_detail_page .slick-prev:focus,
+		.related_product_detail_page .slick-next:hover,
+		.related_product_detail_page .slick-next:focus {
+			background: #f3fbfa !important;
+			border-color: #009688;
+			box-shadow: 0 6px 16px rgba(0, 150, 136, 0.18);
+		}
 		.related_product_detail_page .slick-prev {
-			left: -12px;
-			z-index: 2;
+			left: 0;
 		}
 		.related_product_detail_page .slick-next {
-			right: -12px;
-			z-index: 2;
+			right: 0;
 		}
-				.text-highlight {
+		.related_product_detail_page .slick-prev:before,
+		.related_product_detail_page .slick-next:before {
+			color: #009688;
+			opacity: 1;
+			font-size: 22px;
+			line-height: 1;
+		}
+		.related_product_detail_page .slick-dots {
+			bottom: -28px;
+		}
+		.related_product_detail_page .slick-dots li button:before {
+			color: #009688;
+			opacity: 0.35;
+			font-size: 9px;
+		}
+		.related_product_detail_page .slick-dots li.slick-active button:before {
+			color: #009688;
+			opacity: 1;
+		}
+		@media (max-width: 767px) {
+			.related_product_detail_page .related-slider-wrap {
+				padding: 0 28px;
+			}
+			.heading-related {
+				font-size: 22px;
+			}
+		}
+		.text-highlight {
 			color: #009688; /* Teal - better contrast */
 		}
 
@@ -753,24 +870,33 @@
         <!-- Related Products -->
         <div class="related_product_detail_page col-12 mt-5">
             <div class="container">
-				<h3 class="heading-related">Related Products</h3>
-                <div class="related-slider">
-                    <?php foreach ($random as $randoms) { ?>
-                        <div class="related-slide">
-                            <div class="text-center mb-3">
-                            <a href="<?= $this->Url->build('/product/' . ($randoms['Product']['slug'] ?? '')); ?>">
-                                <figure class="snip0077 blue">
-                                    <img src="<?= SITEURL . 'productimg/' . ($randoms['Product']['image'] ?? ''); ?>" class="img-fluid" alt="<?= h($randoms['Product']['title'] ?? ''); ?>">
-                                    <figcaption>
-                                        <h2><?= h($randoms['Product']['title'] ?? ''); ?></h2>
-                                    </figcaption>
-                                    <p class="text-highlight"><?= h($randoms['Product']['title'] ?? ''); ?></p>
-                                </figure>
-                            </a>
-                            </div>
-                        </div>
-                    <?php } ?>
-                </div>
+				<div class="related-head">
+					<p class="related-eyebrow">More to explore</p>
+					<h3 class="heading-related">Related Products</h3>
+				</div>
+				<div class="related-slider-wrap">
+					<div class="related-slider">
+						<?php foreach ($random as $randoms) {
+							$relatedTitle = (string)($randoms['Product']['title'] ?? '');
+							$relatedSlug = (string)($randoms['Product']['slug'] ?? '');
+							$relatedImage = (string)($randoms['Product']['image'] ?? '');
+						?>
+							<div class="related-slide">
+								<div class="related-card text-center">
+									<a href="<?= h($this->Url->build('/product/' . $relatedSlug)); ?>">
+										<figure class="snip0077 blue">
+											<img src="<?= h(SITEURL . 'productimg/' . $relatedImage) ?>" class="img-fluid" alt="<?= h($relatedTitle) ?>">
+											<figcaption>
+												<h2><?= h($relatedTitle) ?></h2>
+											</figcaption>
+										</figure>
+										<p class="text-highlight"><?= h($relatedTitle) ?></p>
+									</a>
+								</div>
+							</div>
+						<?php } ?>
+					</div>
+				</div>
             </div>
         </div>
     <?php } ?>
@@ -921,7 +1047,7 @@ $(document).ready(function(){
         slidesToShow: 3,
         slidesToScroll: 1,
         arrows: true,
-        dots: false,
+        dots: true,
         infinite: true,
         draggable: true,
         swipeToSlide: true,
@@ -929,26 +1055,30 @@ $(document).ready(function(){
         autoplaySpeed: 3500,
         speed: 500,
         pauseOnHover: true,
+        adaptiveHeight: false,
         responsive: [
             {
                 breakpoint: 992,
                 settings: {
                     slidesToShow: 2,
-                    slidesToScroll: 1
+                    slidesToScroll: 1,
+                    dots: true
                 }
             },
             {
                 breakpoint: 768,
                 settings: {
                     slidesToShow: 2,
-                    slidesToScroll: 1
+                    slidesToScroll: 1,
+                    dots: true
                 }
             },
             {
                 breakpoint: 576,
                 settings: {
                     slidesToShow: 1,
-                    slidesToScroll: 1
+                    slidesToScroll: 1,
+                    dots: true
                 }
             }
         ]
