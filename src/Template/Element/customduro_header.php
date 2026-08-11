@@ -404,6 +404,10 @@
 	.example5 .navbar-brand {
 		overflow: visible !important;
 	}
+	/*
+	 * Extra header logos (kangaroo + Since 1977) — kept for reuse.
+	 * Uncomment together with the badge <img> tags in the navbar-brand HTML.
+	 *
 	.example5 .navbar-brand.header-brand-logos {
 		align-items: center;
 		display: flex !important;
@@ -442,7 +446,6 @@
 		display: block;
 		flex-shrink: 0;
 	}
-	/* Mobile: one row — Durotech + AU + Since 1977 + hamburger (use available space, keep sharp) */
 	@media (max-width: 767px) {
 		#header_top.header_fixed .container.example5 {
 			padding-left: 10px;
@@ -544,6 +547,7 @@
 			max-width: 160px;
 		}
 	}
+	*/
 	.example5 .navbar-brand {
 		align-items: center;
 		display: flex !important;
@@ -1109,10 +1113,12 @@ $currentMenuIsProduct = ($currentMenuController === 'Products' && $currentMenuAc
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
 					</button>
-					<a class="navbar-brand header-brand-logos" href="<?php echo SITEURL; ?>">
-						<img class="header-brand-logos__main" src="<?php echo SITEURL; ?>customdurotech/images/durotech_logo_new.png?v=20260520" alt="Durotech — Commercial waterproofing and sealants, Australian Made and Owned">
+					<a class="navbar-brand" href="<?php echo SITEURL; ?>">
+						<img src="<?php echo SITEURL; ?>customdurotech/images/durotech_logo_new.png?v=20260520" alt="Durotech — Commercial waterproofing and sealants, Australian Made and Owned">
+						<?php /* Extra header badges (uncomment to show again beside Durotech logo):
 						<img class="header-brand-logos__aus" src="<?php echo SITEURL; ?>customdurotech/images/australian-owned-logo.png" alt="Australian Owned Since 1977" width="88" height="88">
 						<img class="header-brand-logos__since" src="<?php echo SITEURL; ?>customdurotech/images/since-1977-logo.png" alt="Since 1977 — Trialled, Tested, Approved">
+						*/ ?>
 					</a>
 				</div>
 				<div id="navbar5" class="navbar-collapse collapse">
