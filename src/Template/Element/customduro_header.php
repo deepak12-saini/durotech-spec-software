@@ -404,6 +404,146 @@
 	.example5 .navbar-brand {
 		overflow: visible !important;
 	}
+	.example5 .navbar-brand.header-brand-logos {
+		align-items: center;
+		display: flex !important;
+		flex-direction: row;
+		flex-wrap: nowrap;
+		gap: 10px;
+		padding-top: 8px;
+		padding-bottom: 8px;
+	}
+	.example5 .navbar-brand.header-brand-logos > .header-brand-logos__main {
+		object-fit: contain;
+		object-position: left center;
+		width: auto;
+		height: auto;
+		max-height: 68px;
+		max-width: min(220px, 52vw);
+		display: block;
+	}
+	.example5 .navbar-brand.header-brand-logos > .header-brand-logos__aus {
+		object-fit: contain;
+		object-position: center;
+		width: auto;
+		height: auto;
+		max-height: 56px;
+		max-width: 56px;
+		display: block;
+		flex-shrink: 0;
+	}
+	.example5 .navbar-brand.header-brand-logos > .header-brand-logos__since {
+		object-fit: contain;
+		object-position: center;
+		width: auto;
+		height: auto;
+		max-height: 52px;
+		max-width: 110px;
+		display: block;
+		flex-shrink: 0;
+	}
+	/* Mobile: one row — Durotech + AU + Since 1977 + hamburger (use available space, keep sharp) */
+	@media (max-width: 767px) {
+		#header_top.header_fixed .container.example5 {
+			padding-left: 10px;
+			padding-right: 6px;
+		}
+		#header_top .navbar-header {
+			align-items: center;
+			padding: 8px 0;
+			gap: 6px;
+			flex-wrap: nowrap;
+		}
+		#header_top .navbar-toggle {
+			margin-top: 0;
+			padding: 9px 10px;
+			align-self: center;
+			flex-shrink: 0;
+		}
+		#header_top .navbar-brand.header-brand-logos {
+			flex-wrap: nowrap !important;
+			align-items: center;
+			gap: 8px;
+			padding: 4px 4px 4px 0;
+			max-width: none;
+			min-width: 0;
+			flex: 1 1 auto;
+		}
+		#header_top .navbar-brand.header-brand-logos > .header-brand-logos__main {
+			flex: 0 1 auto;
+			min-width: 0;
+			max-width: min(160px, 38vw);
+			width: auto;
+			max-height: 48px;
+			height: auto;
+		}
+		#header_top .navbar-brand.header-brand-logos > .header-brand-logos__aus {
+			flex: 0 0 auto;
+			max-height: 46px;
+			max-width: 46px;
+			width: 46px;
+			height: auto;
+			margin-left: 0;
+			display: block !important;
+		}
+		#header_top .navbar-brand.header-brand-logos > .header-brand-logos__since {
+			flex: 0 0 auto;
+			display: block !important;
+			max-height: 44px;
+			max-width: 100px;
+			width: auto;
+			height: auto;
+		}
+	}
+	@media (max-width: 380px) {
+		#header_top .navbar-brand.header-brand-logos {
+			gap: 6px;
+		}
+		#header_top .navbar-brand.header-brand-logos > .header-brand-logos__main {
+			max-height: 42px;
+			max-width: min(130px, 34vw);
+		}
+		#header_top .navbar-brand.header-brand-logos > .header-brand-logos__aus {
+			max-height: 40px;
+			max-width: 40px;
+			width: 40px;
+		}
+		#header_top .navbar-brand.header-brand-logos > .header-brand-logos__since {
+			max-height: 38px;
+			max-width: 86px;
+		}
+	}
+	@media (min-width: 768px) {
+		.example5 .navbar-brand.header-brand-logos {
+			gap: 14px;
+		}
+		.example5 .navbar-brand.header-brand-logos > .header-brand-logos__main {
+			max-height: 92px;
+			max-width: 280px;
+		}
+		.example5 .navbar-brand.header-brand-logos > .header-brand-logos__aus {
+			max-height: 78px;
+			max-width: 78px;
+		}
+		.example5 .navbar-brand.header-brand-logos > .header-brand-logos__since {
+			max-height: 72px;
+			max-width: 140px;
+		}
+	}
+	@media (min-width: 1200px) {
+		.example5 .navbar-brand.header-brand-logos > .header-brand-logos__main {
+			max-height: 100px;
+			max-width: 300px;
+		}
+		.example5 .navbar-brand.header-brand-logos > .header-brand-logos__aus {
+			max-height: 88px;
+			max-width: 88px;
+		}
+		.example5 .navbar-brand.header-brand-logos > .header-brand-logos__since {
+			max-height: 84px;
+			max-width: 160px;
+		}
+	}
 	.example5 .navbar-brand {
 		align-items: center;
 		display: flex !important;
@@ -969,7 +1109,10 @@ $currentMenuIsProduct = ($currentMenuController === 'Products' && $currentMenuAc
 						<span class="icon-bar"></span>
 						<span class="icon-bar"></span>
 					</button>
-					<a class="navbar-brand" href="<?php echo SITEURL; ?>"><img src="<?php echo SITEURL; ?>customdurotech/images/durotech_logo_new.png?v=20260520" alt="Durotech — Commercial waterproofing and sealants, Australian Made and Owned">
+					<a class="navbar-brand header-brand-logos" href="<?php echo SITEURL; ?>">
+						<img class="header-brand-logos__main" src="<?php echo SITEURL; ?>customdurotech/images/durotech_logo_new.png?v=20260520" alt="Durotech — Commercial waterproofing and sealants, Australian Made and Owned">
+						<img class="header-brand-logos__aus" src="<?php echo SITEURL; ?>customdurotech/images/australian-owned-logo.png" alt="Australian Owned Since 1977" width="88" height="88">
+						<img class="header-brand-logos__since" src="<?php echo SITEURL; ?>customdurotech/images/since-1977-logo.png" alt="Since 1977 — Trialled, Tested, Approved">
 					</a>
 				</div>
 				<div id="navbar5" class="navbar-collapse collapse">

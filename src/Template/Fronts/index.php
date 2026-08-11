@@ -77,6 +77,45 @@
 		color: #828282;
 		padding-bottom: 50px;
 	}
+	.content.home-about {
+		padding-left: 16px;
+		padding-right: 16px;
+		box-sizing: border-box;
+	}
+	.content.home-about h1 {
+		margin-top: 8px;
+		margin-bottom: 14px;
+		font-size: 28px;
+	}
+	.content.home-about p {
+		max-width: 920px;
+		margin: 0 auto;
+		line-height: 1.7;
+		padding: 0 8px;
+		box-sizing: border-box;
+	}
+	@media (max-width: 767px) {
+		.content.home-about {
+			padding: 18px 18px 28px;
+		}
+		.content.home-about h1 {
+			font-size: 24px;
+			margin-bottom: 12px;
+		}
+		.content.home-about p {
+			font-size: 15px;
+			line-height: 1.65;
+			text-align: center !important;
+			padding: 0;
+		}
+		.duro_service {
+			padding-left: 10px !important;
+			padding-right: 10px !important;
+		}
+		.container_service .tab_service {
+			margin-bottom: 16px;
+		}
+	}
 	.work_section_img {
 		text-align: center;
 		padding: 7% 0px;
@@ -448,8 +487,8 @@
 			</div>
 		</div>
 
-		<div class="content col-lg-12 col-md-12 col-sm-12">
-			 <h1  style="text-align:center; color:#2889c8; font-weight: 600; text-decoration:underline;">About Us</h1>
+		<div class="content home-about col-lg-12 col-md-12 col-sm-12">
+			 <h1 style="text-align:center; color:#2889c8; font-weight: 600; text-decoration:underline;">About Us</h1>
 			 <p style="text-align:center;">Durotech Australia is a <?php echo (int)DUROTECH_YEARS; ?> year old Australian Made and Owned construction chemical manufacturer. The Durotech Group was established in <?php echo (int)DUROTECH_FOUNDED_YEAR; ?> to provide Innovative waterproofing and coating technology to the local and global market. We continue to lead the market with end to end solutions offering the latest technology backed systems. The Durotech group established itself as a market leader and a preferred choice for many Contractors, Architects, Distributors and industries partners.</p>			 
 		</div>
 		
