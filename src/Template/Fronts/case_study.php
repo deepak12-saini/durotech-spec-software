@@ -220,26 +220,189 @@ $featuredImage = !empty($caseData['featured_image'])
     letter-spacing: 0.04em;
 }
 
-.project-gallery .gallery-item {
+.gallery-title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 26px 0 16px;
+}
+.gallery-title-row .gallery-title {
+    margin: 0;
+}
+.gallery-hint {
+    margin: 0;
+    font-size: 13px;
+    color: #6a849c;
+    font-weight: 500;
+}
+
+/* Before / After pair */
+.project-gallery--compare {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 8px;
+}
+.project-gallery--compare .gallery-label {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #1f5f8e;
+}
+
+/* Modern masonry-style photo grid */
+.project-gallery--masonry {
+    column-count: 3;
+    column-gap: 16px;
+}
+.project-gallery--masonry .gallery-card {
+    break-inside: avoid;
+    margin: 0 0 16px;
+}
+.gallery-item {
     display: block;
     position: relative;
-    border-radius: 12px;
+    border-radius: 14px;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(20, 33, 61, 0.1);
+    box-shadow: 0 6px 18px rgba(20, 33, 61, 0.1);
     background: #e8eef4;
-    min-height: 220px;
+    text-decoration: none !important;
+    border: 1px solid rgba(31, 95, 142, 0.1);
+    transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
 }
-
-.project-gallery .gallery-item img {
+.gallery-item img {
     width: 100%;
-    height: 260px;
-    object-fit: cover;
+    height: auto;
     display: block;
-    transition: transform 0.32s ease;
+    vertical-align: middle;
+    transition: transform 0.4s ease;
+}
+.project-gallery--compare .gallery-item img {
+    height: 280px;
+    object-fit: cover;
+}
+.project-gallery--masonry .gallery-item img {
+    min-height: 180px;
+    max-height: 420px;
+    object-fit: cover;
+    width: 100%;
+}
+.gallery-item__overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, rgba(12, 40, 68, 0.05) 0%, rgba(12, 40, 68, 0.55) 100%);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+}
+.gallery-item__zoom {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    color: #1f5f8e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(8px);
+    transition: transform 0.25s ease;
+}
+.gallery-item:hover,
+.gallery-item:focus {
+    box-shadow: 0 12px 28px rgba(20, 33, 61, 0.16);
+    border-color: rgba(31, 95, 142, 0.28);
+    transform: translateY(-2px);
+    outline: none;
+}
+.gallery-item:hover img,
+.gallery-item:focus img {
+    transform: scale(1.06);
+}
+.gallery-item:hover .gallery-item__overlay,
+.gallery-item:focus .gallery-item__overlay {
+    opacity: 1;
+}
+.gallery-item:hover .gallery-item__zoom,
+.gallery-item:focus .gallery-item__zoom {
+    transform: translateY(0);
 }
 
-.project-gallery .gallery-item:hover img {
-    transform: scale(1.05);
+/* Simple lightbox */
+.image-lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(6, 16, 30, 0.92);
+    align-items: center;
+    justify-content: center;
+    padding: 26px;
+}
+.image-lightbox.is-open {
+    display: flex;
+}
+.image-lightbox img {
+    max-width: min(1100px, 92vw);
+    max-height: 86vh;
+    border-radius: 10px;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+}
+.image-lightbox__close {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    border: 0;
+    border-radius: 999px;
+    width: 42px;
+    height: 42px;
+    font-size: 24px;
+    line-height: 1;
+    color: #fff;
+    background: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+    z-index: 2;
+}
+.image-lightbox__close:hover {
+    background: rgba(255, 255, 255, 0.32);
+}
+.image-lightbox__nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+    font-size: 28px;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 2;
+}
+.image-lightbox__nav:hover {
+    background: rgba(255, 255, 255, 0.32);
+}
+.image-lightbox__prev { left: 16px; }
+.image-lightbox__next { right: 16px; }
+.image-lightbox__counter {
+    position: absolute;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
 }
 
 .datasheet-section iframe {
@@ -350,41 +513,10 @@ $featuredImage = !empty($caseData['featured_image'])
     padding: 10px 16px;
 }
 
-/* Simple lightbox */
-.image-lightbox {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 2000;
-    background: rgba(6, 16, 30, 0.9);
-    align-items: center;
-    justify-content: center;
-    padding: 26px;
-}
-
-.image-lightbox.is-open {
-    display: flex;
-}
-
-.image-lightbox img {
-    max-width: min(1100px, 95vw);
-    max-height: 88vh;
-    border-radius: 10px;
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
-}
-
-.image-lightbox__close {
-    position: absolute;
-    top: 16px;
-    right: 20px;
-    border: 0;
-    border-radius: 999px;
-    width: 38px;
-    height: 38px;
-    font-size: 24px;
-    line-height: 1;
-    color: #fff;
-    background: rgba(255, 255, 255, 0.2);
+@media (max-width: 992px) {
+    .project-gallery--masonry {
+        column-count: 2;
+    }
 }
 
 @media (max-width: 768px) {
@@ -438,9 +570,31 @@ $featuredImage = !empty($caseData['featured_image'])
         font-size: 14px;
         line-height: 1.7;
     }
-    .project-gallery .gallery-item img {
-        height: 210px;
+    .project-gallery--masonry {
+        column-count: 2;
+        column-gap: 12px;
     }
+    .project-gallery--masonry .gallery-card {
+        margin-bottom: 12px;
+    }
+    .project-gallery--compare {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    .project-gallery--compare .gallery-item img {
+        height: 220px;
+    }
+    .project-gallery--masonry .gallery-item img {
+        max-height: 320px;
+        min-height: 160px;
+    }
+    .image-lightbox__nav {
+        width: 38px;
+        height: 38px;
+        font-size: 24px;
+    }
+    .image-lightbox__prev { left: 8px; }
+    .image-lightbox__next { right: 8px; }
     .datasheet-section iframe {
         height: 420px;
     }
@@ -450,6 +604,9 @@ $featuredImage = !empty($caseData['featured_image'])
 }
 
 @media (max-width: 575px) {
+    .project-gallery--masonry {
+        column-count: 1;
+    }
     .products-used-col {
         width: 100%;
     }
@@ -533,20 +690,22 @@ $featuredImage = !empty($caseData['featured_image'])
             <section id="gallery" class="case-section">
                 <?php if ($beforeImg || $afterImg): ?>
                     <h4 class="gallery-title" style="margin-top:0;">Before / After Comparison</h4>
-                    <div class="row project-gallery">
+                    <div class="project-gallery project-gallery--compare">
                         <?php if ($beforeImg): ?>
-                            <div class="col-md-6 col-sm-6 mb-4">
-                                <p class="fw-bold mb-2">Before</p>
+                            <div>
+                                <p class="gallery-label">Before</p>
                                 <a href="<?= h($caseMediaUrl($beforeImg['filename'] ?? '')) ?>" class="gallery-item" data-lightbox="case-gallery">
                                     <img src="<?= h($caseMediaUrl($beforeImg['filename'] ?? '')) ?>" alt="Before" loading="lazy">
+                                    <span class="gallery-item__overlay" aria-hidden="true"><span class="gallery-item__zoom"><i class="fa fa-search-plus"></i></span></span>
                                 </a>
                             </div>
                         <?php endif; ?>
                         <?php if ($afterImg): ?>
-                            <div class="col-md-6 col-sm-6 mb-4">
-                                <p class="fw-bold mb-2">After</p>
+                            <div>
+                                <p class="gallery-label">After</p>
                                 <a href="<?= h($caseMediaUrl($afterImg['filename'] ?? '')) ?>" class="gallery-item" data-lightbox="case-gallery">
                                     <img src="<?= h($caseMediaUrl($afterImg['filename'] ?? '')) ?>" alt="After" loading="lazy">
+                                    <span class="gallery-item__overlay" aria-hidden="true"><span class="gallery-item__zoom"><i class="fa fa-search-plus"></i></span></span>
                                 </a>
                             </div>
                         <?php endif; ?>
@@ -554,12 +713,16 @@ $featuredImage = !empty($caseData['featured_image'])
                 <?php endif; ?>
 
                 <?php if (!empty($otherGalleryImages)): ?>
-                    <h4 class="gallery-title"<?= ($beforeImg || $afterImg) ? '' : ' style="margin-top:0;"' ?>>Project Photo Gallery</h4>
-                    <div class="row project-gallery">
+                    <div class="gallery-title-row"<?= ($beforeImg || $afterImg) ? '' : ' style="margin-top:0;"' ?>>
+                        <h4 class="gallery-title">Project Photo Gallery</h4>
+                        <p class="gallery-hint">Click any photo to enlarge</p>
+                    </div>
+                    <div class="project-gallery project-gallery--masonry">
                         <?php foreach ($otherGalleryImages as $img): ?>
-                            <div class="col-md-4 col-sm-6 mb-4">
+                            <div class="gallery-card">
                                 <a href="<?= h($caseMediaUrl($img['filename'] ?? '')) ?>" class="gallery-item" data-lightbox="case-gallery">
                                     <img src="<?= h($caseMediaUrl($img['filename'] ?? '')) ?>" alt="Project photo" loading="lazy">
+                                    <span class="gallery-item__overlay" aria-hidden="true"><span class="gallery-item__zoom"><i class="fa fa-search-plus"></i></span></span>
                                 </a>
                             </div>
                         <?php endforeach; ?>
@@ -633,7 +796,10 @@ $featuredImage = !empty($caseData['featured_image'])
 
 <div class="image-lightbox" id="imageLightbox" aria-hidden="true">
     <button type="button" class="image-lightbox__close" id="imageLightboxClose" aria-label="Close image">×</button>
+    <button type="button" class="image-lightbox__nav image-lightbox__prev" id="imageLightboxPrev" aria-label="Previous image">‹</button>
+    <button type="button" class="image-lightbox__nav image-lightbox__next" id="imageLightboxNext" aria-label="Next image">›</button>
     <img src="" alt="Preview" id="imageLightboxImg">
+    <div class="image-lightbox__counter" id="imageLightboxCounter"></div>
 </div>
 
 <script>
@@ -712,27 +878,62 @@ $featuredImage = !empty($caseData['featured_image'])
     var lightbox = document.getElementById('imageLightbox');
     var lightboxImg = document.getElementById('imageLightboxImg');
     var closeBtn = document.getElementById('imageLightboxClose');
-    document.querySelectorAll('[data-lightbox="case-gallery"]').forEach(function (a) {
-        a.addEventListener('click', function (e) {
-            e.preventDefault();
-            lightboxImg.src = this.getAttribute('href');
-            lightbox.classList.add('is-open');
-            lightbox.setAttribute('aria-hidden', 'false');
-        });
-    });
+    var prevBtn = document.getElementById('imageLightboxPrev');
+    var nextBtn = document.getElementById('imageLightboxNext');
+    var counterEl = document.getElementById('imageLightboxCounter');
+    var galleryLinks = Array.prototype.slice.call(document.querySelectorAll('[data-lightbox="case-gallery"]'));
+    var currentIndex = 0;
+
+    function updateLightbox() {
+        if (!galleryLinks.length) return;
+        var link = galleryLinks[currentIndex];
+        lightboxImg.src = link.getAttribute('href');
+        lightboxImg.alt = link.querySelector('img') ? (link.querySelector('img').getAttribute('alt') || 'Preview') : 'Preview';
+        if (counterEl) {
+            counterEl.textContent = (currentIndex + 1) + ' / ' + galleryLinks.length;
+        }
+    }
+
+    function openLightbox(index) {
+        if (!galleryLinks.length) return;
+        currentIndex = index;
+        updateLightbox();
+        lightbox.classList.add('is-open');
+        lightbox.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+
     function closeLightbox() {
         lightbox.classList.remove('is-open');
         lightbox.setAttribute('aria-hidden', 'true');
         lightboxImg.src = '';
+        document.body.style.overflow = '';
     }
+
+    function showNext(delta) {
+        if (!galleryLinks.length) return;
+        currentIndex = (currentIndex + delta + galleryLinks.length) % galleryLinks.length;
+        updateLightbox();
+    }
+
+    galleryLinks.forEach(function (a, index) {
+        a.addEventListener('click', function (e) {
+            e.preventDefault();
+            openLightbox(index);
+        });
+    });
+
     closeBtn.addEventListener('click', closeLightbox);
+    if (prevBtn) prevBtn.addEventListener('click', function (e) { e.stopPropagation(); showNext(-1); });
+    if (nextBtn) nextBtn.addEventListener('click', function (e) { e.stopPropagation(); showNext(1); });
     lightbox.addEventListener('click', function (e) {
         if (e.target === lightbox) closeLightbox();
     });
     document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && lightbox.classList.contains('is-open')) {
-            closeLightbox();
-        }
+        if (!lightbox.classList.contains('is-open')) return;
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') showNext(-1);
+        if (e.key === 'ArrowRight') showNext(1);
     });
 })();
 </script>
