@@ -85,7 +85,7 @@
 		echo $this->element('admin_sidebar');
 	} catch (\Throwable $e) {
 		// Fallback so layout still shows; sidebar may be missing
-		echo '<div id="sidebar" class="sidebar responsive menu-min"><ul class="nav nav-list"><li><a href="' . (defined('SITEURL') ? SITEURL : '/') . 'admin/users/dashboard"><i class="menu-icon fa fa-tachometer"></i><span class="menu-text"> Dashboard </span></a></li><li><a href="' . (defined('SITEURL') ? SITEURL : '/') . 'admin/mailers"><i class="menu-icon fa fa-file"></i><span class="menu-text"> DuroEzy Spec </span></a></li></ul></div>';
+		echo '<div id="sidebar" class="sidebar responsive"><ul class="nav nav-list"><li><a href="' . (defined('SITEURL') ? SITEURL : '/') . 'admin/users/dashboard"><i class="menu-icon fa fa-tachometer"></i><span class="menu-text"> Dashboard </span></a></li><li><a href="' . (defined('SITEURL') ? SITEURL : '/') . 'admin/mailers"><i class="menu-icon fa fa-file"></i><span class="menu-text"> DuroEzy Spec </span></a></li></ul></div>';
 	}
 	?>
 	<div class="main-content">
@@ -158,20 +158,20 @@
 				setTimeout(function() { $el.fadeOut(400, function() { $el.remove(); }); }, 4500);
 			});
 
-			/* Always start sidebar collapsed; keep ACE plugin state in sync so toggle can expand. */
-			(function forceSidebarCollapsed() {
+			/* Sidebar starts open; click « to collapse to icons, » to expand again. */
+			(function ensureSidebarOpen() {
 				var $sidebar = $('#sidebar');
 				if (!$sidebar.length) return;
 
 				try { ace.settings.remove('sidebar', 'collapsed'); } catch (e) {}
 
-				$sidebar.addClass('menu-min');
+				$sidebar.removeClass('menu-min');
 
 				var api = $sidebar.data('ace_sidebar');
 				if (api && typeof api.set === 'function') {
-					api.set('minimized', true);
+					api.set('minimized', false);
 				} else if (api) {
-					api.minimized = true;
+					api.minimized = false;
 				}
 
 				var $icon = $('#sidebar-collapse').find('.ace-icon').first();
@@ -179,7 +179,7 @@
 					var icon1 = $icon.attr('data-icon1');
 					var icon2 = $icon.attr('data-icon2');
 					if (icon1 && icon2) {
-						$icon.removeClass(icon1).addClass(icon2);
+						$icon.removeClass(icon2).addClass(icon1);
 					}
 				}
 			})();

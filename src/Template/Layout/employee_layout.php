@@ -145,20 +145,20 @@
 	<?php //echo $this->element('sql_dump'); ?>
 	<script type="text/javascript">
 		jQuery(function($) {
-			/* Always start sidebar collapsed; keep ACE plugin state in sync so toggle can expand. */
-			(function forceSidebarCollapsed() {
+			/* Sidebar starts open; click « to collapse to icons, » to expand again. */
+			(function ensureSidebarOpen() {
 				var $sidebar = $('#sidebar');
 				if (!$sidebar.length) return;
 
 				try { ace.settings.remove('sidebar', 'collapsed'); } catch (e) {}
 
-				$sidebar.addClass('menu-min');
+				$sidebar.removeClass('menu-min');
 
 				var api = $sidebar.data('ace_sidebar');
 				if (api && typeof api.set === 'function') {
-					api.set('minimized', true);
+					api.set('minimized', false);
 				} else if (api) {
-					api.minimized = true;
+					api.minimized = false;
 				}
 
 				var $icon = $('#sidebar-collapse').find('.ace-icon').first();
@@ -166,7 +166,7 @@
 					var icon1 = $icon.attr('data-icon1');
 					var icon2 = $icon.attr('data-icon2');
 					if (icon1 && icon2) {
-						$icon.removeClass(icon1).addClass(icon2);
+						$icon.removeClass(icon2).addClass(icon1);
 					}
 				}
 			})();

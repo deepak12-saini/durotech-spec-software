@@ -18,13 +18,22 @@
 		font-weight: 700;
 		color: #478fca;
 	}
+	#main-container > #sidebar.sidebar {
+		position: relative;
+		z-index: 1026;
+	}
+	#main-container > #sidebar.sidebar .sidebar-toggle,
+	#main-container > #sidebar.sidebar #sidebar-collapse {
+		position: relative;
+		z-index: 1030;
+	}
 </style>
 	<script type="text/javascript">
 				try{ace.settings.check('main-container' , 'fixed')}catch(e){}
 			</script>
 
 			<!-- #section:basics/sidebar -->
-			<div id="sidebar" class="sidebar responsive menu-min">
+			<div id="sidebar" class="sidebar responsive">
 				<script type="text/javascript">
 					try{ace.settings.check('sidebar' , 'fixed')}catch(e){}
 				</script>
@@ -209,7 +218,7 @@
 
 				<!-- #section:basics/sidebar.layout.minimize -->
 				<div class="sidebar-toggle sidebar-collapse" id="sidebar-collapse">
-					<i class="ace-icon fa fa-angle-double-right" data-icon1="ace-icon fa fa-angle-double-left" data-icon2="ace-icon fa fa-angle-double-right"></i>
+					<i class="ace-icon fa fa-angle-double-left" data-icon1="ace-icon fa fa-angle-double-left" data-icon2="ace-icon fa fa-angle-double-right"></i>
 				</div>
 
 				<!-- /section:basics/sidebar.layout.minimize -->
