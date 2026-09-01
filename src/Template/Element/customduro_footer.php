@@ -478,7 +478,7 @@
 						<?php /* <li><a href="<?php echo SITEURL; ?>specifiers">Specifications</a></li> */ ?>
 						<li><a href="<?php echo SITEURL; ?>about">Our Mission</a></li>
 						<li><a href="<?php echo SITEURL; ?>video">Video Gallery</a></li>
-						<li><a href="<?php echo SITEURL; ?>durotech-institute-of-waterproofing">Durotech Institute of Waterproofings</a></li>
+						<li><a href="<?php echo SITEURL; ?>durotech-institute-of-waterproofing">Durotech Institute of Waterproofing</a></li>
 					</ul>
 				</div>
 			</div>
