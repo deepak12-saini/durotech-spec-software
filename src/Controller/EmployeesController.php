@@ -694,8 +694,7 @@ public function employee_send_v3() {
     $cloneFromId = (int)$this->request->getQuery('from_id');
 
     $hasSaveStatusColumn = $this->Mailer->getSchema()->getColumn('save_status');
-    // "Start New Spec (discard this draft)" must delete drafts first; otherwise the next block
-    // auto-redirects to ?resume=1 and the user can never leave draft mode.
+    // Optional discard only — Create New Spec stays blank; drafts load only with ?resume=1.
     if (!$this->request->is('post') && $hasSaveStatusColumn && $this->request->getQuery('discard_draft')) {
         $draftQuery = $this->Mailer->find()
             ->where([
@@ -716,25 +715,8 @@ public function employee_send_v3() {
         return $this->redirect(['action' => 'employee_send_v3']);
     }
 
-    if (!$this->request->is('post') && !$adaptiveMode && !$templateMode && !$cloneMode && !$claudeMode && !$this->request->getQuery('resume') && $hasSaveStatusColumn) {
-        $existingDraft = $this->Mailer->find()
-            ->select(['id'])
-            ->where([
-                'Mailer.employee_id' => $employee_id,
-                'Mailer.save_status' => 'draft',
-                'Mailer.type' => 3,
-            ])
-            ->orderDesc('Mailer.id');
-        $this->_applyMailerNotDeletedToQuery($existingDraft);
-        $existingDraft = $existingDraft->first();
-        if ($existingDraft) {
-            $this->Flash->set(
-                'Draft Found: continuing from Resume Draft to avoid duplicate draft entries.',
-                ['element' => 'default', 'params' => ['class' => 'alert alert-warning']]
-            );
-            return $this->redirect(['action' => 'employee_send_v3', '?' => ['resume' => '1']]);
-        }
-    }
+    // Do NOT auto-resume. Create New Spec opens blank.
+    // Draft is loaded only when the user clicks Resume Draft (?resume=1).
 
     if ($this->request->is('post')) {
         $formData = (array)$this->request->getData();
@@ -746,27 +728,15 @@ public function employee_send_v3() {
         $draftIdFromForm = isset($formData['draft_id']) ? (int)$formData['draft_id'] : 0;
         $hasSaveStatusColumn = $this->Mailer->getSchema()->getColumn('save_status');
 
-        // Final submit: prefer existing draft (by id, then latest open draft) so track stays reserved.
-        if ($isFinalSubmit && $hasSaveStatusColumn) {
+        // Final submit: only continue an open draft when this form is that draft (?resume / draft_id).
+        // Create New Spec (blank, draft_id=0) must create a new submitted row — never hijack another draft.
+        if ($isFinalSubmit && $hasSaveStatusColumn && $draftIdFromForm > 0) {
             $draftToSubmit = null;
-            if ($draftIdFromForm > 0) {
-                $existing = $this->Mailer->find()->where(['Mailer.id' => $draftIdFromForm])->first();
-                $notDeleted = !$this->Mailer->getSchema()->getColumn('deleted_at')
-                    || ($existing && $existing->get('deleted_at') === null);
-                if ($existing && $notDeleted && (int)$existing->employee_id === (int)$employee_id && $existing->save_status === 'draft') {
-                    $draftToSubmit = $existing;
-                }
-            }
-            if (!$draftToSubmit) {
-                $latestDraftQ = $this->Mailer->find()
-                    ->where([
-                        'Mailer.employee_id' => $employee_id,
-                        'Mailer.save_status' => 'draft',
-                        'Mailer.type' => 3,
-                    ])
-                    ->orderDesc('Mailer.id');
-                $this->_applyMailerNotDeletedToQuery($latestDraftQ);
-                $draftToSubmit = $latestDraftQ->first();
+            $existing = $this->Mailer->find()->where(['Mailer.id' => $draftIdFromForm])->first();
+            $notDeleted = !$this->Mailer->getSchema()->getColumn('deleted_at')
+                || ($existing && $existing->get('deleted_at') === null);
+            if ($existing && $notDeleted && (int)$existing->employee_id === (int)$employee_id && $existing->save_status === 'draft') {
+                $draftToSubmit = $existing;
             }
             if ($draftToSubmit) {
                 $submitDraftId = (int)$draftToSubmit->id;
@@ -1822,16 +1792,15 @@ public function specDraftAutosave()
         }
     }
     if (!$mailer) {
-        // Reuse latest existing employee draft when draft_id is missing to prevent duplicate draft rows.
-        $latestDraft = $this->Mailer->find()
-            ->where([
-                'Mailer.employee_id' => $employee_id,
-                'Mailer.save_status' => 'draft',
-                'Mailer.type' => 3,
-            ])
-            ->orderDesc('Mailer.id');
-        $this->_applyMailerNotDeletedToQuery($latestDraft);
-        $mailer = $latestDraft->first();
+        // Create New Spec / blank form: start a new draft row.
+        // Do not reuse another open draft — that is only for Resume Draft (draft_id set).
+        $mailer = $this->Mailer->newEntity([
+            'employee_id' => $employee_id,
+            'type' => 3,
+            'spec_v' => 1,
+            'save_status' => 'draft',
+            'created' => date('Y-m-d H:i:s'),
+        ]);
     }
 
     $dateInput = (string)($data['date'] ?? date('d/m/Y'));
@@ -1852,55 +1821,27 @@ public function specDraftAutosave()
         ? (((int)$data['spectype'] === 1) ? 0 : 1)
         : (int)($data['use_area'] ?? 0);
 
-    $reservedTrack = '';
-    if ($mailer) {
-        $mailer->name = $name;
-        $mailer->email = $email;
-        $mailer->company = $company;
-        $mailer->address = $address;
-        $mailer->specification = $specification;
-        $mailer->date = $formattedDate;
-        $mailer->type = $type;
-        $mailer->subject = $subject;
-        $mailer->use_area = $use_area;
-        // Legacy drafts with empty track: reserve once (unique) and keep on later autosaves.
-        if ($this->Mailer->normalizeSpecTrackNumber((string)($mailer->tracknumber ?? '')) === '') {
-            $mailer->tracknumber = $this->Mailer->allocateUniqueSpecTrackNumber(
-                (string)($data['tracknumber'] ?? ''),
-                (int)$mailer->id
-            );
-        }
-        $this->Mailer->save($mailer);
-        $draftId = $mailer->id;
-        $reservedTrack = (string)$mailer->tracknumber;
-    } else {
-        $reservedTrack = $this->Mailer->allocateUniqueSpecTrackNumber(
+    $mailer->name = $name;
+    $mailer->email = $email;
+    $mailer->company = $company;
+    $mailer->address = $address;
+    $mailer->specification = $specification;
+    $mailer->date = $formattedDate;
+    $mailer->type = $type;
+    $mailer->subject = $subject;
+    $mailer->use_area = $use_area;
+    // Legacy drafts with empty track: reserve once (unique) and keep on later autosaves.
+    if ($this->Mailer->normalizeSpecTrackNumber((string)($mailer->tracknumber ?? '')) === '') {
+        $mailer->tracknumber = $this->Mailer->allocateUniqueSpecTrackNumber(
             (string)($data['tracknumber'] ?? ''),
-            null
+            !empty($mailer->id) ? (int)$mailer->id : null
         );
-        $entity = $this->Mailer->newEntity([
-            'employee_id' => $employee_id,
-            'spec_v' => 0,
-            'tracknumber' => $reservedTrack,
-            'name' => $name,
-            'email' => $email,
-            'company' => $company,
-            'address' => $address,
-            'specification' => $specification,
-            'date' => $formattedDate,
-            'type' => $type,
-            'subject' => $subject,
-            'use_area' => $use_area,
-            'save_status' => 'draft',
-            'created' => date('Y-m-d H:i:s'),
-        ]);
-        if ($this->Mailer->save($entity)) {
-            $draftId = $entity->id;
-            $reservedTrack = (string)$entity->tracknumber;
-        } else {
-            return $this->_specDraftJsonResponse(['success' => false, 'error' => 'Save failed.']);
-        }
     }
+    if (!$this->Mailer->save($mailer)) {
+        return $this->_specDraftJsonResponse(['success' => false, 'error' => 'Save failed.']);
+    }
+    $draftId = $mailer->id;
+    $reservedTrack = (string)$mailer->tracknumber;
 
     // Keep only one active draft per employee/type by removing older duplicate drafts.
     $otherDrafts = $this->Mailer->find()

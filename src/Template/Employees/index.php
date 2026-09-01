@@ -196,13 +196,13 @@
 			$faIcon = function ($faClass) {
 				return '<i class="fa ' . h($faClass) . '" style="margin-right:5px;"></i>';
 			};
-			// Create New Spec: always opens an empty form (no draft loaded)
+			// Create New Spec: always opens a blank form (no draft loaded; no auto-resume)
 			echo $this->Html->link(
 				$faIcon('fa-plus') . 'Create New Spec',
 				['controller' => 'employees', 'action' => 'employee_send_v3'],
 				['class' => 'btn btn-xs top-button spec-tab-btn btn-spec-create', 'escape' => false]
 			);
-			// Resume Draft: only when a draft exists; loads the saved draft
+			// Resume Draft: only when a draft exists AND user clicks this button
 			if (!empty($hasDraft)) {
 				echo ' ';
 				echo $this->Html->link(

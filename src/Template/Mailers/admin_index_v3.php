@@ -251,6 +251,7 @@
 					'/admin/mailers/send_v3',
 					['class' => 'btn btn-info btn-sm spec-tab-btn', 'escape' => false]
 				);
+				// Resume Draft: only when a draft exists AND user clicks this button
 				if (!empty($hasDraft)) {
 					echo ' ';
 					echo $this->Html->link(

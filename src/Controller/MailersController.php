@@ -802,7 +802,7 @@ class MailersController extends AppController
 		$adaptiveMode = ($mode === 'adaptive');
 		$cloneMode = ($mode === 'clone');
 		$cloneFromId = (int)$this->request->getQuery('from_id');
-		// Discard draft before auto-resume, same as employee_send_v3 (link used to reload draft forever).
+		// Optional discard — Create New Spec stays blank; drafts load only with ?resume=1.
 		if (!$this->request->is('post') && $hasSaveStatusColumn && $this->request->getQuery('discard_draft')) {
 			$draftQ = $this->Mailer->find()
 				->where([
@@ -822,25 +822,8 @@ class MailersController extends AppController
 			$this->Flash->success('Draft discarded. You can start a new spec.');
 			return $this->redirect(['action' => 'admin_send_v3']);
 		}
-		if (!$this->request->is('post') && !$adaptiveMode && !$cloneMode && !$this->request->getQuery('resume') && $hasSaveStatusColumn) {
-			$existingDraftQ = $this->Mailer->find()
-				->select(['id'])
-				->where([
-					'Mailer.admin_id' => $user_id,
-					'Mailer.type' => 3,
-					'Mailer.save_status' => 'draft',
-				])
-				->orderDesc('Mailer.id');
-			$this->_applyMailerNotDeletedToQuery($existingDraftQ);
-			$existingDraft = $existingDraftQ->first();
-			if ($existingDraft) {
-				$this->Flash->set(
-					'Draft Found: continuing from Resume Draft to avoid duplicate draft entries.',
-					['element' => 'default', 'params' => ['class' => 'alert alert-warning']]
-				);
-				return $this->redirect(['action' => 'admin_send_v3', '?' => ['resume' => '1']]);
-			}
-		}
+		// Do NOT auto-resume. Create New Spec opens blank.
+		// Draft is loaded only when the user clicks Resume Draft (?resume=1).
 		if (!empty($this->request->getData())) {
 			$draftIdFromForm = (int)$this->request->getData('draft_id');
 			
@@ -1329,18 +1312,8 @@ class MailersController extends AppController
 			$entity = $entityQ->first();
 		}
 		if (!$entity) {
-			// Reuse latest admin draft when draft_id is missing to prevent duplicate draft rows.
-			$latestQ = $this->Mailer->find()
-				->where([
-					'Mailer.admin_id' => $user_id,
-					'Mailer.type' => 3,
-					'Mailer.save_status' => 'draft',
-				])
-				->orderDesc('Mailer.id');
-			$this->_applyMailerNotDeletedToQuery($latestQ);
-			$entity = $latestQ->first();
-		}
-		if (!$entity) {
+			// Create New Spec / blank form: start a new draft row.
+			// Do not reuse another open draft — that is only for Resume Draft (draft_id set).
 			$entity = $this->Mailer->newEntity([
 				'admin_id' => $user_id,
 				'type' => 3,
