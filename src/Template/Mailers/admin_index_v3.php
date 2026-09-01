@@ -222,6 +222,32 @@
 		border-radius: 3px;
 	}
 
+	#example tbody tr.spec-row-employee td {
+		background-color: #f7fbff;
+	}
+	#example tbody tr.spec-row-employee:nth-child(even) td {
+		background-color: #eef6fc;
+	}
+
+	.spec-created-by {
+		display: inline-block;
+		font-size: 11px;
+		font-weight: 600;
+		padding: 3px 8px;
+		border-radius: 3px;
+		white-space: nowrap;
+	}
+	.spec-created-by--admin {
+		background: #e8f0fe;
+		color: #2b6a9b;
+		border: 1px solid #b8d4ef;
+	}
+	.spec-created-by--employee {
+		background: #e8f8f5;
+		color: #1a7a5c;
+		border: 1px solid #a8e0cf;
+	}
+
 	@media (max-width: 767px) {
 		.spec-v3-page .page-header h1 {
 			display: block;
@@ -292,6 +318,11 @@
 					<input type="text" name="company" class="form-control input-sm" placeholder="Project" value="<?php echo h($filters['company'] ?? ''); ?>">
 					<input type="date" name="date_from" class="form-control input-sm" title="Date from" value="<?php echo h($filters['date_from'] ?? ''); ?>">
 					<input type="date" name="date_to" class="form-control input-sm" title="Date to" value="<?php echo h($filters['date_to'] ?? ''); ?>">
+					<select name="source" class="form-control input-sm" title="Spec source">
+						<option value=""<?php echo empty($filters['source'] ?? '') ? ' selected' : ''; ?>>All sources</option>
+						<option value="admin"<?php echo ($filters['source'] ?? '') === 'admin' ? ' selected' : ''; ?>>My specs (Admin)</option>
+						<option value="employee"<?php echo ($filters['source'] ?? '') === 'employee' ? ' selected' : ''; ?>>Employee specs</option>
+					</select>
 					<button type="submit" class="btn btn-primary btn-sm">Filter</button>
 					<?php echo $this->Html->link('Reset', ['controller' => 'mailers', 'action' => 'admin_index_v3'], ['class' => 'btn btn-default btn-sm']); ?>
 				<?php echo $this->Form->end(); ?>
@@ -318,7 +349,8 @@
 							<tr>
 								<th class="spec-sno">S.No</th>
 								<th>Track Number</th>
-								<th>Send Name</th>
+								<th>Created By</th>
+								<th title="Admin user who created or approved this spec">Admin</th>
 								<th>Name/Attn</th>
 								<th>Email</th>
 								<th>Project</th>
@@ -336,6 +368,11 @@
 							$sno = 0;
 							foreach ($mailers as $mailer):
 								$sno++;
+								$empId = (int)($mailer['Mailer']['employee_id'] ?? 0);
+								$isEmployeeSpec = $empId > 0;
+								$createdByName = $isEmployeeSpec
+									? (string)($employeeNameMap[$empId] ?? ('#' . $empId))
+									: 'Admin';
 								if (!empty($mailer['Mailer']['pdf_attachment'])) {
 									$pdffilename = basename($mailer['Mailer']['pdf_attachment']);
 								} else {
@@ -349,9 +386,16 @@
 									$pdffilename .= '.pdf';
 								}
 							?>
-							<tr>
+							<tr class="<?php echo $isEmployeeSpec ? 'spec-row-employee' : ''; ?>">
 								<td class="spec-sno"><?php echo (int)$sno; ?></td>
 								<td><span class="spec-track">#<?php echo h($mailer['Mailer']['tracknumber']); ?></span></td>
+								<td>
+									<?php if ($isEmployeeSpec): ?>
+										<span class="spec-created-by spec-created-by--employee" title="Submitted by employee"><?php echo h($createdByName); ?></span>
+									<?php else: ?>
+										<span class="spec-created-by spec-created-by--admin" title="Created by admin">Admin</span>
+									<?php endif; ?>
+								</td>
 								<td><?php
 									$user = $mailer['User'] ?? [];
 									$userName = $user['name'] ?? $user['display_name'] ?? $user['username'] ?? '';
@@ -447,10 +491,10 @@
 <script>
 $(document).ready(function() {
 	var dt = $('#example').DataTable({
-		"order": [[10, "desc"]],
+		"order": [[11, "desc"]],
 		"columnDefs": [
 			{ "targets": 0, "orderable": false, "searchable": false },
-			{ "targets": 12, "orderable": false }
+			{ "targets": 13, "orderable": false }
 		],
 		// Distinct labels: top = page size, bottom = range; right = quick filter (no "Search:" vs Filter Specs clash)
 		"language": {
@@ -494,7 +538,7 @@ $(document).ready(function() {
 	});
 
 	var exportBase = <?php echo json_encode($this->Url->build('/admin/mailers/export_specs')); ?>;
-	var filterKeys = ['tracknumber', 'name', 'email', 'company', 'date_from', 'date_to'];
+	var filterKeys = ['tracknumber', 'name', 'email', 'company', 'date_from', 'date_to', 'source'];
 
 	function buildExportUrl(format) {
 		var q = new URLSearchParams(window.location.search || '');

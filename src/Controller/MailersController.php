@@ -343,6 +343,7 @@ class MailersController extends AppController
 
 		$filters = $this->_adminSpecListV3Filters();
 		$results = $this->_adminSpecListV3Query($user_id, $filters)->all();
+		$employeeNameMap = $this->_adminSpecListV3EmployeeNameMap($results);
 
 		$mailers = [];
 		foreach ($results as $row) {
@@ -365,7 +366,7 @@ class MailersController extends AppController
 			$hasDraft = $this->Mailer->exists($draftCond);
 		}
 		$specSoftDelete = (bool)$this->Mailer->getSchema()->getColumn('deleted_at');
-		$this->set(compact('mailers', 'hasDraft', 'filters', 'specSoftDelete'));
+		$this->set(compact('mailers', 'hasDraft', 'filters', 'specSoftDelete', 'employeeNameMap'));
 		return null;
 	}
 
@@ -390,9 +391,15 @@ class MailersController extends AppController
 		}
 
 		$results = $this->_adminSpecListV3Query($user_id, $filters)->all();
+		$employeeNameMap = $this->_adminSpecListV3EmployeeNameMap($results);
 		$rows = [];
 		foreach ($results as $row) {
 			$mailerData = $row->toArray();
+			$empId = (int)($mailerData['employee_id'] ?? 0);
+			$isEmployeeSpec = $empId > 0;
+			$createdBy = $isEmployeeSpec
+				? (string)($employeeNameMap[$empId] ?? ('#' . $empId))
+				: 'Admin';
 			$user = $row->user ? $row->user->toArray() : [];
 			$userName = (string)($user['name'] ?? $user['display_name'] ?? $user['username'] ?? '');
 			$userUsername = (string)($user['username'] ?? '');
@@ -432,6 +439,7 @@ class MailersController extends AppController
 
 			$rows[] = [
 				'tracknumber' => '#' . (string)($mailerData['tracknumber'] ?? ''),
+				'created_by' => $createdBy,
 				'send_name' => $sendName,
 				'name' => (string)($mailerData['name'] ?? ''),
 				'email' => (string)($mailerData['email'] ?? ''),
@@ -460,6 +468,7 @@ class MailersController extends AppController
 			$fh = fopen('php://temp', 'r+');
 			fputcsv($fh, [
 				'TrackNumber',
+				'Created By',
 				'Send Name',
 				'Name/Attn',
 				'Email',
@@ -474,6 +483,7 @@ class MailersController extends AppController
 			foreach ($rows as $row) {
 				fputcsv($fh, [
 					$row['tracknumber'],
+					$row['created_by'],
 					$row['send_name'],
 					$row['name'],
 					$row['email'],
@@ -500,10 +510,15 @@ class MailersController extends AppController
 	}
 
 	/**
-	 * @return array{tracknumber:string,name:string,email:string,company:string,specification:string,date_from:string,date_to:string}
+	 * @return array{tracknumber:string,name:string,email:string,company:string,specification:string,date_from:string,date_to:string,source:string}
 	 */
 	protected function _adminSpecListV3Filters(): array
 	{
+		$source = strtolower(trim((string)$this->request->getQuery('source')));
+		if (!in_array($source, ['admin', 'employee'], true)) {
+			$source = '';
+		}
+
 		return [
 			'tracknumber' => trim((string)$this->request->getQuery('tracknumber')),
 			'name' => trim((string)$this->request->getQuery('name')),
@@ -512,7 +527,40 @@ class MailersController extends AppController
 			'specification' => trim((string)$this->request->getQuery('specification')),
 			'date_from' => trim((string)$this->request->getQuery('date_from')),
 			'date_to' => trim((string)$this->request->getQuery('date_to')),
+			'source' => $source,
 		];
+	}
+
+	/**
+	 * Batch-load employee display names for index_v3 / export rows.
+	 *
+	 * @param iterable $results Mailer entities
+	 * @return array<int, string>
+	 */
+	protected function _adminSpecListV3EmployeeNameMap(iterable $results): array
+	{
+		$employeeIds = [];
+		foreach ($results as $row) {
+			$empId = (int)($row->employee_id ?? 0);
+			if ($empId > 0) {
+				$employeeIds[] = $empId;
+			}
+		}
+		if (empty($employeeIds)) {
+			return [];
+		}
+
+		$this->loadModel('Employee');
+		$map = [];
+		$employeeRows = $this->Employee->find()
+			->select(['id', 'name'])
+			->where(['Employee.id IN' => array_values(array_unique($employeeIds))])
+			->all();
+		foreach ($employeeRows as $empRow) {
+			$map[(int)$empRow->id] = (string)($empRow->name ?? '');
+		}
+
+		return $map;
 	}
 
 	/**
@@ -524,24 +572,40 @@ class MailersController extends AppController
 	 */
 	protected function _adminSpecListV3Query(int $user_id, array $filters)
 	{
+		$source = (string)($filters['source'] ?? '');
+		$employeeSpecWhere = [
+			'Mailer.employee_id >' => 0,
+			'Mailer.status' => 1,
+			'Mailer.is_review' => 1,
+		];
+		$adminSpecWhere = [
+			'OR' => [
+				['Mailer.employee_id IS' => null],
+				['Mailer.employee_id <=' => 0],
+			],
+		];
+
 		$results = $this->Mailer->find()
 			->contain([
 				'User' => function ($q) { return $q->select(['name', 'username']); },
 				'NappUser' => function ($q) { return $q->select(['name', 'lname']); },
 			])
-			->where(['Mailer.type' => 3, 'Mailer.admin_id' => $user_id])
-			->andWhere([
-				'OR' => [
-					['Mailer.employee_id IS' => null],
-					['Mailer.employee_id <=' => 0],
-					[
-						'Mailer.employee_id >' => 0,
-						'Mailer.status' => 1,
-						'Mailer.is_review' => 1,
-					],
-				],
-			])
-			->order(['Mailer.created' => 'DESC', 'Mailer.id' => 'DESC']);
+			->where(['Mailer.type' => 3, 'Mailer.admin_id' => $user_id]);
+
+		if ($source === 'admin') {
+			$results->andWhere($adminSpecWhere);
+		} elseif ($source === 'employee') {
+			$results->andWhere($employeeSpecWhere);
+		} else {
+			$results->andWhere([
+				'OR' => array_merge(
+					$adminSpecWhere['OR'],
+					[$employeeSpecWhere]
+				),
+			]);
+		}
+
+		$results->order(['Mailer.created' => 'DESC', 'Mailer.id' => 'DESC']);
 
 		if ($filters['tracknumber'] !== '') {
 			$results->andWhere(['Mailer.tracknumber LIKE' => '%' . $filters['tracknumber'] . '%']);
@@ -2634,8 +2698,17 @@ class MailersController extends AppController
 					]);
 					$this->Flash->success('Specification reviewed and approved successfully.');
 				} else {
+					$this->logSpecAudit([
+						'mailer_id' => (int)$lastinsertId,
+						'tracknumber' => (string)$tracknumber,
+						'action' => 'spec_reviewed',
+						'actor_role' => 'admin',
+						'actor_id' => (int)$user_id,
+						'source' => 'admin_panel',
+						'message' => 'Admin saved review for employee spec (awaiting approval).',
+					]);
 					$this->Flash->success(
-						'Review saved and PDF updated successfully. You can still use Approve from the list later, or use Review & Approve on this page next time.'
+						'Review saved. Use the green Approve button on the Employees Spec list to finalise.'
 					);
 				}
 				return $this->redirect(array('action' => 'admin_emp_spec_index'));

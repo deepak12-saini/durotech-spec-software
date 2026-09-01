@@ -20,6 +20,17 @@
 		display: table-row !important;
 	}
 
+	.emp-spec-action-btns {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 4px;
+		max-width: 220px;
+	}
+	.emp-spec-action-btns .btn {
+		margin-bottom: 0;
+	}
+
 	</style>
 	<div class="page-content">
 		<div class="page-header">
@@ -39,9 +50,9 @@
 					array('class' => 'btn btn-default ' . ($filter=='all' ? 'active' : ''))
 				);
 				echo $this->Html->link(
-					'Pending',
+					'Needs Action',
 					array('action'=>'admin_emp_spec_index', '?' => array('status'=>'pending')),
-					array('class' => 'btn btn-warning ' . ($filter=='pending' ? 'active' : ''))
+					array('class' => 'btn btn-warning ' . ($filter=='pending' ? 'active' : ''), 'title' => 'Awaiting review or final approval')
 				);
 				echo $this->Html->link(
 					'Approved',
@@ -52,11 +63,16 @@
 			</div>
 
 			<div class="alert alert-info" style="margin-top:12px;margin-bottom:16px;">
-				<strong>Workflow (employee specs):</strong>
+				<strong>Admin workflow for employee specs:</strong>
 				<ol style="margin:8px 0 0 18px;padding:0;">
-					<li><strong>One screen</strong> — Open <em>Review &amp; Edit</em>, then use <strong>Review &amp; Approve</strong> on that page to review and finalise in one step.</li>
-					<li><strong>Or two steps</strong> — Use <em>Save review only</em> on the review page, then <em>Pending for Approval</em> on this list (approve is blocked until review is saved).</li>
+					<li><strong>Step 1 — Review</strong> — Open <em>Review &amp; Edit</em>, check the spec, fix anything if needed.</li>
+					<li><strong>Step 2 — Approve</strong> — Either click <strong>Review &amp; Approve</strong> on that page (one step), or <em>Save review only</em> then click the green <strong>Approve</strong> button on this list.</li>
 				</ol>
+				<p style="margin:10px 0 0 0;margin-bottom:0;">
+					<span class="label label-warning">Pending Review</span> = not reviewed yet &nbsp;
+					<span class="label label-info">Awaiting Approval</span> = reviewed, click <strong>Approve</strong> &nbsp;
+					<span class="label label-success">Approved</span> = finished
+				</p>
 			</div>
 
 			<div class="table-responsive">
@@ -107,14 +123,10 @@
                     <td> <?php echo h(!empty($mailer->created) ? format_db_date('d-M-Y h:i a', $mailer->created) : ''); ?></td>
 				   <td>
 						<?php
-							$status = (int)($mailer->status ?? 0);
-							$is_review = (int)($mailer->is_review ?? 0);
-							$id = (int)($mailer->id ?? 0);
-
 							if ($is_review === 0) {
 								echo '<span class="label label-warning">Pending Review</span>';
 							} elseif ($status === 0 && $is_review === 1) {
-								echo '<a href="' . SITEURL . 'admin/mailers/approve/' . $id . '" class="label label-info" onclick="return confirm(\'Approve this spec?\')">Pending for Approval</a>';
+								echo '<span class="label label-info">Awaiting Approval</span>';
 							} elseif ($status === 1 && $is_review === 1) {
 								echo '<span class="label label-success">Approved</span>';
 							} else {
@@ -123,34 +135,22 @@
 						?>
 					</td>
 					<td>
-						<?php if ((int)($mailer->is_review ?? 0) != 1) : ?>
-							<div style="display:flex; flex-direction:column; align-items:flex-start; gap:6px;">
-								<a class="btn btn-mini btn-info" title="View Details" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_view_spec', $id, '?' => ['from' => 'emp']]); ?>"><i class="fa fa-eye"></i></a>
-								<a class="btn btn-mini btn-primary" 
-								href="<?php echo SITEURL.'admin/mailers/review_edit/'.$mailer->id; ?>">
-									Review & Edit
-								</a>
+						<div class="emp-spec-action-btns">
+							<a class="btn btn-mini btn-info" title="View Details" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_view_spec', $id, '?' => ['from' => 'emp']]); ?>"><i class="fa fa-eye"></i></a>
 
-								<?php if ($pdfUrl): ?>
-									<a class="btn btn-mini btn-info" href="<?php echo $pdfUrl; ?>" target="_blank">Download</a>
-								<?php else: ?>
-									<span class="btn btn-mini btn-default" title="PDF not generated">No PDF</span>
-								<?php endif; ?>
-							</div>
-						<?php else: ?>
-							<div style="display:flex; flex-direction:column; align-items:flex-start; gap:6px;">
-								<a class="btn btn-mini btn-info" title="View Details" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_view_spec', $id, '?' => ['from' => 'emp']]); ?>"><i class="fa fa-eye"></i></a>
-								<span class="badge badge-success p-2">
-									<i class="fas fa-check-circle"></i> Reviewed
-								</span>
+							<?php if ($is_review === 0) : ?>
+								<a class="btn btn-mini btn-primary" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_review_edit', $id]); ?>">Review &amp; Edit</a>
+							<?php elseif ($status === 0 && $is_review === 1) : ?>
+								<a class="btn btn-mini btn-success" title="Final approval" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_approve', $id]); ?>" onclick="return confirm('Approve this employee spec?');"><i class="fa fa-check"></i> Approve</a>
+								<a class="btn btn-mini btn-default" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_review_edit', $id]); ?>" title="Re-open review">Re-review</a>
+							<?php endif; ?>
 
-								<?php if ($pdfUrl): ?>
-									<a class="btn btn-mini btn-info" href="<?php echo $pdfUrl; ?>" target="_blank">Download</a>
-								<?php else: ?>
-									<span class="btn btn-mini btn-default" title="PDF not generated">No PDF</span>
-								<?php endif; ?>
-							</div>
-						<?php endif; ?>
+							<?php if ($pdfUrl): ?>
+								<a class="btn btn-mini btn-info" href="<?php echo h($pdfUrl); ?>" target="_blank">Download</a>
+							<?php else: ?>
+								<span class="btn btn-mini btn-default" title="PDF not generated">No PDF</span>
+							<?php endif; ?>
+						</div>
 					</td>
 
 					</tr>

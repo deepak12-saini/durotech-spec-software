@@ -6,7 +6,6 @@ $status = (int)($mailer->status ?? 0);
 $empId = (int)($mailer->employee_id ?? 0);
 $isEmployeeSpec = $empId > 0;
 $pdfRel = !empty($mailer->pdf_attachment) ? ltrim((string)$mailer->pdf_attachment, '/') : '';
-$editAction = ($isEmployeeSpec && $isReview !== 1) ? 'admin_review_edit' : 'admin_editsend_v3';
 ?>
 <div class="page-content">
 	<div class="page-header">
@@ -17,7 +16,18 @@ $editAction = ($isEmployeeSpec && $isReview !== 1) ? 'admin_review_edit' : 'admi
 				#<?= h($tracknumber) ?>
 			</small>
 			<span class="pull-right">
-				<?= $this->Html->link('<i class="fa fa-pencil"></i> Edit', ['action' => $editAction, $mailerId], ['class' => 'btn btn-primary btn-xs', 'escape' => false]) ?>
+				<?php if ($isEmployeeSpec && $isReview === 0): ?>
+					<?= $this->Html->link('<i class="fa fa-pencil"></i> Review &amp; Edit', ['action' => 'admin_review_edit', $mailerId], ['class' => 'btn btn-primary btn-xs', 'escape' => false]) ?>
+				<?php elseif ($isEmployeeSpec && $isReview === 1 && $status === 0): ?>
+					<?= $this->Html->link('<i class="fa fa-check"></i> Approve', ['action' => 'admin_approve', $mailerId], [
+						'class' => 'btn btn-success btn-xs',
+						'escape' => false,
+						'onclick' => 'return confirm("Approve this employee spec?");',
+					]) ?>
+					<?= $this->Html->link('<i class="fa fa-pencil"></i> Re-review', ['action' => 'admin_review_edit', $mailerId], ['class' => 'btn btn-default btn-xs', 'escape' => false]) ?>
+				<?php elseif (!$isEmployeeSpec): ?>
+					<?= $this->Html->link('<i class="fa fa-pencil"></i> Edit', ['action' => 'admin_editsend_v3', $mailerId], ['class' => 'btn btn-primary btn-xs', 'escape' => false]) ?>
+				<?php endif; ?>
 				<?= $this->Html->link('Back to List', ['action' => $listAction ?? 'admin_index_v3'], ['class' => 'btn btn-default btn-xs']) ?>
 			</span>
 		</h1>
@@ -95,6 +105,13 @@ $editAction = ($isEmployeeSpec && $isReview !== 1) ? 'admin_review_edit' : 'admi
 								<span class="text-muted">No PDF attachment saved yet.</span>
 							<?php endif; ?>
 							<?= $this->Html->link('<i class="fa fa-history"></i> Audit', ['action' => 'admin_audit_log', $mailerId], ['class' => 'btn btn-sm btn-default', 'escape' => false]) ?>
+							<?php if ($isEmployeeSpec && $isReview === 1 && $status === 0): ?>
+								<?= $this->Html->link('<i class="fa fa-check"></i> Approve', ['action' => 'admin_approve', $mailerId], [
+									'class' => 'btn btn-sm btn-success',
+									'escape' => false,
+									'onclick' => 'return confirm("Approve this employee spec?");',
+								]) ?>
+							<?php endif; ?>
 						</p>
 						<?php if (!empty($mailer->spec_email_sent_at)): ?>
 							<p class="text-muted" style="margin:0;">

@@ -141,7 +141,8 @@
 				<thead>
 					<tr>
 						<th class="nowrap">Track Number</th>
-						<th>Send Name</th>
+						<th>Created By</th>
+						<th>Admin</th>
 						<th>Name/Attn</th>
 						<th>Email</th>
 						<th>Project</th>
@@ -157,6 +158,7 @@
 					<?php foreach ($rows as $row): ?>
 					<tr>
 						<td class="nowrap"><?php echo h($row['tracknumber']); ?></td>
+						<td><?php echo h($row['created_by']); ?></td>
 						<td><?php echo h($row['send_name']); ?></td>
 						<td><?php echo h($row['name']); ?></td>
 						<td><?php echo h($row['email']); ?></td>
