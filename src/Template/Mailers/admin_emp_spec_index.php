@@ -76,7 +76,7 @@
 					<th>Created</th>
 										<th>Approve Status</th>
 
-					<th>Action</th>
+					<th>Action <small class="text-muted" title="View Details = full spec summary"><i class="fa fa-eye"></i></small></th>
 				</tr>
 				</thead>
 				<tbody>
@@ -125,6 +125,7 @@
 					<td>
 						<?php if ((int)($mailer->is_review ?? 0) != 1) : ?>
 							<div style="display:flex; flex-direction:column; align-items:flex-start; gap:6px;">
+								<a class="btn btn-mini btn-info" title="View Details" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_view_spec', $id, '?' => ['from' => 'emp']]); ?>"><i class="fa fa-eye"></i></a>
 								<a class="btn btn-mini btn-primary" 
 								href="<?php echo SITEURL.'admin/mailers/review_edit/'.$mailer->id; ?>">
 									Review & Edit
@@ -138,6 +139,7 @@
 							</div>
 						<?php else: ?>
 							<div style="display:flex; flex-direction:column; align-items:flex-start; gap:6px;">
+								<a class="btn btn-mini btn-info" title="View Details" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_view_spec', $id, '?' => ['from' => 'emp']]); ?>"><i class="fa fa-eye"></i></a>
 								<span class="badge badge-success p-2">
 									<i class="fas fa-check-circle"></i> Reviewed
 								</span>

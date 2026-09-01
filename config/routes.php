@@ -350,6 +350,7 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/mailers/spec-draft-autosave-v3', ['controller' => 'Mailers', 'action' => 'admin_specDraftAutosaveV3']);
     $routes->connect('/admin/mailers/editsend_v3/:id', ['controller' => 'Mailers', 'action' => 'admin_editsend_v3'], ['pass' => ['id']]);
     $routes->connect('/admin/mailers/audit_log/:id', ['controller' => 'Mailers', 'action' => 'admin_audit_log'], ['pass' => ['id']]);
+    $routes->connect('/admin/mailers/view_spec/:id', ['controller' => 'Mailers', 'action' => 'admin_view_spec'], ['pass' => ['id'], 'id' => '\d+']);
     $routes->connect('/admin/mailers/delete_spec_v3/:id', ['controller' => 'Mailers', 'action' => 'admin_delete_spec_v3'], ['pass' => ['id']]);
     $routes->connect('/admin/mailers/send', ['controller' => 'Mailers', 'action' => 'admin_send']);
     $routes->connect('/admin/mailers/create_dwps', ['controller' => 'Mailers', 'action' => 'admin_create_dwps']);
@@ -408,6 +409,7 @@ Router::scope('/', function (RouteBuilder $routes) {
 
     // Employee spec audit trail
     $routes->connect('/employees/audit_log/:id', ['controller' => 'Employees', 'action' => 'audit_log'], ['pass' => ['id']]);
+    $routes->connect('/employees/view_spec/:id', ['controller' => 'Employees', 'action' => 'view_spec'], ['pass' => ['id'], 'id' => '\d+']);
 
     // Staff panel Debit Collections (explicit routes so controller resolves to DebitCollections, not Debit_collections)
     $routes->connect('/debit_collections', ['controller' => 'DebitCollections', 'action' => 'index']);

@@ -656,6 +656,69 @@ public function auditLog($id = null)
 }
 
 /**
+ * Read-only spec details for employee list.
+ */
+public function view_spec($id = null)
+{
+    $this->viewBuilder()->setLayout('employee_layout');
+    $this->set('title_for_layout', SITENAME . ' Spec Details');
+    $this->checkEmployeeSession();
+
+    $employee_id = (int)$this->Session->read('Employee.id');
+    $id = (int)$id;
+    if ($id <= 0) {
+        $this->Flash->error('Invalid spec id.');
+        return $this->redirect(['action' => 'index']);
+    }
+
+    $this->loadModel('Mailer');
+    $this->loadModel('MailerComment');
+    $this->loadModel('SpecUsearea');
+
+    $mailerQuery = $this->Mailer->find()
+        ->where([
+            'Mailer.id' => $id,
+            'Mailer.employee_id' => $employee_id,
+            'Mailer.type' => 3,
+        ]);
+    $this->_applyMailerNotDeletedToQuery($mailerQuery);
+    $mailer = $mailerQuery->first();
+    if (!$mailer) {
+        $this->Flash->error('Spec not found.');
+        return $this->redirect(['action' => 'index']);
+    }
+
+    $comments = $this->MailerComment->find()
+        ->where(['mailer_id' => $id])
+        ->all();
+
+    $useareas = $this->SpecUsearea->find()
+        ->where(['mailer_id' => $id])
+        ->orderAsc('id')
+        ->all();
+
+    $bySection = [];
+    foreach ($useareas as $row) {
+        $tid = (int)($row->types ?? 0);
+        if (!isset($bySection[$tid])) {
+            $bySection[$tid] = [
+                'title' => (string)($row->title ?? ''),
+                'rows' => [],
+            ];
+        }
+        $bySection[$tid]['rows'][] = $row;
+    }
+    $sections = array_values($bySection);
+
+    $this->set(compact('mailer', 'comments', 'sections'));
+}
+
+public function viewSpec($id = null)
+{
+    return $this->view_spec($id);
+}
+
+/**
  * Hide soft-deleted mailer rows when mailers.deleted_at column exists.
  */
 protected function _applyMailerNotDeletedToQuery($query): void

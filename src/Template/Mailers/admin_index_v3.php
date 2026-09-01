@@ -328,7 +328,7 @@
 								<th>PDF</th>
 								<th>Created</th>
 								<th>Customer email</th>
-								<th>Action</th>
+								<th>Action <small class="text-muted" title="View Details = full spec summary"><i class="fa fa-eye"></i></small></th>
 							</tr>
 						</thead>
 						<tbody>
@@ -413,6 +413,11 @@
 									$specSentAtBtn = $mailer['Mailer']['spec_email_sent_at'] ?? null;
 									$sendBtnClass = !empty($specSentAtBtn) ? 'btn btn-mini btn-warning' : 'btn btn-mini btn-danger';
 									?>
+									<?php echo $this->Html->link(
+										'<i class="fa fa-eye"></i>',
+										['controller' => 'Mailers', 'action' => 'admin_view_spec', $mailer['Mailer']['id'], '?' => ['from' => 'admin']],
+										['class' => 'btn btn-mini btn-info', 'title' => 'View Details', 'escape' => false]
+									); ?>
 									<a class="btn btn-mini btn-primary js-edit-spec" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_editsend_v3', $mailer['Mailer']['id']]); ?>">Edit</a>
 									<a class="btn btn-mini btn-warning" title="Copy Use Area + comments into a new blank client form" href="<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'admin_send_v3', '?' => ['mode' => 'clone', 'from_id' => $mailer['Mailer']['id']]]); ?>" style="display:inline-flex;align-items:center;gap:4px;">
 										<?php echo $this->Html->image('clone_a_spec.png', ['alt' => '', 'style' => 'width:14px;height:14px;object-fit:contain;background:#1b1b1b;border-radius:50%;padding:1px;box-sizing:content-box;']); ?>

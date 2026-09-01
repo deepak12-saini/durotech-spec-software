@@ -285,7 +285,7 @@
 							<th>Revision</th>
 							<th>Created</th>
 							<th>Customer email</th>
-							<th>Action</th>
+							<th>Action <small class="text-muted" title="View Details = full spec summary"><i class="fa fa-eye"></i></small></th>
 						</tr>
 					</thead>
 
@@ -413,6 +413,16 @@
 									$is_review = (int)($mailerData['is_review'] ?? 0);
 									$specSentAtBtn = $mailerData['spec_email_sent_at'] ?? null;
 									$sendBtnClass = !empty($specSentAtBtn) ? 'btn btn-mini btn-warning' : 'btn btn-mini btn-danger';
+
+									echo $this->Html->link(
+										'<i class="fa fa-eye"></i>',
+										['controller' => 'employees', 'action' => 'view_spec', $mailerId],
+										[
+											'class' => 'btn btn-mini btn-info',
+											'title' => 'View Details',
+											'escape' => false,
+										]
+									);
 
 									// Allow edit, send, download if not submitted yet
 									if ($is_review === 0) {

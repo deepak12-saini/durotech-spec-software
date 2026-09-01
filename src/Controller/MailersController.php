@@ -638,7 +638,83 @@ class MailersController extends AppController
 		return null;
 	}
 
+	/**
+	 * Admin: read-only spec details (admin specs + employee specs).
+	 */
+	public function admin_view_spec($id = null): ?Response
+	{
+		$this->viewBuilder()->setLayout('admin_layout');
+		$this->set('title_for_layout', SITENAME . ' Spec Details');
+		$this->checkAdminSession();
+		$user_id = (int)$this->request->getSession()->read('User.id');
+		$id = (int)$id;
+		$from = (string)$this->request->getQuery('from', 'admin');
+		$listAction = ($from === 'emp') ? 'admin_emp_spec_index' : 'admin_index_v3';
 
+		if ($id <= 0) {
+			$this->Flash->error('Invalid spec id.');
+			return $this->redirect(['action' => $listAction]);
+		}
+
+		$mailerQuery = $this->Mailer->find()
+			->where([
+				'Mailer.id' => $id,
+				'Mailer.type' => 3,
+				'OR' => [
+					['Mailer.admin_id' => $user_id],
+					['Mailer.employee_id >' => 0],
+				],
+			]);
+		$this->_applyMailerNotDeletedToQuery($mailerQuery);
+		$mailer = $mailerQuery->first();
+		if (!$mailer) {
+			$this->Flash->error('Spec not found.');
+			return $this->redirect(['action' => $listAction]);
+		}
+
+		$this->loadModel('MailerComment');
+		$comments = $this->MailerComment->find()
+			->where(['mailer_id' => $id])
+			->all();
+
+		$useareas = $this->SpecUsearea->find()
+			->where(['mailer_id' => $id])
+			->orderAsc('id')
+			->all();
+
+		$bySection = [];
+		foreach ($useareas as $row) {
+			$tid = (int)($row->types ?? 0);
+			if (!isset($bySection[$tid])) {
+				$bySection[$tid] = [
+					'title' => (string)($row->title ?? ''),
+					'rows' => [],
+				];
+			}
+			$bySection[$tid]['rows'][] = $row;
+		}
+		$sections = array_values($bySection);
+
+		$employeeName = '';
+		$empId = (int)($mailer->employee_id ?? 0);
+		if ($empId > 0) {
+			$this->loadModel('Employee');
+			$emp = $this->Employee->find()
+				->select(['name'])
+				->where(['Employee.id' => $empId])
+				->first();
+			$employeeName = $emp ? (string)($emp->name ?? '') : '';
+		}
+
+		$this->set(compact('mailer', 'comments', 'sections', 'from', 'employeeName', 'listAction'));
+		return null;
+	}
+
+	/** CamelCase alias for admin_view_spec(). */
+	public function adminViewSpec($id = null): ?Response
+	{
+		return $this->admin_view_spec($id);
+	}
 
 	/** CamelCase alias for route /admin/mailers (dispatcher expects adminIndex) */
 	public function adminIndex(): ?Response
