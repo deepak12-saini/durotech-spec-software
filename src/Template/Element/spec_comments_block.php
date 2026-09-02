@@ -7,7 +7,7 @@ $existingComments = isset($existingComments) && is_array($existingComments) ? ar
 $commentPresets = [
 	'Duroprime SSP Pro primer to be used on non porous substrate',
 	'Refer to TDS prior to use',
-	'Duroprime SSP to be used internally on all plastic, PVC, Angeles, Aluminum Area',
+	'Duroprime SSP PRO to be used internally on all plastic, PVC, Angles, Aluminium Areas',
 	'WBE hibuild required for all areas with high moisture Content',
 	'SC = Seal coat',
 	'Compatible sealant under subsil - Duroseal 25C',

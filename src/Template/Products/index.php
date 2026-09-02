@@ -95,9 +95,9 @@ $categoryIconClass = function ($slug, $name) {
 	z-index: 2;
 }
 .products-toolbar__title.is-category {
-	color: #5a1ea8;
-	font-size: 17px;
-	font-weight: 600;
+    color: #5a1ea8;
+    font-size: 17px;
+    font-weight: 600;
 }
 .products-toolbar__actions {
 	display: flex;
@@ -299,7 +299,7 @@ $categoryIconClass = function ($slug, $name) {
 }
 
 /* --- Product cards: fixed 3-column grid + 5px gap --- */
-.product_image_section {
+	.product_image_section {
 	text-align: center;
 	padding: 0;
 	display: grid;
@@ -684,7 +684,7 @@ $categoryIconClass = function ($slug, $name) {
 }
 </style>
 
-<div class="products-bg-wrap">
+	<div class="products-bg-wrap">
 	<div class="container">
 		<?php /* Full-width toolbar + category description/image (like previous) */ ?>
 		<div class="products-toolbar">
@@ -703,30 +703,30 @@ $categoryIconClass = function ($slug, $name) {
 					<form action="<?= h($this->Url->build(['controller' => 'Products', 'action' => 'search'])) ?>" method="get">
 						<input type="search" name="search" placeholder="Search Product" required aria-label="Search Product">
 					</form>
-				</div>
+		</div>
 			</div>
 		</div>
 
 		<?php if ($hasCategoryHero): ?>
-		<div class="category-hero">
-			<div class="row">
-				<?php if ($hasCategoryImage): ?>
-				<div class="col-lg-6 col-md-6 col-sm-12 category-hero__content">
-				<?php else: ?>
-				<div class="col-lg-12 col-md-12 col-sm-12 category-hero__content">
-				<?php endif; ?>
+				<div class="category-hero">
+					<div class="row">
+						<?php if ($hasCategoryImage): ?>
+						<div class="col-lg-6 col-md-6 col-sm-12 category-hero__content">
+						<?php else: ?>
+						<div class="col-lg-12 col-md-12 col-sm-12 category-hero__content">
+						<?php endif; ?>
 					<h1 class="category-hero__title"><?= h($category_name ?? 'Products') ?></h1>
 					<?php if ($categoryDescription !== ''): ?>
-					<p class="category-hero__desc"><?= nl2br(h($categoryDescription)) ?></p>
+							<p class="category-hero__desc"><?= nl2br(h($categoryDescription)) ?></p>
 					<?php endif; ?>
+						</div>
+						<?php if ($hasCategoryImage): ?>
+						<div class="col-lg-6 col-md-6 col-sm-12 category-hero__img-wrap">
+							<img src="<?= h($this->Url->build('/files/category/' . $categoryImage)) ?>" alt="<?= h($category_name ?? 'Category image') ?>" class="category-hero__img">
+						</div>
+						<?php endif; ?>
+					</div>
 				</div>
-				<?php if ($hasCategoryImage): ?>
-				<div class="col-lg-6 col-md-6 col-sm-12 category-hero__img-wrap">
-					<img src="<?= h($this->Url->build('/files/category/' . $categoryImage)) ?>" alt="<?= h($category_name ?? 'Category image') ?>" class="category-hero__img">
-				</div>
-				<?php endif; ?>
-			</div>
-		</div>
 		<?php endif; ?>
 
 		<?php /* Browse by Category below description; products on the right */ ?>
@@ -766,7 +766,7 @@ $categoryIconClass = function ($slug, $name) {
 				<?php if (!empty($productsList)): ?>
 				<div class="product_image_section">
 					<?php foreach ($productsList as $product): ?>
-						<?php
+						<?php 
 							$pTitle = (string)($product['Product']['title'] ?? '');
 							$pSlug = (string)($product['Product']['slug'] ?? '');
 							$pImage = (string)($product['Product']['image'] ?? '');
@@ -774,20 +774,20 @@ $categoryIconClass = function ($slug, $name) {
 						?>
 						<a href="<?= h($this->Url->build('/product/' . $pSlug)) ?>">
 							<div class="product_page_list_section">
-								<figure class="snip0077 blue">
+							<figure class="snip0077 blue">
 									<?php if ($isDefaultImage): ?>
 										<div class="product-placeholder" style="color:#000 !important;">
 											<span style="font-size:25px; font-weight:bold; color:  #2889c9 !important;"><?= h($pTitle) ?></span>
-										</div>
+								</div>
 									<?php else: ?>
 										<img src="<?= h(SITEURL) ?>productimg/<?= h($pImage) ?>" alt="<?= h($pTitle) ?>" />
 									<?php endif; ?>
-									<figcaption>
+							<figcaption>
 										<h2><span><?= h($pTitle) ?></span></h2>
-									</figcaption>
-								</figure>
+							</figcaption>	
+							</figure>
 								<h2 style="color:#777797; font-weight:500; border-bottom-color:#fff;"><?= h($pTitle) ?></h2>
-							</div>
+						</div>
 						</a>
 					<?php endforeach; ?>
 				</div>
@@ -826,8 +826,8 @@ $categoryIconClass = function ($slug, $name) {
 				<?php else: ?>
 				<div class="products-empty">Coming Soon</div>
 				<?php endif; ?>
-			</div>
-		</div>
+				</div>
+	    </div>
 	</div>
 </div>
 

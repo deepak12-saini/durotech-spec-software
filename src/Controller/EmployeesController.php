@@ -1884,15 +1884,15 @@ public function specDraftAutosave()
         ? (((int)$data['spectype'] === 1) ? 0 : 1)
         : (int)($data['use_area'] ?? 0);
 
-    $mailer->name = $name;
-    $mailer->email = $email;
-    $mailer->company = $company;
-    $mailer->address = $address;
-    $mailer->specification = $specification;
-    $mailer->date = $formattedDate;
-    $mailer->type = $type;
-    $mailer->subject = $subject;
-    $mailer->use_area = $use_area;
+        $mailer->name = $name;
+        $mailer->email = $email;
+        $mailer->company = $company;
+        $mailer->address = $address;
+        $mailer->specification = $specification;
+        $mailer->date = $formattedDate;
+        $mailer->type = $type;
+        $mailer->subject = $subject;
+        $mailer->use_area = $use_area;
     // Legacy drafts with empty track: reserve once (unique) and keep on later autosaves.
     if ($this->Mailer->normalizeSpecTrackNumber((string)($mailer->tracknumber ?? '')) === '') {
         $mailer->tracknumber = $this->Mailer->allocateUniqueSpecTrackNumber(
@@ -1901,8 +1901,8 @@ public function specDraftAutosave()
         );
     }
     if (!$this->Mailer->save($mailer)) {
-        return $this->_specDraftJsonResponse(['success' => false, 'error' => 'Save failed.']);
-    }
+            return $this->_specDraftJsonResponse(['success' => false, 'error' => 'Save failed.']);
+        }
     $draftId = $mailer->id;
     $reservedTrack = (string)$mailer->tracknumber;
 
@@ -1938,14 +1938,14 @@ public function specDraftAutosave()
         if (!empty($incomingComments)) {
             $this->MailerComment->deleteAll(['mailer_id' => $draftId]);
             foreach ($incomingComments as $comment) {
-                $commentEntity = $this->MailerComment->newEntity([
-                    'mailer_id' => $draftId,
-                    'use_area' => 1,
-                    'comment' => $comment,
-                ]);
-                $this->MailerComment->save($commentEntity);
-            }
+            $commentEntity = $this->MailerComment->newEntity([
+                'mailer_id' => $draftId,
+                'use_area' => 1,
+                'comment' => $comment,
+            ]);
+            $this->MailerComment->save($commentEntity);
         }
+    }
     }
     if (array_key_exists('product', $data) && is_array($data['product'])) {
         $hasProductContent = false;
@@ -1965,21 +1965,21 @@ public function specDraftAutosave()
         }
         if ($hasProductContent) {
             $this->SpecUsearea->deleteAll(['mailer_id' => $draftId]);
-            foreach ($data['product'] as $key => $prodt) {
-                $typesKey = $data['types'][$key] ?? null;
-                $title = isset($data['title'][$typesKey]) ? $data['title'][$typesKey] : '';
-                $specEntity = $this->SpecUsearea->newEntity([
-                    'mailer_id' => $draftId,
-                    'use_area' => 1,
-                    'title' => $title,
-                    'product' => $prodt,
-                    'types' => $data['types'][$key] ?? '',
-                    'serial' => $data['serial'][$key] ?? '',
-                    'coverage' => $data['coverage'][$key] ?? '',
-                    'Warranty' => $data['Warranty'][$key] ?? '',
-                    'coverage_by_pack' => $data['coverage_by_pack'][$key] ?? '',
-                ]);
-                $this->SpecUsearea->save($specEntity);
+        foreach ($data['product'] as $key => $prodt) {
+            $typesKey = $data['types'][$key] ?? null;
+            $title = isset($data['title'][$typesKey]) ? $data['title'][$typesKey] : '';
+            $specEntity = $this->SpecUsearea->newEntity([
+                'mailer_id' => $draftId,
+                'use_area' => 1,
+                'title' => $title,
+                'product' => $prodt,
+                'types' => $data['types'][$key] ?? '',
+                'serial' => $data['serial'][$key] ?? '',
+                'coverage' => $data['coverage'][$key] ?? '',
+                'Warranty' => $data['Warranty'][$key] ?? '',
+                'coverage_by_pack' => $data['coverage_by_pack'][$key] ?? '',
+            ]);
+            $this->SpecUsearea->save($specEntity);
             }
         }
     }
@@ -2261,24 +2261,24 @@ public function editsend_v3($id = null) {
                         ' rows). Kept the previous Use Area list so data was not lost. Try saving again or ask IT to raise max_input_vars.'
                     );
                 } else {
-                    $this->SpecUsearea->deleteAll(['SpecUsearea.mailer_id' => $lastinsertId], false);
+            $this->SpecUsearea->deleteAll(['SpecUsearea.mailer_id' => $lastinsertId], false);
                     for ($key = 0; $key < $postedRowCount; $key++) {
                         $typesKey = $postedTypes[$key] ?? null;
                         $title = ($typesKey !== null && isset($postedTitles[$typesKey]))
                             ? (string)$postedTitles[$typesKey]
                             : '';
-                        $specEntity = $this->SpecUsearea->newEntity([
-                            'mailer_id' => $lastinsertId,
+                    $specEntity = $this->SpecUsearea->newEntity([
+                        'mailer_id' => $lastinsertId,
                             'use_area' => 1,
-                            'title' => $title,
+                        'title' => $title,
                             'product' => (string)($postedProducts[$key] ?? ''),
                             'types' => (string)($typesKey ?? ''),
                             'serial' => (string)($postedSerials[$key] ?? ''),
                             'coverage' => (string)($postedCoverage[$key] ?? ''),
                             'Warranty' => (string)($postedWarranty[$key] ?? ''),
                             'coverage_by_pack' => (string)($postedMft[$key] ?? ''),
-                        ]);
-                        $this->SpecUsearea->save($specEntity);
+                    ]);
+                    $this->SpecUsearea->save($specEntity);
                     }
                 }
             }

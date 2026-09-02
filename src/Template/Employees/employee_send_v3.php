@@ -346,11 +346,11 @@
 		color:#b6c1cd;
 	}
 
-	</style>
+	</style>	
 	<?php echo $this->element('spec_form_ui_styles'); ?>
 	<div class="page-content spec-ui-page">
 		<div class="page-header" style="display:none;"></div>
-
+	
 	<div class="row">
 		<div class="col-xs-12">
 		<?php
@@ -499,7 +499,7 @@
 						<p class="help-block spec-adaptive-help">Shows submitted specs from <strong><?php echo h($adaptiveYearNote); ?></strong> (your own + admin templates). <strong>Use Area only</strong> keeps client details blank; <strong>Full spec</strong> also copies Name/Project/Address/Email.</p>
 					</div>
 				</div>
-			</div>
+					</div>
 				</div>
 			</div>
 			<script type="application/json" id="adaptive-spec-choices-data"><?php echo json_encode($adaptiveSpecChoices, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE); ?></script>
@@ -718,8 +718,8 @@
 			<div id="newdiv"></div>
 					<div class="spec-ui-add-section">
 						<a href="javascript:void(0);" class="btn btn-xs btn-primary" onclick="addnewsection()"><i class="fa fa-plus"></i> Add Section</a>
-					</div>
 				</div>
+			</div>
 			</div>
 
 			<div class="spec-ui-card">
@@ -1517,9 +1517,9 @@ function loadCommentsFromData(comments) {
 					}
 					var data = res.data;
 					if (source === 'preset') {
-						$('select[name="type"]').val(data.type || '3');
-						$('#subject').val(data.subject || '');
-						$('input[name="specification"]').val(data.specification || '');
+					$('select[name="type"]').val(data.type || '3');
+					$('#subject').val(data.subject || '');
+					$('input[name="specification"]').val(data.specification || '');
 					}
 					clearAllSectionsAndComments();
 					loadSectionsFromData(data.sections || []);
@@ -1567,7 +1567,7 @@ function loadCommentsFromData(comments) {
 	<?php endif; ?>
 
 	<?php if (!empty($isCloneMode) && $cloneFromIdVal > 0): ?>
-	jQuery(function() {
+		jQuery(function() {
 		var cloneLoadUrl = '<?php echo $this->Url->build(['controller' => 'Employees', 'action' => 'previousSpecData', $cloneFromIdVal]); ?>';
 		$.ajax({
 			type: 'GET',
@@ -1644,7 +1644,7 @@ function loadCommentsFromData(comments) {
 	// Restore draft product sections (title + Product Type, Product, MFT, Warranty rows)
 	var draftSections = <?php echo $draftSectionsJson; ?>;
 	var draftComments = <?php echo $draftCommentsJson; ?>;
-	jQuery(function() {
+		jQuery(function() {
 		if (draftSections && draftSections.length > 0) {
 			loadSectionsFromData(draftSections);
 		}

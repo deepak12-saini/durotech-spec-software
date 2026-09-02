@@ -100,7 +100,7 @@
 	.spec-load-scope label.active-scope { background: #428bca; border-color: #428bca; color: #fff; }
 	#country-list li.active-suggest, .title-dropdown li.active-suggest { background: #cfe6ff !important; }
 
-	</style>
+	</style>	
 	<?php echo $this->element('spec_form_ui_styles'); ?>
 	<div class="page-content spec-ui-page">
 		<div class="page-header" style="display:none;"></div>
@@ -132,7 +132,7 @@
 		if (!empty($draft)) {
 			$useAreaRows = [];
 			if (isset($draft->spec_useareas)) {
-				foreach ($draft->spec_useareas as $row) {
+			foreach ($draft->spec_useareas as $row) {
 					$useAreaRows[] = $row;
 				}
 			}
@@ -196,21 +196,21 @@
 				<span class="status-pill"><i class="fa fa-circle" style="font-size:8px;"></i> <span id="spec-status-text"><?php echo h($statusLabel); ?></span></span>
 				<span id="spec-source-track" style="display:none;color:#2a88c8;font-weight:600;"></span>
 				<span id="spec-last-saved"></span>
-				<?php if (!empty($draftId)): ?>
+			<?php if (!empty($draftId)): ?>
 					<?php echo $this->Html->link('Start New Spec (discard this draft)', ['controller' => 'Mailers', 'action' => 'admin_send_v3', '?' => ['discard_draft' => '1']], ['class' => 'btn btn-default btn-xs']); ?>
-				<?php endif; ?>
-			</div>
+			<?php endif; ?>
+		</div>
 			<div class="spec-ui-body">
 		<?php echo $this->Form->create('Mailer',array('class'=>'form-horizontal spec-ui-form','enctype'=>'multipart/form-data','id'=>'specForm')); ?>
 		<input type="hidden" name="draft_id" id="draft_id" value="<?php echo $draftIdVal; ?>">
 		<?php if ($isAdaptiveMode): ?>
-			<?php
+							<?php
 				$adminAdaptiveChoices = [];
 				foreach (($previousSpecList ?? []) as $prev) {
-					$parts = [];
-					$parts[] = (string)($prev->tracknumber ?? ('#' . (int)$prev->id));
-					if (!empty($prev->company)) { $parts[] = (string)$prev->company; }
-					if (!empty($prev->name)) { $parts[] = (string)$prev->name; }
+								$parts = [];
+								$parts[] = (string)($prev->tracknumber ?? ('#' . (int)$prev->id));
+								if (!empty($prev->company)) { $parts[] = (string)$prev->company; }
+								if (!empty($prev->name)) { $parts[] = (string)$prev->name; }
 					$label = implode(' | ', $parts);
 					$adminAdaptiveChoices[] = [
 						'id' => (int)$prev->id,
@@ -232,11 +232,11 @@
 						<i class="fa fa-caret-down spec-combo-caret"></i>
 						<ul id="adaptive_combo_list" class="spec-combo-list" role="listbox"></ul>
 						<input type="hidden" id="adaptive_previous_spec_id" value="">
-					</div>
+				</div>
 					<div class="spec-load-scope" id="adaptive_load_scope">
 						<label class="active-scope"><input type="radio" name="adaptive_scope" value="use_area" checked> Use Area only</label>
 						<label><input type="radio" name="adaptive_scope" value="full"> Full spec</label>
-					</div>
+			</div>
 					<p class="help-block spec-adaptive-help"><strong>Use Area only</strong> keeps client details blank; <strong>Full spec</strong> also copies Name/Project/Address/Email.</p>
 					</div>
 				</div>
@@ -245,7 +245,7 @@
 			</div>
 			<script type="application/json" id="adaptive-spec-choices-data"><?php echo json_encode($adminAdaptiveChoices, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_AMP | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE); ?></script>
 		<?php endif; ?>
-
+		
 		<?php if (!empty($isCloneMode) && $cloneFromIdVal <= 0): ?>
 		<?php
 			$cloneSpecChoices = [];
@@ -294,7 +294,7 @@
 						<div class="spec-ui-card">
 				<div class="spec-ui-card-title"><span>Client details</span><span class="hint">Who this spec is for</span></div>
 				<div class="spec-ui-card-body">
-<div class="form-group">
+			<div class="form-group">
 				<label class="col-sm-3 control-label no-padding-right" for="form-field-1">Track Number:</label>
 				<div class="col-sm-9">
 					<input type="text" name="tracknumber" value="<?php echo $refernce; ?>" readonly id="tracknumber" class = "col-xs-10 col-sm-8" style="background:#ddd !important; cursor:pointer;" >
@@ -425,8 +425,8 @@
 			</div><!-- .spec-ui-body -->
 		</div><!-- .spec-ui-shell -->
 		</div>
-	</div>
-	</div>
+	</div>	
+	</div>	
 	
 <?php echo $this->element('spec_comments_scripts'); ?>
 <script type="text/javascript">
@@ -879,7 +879,7 @@
 	// Restore draft product sections + comments, then sync track (never autosave before restore).
 	var draftSections = <?php echo $draftSectionsJson; ?>;
 	var draftComments = <?php echo $draftCommentsJson; ?>;
-	jQuery(function() {
+		jQuery(function() {
 		if (draftSections && draftSections.length > 0 && typeof loadSectionsFromData === 'function') {
 			loadSectionsFromData(draftSections);
 		}
@@ -888,7 +888,7 @@
 		}
 		var isBlankCreate = <?php echo (!empty($draftId) || $isAdaptiveMode || !empty($isCloneMode)) ? 'false' : 'true'; ?>;
 		if (isBlankCreate && $('#addsection').children().length === 0) {
-			addnewsection();
+				addnewsection();
 		}
 		// Delay track sync so restored product/comment inputs are included in FormData.
 		setTimeout(function() {
@@ -959,7 +959,7 @@
 
 	<?php if ($isAdaptiveMode): ?>
 	jQuery(function() {
-		var adaptiveLoadBaseUrl = '<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'adminPreviousSpecDataV3']); ?>';
+	var adaptiveLoadBaseUrl = '<?php echo $this->Url->build(['controller' => 'Mailers', 'action' => 'adminPreviousSpecDataV3']); ?>';
 		var adaptiveChoices = [];
 		try {
 			var raw = document.getElementById('adaptive-spec-choices-data');
@@ -979,22 +979,22 @@
 			if ($('#adaptive_previous_spec_id').val()) adaptiveLoadSelectedSpec();
 		});
 
-		function adaptiveLoadSelectedSpec() {
-			var selectedId = $('#adaptive_previous_spec_id').val();
-			if (!selectedId) {
-				$('#spec-source-track').hide().text('');
-				$('#spec-status-text').text('New (Smart Spec mode)');
-				return;
-			}
-			$.ajax({
-				type: 'GET',
-				url: adaptiveLoadBaseUrl.replace(/\/$/, '') + '/' + selectedId,
-				dataType: 'json',
-				success: function(res) {
-					if (!res || !res.success || !res.data) {
-						alert((res && res.error) ? res.error : 'Unable to load previous spec.');
-						return;
-					}
+	function adaptiveLoadSelectedSpec() {
+		var selectedId = $('#adaptive_previous_spec_id').val();
+		if (!selectedId) {
+			$('#spec-source-track').hide().text('');
+			$('#spec-status-text').text('New (Smart Spec mode)');
+			return;
+		}
+		$.ajax({
+			type: 'GET',
+			url: adaptiveLoadBaseUrl.replace(/\/$/, '') + '/' + selectedId,
+			dataType: 'json',
+			success: function(res) {
+				if (!res || !res.success || !res.data) {
+					alert((res && res.error) ? res.error : 'Unable to load previous spec.');
+					return;
+				}
 					var scope = getAdaptiveScope();
 					applyLoadedSpec(res.data, scope);
 					$('#spec-status-text').text(scope === 'full' ? 'Loaded full previous spec' : 'Loaded Use Area from previous spec');
