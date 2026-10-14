@@ -2,11 +2,18 @@
 
 ## Symptom
 
-Admin **Duro Warranty Request** → **Send Form Request** shows:
+Employee **editsend-v3** (or warranty Send Form Request) shows:
+
+> `Cake\Network\Exception\SocketException` — **Connection timed out**
+> (stack: `SmtpTransport->_connect` → `Email->send`)
+
+or:
 
 > Email could not be sent… **Connection refused**
 
-The warranty row stays **Pending** because SMTP never connected.
+The spec/PDF may already be saved; the page crashed because SMTP could not be reached. After the code catch in `EmployeesController`, save should succeed with a warning instead of a red error page.
+
+**Connection timed out** usually means the live host **blocks outbound** `smtp.gmail.com:587` (firewall), not a wrong app password. Wrong passwords typically fail *after* connect (authentication error).
 
 ## Root cause
 
@@ -76,17 +83,33 @@ DUROTECH_SMTP_TLS=true
 DEBUG=false
 ```
 
-### 3. If port 587 is blocked (common on shared hosting)
+### 3. If port 587 times out (common on shared hosting)
 
-Ask the host for SMTP settings. Often:
+Ask the host to allow outbound SMTP, or use their local relay. Often:
 
 | Setting | Value |
 |---------|--------|
 | Host | `localhost` or `mail.durotechindustries.com.au` |
 | Port | `25`, `587`, or `465` |
-| TLS | `true` for 587; try port `465` if 587 is refused |
+| TLS | `true` for 587; for Gmail SSL use host `ssl://smtp.gmail.com`, port `465`, `tls` => false |
 
-Update `port` / `tls` in `app_local.php` to match the host’s documentation.
+Update `host` / `port` / `tls` in live `config/app_local.php` (or `DUROTECH_SMTP_*` env). Do not put passwords in git.
+
+Gmail SSL example on live `app_local.php`:
+
+```php
+'EmailTransport' => [
+    'gmail' => [
+        'className' => 'Smtp',
+        'host' => 'ssl://smtp.gmail.com',
+        'port' => 465,
+        'username' => 'noreply@durotechindustries.com.au',
+        'password' => 'YOUR_APP_PASSWORD',
+        'tls' => false,
+        'timeout' => 12,
+    ],
+],
+```
 
 ## Verify from the production server (SSH)
 

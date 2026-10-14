@@ -998,10 +998,13 @@ public function employee_send_v3() {
                         'pdf_attachment' => 'dompdf/' . (string)$generatedPdfFileName,
                     ]);
 
-                    $email->send();
+                    if (!$this->trySendEmail($email, 'employee spec create ' . ($inserty['Mailer']['tracknumber'] ?? ''))) {
+                        $this->Flash->warning('Spec and PDF were saved, but the notification email could not be sent. Check SMTP on the server.');
+                    }
                 } catch (\Exception $e) {
                     // SMTP timeout/connection errors must not block submission; spec and PDF are already saved.
                     CakeLog::error('Employee spec email failed (track: ' . ($inserty['Mailer']['tracknumber'] ?? '') . '): ' . $e->getMessage());
+                    $this->Flash->warning('Spec and PDF were saved, but the notification email could not be sent. Check SMTP on the server.');
                 }
             }
 
@@ -1768,7 +1771,9 @@ protected function _saveEmployeeSpecAsSubmitted(int $mailerId, array $formData, 
             'pdf_attachment' => 'dompdf/' . (string)$generatedPdfFileName,
         ]);
 
-        $email->send();
+        if (!$this->trySendEmail($email, 'employee draft submit ' . (string)$tracknumber)) {
+            $this->Flash->warning('Spec and PDF were saved, but the notification email could not be sent. Check SMTP on the server.');
+        }
     }
     $this->logSpecAudit([
         'mailer_id' => $mailerId,
@@ -2389,7 +2394,9 @@ public function editsend_v3($id = null) {
                     'pdf_attachment' => $pdfPath,
                 ]);
 
-                $email->send();
+                if (!$this->trySendEmail($email, 'employee editsend_v3 ' . (string)($inserty['Mailer']['tracknumber'] ?? ''))) {
+                    $this->Flash->warning('Spec and PDF were saved, but the notification email could not be sent (SMTP timeout). Ask the host to allow outbound SMTP or use the server mail relay.');
+                }
             }
             $this->logSpecAudit([
                 'mailer_id' => $lastinsertId,

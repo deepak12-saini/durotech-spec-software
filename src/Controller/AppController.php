@@ -520,6 +520,25 @@ class AppController extends Controller
     }
 
     /**
+     * Send mail without aborting the HTTP request on SMTP timeout / connection errors.
+     */
+    protected function trySendEmail(Email $email, string $context = ''): bool
+    {
+        try {
+            $email->send();
+
+            return true;
+        } catch (\Throwable $e) {
+            $this->logSmtpFailure($e);
+            if ($context !== '') {
+                Log::error('Email send failed (' . $context . '): ' . $e->getMessage());
+            }
+
+            return false;
+        }
+    }
+
+    /**
      * Log SMTP context and return a safe admin hint (no passwords).
      */
     protected function smtpFailureHint(\Throwable $e): string
