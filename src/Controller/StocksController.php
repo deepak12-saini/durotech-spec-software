@@ -750,6 +750,118 @@ class StocksController extends AppController
 		return null;
 	}
 
+	/**
+	 * Admin edit of a Pending product warranty request (does not email or generate PDF).
+	 */
+	public function admin_edit_product_warranty($id = null): ?Response
+	{
+		$auth = $this->checkAdminSession();
+		if ($auth instanceof Response) {
+			return $auth;
+		}
+		$this->viewBuilder()->setLayout('admin_layout');
+		$this->set('title_for_layout', SITENAME . ' | Edit Product Warranty Request');
+
+		$rid = (int)$id;
+		if ($rid <= 0) {
+			$this->Flash->error('Invalid request.');
+			return $this->redirect(['action' => 'admin_product_warranty_request']);
+		}
+		try {
+			$entity = $this->ProductWarrantyRequests->get($rid);
+		} catch (\Throwable $e) {
+			$this->Flash->error('Request not found.');
+			return $this->redirect(['action' => 'admin_product_warranty_request']);
+		}
+
+		$statusVal = trim((string)($entity->status ?? ''));
+		if ($statusVal === '') {
+			$statusVal = 'Pending';
+		}
+		if ($statusVal !== 'Pending') {
+			$this->Flash->error('Only Pending requests can be edited. Approved certificates are already issued.');
+			return $this->redirect(['action' => 'admin_product_warranty_request']);
+		}
+
+		if ($this->request->is(['post', 'put', 'patch'])) {
+			$allowed = [
+				'serialnumber', 'dateofpurchase', 'product', 'used_as', 'application',
+				'area_warranted', 'building_address', 'building_name', 'building_area_name',
+				'start_requested_warranty', 'end_requested_warranty', 'contract_company_name',
+				'applicator_active_abn', 'applicator_address', 'contract_name', 'email',
+				'phone', 'sign_date', 'applicator', 'applicator_contact',
+			];
+			$raw = $this->request->getData('ProductWarrantyRequest');
+			if (!is_array($raw) || $raw === []) {
+				$raw = $this->request->getData();
+			}
+			$data = array_intersect_key(is_array($raw) ? $raw : [], array_flip($allowed));
+			$data = $this->_normalizeAdminProductWarrantyData($data);
+			$entity = $this->ProductWarrantyRequests->patchEntity($entity, $data);
+			$entity->status = 'Pending';
+			if ($this->ProductWarrantyRequests->save($entity)) {
+				$this->Flash->success('Warranty request updated. Preview the PDF, then Approve to send the certificate.');
+				return $this->redirect(['action' => 'admin_product_warranty_request', '?' => ['q' => (string)$rid]]);
+			}
+			$this->Flash->error($this->_firstProductWarrantyValidationMessage($entity));
+		}
+
+		$this->set(compact('entity'));
+		return null;
+	}
+
+	/** CamelCase alias for InflectedRoute (adminEditProductWarranty). */
+	public function adminEditProductWarranty($id = null): ?Response
+	{
+		return $this->admin_edit_product_warranty($id);
+	}
+
+	/**
+	 * @param array<string, mixed> $data
+	 * @return array<string, mixed>
+	 */
+	protected function _normalizeAdminProductWarrantyData(array $data): array
+	{
+		$optionalDates = ['start_requested_warranty', 'end_requested_warranty', 'dateofpurchase', 'sign_date'];
+		foreach ($optionalDates as $field) {
+			if (!array_key_exists($field, $data)) {
+				continue;
+			}
+			$raw = trim((string)$data[$field]);
+			if ($raw === '') {
+				$data[$field] = ($field === 'dateofpurchase' || $field === 'sign_date') ? $raw : null;
+				continue;
+			}
+			$ts = strtotime(str_replace('/', '-', $raw));
+			if ($ts !== false) {
+				$data[$field] = date('Y-m-d', $ts);
+			}
+		}
+		foreach ($data as $key => $value) {
+			if (is_string($value)) {
+				$data[$key] = trim($value);
+			}
+		}
+
+		return $data;
+	}
+
+	/**
+	 * @param \Cake\Datasource\EntityInterface $entity
+	 */
+	protected function _firstProductWarrantyValidationMessage($entity): string
+	{
+		$errors = method_exists($entity, 'getErrors') ? $entity->getErrors() : [];
+		foreach ($errors as $fieldErrors) {
+			foreach ((array)$fieldErrors as $message) {
+				if (is_string($message) && $message !== '') {
+					return $message;
+				}
+			}
+		}
+
+		return 'Please fill in all required fields.';
+	}
 
 	public function admin_delete_product_warranty($id = null): ?Response
 	{

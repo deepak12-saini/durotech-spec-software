@@ -124,6 +124,9 @@ if (!empty($csrfToken)) {
                                 ?>
                                 <a href="<?= h($draftPreviewUrl); ?>" target="_blank" class="btn btn-xs btn-warning" title="Preview certificate PDF from current form data.">Preview PDF</a>
                                 <?php if ($isPending): ?>
+                                    <a href="<?= $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_edit_product_warranty', $request['ProductWarrantyRequest']['id'] ?? '']); ?>"
+                                       class="btn btn-xs btn-default"
+                                       title="Edit details before approving. Does not email the customer.">Edit</a>
                                     <button type="button" class="btn btn-xs btn-success approveBtn" data-id="<?= $request['ProductWarrantyRequest']['id']; ?>">Approve</button>
                                     <button type="button" class="btn btn-xs btn-danger rejectBtn" data-id="<?= $request['ProductWarrantyRequest']['id']; ?>">Reject</button>
                                 <?php endif; ?>
@@ -192,6 +195,15 @@ if (!empty($productWarrantyRequests)) {
                 </table>
             </div>
             <div class="modal-footer">
+                <?php
+                $modalStatus = trim((string)($request['ProductWarrantyRequest']['status'] ?? ''));
+                if ($modalStatus === '') {
+                    $modalStatus = 'Pending';
+                }
+                if ($modalStatus === 'Pending') :
+                ?>
+                    <a href="<?= $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_edit_product_warranty', $rowId]); ?>" class="btn btn-primary">Edit</a>
+                <?php endif; ?>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
         </div>

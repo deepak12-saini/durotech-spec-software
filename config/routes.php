@@ -663,6 +663,7 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/stocks/warrant_request_v2', ['controller' => 'Stocks', 'action' => 'warrant_request_v2']);
     $routes->connect('/stocks/preview_warranty_certificate_v2/:id', ['controller' => 'Stocks', 'action' => 'preview_warranty_certificate_v2'], ['pass' => ['id']]);
     $routes->connect('/admin/stocks/product_warranty_request', ['controller' => 'Stocks', 'action' => 'admin_product_warranty_request']);
+    $routes->connect('/admin/stocks/edit_product_warranty/:id', ['controller' => 'Stocks', 'action' => 'admin_edit_product_warranty'], ['pass' => ['id']]);
     $routes->connect('/admin/stocks/preview_product_warranty_certificate/:id', ['controller' => 'Stocks', 'action' => 'admin_preview_product_warranty_certificate'], ['pass' => ['id']]);
     $routes->connect('/admin/stocks/preview_product_warranty_certificate_html/:id', ['controller' => 'Stocks', 'action' => 'admin_preview_product_warranty_certificate_html'], ['pass' => ['id']]);
     $routes->connect('/admin/stocks/delete_product_warranty/:id', ['controller' => 'Stocks', 'action' => 'admin_delete_product_warranty'], ['pass' => ['id']]);
