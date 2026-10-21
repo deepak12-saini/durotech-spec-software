@@ -185,6 +185,11 @@
 						'admin_product_warranty_log',
 						'admin_product_warranty_log_view',
 						'admin_edit_product_warranty',
+						'admin_preview_product_warranty_certificate',
+						'admin_preview_product_warranty_certificate_html',
+						'admin_delete_product_warranty',
+						'admin_approve_warranty',
+						'admin_reject_warranty',
 					];
 					$pwPortalOpen = ($reqController == 'stocks' && in_array($reqAction, $pwPortalActions, true));
 					?>
@@ -203,7 +208,7 @@
 								</a>
 								<b class="arrow"></b>
 							</li>
-							<li class="<?php if ($reqController=='stocks' && $reqAction=='admin_product_warranty_request') {echo 'active';}?>">
+							<li class="<?php if ($reqController=='stocks' && in_array($reqAction, ['admin_product_warranty_request', 'admin_edit_product_warranty', 'admin_preview_product_warranty_certificate', 'admin_preview_product_warranty_certificate_html', 'admin_delete_product_warranty'], true)) {echo 'active';}?>">
 								<a href="<?php echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_product_warranty_request']); ?>">
 									<i class="menu-icon fa fa-check-square-o"></i>
 									Approve list
@@ -509,7 +514,7 @@
 					</li>
 
 					<?php  } ?>
-					<li class="<?php if ($reqController=='stocks') {echo 'active';}?>">
+					<li class="<?php if ($reqController=='stocks' && in_array($reqAction, ['admin_index', 'index', 'add', 'edit', 'admin_add', 'admin_edit', 'admin_status', 'admin_delete', 'admin_comment'], true)) {echo 'active open';}?>">
 						<a href="#" class="dropdown-toggle">
 							<i class="menu-icon fa fa-file "></i>
 							<span class="menu-text">Stock Return</span>
