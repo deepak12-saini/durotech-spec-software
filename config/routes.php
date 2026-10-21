@@ -668,6 +668,7 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/warranty/documents', ['controller' => 'Stocks', 'action' => 'admin_warranty_documents']);
     $routes->connect('/admin/warranty/reports', ['controller' => 'Stocks', 'action' => 'admin_warranty_reports']);
     $routes->connect('/admin/warranty/settings', ['controller' => 'Stocks', 'action' => 'admin_warranty_settings']);
+    $routes->connect('/admin/warranty/approve', ['controller' => 'Stocks', 'action' => 'admin_product_warranty_request']);
     $routes->connect('/admin/stocks/add_product_warranty', ['controller' => 'Stocks', 'action' => 'admin_add_product_warranty']);
     $routes->connect('/admin/stocks/product_warranty_request', ['controller' => 'Stocks', 'action' => 'admin_product_warranty_request']);
     $routes->connect('/admin/stocks/product_warranty_log', ['controller' => 'Stocks', 'action' => 'admin_product_warranty_log']);

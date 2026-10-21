@@ -699,8 +699,9 @@ class StocksController extends AppController
 		if ($auth instanceof Response) {
 			return $auth;
 		}
-		$this->viewBuilder()->setLayout('admin_layout');
-		$this->set('title_for_layout', SITENAME . ' | Product Warranty Request List');
+		$this->viewBuilder()->setLayout('warranty_portal');
+		$this->set('title_for_layout', SITENAME . ' | Approve list');
+		$this->set('portalNav', 'approve');
 
 		$query = $this->ProductWarrantyRequests->find();
 
@@ -723,7 +724,8 @@ class StocksController extends AppController
 			$query->where(['OR' => $or]);
 		}
 
-		$status = trim((string)$this->request->getQuery('status', ''));
+		$statusRaw = $this->request->getQuery('status');
+		$status = $statusRaw === null ? 'Pending' : trim((string)$statusRaw);
 		if ($status !== '') {
 			if ($status === 'Pending') {
 				$query->where([
@@ -737,6 +739,8 @@ class StocksController extends AppController
 				$query->where(['ProductWarrantyRequests.status' => $status]);
 			}
 		}
+		$this->set('filterStatus', $status);
+		$this->set('filterQ', $q);
 
 		$this->paginate = [
 			'limit' => 20,

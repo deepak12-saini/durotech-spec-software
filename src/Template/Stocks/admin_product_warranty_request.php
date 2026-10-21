@@ -1,282 +1,132 @@
-
-<style>
-    .btn { margin-bottom: 5px; }
-</style>
 <?php
-// CSRF token for AJAX (cookie is httpOnly so must output in page)
 $csrfToken = $this->getRequest()->getCookie('csrfToken');
-if (!empty($csrfToken)) {
-    echo $this->Form->hidden('_csrfToken', ['id' => 'csrf-token-field', 'value' => $csrfToken]);
-}
-?>
-<div class="page-content">
-    <div class="page-header">
-        <h1>
-            Product Warranty Request List
-            <small><?= $this->Html->link('Warranty portal', ['action' => 'admin_warranty_dashboard']); ?>
-            · <?= $this->Html->link('Classic log', ['action' => 'admin_product_warranty_log']); ?></small>
-        </h1>
-    </div>
-
-    <?php
-    $filterQ = (string)$this->request->getQuery('q', '');
-    $filterStatus = (string)$this->request->getQuery('status', '');
-    $pagerQuery = array_filter(
-        $this->request->getQueryParams(),
-        static function ($v) {
-            return $v !== '' && $v !== null;
-        }
-    );
-    unset($pagerQuery['page']);
-    ?>
-    <div class="row" style="margin-bottom: 15px;">
-        <div class="col-xs-12">
-            <?= $this->Form->create(null, ['type' => 'get', 'class' => 'form-inline', 'url' => ['action' => 'admin_product_warranty_request']]); ?>
-            <div class="form-group" style="margin-right: 10px;">
-                <?= $this->Form->text('q', [
-                    'class' => 'form-control',
-                    'placeholder' => 'Search serial, product, building, applicator…',
-                    'value' => $filterQ,
-                    'style' => 'min-width: 280px;',
-                ]); ?>
-            </div>
-            <div class="form-group" style="margin-right: 10px;">
-                <?= $this->Form->select('status', [
-                    '' => 'All statuses',
-                    'Pending' => 'Pending',
-                    'Approved' => 'Approved',
-                    'Rejected' => 'Rejected',
-                ], [
-                    'class' => 'form-control',
-                    'value' => $filterStatus,
-                ]); ?>
-            </div>
-            <?= $this->Form->button('Search', ['class' => 'btn btn-primary', 'type' => 'submit']); ?>
-            <?= $this->Html->link('Reset', ['action' => 'admin_product_warranty_request'], ['class' => 'btn btn-default']); ?>
-            <?= $this->Form->end(); ?>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-xs-12">
-            <div class="table-responsive">
-                <table class="table table-striped table-bordered table-hover" id="example">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Serial Number</th>
-                            <th>Product</th>
-                            <th>Used As</th>
-                            <th>Building Name</th>
-                            <th>Email</th>
-                            <th>Status</th>
-                            <th>Certificate</th>
-                            <th>Date Submitted</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php
-                        if (empty($productWarrantyRequests)) {
-                            echo '<tr><td colspan="10" class="text-center text-muted">No records found.</td></tr>';
-                        } else {
-                            foreach ($productWarrantyRequests as $request) {
-                                $rowId = (int)($request['ProductWarrantyRequest']['id'] ?? 0);
-                                $statusVal = (string)($request['ProductWarrantyRequest']['status'] ?? '');
-                                if ($statusVal === '') {
-                                    $statusVal = 'Pending';
-                                }
-                                $isPending = ($statusVal === 'Pending');
-                                $statusClass = 'label-default';
-                                if ($statusVal === 'Pending') {
-                                    $statusClass = 'label-warning';
-                                } elseif ($statusVal === 'Approved') {
-                                    $statusClass = 'label-success';
-                                } elseif ($statusVal === 'Rejected') {
-                                    $statusClass = 'label-danger';
-                                }
-                        ?>
-                        <tr>
-                            <td><?= h($request['ProductWarrantyRequest']['id']); ?></td>
-                            <td><?= h($request['ProductWarrantyRequest']['serialnumber']); ?></td>
-                            <td><?= h($request['ProductWarrantyRequest']['product']); ?></td>
-                            <td><?= h($request['ProductWarrantyRequest']['used_as']); ?></td>
-                            <td><?= h($request['ProductWarrantyRequest']['building_name']); ?></td>
-                            <td><?= h($request['ProductWarrantyRequest']['email'] ?? ''); ?></td>
-                            <td><span class="label <?= $statusClass; ?>"><?= h($statusVal); ?></span></td>
-                            <td>
-                                <?php if (!empty($request['ProductWarrantyRequest']['certificate'])): ?>
-                                    <?php
-                                        $cert = $request['ProductWarrantyRequest']['certificate'];
-                                        $pathDir = strpos($cert, '/') !== false ? dirname($cert) . '/' : 'pdf/FPDI/';
-                                        $pathName = strpos($cert, '/') !== false ? basename($cert) : $cert;
-                                        $webroot = (string)$this->getRequest()->getAttribute('webroot');
-                                        $fileUrl = rtrim($webroot, '/') . '/' . trim($pathDir, '/') . '/' . rawurlencode($pathName);
-                                    ?>
-                                    <a href="<?= h($fileUrl); ?>" target="_blank" class="btn btn-xs btn-primary">View PDF</a>
-                                <?php else: ?>
-                                    <span class="text-muted">Not Available</span>
-                                <?php endif; ?>
-                            </td>
-                            <td><?= !empty($request['ProductWarrantyRequest']['created_at']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['created_at']) : ''; ?></td>
-                            <td>
-                                <button type="button" class="btn btn-xs btn-info autoModal" data-target="#detailModal_<?= $rowId; ?>">View Details</button>
-                                <?php
-                                $draftPreviewUrl = $this->Url->build(
-                                    '/admin/stocks/preview_product_warranty_certificate/' . (int)($request['ProductWarrantyRequest']['id'] ?? 0)
-                                );
-                                ?>
-                                <a href="<?= h($draftPreviewUrl); ?>" target="_blank" class="btn btn-xs btn-warning" title="Preview certificate PDF from current form data.">Preview PDF</a>
-                                <?php if ($isPending): ?>
-                                    <a href="<?= $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_edit_product_warranty', $request['ProductWarrantyRequest']['id'] ?? '']); ?>"
-                                       class="btn btn-xs btn-default"
-                                       title="Edit details before approving. Does not email the customer.">Edit</a>
-                                    <button type="button" class="btn btn-xs btn-success approveBtn" data-id="<?= $request['ProductWarrantyRequest']['id']; ?>">Approve</button>
-                                    <button type="button" class="btn btn-xs btn-danger rejectBtn" data-id="<?= $request['ProductWarrantyRequest']['id']; ?>">Reject</button>
-                                <?php endif; ?>
-                                <a href="<?= $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_delete_product_warranty', $request['ProductWarrantyRequest']['id'] ?? '']); ?>"
-                                   class="btn btn-xs btn-danger"
-                                   onclick="return confirm('Are you sure you want to delete this warranty request?');">Delete</a>
-                            </td>
-                        </tr>
-                        <?php }
-                        } ?>
-                    </tbody>
-                </table>
-            </div>
-            <?php if (!empty($productWarrantyRequests)) : ?>
-                <?php $this->Paginator->options(['url' => ['?' => $pagerQuery]]); ?>
-                <div class="clearfix" style="margin-top: 12px;">
-                    <ul class="pagination pagination-sm pull-left" style="margin: 0;">
-                        <?= $this->Paginator->first('&laquo;', ['escape' => false]); ?>
-                        <?= $this->Paginator->prev('< ' . __('previous')); ?>
-                        <?= $this->Paginator->numbers(['modulus' => 4]); ?>
-                        <?= $this->Paginator->next(__('next') . ' >'); ?>
-                        <?= $this->Paginator->last('&raquo;', ['escape' => false]); ?>
-                    </ul>
-                    <p class="text-muted pull-right" style="margin: 8px 0 0;">
-                        <?= $this->Paginator->counter(__('Page {{page}} of {{pages}}, showing {{current}} record(s) out of {{count}} total')); ?>
-                    </p>
-                </div>
-            <?php endif; ?>
-        </div>
-    </div>
-</div>
-
-<?php
-if (!empty($productWarrantyRequests)) {
-    foreach ($productWarrantyRequests as $request) {
-        $rowId = (int)($request['ProductWarrantyRequest']['id'] ?? 0);
-?>
-<div id="detailModal_<?= $rowId; ?>" class="modal fade" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">Product Warranty Request Details</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            </div>
-            <div class="modal-body">
-                <table class="table table-bordered">
-                    <tr><th>Serial Number:</th><td><?= h($request['ProductWarrantyRequest']['serialnumber']); ?></td></tr>
-                    <tr><th>Date Of Purchase:</th><td><?= !empty($request['ProductWarrantyRequest']['dateofpurchase']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['dateofpurchase']) : ''; ?></td></tr>
-                    <tr><th>Product:</th><td><?= h($request['ProductWarrantyRequest']['product']); ?></td></tr>
-                    <tr><th>Used As:</th><td><?= h($request['ProductWarrantyRequest']['used_as']); ?></td></tr>
-                    <tr><th>Application:</th><td><?= h($request['ProductWarrantyRequest']['application']); ?></td></tr>
-                    <tr><th>Area Warranted:</th><td><?= h($request['ProductWarrantyRequest']['area_warranted']); ?></td></tr>
-                    <tr><th>Building Address:</th><td><?= h($request['ProductWarrantyRequest']['building_address']); ?></td></tr>
-                    <tr><th>Building Name:</th><td><?= h($request['ProductWarrantyRequest']['building_name']); ?></td></tr>
-                    <tr><th>Start Warranty Date:</th><td><?= !empty($request['ProductWarrantyRequest']['start_requested_warranty']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['start_requested_warranty']) : ''; ?></td></tr>
-                    <tr><th>End Warranty Date:</th><td><?= !empty($request['ProductWarrantyRequest']['end_requested_warranty']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['end_requested_warranty']) : ''; ?></td></tr>
-                    <tr><th>Contractor Company Name:</th><td><?= h($request['ProductWarrantyRequest']['contract_company_name']); ?></td></tr>
-                    <tr><th>ABN No.:</th><td><?= h($request['ProductWarrantyRequest']['applicator_active_abn']); ?></td></tr>
-                    <tr><th>Company Address:</th><td><?= nl2br(h($request['ProductWarrantyRequest']['applicator_address'])); ?></td></tr>
-                    <tr><th>Contractor Name:</th><td><?= h($request['ProductWarrantyRequest']['contract_name']); ?></td></tr>
-                    <tr><th>Email:</th><td><?= h($request['ProductWarrantyRequest']['email'] ?? ''); ?></td></tr>
-                    <tr><th>Mobile:</th><td><?= h($request['ProductWarrantyRequest']['phone'] ?? ''); ?></td></tr>
-                    <tr><th>Sign Date:</th><td><?= !empty($request['ProductWarrantyRequest']['sign_date']) ? format_db_date('d/m/Y', $request['ProductWarrantyRequest']['sign_date']) : ''; ?></td></tr>
-                    <tr><th>Signature:</th><td><?php if (!empty($request['ProductWarrantyRequest']['contractor_signature'])) : ?><img src="<?= h((defined('SITEURL') ? rtrim((string)SITEURL, '/') : '') . '/signature/' . $request['ProductWarrantyRequest']['contractor_signature']) ?>" alt="Signature" style="max-width:220px;max-height:80px;border:1px solid #ddd;"><?php else : ?>—<?php endif; ?></td></tr>
-                    <tr><th>Status:</th><td><?= h($request['ProductWarrantyRequest']['status'] ?: 'Pending'); ?></td></tr>
-                </table>
-            </div>
-            <div class="modal-footer">
-                <?php
-                $modalStatus = trim((string)($request['ProductWarrantyRequest']['status'] ?? ''));
-                if ($modalStatus === '') {
-                    $modalStatus = 'Pending';
-                }
-                if ($modalStatus === 'Pending') :
-                ?>
-                    <a href="<?= $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_edit_product_warranty', $rowId]); ?>" class="btn btn-primary">Edit</a>
-                <?php endif; ?>
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-<?php } } ?>
-
-<script>
-$(document).ready(function() {
-    $('.autoModal').click(function() {
-        $($(this).data('target')).modal('show');
-    });
-
-    var approveUrl = '<?= $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_approve_warranty']); ?>';
-    var rejectUrl = '<?= $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_reject_warranty']); ?>';
-    var csrfToken = $('input[name="_csrfToken"]').val() || '';
-    if (!csrfToken) {
-        var m = document.cookie.match(/(?:^|;\s*)csrfToken=([^;]+)/);
-        csrfToken = m ? decodeURIComponent(m[1]) : '';
+$filterQ = (string)($filterQ ?? $this->request->getQuery('q', ''));
+$filterStatus = (string)($filterStatus ?? 'Pending');
+$pagerQuery = array_filter(
+    $this->request->getQueryParams(),
+    static function ($v) {
+        return $v !== '' && $v !== null;
     }
-
-    function postWarrantyAction(url, id, confirmMsg) {
-        if (!confirm(confirmMsg)) {
-            return;
-        }
+);
+unset($pagerQuery['page']);
+$pill = static function ($status) {
+    $map = ['Pending' => 'wp-pending', 'Approved' => 'wp-approved', 'Rejected' => 'wp-rejected'];
+    return $map[$status] ?? 'wp-pending';
+};
+$statusIcon = static function ($status) {
+    $map = ['Pending' => 'fa-clock-o', 'Approved' => 'fa-check-circle', 'Rejected' => 'fa-times-circle'];
+    return $map[$status] ?? 'fa-clock-o';
+};
+?>
+<?php if (!empty($csrfToken)) { echo $this->Form->hidden('_csrfToken', ['id' => 'csrf-token-field', 'value' => $csrfToken]); } ?>
+<div class="wp-top">
+    <div>
+        <h1>Approve list</h1>
+        <p>Pending warranties to preview, edit, then approve. Same data as before — now in the warranty portal.</p>
+    </div>
+    <a class="wp-btn wp-btn-green" href="<?= $this->Url->build(['action' => 'admin_add_product_warranty']) ?>"><i class="fa fa-plus"></i> New Warranty</a>
+</div>
+<div class="wp-card">
+    <?= $this->Form->create(null, ['type' => 'get', 'url' => ['action' => 'admin_product_warranty_request'], 'class' => 'wp-tools']); ?>
+        <input type="text" name="q" placeholder="Search serial, product, building, applicator…" value="<?= h($filterQ) ?>">
+        <select name="status">
+            <option value="" <?= $filterStatus === '' ? 'selected' : '' ?>>All statuses</option>
+            <option value="Pending" <?= $filterStatus === 'Pending' ? 'selected' : '' ?>>Pending</option>
+            <option value="Approved" <?= $filterStatus === 'Approved' ? 'selected' : '' ?>>Approved</option>
+            <option value="Rejected" <?= $filterStatus === 'Rejected' ? 'selected' : '' ?>>Rejected</option>
+        </select>
+        <button class="wp-btn wp-btn-blue" type="submit"><i class="fa fa-search"></i> Search</button>
+        <a class="wp-btn wp-btn-outline" href="<?= $this->Url->build(['action' => 'admin_product_warranty_request']) ?>">Reset</a>
+    <?= $this->Form->end(); ?>
+    <table class="wp-table">
+        <thead>
+            <tr>
+                <th>Serial</th>
+                <th>Contractor / site</th>
+                <th>Product</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Submitted</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if (empty($productWarrantyRequests)) : ?>
+                <tr><td colspan="7">No matching warranties.</td></tr>
+            <?php else : ?>
+                <?php foreach ($productWarrantyRequests as $request) :
+                    $row = $request['ProductWarrantyRequest'] ?? $request;
+                    $rowId = (int)($row['id'] ?? 0);
+                    $statusVal = trim((string)($row['status'] ?? ''));
+                    if ($statusVal === '') {
+                        $statusVal = 'Pending';
+                    }
+                    $isPending = ($statusVal === 'Pending');
+                    $preview = $this->Url->build('/admin/stocks/preview_product_warranty_certificate/' . $rowId);
+                    ?>
+                <tr>
+                    <td><?= h($row['serialnumber'] ?? '') ?></td>
+                    <td>
+                        <?= h(trim((string)($row['contract_company_name'] ?? '') . ' / ' . (string)($row['contract_name'] ?? ''), ' /')) ?>
+                        <?php if (!empty($row['building_name'])) : ?><br><small><?= h($row['building_name']) ?></small><?php endif; ?>
+                    </td>
+                    <td><?= h($row['product'] ?? '') ?></td>
+                    <td><?= h($row['email'] ?? '') ?></td>
+                    <td><span class="wp-pill <?= $pill($statusVal) ?>"><i class="fa <?= $statusIcon($statusVal) ?>"></i> <?= h($statusVal) ?></span></td>
+                    <td><?= !empty($row['created_at']) ? h(format_db_date('d/m/Y', $row['created_at'])) : '' ?></td>
+                    <td>
+                        <a href="<?= $this->Url->build(['action' => 'admin_warranty_dashboard', '?' => ['id' => $rowId]]) ?>">View</a>
+                        <a href="<?= h($preview) ?>" target="_blank">Preview</a>
+                        <?php if ($isPending) : ?>
+                            <a href="<?= $this->Url->build(['action' => 'admin_edit_product_warranty', $rowId]) ?>">Edit</a>
+                            <button type="button" class="wp-btn wp-btn-blue approveBtn" data-id="<?= $rowId ?>" style="padding:4px 10px;font-size:12px;">Approve</button>
+                            <button type="button" class="wp-btn wp-btn-red rejectBtn" data-id="<?= $rowId ?>" style="padding:4px 10px;font-size:12px;">Reject</button>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </tbody>
+    </table>
+    <?php if (!empty($productWarrantyRequests)) : ?>
+        <?php $this->Paginator->options(['url' => ['action' => 'admin_product_warranty_request', '?' => $pagerQuery]]); ?>
+        <div style="margin-top:12px;">
+            <?= $this->Paginator->prev('< previous') ?>
+            <?= $this->Paginator->numbers() ?>
+            <?= $this->Paginator->next('next >') ?>
+        </div>
+    <?php endif; ?>
+</div>
+<?php $this->start('script'); ?>
+<script>
+$(function() {
+    var approveUrl = <?= json_encode($this->Url->build(['controller' => 'Stocks', 'action' => 'admin_approve_warranty'])) ?>;
+    var rejectUrl = <?= json_encode($this->Url->build(['controller' => 'Stocks', 'action' => 'admin_reject_warranty'])) ?>;
+    var csrf = $('input[name="_csrfToken"]').val() || '';
+    function post(url, id, msg) {
+        if (!confirm(msg)) return;
         $.ajax({
-            url: url,
-            type: 'POST',
-            data: { id: id, _csrfToken: csrfToken },
-            headers: csrfToken ? { 'X-CSRF-Token': csrfToken } : {},
+            url: url, type: 'POST',
+            data: { id: id, _csrfToken: csrf },
+            headers: csrf ? { 'X-CSRF-Token': csrf } : {},
             success: function(response) {
-                var data = null;
-                try {
-                    data = typeof response === 'string' ? JSON.parse(response) : response;
-                } catch (e) {
-                    data = null;
-                }
-                if (data && data.status === 'success') {
-                    var msg = 'Warranty approved.';
-                    if (data.emailSent && data.customerEmail) {
-                        msg += '\n\nApproval email with certificate sent to:\n' + data.customerEmail;
-                    } else if (data.customerEmail) {
-                        msg += '\n\nCould not send email to ' + data.customerEmail + '. Share the portal link manually.';
-                    } else {
-                        msg += '\n\nNo customer email on file — share the portal link manually.';
-                    }
-                    if (data.portalUrl) {
-                        msg += '\n\nCustomer portal link:\n' + data.portalUrl;
-                    }
-                    alert(msg);
-                    location.reload();
-                } else if (String(response).trim() === 'success') {
+                var data = response;
+                try { if (typeof response === 'string') data = JSON.parse(response); } catch (e) { data = response; }
+                if ((data && data.status === 'success') || String(response).trim() === 'success') {
                     location.reload();
                 } else {
                     alert('Unable to update this request.');
                 }
             },
-            error: function(xhr) {
-                alert('Request failed. Status: ' + xhr.status);
-            }
+            error: function() { alert('Request failed.'); }
         });
     }
-
-    $('.approveBtn').click(function() {
-        postWarrantyAction(approveUrl, $(this).data('id'), 'Approve this warranty request and generate the certificate PDF?');
+    $('.approveBtn').on('click', function() {
+        post(approveUrl, $(this).data('id'), 'Approve and email the certificate to the customer?');
     });
-
-    $('.rejectBtn').click(function() {
-        postWarrantyAction(rejectUrl, $(this).data('id'), 'Reject this warranty request? No certificate will be issued.');
+    $('.rejectBtn').on('click', function() {
+        post(rejectUrl, $(this).data('id'), 'Reject this warranty request?');
     });
 });
 </script>
+<?php $this->end(); ?>
