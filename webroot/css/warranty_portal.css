@@ -1,0 +1,61 @@
+.wp-body { margin: 0; font-family: "Segoe UI", Arial, sans-serif; background: #eef3f8; color: #1a2b3c; }
+.wp-shell { display: flex; min-height: 100vh; }
+.wp-side { width: 220px; background: #0b2d4a; color: #fff; flex-shrink: 0; padding: 18px 0; }
+.wp-brand { padding: 0 18px 22px; font-weight: 800; letter-spacing: .4px; }
+.wp-brand small { display: block; font-weight: 400; opacity: .7; font-size: 11px; margin-top: 4px; }
+.wp-side a { display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,.82); padding: 10px 18px; text-decoration: none; font-size: 14px; }
+.wp-side a:hover, .wp-side a.active { background: #134a73; color: #fff; }
+.wp-main { flex: 1; padding: 22px 28px 40px; min-width: 0; }
+.wp-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 18px; }
+.wp-top h1 { margin: 0; font-size: 26px; }
+.wp-top p { margin: 4px 0 0; color: #6b7c8f; font-size: 14px; }
+.wp-badge { font-size: 11px; background: #e8eef5; color: #4a6278; padding: 2px 8px; border-radius: 999px; margin-left: 8px; }
+.wp-btn { display: inline-block; border: 0; border-radius: 10px; padding: 10px 16px; font-weight: 700; cursor: pointer; text-decoration: none; font-size: 14px; }
+.wp-btn-green { background: #1db954; color: #fff; }
+.wp-btn-green:hover { color: #fff; background: #18a049; }
+.wp-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.wp-stat { background: #fff; border-radius: 14px; padding: 14px 16px; box-shadow: 0 4px 16px rgba(11,45,74,.06); display: flex; align-items: center; gap: 12px; }
+.wp-stat .n { font-size: 28px; font-weight: 800; line-height: 1.1; }
+.wp-stat .l { font-size: 12px; color: #6b7c8f; }
+.wp-ico { width: 40px; height: 40px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.wp-ico-total { background: #e8f0fe; color: #2563eb; }
+.wp-ico-pending { background: #fff4d6; color: #d97706; }
+.wp-ico-approved { background: #e3f8ea; color: #16a34a; }
+.wp-ico-rejected { background: #fde8e8; color: #dc2626; }
+.wp-grid { display: grid; grid-template-columns: 1.6fr .9fr; gap: 14px; }
+.wp-card { background: #fff; border-radius: 14px; padding: 16px; box-shadow: 0 4px 16px rgba(11,45,74,.06); }
+.wp-card h2 { margin: 0 0 12px; font-size: 16px; }
+.wp-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.wp-tools input, .wp-tools select { border: 1px solid #d8dee6; border-radius: 8px; padding: 8px 10px; min-width: 180px; }
+.wp-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.wp-table th { text-align: left; color: #6b7c8f; font-weight: 600; padding: 8px; border-bottom: 1px solid #edf1f5; }
+.wp-table td { padding: 10px 8px; border-bottom: 1px solid #f3f6f9; }
+.wp-table tr.active { background: #f3f8ff; }
+.wp-pill { border-radius: 999px; padding: 3px 10px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
+.wp-pending { background: #fff4d6; color: #9a6b00; }
+.wp-approved { background: #e3f8ea; color: #1a7a3a; }
+.wp-rejected { background: #fde8e8; color: #b42318; }
+.wp-detail dt { font-size: 11px; color: #6b7c8f; text-transform: uppercase; margin-top: 10px; }
+.wp-detail dd { margin: 2px 0 0; font-weight: 600; }
+.wp-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.wp-btn-outline { background: #eef3f8; color: #0b2d4a; }
+.wp-btn-blue { background: #2563eb; color: #fff; }
+.wp-btn-red { background: #dc2626; color: #fff; }
+.wp-activity { list-style: none; padding: 0; margin: 0; }
+.wp-activity li { padding: 8px 0 8px 16px; border-left: 3px solid #cbd5e1; margin-left: 6px; position: relative; }
+.wp-activity li:before { content: ""; position: absolute; left: -7px; top: 12px; width: 10px; height: 10px; border-radius: 50%; background: #94a3b8; }
+.wp-activity li.wp-dot-new:before { background: #2563eb; }
+.wp-activity li.wp-dot-ok:before { background: #16a34a; }
+.wp-activity li.wp-dot-no:before { background: #dc2626; }
+.wp-activity li.wp-dot-edit:before { background: #d97706; }
+.wp-btn .fa { margin-right: 4px; }
+.wp-flash { background: #e3f8ea; color: #1a7a3a; padding: 10px 14px; border-radius: 8px; margin-bottom: 12px; }
+.wp-flash.error { background: #fde8e8; color: #b42318; }
+.wp-form .form-group { margin-bottom: 12px; }
+.wp-form label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.wp-form .form-control { width: 100%; }
+@media (max-width: 992px) {
+  .wp-shell { flex-direction: column; }
+  .wp-side { width: 100%; }
+  .wp-stats, .wp-grid { grid-template-columns: 1fr; }
+}

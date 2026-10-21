@@ -8,7 +8,10 @@
 /vendor/*
 
 # Webroot: exclude so server keeps its own webroot (do not overwrite on deploy)
-/webroot/
+/webroot/*
+!/webroot/css/
+/webroot/css/*
+!/webroot/css/warranty_portal.css
 
 # OS generated files #
 ######################
