@@ -16,6 +16,23 @@ $pill = static function ($status) {
     $map = ['Pending' => 'wp-pending', 'Approved' => 'wp-approved', 'Rejected' => 'wp-rejected'];
     return $map[$status] ?? 'wp-pending';
 };
+$statusIcon = static function ($status) {
+    $map = ['Pending' => 'fa-clock-o', 'Approved' => 'fa-check-circle', 'Rejected' => 'fa-times-circle'];
+    return $map[$status] ?? 'fa-clock-o';
+};
+$activityDot = static function ($action) {
+    $a = strtolower((string)$action);
+    if (strpos($a, 'approv') !== false) {
+        return 'wp-dot-ok';
+    }
+    if (strpos($a, 'reject') !== false) {
+        return 'wp-dot-no';
+    }
+    if (strpos($a, 'edit') !== false) {
+        return 'wp-dot-edit';
+    }
+    return 'wp-dot-new';
+};
 $contractor = static function (array $row) {
     $c = trim((string)($row['contract_company_name'] ?? ''));
     $p = trim((string)($row['contract_name'] ?? ($row['applicator'] ?? '')));
@@ -31,14 +48,26 @@ $contractor = static function (array $row) {
         <h1>Warranty Dashboard <span class="wp-badge">Live</span></h1>
         <p>Track every warranty. Search by serial like a spec code. Manage every approval.</p>
     </div>
-    <a class="wp-btn wp-btn-green" href="<?= $this->Url->build(['action' => 'admin_add_product_warranty']) ?>">+ New Warranty</a>
+    <a class="wp-btn wp-btn-green" href="<?= $this->Url->build(['action' => 'admin_add_product_warranty']) ?>"><i class="fa fa-plus"></i> New Warranty</a>
 </div>
 
 <div class="wp-stats">
-    <div class="wp-stat"><div class="l">Total Warranties</div><div class="n"><?= (int)($stats['total'] ?? 0) ?></div></div>
-    <div class="wp-stat"><div class="l">Pending Approval</div><div class="n"><?= (int)($stats['pending'] ?? 0) ?></div></div>
-    <div class="wp-stat"><div class="l">Approved</div><div class="n"><?= (int)($stats['approved'] ?? 0) ?></div></div>
-    <div class="wp-stat"><div class="l">Rejected</div><div class="n"><?= (int)($stats['rejected'] ?? 0) ?></div></div>
+    <div class="wp-stat">
+        <span class="wp-ico wp-ico-total"><i class="fa fa-clipboard"></i></span>
+        <div><div class="l">Total Warranties</div><div class="n"><?= (int)($stats['total'] ?? 0) ?></div></div>
+    </div>
+    <div class="wp-stat">
+        <span class="wp-ico wp-ico-pending"><i class="fa fa-clock-o"></i></span>
+        <div><div class="l">Pending Approval</div><div class="n"><?= (int)($stats['pending'] ?? 0) ?></div></div>
+    </div>
+    <div class="wp-stat">
+        <span class="wp-ico wp-ico-approved"><i class="fa fa-check"></i></span>
+        <div><div class="l">Approved</div><div class="n"><?= (int)($stats['approved'] ?? 0) ?></div></div>
+    </div>
+    <div class="wp-stat">
+        <span class="wp-ico wp-ico-rejected"><i class="fa fa-times"></i></span>
+        <div><div class="l">Rejected</div><div class="n"><?= (int)($stats['rejected'] ?? 0) ?></div></div>
+    </div>
 </div>
 
 <div class="wp-grid">
@@ -52,8 +81,8 @@ $contractor = static function (array $row) {
                 <option value="Approved">Approved</option>
                 <option value="Rejected">Rejected</option>
             </select>
-            <button class="wp-btn wp-btn-outline" type="submit">Search</button>
-            <a class="wp-btn wp-btn-outline" href="<?= $this->Url->build(['action' => 'admin_warranty_register', '?' => ['export' => 'csv']]) ?>">Export</a>
+            <button class="wp-btn wp-btn-outline" type="submit"><i class="fa fa-search"></i> Search</button>
+            <a class="wp-btn wp-btn-outline" href="<?= $this->Url->build(['action' => 'admin_warranty_register', '?' => ['export' => 'csv']]) ?>"><i class="fa fa-download"></i> Export</a>
         <?= $this->Form->end(); ?>
         <table class="wp-table">
             <thead>
@@ -77,7 +106,7 @@ $contractor = static function (array $row) {
                         <td><?= h($row['serialnumber'] ?? ('#' . $rid)) ?></td>
                         <td><?= h($contractor($row)) ?><?php if (!empty($row['building_name'])) : ?><br><small><?= h($row['building_name']) ?></small><?php endif; ?></td>
                         <td><?= h($row['product'] ?? '') ?></td>
-                        <td><span class="wp-pill <?= $pill($st) ?>"><?= h($st) ?></span></td>
+                        <td><span class="wp-pill <?= $pill($st) ?>"><i class="fa <?= $statusIcon($st) ?>"></i> <?= h($st) ?></span></td>
                         <td><a href="<?= $this->Url->build(['action' => 'admin_warranty_dashboard', '?' => ['id' => $rid]]) ?>">View</a></td>
                     </tr>
                     <?php endforeach; ?>
@@ -98,7 +127,7 @@ $contractor = static function (array $row) {
                 $preview = $this->Url->build('/admin/stocks/preview_product_warranty_certificate/' . $sid);
                 $cert = $selected['certificate'] ?? '';
                 ?>
-                <h3 style="margin:0;"><?= h($selected['serialnumber'] ?? '') ?> <span class="wp-pill <?= $pill($st) ?>"><?= h($st) ?></span></h3>
+                <h3 style="margin:0;"><?= h($selected['serialnumber'] ?? '') ?> <span class="wp-pill <?= $pill($st) ?>"><i class="fa <?= $statusIcon($st) ?>"></i> <?= h($st) ?></span></h3>
                 <dt>Contractor</dt><dd><?= h($contractor($selected)) ?></dd>
                 <dt>Site address</dt><dd><?= h($selected['building_address'] ?? '') ?></dd>
                 <dt>Product</dt><dd><?= h($selected['product'] ?? '') ?></dd>
@@ -106,19 +135,19 @@ $contractor = static function (array $row) {
                 <dt>Documents</dt>
                 <dd>
                     <?php if (!empty($cert)) : ?>
-                        <a href="<?= h(rtrim((string)$this->getRequest()->getAttribute('webroot'), '/') . '/' . ltrim((string)$cert, '/')) ?>" target="_blank">Certificate PDF</a>
+                        <a href="<?= h(rtrim((string)$this->getRequest()->getAttribute('webroot'), '/') . '/' . ltrim((string)$cert, '/')) ?>" target="_blank"><i class="fa fa-file-pdf-o"></i> Certificate PDF</a>
                     <?php else : ?>
-                        Not issued yet — use Preview PDF.
+                        <i class="fa fa-file-o"></i> Not issued yet — use Preview PDF.
                     <?php endif; ?>
                 </dd>
                 <div class="wp-actions">
                     <?php if ($st === 'Pending') : ?>
-                        <a class="wp-btn wp-btn-outline" href="<?= $this->Url->build(['action' => 'admin_edit_product_warranty', $sid]) ?>">Edit request</a>
+                        <a class="wp-btn wp-btn-outline" href="<?= $this->Url->build(['action' => 'admin_edit_product_warranty', $sid]) ?>"><i class="fa fa-pencil"></i> Edit request</a>
                     <?php endif; ?>
-                    <a class="wp-btn wp-btn-outline" href="<?= h($preview) ?>" target="_blank">Preview PDF</a>
+                    <a class="wp-btn wp-btn-outline" href="<?= h($preview) ?>" target="_blank"><i class="fa fa-file-pdf-o"></i> Preview PDF</a>
                     <?php if ($st === 'Pending') : ?>
-                        <button type="button" class="wp-btn wp-btn-blue approveBtn" data-id="<?= $sid ?>">Approve</button>
-                        <button type="button" class="wp-btn wp-btn-red rejectBtn" data-id="<?= $sid ?>">Reject</button>
+                        <button type="button" class="wp-btn wp-btn-blue approveBtn" data-id="<?= $sid ?>"><i class="fa fa-check"></i> Approve</button>
+                        <button type="button" class="wp-btn wp-btn-red rejectBtn" data-id="<?= $sid ?>"><i class="fa fa-times"></i> Reject</button>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
@@ -130,7 +159,7 @@ $contractor = static function (array $row) {
                     <li>No activity rows yet. New submits, edits and approvals will appear here.</li>
                 <?php else : ?>
                     <?php foreach ($activity as $ev) : ?>
-                        <li>
+                        <li class="<?= $activityDot($ev['action'] ?? '') ?>">
                             <strong><?= h($ev['action'] ?? '') ?></strong>
                             <?= h($ev['serialnumber'] ?? '') ?>
                             <br><small><?= h($ev['message'] ?? '') ?> — <?= h($ev['created'] ?? '') ?></small>
