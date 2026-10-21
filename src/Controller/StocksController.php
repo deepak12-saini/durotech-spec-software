@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Utility\ProductWarrantyCustomerNotifier;
+use App\Utility\ProductWarrantyEventLogger;
 use App\Utility\ProductWarrantyPdfGenerator;
 use App\Utility\ProductWarrantyPortalToken;
 use App\Utility\WarrantyCertificateHtmlV2Generator;
@@ -751,6 +752,224 @@ class StocksController extends AppController
 	}
 
 	/**
+	 * Warranty log: search serial, contractor/applicator, address. CSV export supported.
+	 */
+	public function admin_product_warranty_log(): ?Response
+	{
+		$auth = $this->checkAdminSession();
+		if ($auth instanceof Response) {
+			return $auth;
+		}
+		ProductWarrantyEventLogger::ensureTable();
+		$this->viewBuilder()->setLayout('admin_layout');
+		$this->set('title_for_layout', SITENAME . ' | Product Warranty Log');
+
+		$query = $this->_productWarrantyLogQuery();
+		$export = (string)$this->request->getQuery('export', '');
+		if ($export === 'csv') {
+			$rows = $query->order(['ProductWarrantyRequests.id' => 'DESC'])->all();
+
+			return $this->_productWarrantyLogCsvResponse($rows);
+		}
+
+		$this->paginate = [
+			'limit' => 25,
+			'order' => ['ProductWarrantyRequests.id' => 'DESC'],
+		];
+		$results = $this->paginate($query);
+		$logs = [];
+		foreach ($results as $entity) {
+			$logs[] = $entity->toArray();
+		}
+		$this->set('logs', $logs);
+		$this->set('filters', [
+			'serial' => trim((string)$this->request->getQuery('serial', '')),
+			'contractor' => trim((string)$this->request->getQuery('contractor', '')),
+			'address' => trim((string)$this->request->getQuery('address', '')),
+			'status' => trim((string)$this->request->getQuery('status', '')),
+			'q' => trim((string)$this->request->getQuery('q', '')),
+		]);
+
+		return null;
+	}
+
+	public function adminProductWarrantyLog(): ?Response
+	{
+		return $this->admin_product_warranty_log();
+	}
+
+	/**
+	 * Single warranty log record + event history.
+	 */
+	public function admin_product_warranty_log_view($id = null): ?Response
+	{
+		$auth = $this->checkAdminSession();
+		if ($auth instanceof Response) {
+			return $auth;
+		}
+		ProductWarrantyEventLogger::ensureTable();
+		$rid = (int)$id;
+		if ($rid <= 0) {
+			$this->Flash->error('Invalid warranty log id.');
+			return $this->redirect(['action' => 'admin_product_warranty_log']);
+		}
+		try {
+			$entity = $this->ProductWarrantyRequests->get($rid);
+		} catch (\Throwable $e) {
+			$this->Flash->error('Warranty record not found.');
+			return $this->redirect(['action' => 'admin_product_warranty_log']);
+		}
+		$events = [];
+		try {
+			$this->loadModel('ProductWarrantyEventLogs');
+			$eventRows = $this->ProductWarrantyEventLogs->find()
+				->where(['product_warranty_request_id' => $rid])
+				->order(['id' => 'DESC'])
+				->all();
+			foreach ($eventRows as $row) {
+				$events[] = $row->toArray();
+			}
+		} catch (\Throwable $e) {
+			$events = [];
+		}
+		$this->viewBuilder()->setLayout('admin_layout');
+		$this->set('title_for_layout', SITENAME . ' | Warranty Log #' . $rid);
+		$this->set('record', $entity->toArray());
+		$this->set('events', $events);
+
+		return null;
+	}
+
+	public function adminProductWarrantyLogView($id = null): ?Response
+	{
+		return $this->admin_product_warranty_log_view($id);
+	}
+
+	/**
+	 * @return \Cake\ORM\Query
+	 */
+	protected function _productWarrantyLogQuery()
+	{
+		$query = $this->ProductWarrantyRequests->find();
+		$serial = trim((string)$this->request->getQuery('serial', ''));
+		if ($serial !== '') {
+			$query->where(['ProductWarrantyRequests.serialnumber LIKE' => '%' . $serial . '%']);
+		}
+		$contractor = trim((string)$this->request->getQuery('contractor', ''));
+		if ($contractor !== '') {
+			$like = '%' . $contractor . '%';
+			$query->where([
+				'OR' => [
+					['ProductWarrantyRequests.contract_company_name LIKE' => $like],
+					['ProductWarrantyRequests.contract_name LIKE' => $like],
+					['ProductWarrantyRequests.applicator LIKE' => $like],
+				],
+			]);
+		}
+		$address = trim((string)$this->request->getQuery('address', ''));
+		if ($address !== '') {
+			$like = '%' . $address . '%';
+			$query->where([
+				'OR' => [
+					['ProductWarrantyRequests.building_address LIKE' => $like],
+					['ProductWarrantyRequests.applicator_address LIKE' => $like],
+					['ProductWarrantyRequests.building_name LIKE' => $like],
+				],
+			]);
+		}
+		$q = trim((string)$this->request->getQuery('q', ''));
+		if ($q !== '') {
+			$like = '%' . $q . '%';
+			$or = [
+				['ProductWarrantyRequests.serialnumber LIKE' => $like],
+				['ProductWarrantyRequests.product LIKE' => $like],
+				['ProductWarrantyRequests.email LIKE' => $like],
+				['ProductWarrantyRequests.phone LIKE' => $like],
+				['ProductWarrantyRequests.contract_company_name LIKE' => $like],
+				['ProductWarrantyRequests.contract_name LIKE' => $like],
+				['ProductWarrantyRequests.building_address LIKE' => $like],
+				['ProductWarrantyRequests.applicator_address LIKE' => $like],
+			];
+			if (ctype_digit($q)) {
+				$or[] = ['ProductWarrantyRequests.id' => (int)$q];
+			}
+			$query->where(['OR' => $or]);
+		}
+		$status = trim((string)$this->request->getQuery('status', ''));
+		if ($status !== '') {
+			if ($status === 'Pending') {
+				$query->where([
+					'OR' => [
+						['ProductWarrantyRequests.status' => ''],
+						['ProductWarrantyRequests.status' => 'Pending'],
+						['ProductWarrantyRequests.status IS' => null],
+					],
+				]);
+			} else {
+				$query->where(['ProductWarrantyRequests.status' => $status]);
+			}
+		}
+
+		return $query;
+	}
+
+	/**
+	 * @param iterable<\Cake\Datasource\EntityInterface> $rows
+	 */
+	protected function _productWarrantyLogCsvResponse($rows): Response
+	{
+		$this->autoRender = false;
+		$fh = fopen('php://temp', 'w+');
+		fputcsv($fh, [
+			'ID', 'Serial number', 'Product', 'Contractor company', 'Contractor name',
+			'Applicator address', 'Building name', 'Building address', 'Email', 'Phone',
+			'Warranty start', 'Warranty end', 'Status', 'Submitted',
+		]);
+		foreach ($rows as $entity) {
+			$r = $entity->toArray();
+			fputcsv($fh, [
+				$r['id'] ?? '',
+				$r['serialnumber'] ?? '',
+				$r['product'] ?? '',
+				$r['contract_company_name'] ?? '',
+				$r['contract_name'] ?? ($r['applicator'] ?? ''),
+				$r['applicator_address'] ?? '',
+				$r['building_name'] ?? '',
+				$r['building_address'] ?? '',
+				$r['email'] ?? '',
+				$r['phone'] ?? '',
+				$r['start_requested_warranty'] ?? '',
+				$r['end_requested_warranty'] ?? '',
+				($r['status'] ?? '') !== '' ? $r['status'] : 'Pending',
+				$r['created_at'] ?? '',
+			]);
+		}
+		rewind($fh);
+		$csv = stream_get_contents($fh) ?: '';
+		fclose($fh);
+		$filename = 'product-warranty-log-' . date('Ymd-His') . '.csv';
+
+		return $this->response
+			->withType('text/csv')
+			->withHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+			->withStringBody($csv);
+	}
+
+	/**
+	 * @return array{role: string, id: ?int, name: string}
+	 */
+	protected function _productWarrantyAdminActor(): array
+	{
+		$session = $this->request->getSession();
+
+		return [
+			'role' => 'admin',
+			'id' => (int)$session->read('User.id') ?: null,
+			'name' => trim((string)$session->read('User.name') . ' ' . (string)$session->read('User.lname')),
+		];
+	}
+
+	/**
 	 * Admin edit of a Pending product warranty request (does not email or generate PDF).
 	 */
 	public function admin_edit_product_warranty($id = null): ?Response
@@ -797,9 +1016,23 @@ class StocksController extends AppController
 			}
 			$data = array_intersect_key(is_array($raw) ? $raw : [], array_flip($allowed));
 			$data = $this->_normalizeAdminProductWarrantyData($data);
+			$before = ProductWarrantyEventLogger::snapshot($entity);
 			$entity = $this->ProductWarrantyRequests->patchEntity($entity, $data);
 			$entity->status = 'Pending';
 			if ($this->ProductWarrantyRequests->save($entity)) {
+				$after = ProductWarrantyEventLogger::snapshot($entity);
+				$changed = ProductWarrantyEventLogger::diff($before, $after);
+				$actor = $this->_productWarrantyAdminActor();
+				ProductWarrantyEventLogger::log($rid, 'edited', [
+					'actor_role' => $actor['role'],
+					'actor_id' => $actor['id'],
+					'actor_name' => $actor['name'],
+					'before' => $before,
+					'after' => $after,
+					'message' => $changed !== []
+						? ('Updated: ' . implode(', ', array_keys($changed)))
+						: 'Saved with no field changes.',
+				]);
 				$this->Flash->success('Warranty request updated. Preview the PDF, then Approve to send the certificate.');
 				return $this->redirect(['action' => 'admin_product_warranty_request', '?' => ['q' => (string)$rid]]);
 			}
@@ -922,6 +1155,15 @@ class StocksController extends AppController
 		}
 		$entity->status = 'Approved';
 		if ($this->ProductWarrantyRequests->save($entity)) {
+			$actor = $this->_productWarrantyAdminActor();
+			$after = ProductWarrantyEventLogger::snapshot($entity);
+			ProductWarrantyEventLogger::log($id, 'approved', [
+				'actor_role' => $actor['role'],
+				'actor_id' => $actor['id'],
+				'actor_name' => $actor['name'],
+				'after' => $after,
+				'message' => 'Certificate issued and emailed to customer.',
+			]);
 			$this->_includeProductWarrantyCertificateScript($id);
 			$token = ProductWarrantyPortalToken::generate($id);
 			$portalUrl = Router::url(['controller' => 'Fronts', 'action' => 'productWarrantyV2Portal', $token], true);
@@ -978,6 +1220,14 @@ class StocksController extends AppController
 		}
 		$entity->status = 'Rejected';
 		if ($this->ProductWarrantyRequests->save($entity)) {
+			$actor = $this->_productWarrantyAdminActor();
+			ProductWarrantyEventLogger::log($id, 'rejected', [
+				'actor_role' => $actor['role'],
+				'actor_id' => $actor['id'],
+				'actor_name' => $actor['name'],
+				'after' => ProductWarrantyEventLogger::snapshot($entity),
+				'message' => 'Request rejected.',
+			]);
 			$this->response = $this->response->withStringBody('success');
 			return $this->response;
 		}

@@ -11,7 +11,10 @@ if (!empty($csrfToken)) {
 ?>
 <div class="page-content">
     <div class="page-header">
-        <h1>Product Warranty Request List</h1>
+        <h1>
+            Product Warranty Request List
+            <small><?= $this->Html->link('Warranty Log', ['action' => 'admin_product_warranty_log']); ?></small>
+        </h1>
     </div>
 
     <?php

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Controller\AppController;
+use App\Utility\ProductWarrantyEventLogger;
 use App\Utility\ProductWarrantyPdfGenerator;
 use App\Utility\ProductWarrantyPortalToken;
 use App\Utility\SafeDate;
@@ -1503,6 +1504,11 @@ class FrontsController extends AppController
                 $entity->status = 'Pending';
             }
             if ($this->ProductWarrantyRequests->save($entity)) {
+                ProductWarrantyEventLogger::log((int)$entity->id, 'submitted', [
+                    'actor_role' => 'customer',
+                    'after' => ProductWarrantyEventLogger::snapshot($entity),
+                    'message' => 'Submitted from website form.',
+                ]);
                 // Notify internal team for new Product Warranty Request submissions.
                 $baseUrl = defined('SITEURL') ? (string)SITEURL : (string)(Configure::read('App.fullBaseUrl') ?? '');
                 $adminListUrl = rtrim($baseUrl, '/') . '/admin/stocks/product_warranty_request';
@@ -1608,6 +1614,11 @@ class FrontsController extends AppController
                 $entity->status = 'Pending';
             }
             if ($this->ProductWarrantyRequests->save($entity)) {
+                ProductWarrantyEventLogger::log((int)$entity->id, 'submitted', [
+                    'actor_role' => 'customer',
+                    'after' => ProductWarrantyEventLogger::snapshot($entity),
+                    'message' => 'Submitted from website form (v2).',
+                ]);
                 $baseUrl = defined('SITEURL') ? (string)SITEURL : (string)(Configure::read('App.fullBaseUrl') ?? '');
                 $adminListUrl = rtrim($baseUrl, '/') . '/admin/stocks/product_warranty_request';
                 $recipients = $this->collectProductWarrantyAdminRecipients();

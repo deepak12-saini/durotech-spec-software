@@ -178,6 +178,12 @@
 							<span class="menu-text">Product Warranty Req</span>
 						</a>
 					</li>
+					<li class="<?php if ($reqController=='stocks' && ($reqAction=='admin_product_warranty_log' || $reqAction=='admin_product_warranty_log_view')) {echo 'active';}?>">
+						<a href="<?php echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_product_warranty_log']); ?>">
+							<i class="menu-icon fa fa-list-alt"></i>
+							<span class="menu-text">Warranty Log</span>
+						</a>
+					</li>
 
 					<li class="<?php if ($reqController=='casestudies' && $reqAction=='admin_index') {echo 'active';}?>">
 						<a href="<?= $this->Url->build(['controller' => 'CaseStudies', 'action' => 'adminIndex']); ?>">

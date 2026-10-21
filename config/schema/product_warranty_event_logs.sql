@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS product_warranty_event_logs (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    product_warranty_request_id INT UNSIGNED NOT NULL,
+    action VARCHAR(40) NOT NULL,
+    actor_role VARCHAR(30) NULL,
+    actor_id INT UNSIGNED NULL,
+    actor_name VARCHAR(150) NULL,
+    serialnumber VARCHAR(255) NULL,
+    contractor_company VARCHAR(255) NULL,
+    contractor_name VARCHAR(255) NULL,
+    applicator_address TEXT NULL,
+    building_address TEXT NULL,
+    building_name VARCHAR(255) NULL,
+    message VARCHAR(255) NULL,
+    before_json MEDIUMTEXT NULL,
+    after_json MEDIUMTEXT NULL,
+    created DATETIME NOT NULL,
+    PRIMARY KEY (id),
+    KEY idx_pw_event_request (product_warranty_request_id, created),
+    KEY idx_pw_event_serial (serialnumber),
+    KEY idx_pw_event_action (action, created)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
