@@ -172,17 +172,45 @@
 						</ul>
 					</li>
 
-					<li class="<?php if ($reqController=='stocks' && $reqAction=='admin_product_warranty_request') {echo 'active';}?>">
-						<a href="<?php echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_product_warranty_request']); ?>">
+					<?php
+					$pwPortalActions = [
+						'admin_product_warranty_request',
+						'admin_warranty_dashboard',
+						'admin_warranty_register',
+						'admin_add_product_warranty',
+						'admin_warranty_contractors',
+						'admin_warranty_documents',
+						'admin_warranty_reports',
+						'admin_warranty_settings',
+						'admin_product_warranty_log',
+						'admin_product_warranty_log_view',
+						'admin_edit_product_warranty',
+					];
+					$pwPortalOpen = ($reqController == 'stocks' && in_array($reqAction, $pwPortalActions, true));
+					?>
+					<li class="<?php if ($pwPortalOpen) {echo 'active open';}?>">
+						<a href="#" class="dropdown-toggle">
 							<i class="menu-icon fa fa-certificate"></i>
 							<span class="menu-text">Product Warranty Req</span>
+							<b class="arrow fa fa-angle-down"></b>
 						</a>
-					</li>
-					<li class="<?php if ($reqController=='stocks' && ($reqAction=='admin_product_warranty_log' || $reqAction=='admin_product_warranty_log_view')) {echo 'active';}?>">
-						<a href="<?php echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_product_warranty_log']); ?>">
-							<i class="menu-icon fa fa-list-alt"></i>
-							<span class="menu-text">Warranty Log</span>
-						</a>
+						<b class="arrow"></b>
+						<ul class="submenu">
+							<li class="<?php if ($reqController=='stocks' && in_array($reqAction, ['admin_warranty_dashboard', 'admin_warranty_register', 'admin_add_product_warranty', 'admin_warranty_contractors', 'admin_warranty_documents', 'admin_warranty_reports', 'admin_warranty_settings'], true)) {echo 'active';}?>">
+								<a href="<?php echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_warranty_dashboard']); ?>">
+									<i class="menu-icon fa fa-list-alt"></i>
+									Warranty portal
+								</a>
+								<b class="arrow"></b>
+							</li>
+							<li class="<?php if ($reqController=='stocks' && $reqAction=='admin_product_warranty_request') {echo 'active';}?>">
+								<a href="<?php echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_product_warranty_request']); ?>">
+									<i class="menu-icon fa fa-check-square-o"></i>
+									Approve list
+								</a>
+								<b class="arrow"></b>
+							</li>
+						</ul>
 					</li>
 
 					<li class="<?php if ($reqController=='casestudies' && $reqAction=='admin_index') {echo 'active';}?>">

@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use App\Utility\ProductWarrantyCustomerNotifier;
 use App\Utility\ProductWarrantyEventLogger;
+use App\Utility\ProductWarrantySerial;
 use App\Utility\ProductWarrantyPdfGenerator;
 use App\Utility\ProductWarrantyPortalToken;
 use App\Utility\WarrantyCertificateHtmlV2Generator;
@@ -1004,7 +1005,7 @@ class StocksController extends AppController
 
 		if ($this->request->is(['post', 'put', 'patch'])) {
 			$allowed = [
-				'serialnumber', 'dateofpurchase', 'product', 'used_as', 'application',
+				'dateofpurchase', 'product', 'used_as', 'application',
 				'area_warranted', 'building_address', 'building_name', 'building_area_name',
 				'start_requested_warranty', 'end_requested_warranty', 'contract_company_name',
 				'applicator_active_abn', 'applicator_address', 'contract_name', 'email',
@@ -1047,6 +1048,285 @@ class StocksController extends AppController
 	public function adminEditProductWarranty($id = null): ?Response
 	{
 		return $this->admin_edit_product_warranty($id);
+	}
+
+	/**
+	 * Admin creates a warranty (Kal confirmed). Serial assigned automatically.
+	 */
+	public function admin_add_product_warranty(): ?Response
+	{
+		$auth = $this->checkAdminSession();
+		if ($auth instanceof Response) {
+			return $auth;
+		}
+		$this->viewBuilder()->setLayout('warranty_portal');
+		$this->set('title_for_layout', SITENAME . ' | New Warranty');
+		$this->set('portalNav', 'add');
+		$this->set('nextWarrantySerial', ProductWarrantySerial::peekNext());
+
+		$entity = $this->ProductWarrantyRequests->newEntity();
+		if ($this->request->is(['post', 'put'])) {
+			$allowed = [
+				'dateofpurchase', 'product', 'used_as', 'application',
+				'area_warranted', 'building_address', 'building_name', 'building_area_name',
+				'start_requested_warranty', 'end_requested_warranty', 'contract_company_name',
+				'applicator_active_abn', 'applicator_address', 'contract_name', 'email',
+				'phone', 'sign_date', 'applicator', 'applicator_contact',
+			];
+			$raw = $this->request->getData();
+			$data = array_intersect_key(is_array($raw) ? $raw : [], array_flip($allowed));
+			$data = $this->_normalizeAdminProductWarrantyData($data);
+			$data['status'] = 'Pending';
+			$data['form_version'] = 'v2';
+			$entity = $this->ProductWarrantyRequests->newEntity($data, ['validate' => 'adminAdd']);
+			$entity->status = 'Pending';
+			if ($this->ProductWarrantyRequests->save($entity)) {
+				$actor = $this->_productWarrantyAdminActor();
+				ProductWarrantyEventLogger::log((int)$entity->id, 'submitted', [
+					'actor_role' => $actor['role'],
+					'actor_id' => $actor['id'],
+					'actor_name' => $actor['name'],
+					'after' => ProductWarrantyEventLogger::snapshot($entity),
+					'message' => 'Logged by admin (staff add).',
+				]);
+				$this->Flash->success('Warranty ' . (string)$entity->serialnumber . ' saved as Pending. Preview PDF then Approve to email the customer.');
+				return $this->redirect(['action' => 'admin_warranty_dashboard', '?' => ['id' => (string)$entity->id]]);
+			}
+			$this->Flash->error($this->_firstProductWarrantyValidationMessage($entity));
+		}
+		$this->set(compact('entity'));
+
+		return null;
+	}
+
+	public function adminAddProductWarranty(): ?Response
+	{
+		return $this->admin_add_product_warranty();
+	}
+
+	public function admin_warranty_dashboard(): ?Response
+	{
+		$auth = $this->checkAdminSession();
+		if ($auth instanceof Response) {
+			return $auth;
+		}
+		ProductWarrantyEventLogger::ensureTable();
+		$this->viewBuilder()->setLayout('warranty_portal');
+		$this->set('title_for_layout', SITENAME . ' | Warranty Dashboard');
+		$this->set('portalNav', 'overview');
+
+		$table = $this->ProductWarrantyRequests;
+		$total = (int)$table->find()->count();
+		$pending = (int)$table->find()->where([
+			'OR' => [
+				['status' => ''],
+				['status' => 'Pending'],
+				['status IS' => null],
+			],
+		])->count();
+		$approved = (int)$table->find()->where(['status' => 'Approved'])->count();
+		$rejected = (int)$table->find()->where(['status' => 'Rejected'])->count();
+
+		$query = $this->_productWarrantyLogQuery();
+		$rows = $query->order(['ProductWarrantyRequests.id' => 'DESC'])->limit(12)->all();
+		$register = [];
+		foreach ($rows as $entity) {
+			$register[] = $entity->toArray();
+		}
+
+		$selectedId = (int)$this->request->getQuery('id', 0);
+		$selected = null;
+		if ($selectedId > 0) {
+			try {
+				$selected = $table->get($selectedId)->toArray();
+			} catch (\Throwable $e) {
+				$selected = null;
+			}
+		}
+		if ($selected === null && $register !== []) {
+			$selected = $register[0];
+			$selectedId = (int)($selected['id'] ?? 0);
+		}
+
+		$activity = [];
+		try {
+			$this->loadModel('ProductWarrantyEventLogs');
+			$eventRows = $this->ProductWarrantyEventLogs->find()
+				->order(['id' => 'DESC'])
+				->limit(8)
+				->all();
+			foreach ($eventRows as $ev) {
+				$activity[] = $ev->toArray();
+			}
+		} catch (\Throwable $e) {
+			$activity = [];
+		}
+
+		$this->set('stats', compact('total', 'pending', 'approved', 'rejected'));
+		$this->set(compact('register', 'selected', 'selectedId', 'activity'));
+
+		return null;
+	}
+
+	public function adminWarrantyDashboard(): ?Response
+	{
+		return $this->admin_warranty_dashboard();
+	}
+
+	public function admin_warranty_register(): ?Response
+	{
+		$auth = $this->checkAdminSession();
+		if ($auth instanceof Response) {
+			return $auth;
+		}
+		ProductWarrantyEventLogger::ensureTable();
+		$this->viewBuilder()->setLayout('warranty_portal');
+		$this->set('title_for_layout', SITENAME . ' | Warranty Register');
+		$this->set('portalNav', 'register');
+
+		$query = $this->_productWarrantyLogQuery();
+		if ((string)$this->request->getQuery('export', '') === 'csv') {
+			return $this->_productWarrantyLogCsvResponse($query->order(['ProductWarrantyRequests.id' => 'DESC'])->all());
+		}
+		$this->paginate = [
+			'limit' => 25,
+			'order' => ['ProductWarrantyRequests.id' => 'DESC'],
+		];
+		$results = $this->paginate($query);
+		$logs = [];
+		foreach ($results as $entity) {
+			$logs[] = $entity->toArray();
+		}
+		$this->set('logs', $logs);
+		$this->set('filters', [
+			'serial' => trim((string)$this->request->getQuery('serial', '')),
+			'contractor' => trim((string)$this->request->getQuery('contractor', '')),
+			'address' => trim((string)$this->request->getQuery('address', '')),
+			'status' => trim((string)$this->request->getQuery('status', '')),
+			'q' => trim((string)$this->request->getQuery('q', '')),
+		]);
+
+		return null;
+	}
+
+	public function adminWarrantyRegister(): ?Response
+	{
+		return $this->admin_warranty_register();
+	}
+
+	public function admin_warranty_contractors(): ?Response
+	{
+		$auth = $this->checkAdminSession();
+		if ($auth instanceof Response) {
+			return $auth;
+		}
+		$this->viewBuilder()->setLayout('warranty_portal');
+		$this->set('title_for_layout', SITENAME . ' | Contractors');
+		$this->set('portalNav', 'contractors');
+		$grouped = [];
+		$rows = $this->ProductWarrantyRequests->find()
+			->select(['id', 'serialnumber', 'contract_company_name', 'contract_name', 'email', 'phone', 'status'])
+			->order(['ProductWarrantyRequests.id' => 'DESC'])
+			->limit(300)
+			->all();
+		foreach ($rows as $entity) {
+			$r = $entity->toArray();
+			$key = trim((string)($r['contract_company_name'] ?? ''));
+			if ($key === '') {
+				$key = '(No company name)';
+			}
+			if (!isset($grouped[$key])) {
+				$grouped[$key] = [];
+			}
+			$grouped[$key][] = $r;
+		}
+		$this->set(compact('grouped'));
+
+		return null;
+	}
+
+	public function adminWarrantyContractors(): ?Response
+	{
+		return $this->admin_warranty_contractors();
+	}
+
+	public function admin_warranty_documents(): ?Response
+	{
+		$auth = $this->checkAdminSession();
+		if ($auth instanceof Response) {
+			return $auth;
+		}
+		$this->viewBuilder()->setLayout('warranty_portal');
+		$this->set('title_for_layout', SITENAME . ' | Documents');
+		$this->set('portalNav', 'documents');
+		$docs = [];
+		$rows = $this->ProductWarrantyRequests->find()
+			->where(['certificate IS NOT' => null, 'certificate !=' => ''])
+			->order(['ProductWarrantyRequests.id' => 'DESC'])
+			->limit(100)
+			->all();
+		foreach ($rows as $entity) {
+			$docs[] = $entity->toArray();
+		}
+		$this->set(compact('docs'));
+
+		return null;
+	}
+
+	public function adminWarrantyDocuments(): ?Response
+	{
+		return $this->admin_warranty_documents();
+	}
+
+	public function admin_warranty_reports(): ?Response
+	{
+		$auth = $this->checkAdminSession();
+		if ($auth instanceof Response) {
+			return $auth;
+		}
+		$this->viewBuilder()->setLayout('warranty_portal');
+		$this->set('title_for_layout', SITENAME . ' | Reports');
+		$this->set('portalNav', 'reports');
+		$table = $this->ProductWarrantyRequests;
+		$stats = [
+			'total' => (int)$table->find()->count(),
+			'pending' => (int)$table->find()->where([
+				'OR' => [
+					['status' => ''],
+					['status' => 'Pending'],
+					['status IS' => null],
+				],
+			])->count(),
+			'approved' => (int)$table->find()->where(['status' => 'Approved'])->count(),
+			'rejected' => (int)$table->find()->where(['status' => 'Rejected'])->count(),
+		];
+		$this->set(compact('stats'));
+
+		return null;
+	}
+
+	public function adminWarrantyReports(): ?Response
+	{
+		return $this->admin_warranty_reports();
+	}
+
+	public function admin_warranty_settings(): ?Response
+	{
+		$auth = $this->checkAdminSession();
+		if ($auth instanceof Response) {
+			return $auth;
+		}
+		$this->viewBuilder()->setLayout('warranty_portal');
+		$this->set('title_for_layout', SITENAME . ' | Settings');
+		$this->set('portalNav', 'settings');
+		$this->set('nextWarrantySerial', ProductWarrantySerial::peekNext());
+
+		return null;
+	}
+
+	public function adminWarrantySettings(): ?Response
+	{
+		return $this->admin_warranty_settings();
 	}
 
 	/**

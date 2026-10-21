@@ -3,8 +3,12 @@ declare(strict_types=1);
 
 namespace App\Model\Table;
 
+use App\Utility\ProductWarrantySerial;
+use Cake\Event\Event;
+use Cake\Datasource\EntityInterface;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use ArrayObject;
 
 class ProductWarrantyRequestsTable extends Table
 {
@@ -20,6 +24,22 @@ class ProductWarrantyRequestsTable extends Table
                 ],
             ],
         ]);
+    }
+
+    public function beforeSave(Event $event, EntityInterface $entity, ArrayObject $options)
+    {
+        if ($entity->isNew() && trim((string)($entity->get('serialnumber') ?? '')) === '') {
+            $entity->set('serialnumber', ProductWarrantySerial::allocate());
+        }
+    }
+
+    public function validationAdminAdd(Validator $validator): Validator
+    {
+        $validator = $this->validationDefault($validator);
+        $validator->offsetUnset('contractor_signature');
+        $validator->allowEmptyString('contractor_signature');
+
+        return $validator;
     }
 
     public function validationDefault(Validator $validator): Validator

@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Controller\AppController;
 use App\Utility\ProductWarrantyEventLogger;
+use App\Utility\ProductWarrantySerial;
 use App\Utility\ProductWarrantyPdfGenerator;
 use App\Utility\ProductWarrantyPortalToken;
 use App\Utility\SafeDate;
@@ -1594,6 +1595,7 @@ class FrontsController extends AppController
         $warrantyLog = ['ProductWarrantyRequest' => []];
         $this->loadModel('ProductWarrantyRequests');
         $entity = $this->ProductWarrantyRequests->newEntity();
+        $nextWarrantySerial = ProductWarrantySerial::peekNext();
 
         if ($this->request->is('post')) {
             $data = $this->request->getData('ProductWarrantyRequest') ?? $this->request->getData();
@@ -1609,6 +1611,7 @@ class FrontsController extends AppController
                 $data['contractor_signature'] = $signatureName;
             }
             $data['form_version'] = 'v2';
+            unset($data['serialnumber']);
             $entity = $this->ProductWarrantyRequests->patchEntity($entity, $data);
             if (empty($entity->status)) {
                 $entity->status = 'Pending';
@@ -1641,7 +1644,7 @@ class FrontsController extends AppController
                         $detailRows = [
                             'Request ID' => (string)$entity->id,
                             'Form version' => 'v2',
-                            'Serial number' => trim((string)($data['serialnumber'] ?? '')),
+                            'Serial number' => trim((string)($entity->serialnumber ?? '')),
                             'Product' => trim((string)($data['product'] ?? '')),
                             'Date of purchase' => trim((string)($data['dateofpurchase'] ?? '')),
                             'Used as' => trim((string)($data['used_as'] ?? '')),
@@ -1688,7 +1691,7 @@ class FrontsController extends AppController
             $warrantyLog['ProductWarrantyRequest'] = $entity->toArray();
         }
 
-        $this->set(compact('warrantyLog', 'entity'));
+        $this->set(compact('warrantyLog', 'entity', 'nextWarrantySerial'));
         return null;
     }
 

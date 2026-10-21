@@ -73,6 +73,20 @@
     font-style: italic;
     padding-left: 10px;
 }
+/* Ace rows are a fixed 38px; long labels must grow so they do not overlap the next item. */
+.nav-list > li.menu-text-wrap > a {
+    height: auto;
+    min-height: 38px;
+    line-height: 1.25;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    white-space: normal;
+}
+.nav-list > li.menu-text-wrap > a .menu-text {
+    display: inline;
+    white-space: normal;
+    vertical-align: middle;
+}
 </style>
 </head>
 <body class="no-skin">

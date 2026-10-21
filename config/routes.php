@@ -662,6 +662,13 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/stocks/approve_warranty_request/:id', ['controller' => 'Stocks', 'action' => 'admin_approve_warranty_request'], ['pass' => ['id']]);
     $routes->connect('/stocks/warrant_request_v2', ['controller' => 'Stocks', 'action' => 'warrant_request_v2']);
     $routes->connect('/stocks/preview_warranty_certificate_v2/:id', ['controller' => 'Stocks', 'action' => 'preview_warranty_certificate_v2'], ['pass' => ['id']]);
+    $routes->connect('/admin/warranty', ['controller' => 'Stocks', 'action' => 'admin_warranty_dashboard']);
+    $routes->connect('/admin/warranty/register', ['controller' => 'Stocks', 'action' => 'admin_warranty_register']);
+    $routes->connect('/admin/warranty/contractors', ['controller' => 'Stocks', 'action' => 'admin_warranty_contractors']);
+    $routes->connect('/admin/warranty/documents', ['controller' => 'Stocks', 'action' => 'admin_warranty_documents']);
+    $routes->connect('/admin/warranty/reports', ['controller' => 'Stocks', 'action' => 'admin_warranty_reports']);
+    $routes->connect('/admin/warranty/settings', ['controller' => 'Stocks', 'action' => 'admin_warranty_settings']);
+    $routes->connect('/admin/stocks/add_product_warranty', ['controller' => 'Stocks', 'action' => 'admin_add_product_warranty']);
     $routes->connect('/admin/stocks/product_warranty_request', ['controller' => 'Stocks', 'action' => 'admin_product_warranty_request']);
     $routes->connect('/admin/stocks/product_warranty_log', ['controller' => 'Stocks', 'action' => 'admin_product_warranty_log']);
     $routes->connect('/admin/stocks/product_warranty_log/:id', ['controller' => 'Stocks', 'action' => 'admin_product_warranty_log_view'], ['pass' => ['id']]);

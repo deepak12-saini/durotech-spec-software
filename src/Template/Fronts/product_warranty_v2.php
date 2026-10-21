@@ -352,10 +352,10 @@ if (!empty($log['applicator_address'])) {
                 <div class="pw-field">
                     <div class="pw-label-row">
                         <label class="pw-label" for="serialnumber">Warranty Serial No.</label>
-                        <span class="pw-hint">from product packaging</span>
+                        <span class="pw-hint">assigned automatically</span>
                     </div>
-                    <input type="text" class="pw-control" name="ProductWarrantyRequest[serialnumber]" id="serialnumber" value="<?= h($log['serialnumber'] ?? '') ?>" placeholder="e.g. DT-2024-54321">
-                    <?= $this->Form->error('serialnumber', null, ['class' => 'text-danger']) ?>
+                    <input type="text" class="pw-control" id="serialnumber" value="<?= h($nextWarrantySerial ?? 'DT-MM-YYYY-0001') ?>" readonly>
+                    <p class="pw-hint-block">Your warranty code is issued on submit (DT-month-year-number), like a spec code.</p>
                 </div>
             </div>
             <div class="col-sm-6">

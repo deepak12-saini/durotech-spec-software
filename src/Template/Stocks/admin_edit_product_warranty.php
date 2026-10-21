@@ -35,7 +35,8 @@ $dateVal = static function ($value) {
             <div class="form-group">
                 <label class="col-sm-3 control-label">Serial Number</label>
                 <div class="col-sm-7">
-                    <?= $this->Form->control('serialnumber', ['label' => false, 'class' => 'form-control', 'value' => $row['serialnumber'] ?? '']); ?>
+                    <input type="text" class="form-control" value="<?= h($row['serialnumber'] ?? '') ?>" readonly>
+                    <p class="help-block">Serial is issued by the system and cannot be changed.</p>
                 </div>
             </div>
             <div class="form-group">
