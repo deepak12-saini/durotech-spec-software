@@ -518,6 +518,7 @@ $isApproved = strtolower((string)$status) === 'approved';
     </div>
     <?php endif; ?>
 
+    <?php /* Customer "update warranty" form — unused for now. Change false to true to show again. */ if (false) : ?>
     <div class="pw-card">
         <div class="pw-update-head">
             <div class="pw-update-icon"><i class="fa fa-pencil"></i></div>
@@ -570,6 +571,7 @@ $isApproved = strtolower((string)$status) === 'approved';
             </div>
         <?= $this->Form->end() ?>
     </div>
+    <?php endif; ?>
 </div>
 
 <footer class="pw-page-footer">
@@ -584,6 +586,7 @@ $isApproved = strtolower((string)$status) === 'approved';
         $('#pw-email-panel').slideToggle(150);
     });
 
+    <?php /* Update-request upload JS — unused while the form above is hidden. */ if (false) : ?>
     var $zone = $('#pw-upload-zone');
     var $input = $('#pw-supporting-pdf');
     var $filename = $('#pw-upload-filename');
@@ -702,6 +705,7 @@ $isApproved = strtolower((string)$status) === 'approved';
         $('#pw-update-submit').prop('disabled', true).html('Sending…');
         return true;
     });
+    <?php endif; ?>
 })();
 </script>
 </body>
