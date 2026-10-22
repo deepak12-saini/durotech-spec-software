@@ -27,7 +27,7 @@ class SpecHubController extends AppController
 
     public function admin_overview(): ?Response
     {
-        $auth = $this->checkAdminSession();
+        $auth = $this->checkAdminOrEmployeeSession();
         if ($auth instanceof Response) {
             return $auth;
         }
@@ -80,7 +80,7 @@ class SpecHubController extends AppController
 
     public function admin_projects(): ?Response
     {
-        $auth = $this->checkAdminSession();
+        $auth = $this->checkAdminOrEmployeeSession();
         if ($auth instanceof Response) {
             return $auth;
         }
@@ -136,7 +136,7 @@ class SpecHubController extends AppController
 
     public function admin_pipeline(): ?Response
     {
-        $auth = $this->checkAdminSession();
+        $auth = $this->checkAdminOrEmployeeSession();
         if ($auth instanceof Response) {
             return $auth;
         }
@@ -171,7 +171,7 @@ class SpecHubController extends AppController
 
     public function admin_documents(): ?Response
     {
-        $auth = $this->checkAdminSession();
+        $auth = $this->checkAdminOrEmployeeSession();
         if ($auth instanceof Response) {
             return $auth;
         }
@@ -196,7 +196,7 @@ class SpecHubController extends AppController
 
     public function admin_save_project(): ?Response
     {
-        $auth = $this->checkAdminSession();
+        $auth = $this->checkAdminOrEmployeeSession();
         if ($auth instanceof Response) {
             return $auth;
         }
@@ -256,7 +256,7 @@ class SpecHubController extends AppController
 
     public function admin_delete_project(): ?Response
     {
-        $auth = $this->checkAdminSession();
+        $auth = $this->checkAdminOrEmployeeSession();
         if ($auth instanceof Response) {
             return $auth;
         }
@@ -285,7 +285,7 @@ class SpecHubController extends AppController
 
     public function admin_print_project($id = null): ?Response
     {
-        $auth = $this->checkAdminSession();
+        $auth = $this->checkAdminOrEmployeeSession();
         if ($auth instanceof Response) {
             return $auth;
         }
@@ -325,7 +325,7 @@ class SpecHubController extends AppController
 
     public function admin_export(): ?Response
     {
-        $auth = $this->checkAdminSession();
+        $auth = $this->checkAdminOrEmployeeSession();
         if ($auth instanceof Response) {
             return $auth;
         }
@@ -350,7 +350,7 @@ class SpecHubController extends AppController
 
     public function admin_import(): ?Response
     {
-        $auth = $this->checkAdminSession();
+        $auth = $this->checkAdminOrEmployeeSession();
         if ($auth instanceof Response) {
             return $auth;
         }
@@ -526,7 +526,7 @@ class SpecHubController extends AppController
 
     public function admin_requests(): ?Response
     {
-        $auth = $this->checkAdminSession();
+        $auth = $this->checkAdminOrEmployeeSession();
         if ($auth instanceof Response) {
             return $auth;
         }
@@ -591,7 +591,7 @@ class SpecHubController extends AppController
 
     public function admin_update_request(): ?Response
     {
-        $auth = $this->checkAdminSession();
+        $auth = $this->checkAdminOrEmployeeSession();
         if ($auth instanceof Response) {
             return $auth;
         }
@@ -970,6 +970,15 @@ class SpecHubController extends AppController
         $this->set('hubNav', $nav);
         $this->set('applications', SpecProjectsTable::APPLICATIONS);
         $this->set('stages', SpecProjectsTable::STAGES);
+        $session = $this->request->getSession();
+        $path = (string)$this->request->getRequestTarget();
+        if (stripos($path, '/employees') !== false) {
+            $session->write('SpecHub.from_employee', 1);
+        }
+        $fromEmployee = (bool)$session->read('is_employee')
+            || (bool)$session->read('SpecHub.from_employee')
+            || $session->read('Employee.id');
+        $this->set('hubFromEmployee', (bool)$fromEmployee);
     }
 
     /**

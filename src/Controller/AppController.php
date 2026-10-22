@@ -185,6 +185,28 @@ class AppController extends Controller
     }
 
     /**
+     * Spec Hub staff screens: Josh (employee) or management (admin).
+     */
+    public function checkAdminOrEmployeeSession(): ?Response
+    {
+        $session = $this->request->getSession();
+        if ($session->read('is_admin') || $session->read('is_employee')) {
+            return null;
+        }
+        $this->Flash->error('You need to be logged in to access this area.');
+        $path = (string)$this->request->getRequestTarget();
+        if (stripos($path, '/employees') !== false) {
+            if ($this->request->is('get') || $this->request->is('head')) {
+                $this->storeEmployeeIntendedUrlFromRequest();
+            }
+
+            return $this->redirect(rtrim(SITEURL, '/') . '/employees/login');
+        }
+
+        return $this->redirect(rtrim(SITEURL, '/') . '/admin');
+    }
+
+    /**
      * Remember current employee panel URL for redirect after login (session expiry or logout).
      */
     protected function storeEmployeeIntendedUrlFromRequest(): void
@@ -228,7 +250,9 @@ class AppController extends Controller
         if (strpos($url, '//') === 0) {
             return false;
         }
-        if (strpos($url, '/employees/') === false) {
+        $isEmployeePath = strpos($url, '/employees/') !== false;
+        $isSpecHubStaff = (bool)preg_match('#/(admin/)?spec-hub(/|\?|$)#i', $url);
+        if (!$isEmployeePath && !$isSpecHubStaff) {
             return false;
         }
         if (preg_match('#/employees/(login|register|send_forgot_password)(/|\?|$)#i', $url)) {

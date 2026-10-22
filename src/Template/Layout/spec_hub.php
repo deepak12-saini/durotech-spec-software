@@ -22,7 +22,17 @@ $base = defined('SITEURL') ? SITEURL : '/';
         <a class="<?= $hubNav === 'pipeline' ? 'active' : '' ?>" href="<?= $this->Url->build(['controller' => 'SpecHub', 'action' => 'admin_pipeline']) ?>"><i class="fa fa-long-arrow-right"></i> Specification pipeline</a>
         <a class="<?= $hubNav === 'documents' ? 'active' : '' ?>" href="<?= $this->Url->build(['controller' => 'SpecHub', 'action' => 'admin_documents']) ?>"><i class="fa fa-file-text-o"></i> Technical documents</a>
         <a class="<?= $hubNav === 'requests' ? 'active' : '' ?>" href="<?= $this->Url->build(['controller' => 'SpecHub', 'action' => 'admin_requests']) ?>"><i class="fa fa-inbox"></i> Josh &amp; management</a>
-        <a href="<?php echo rtrim(defined('SITEURL') ? SITEURL : '/', '/') . '/admin/users/dashboard'; ?>"><i class="fa fa-arrow-left"></i> Back to admin</a>
+        <?php
+        $session = $this->getRequest()->getSession();
+        $fromEmployee = !empty($hubFromEmployee)
+            || (bool)$session->read('is_employee')
+            || (bool)$session->read('SpecHub.from_employee')
+            || $session->read('Employee.id');
+        if ($fromEmployee) : ?>
+            <a href="<?php echo rtrim(defined('SITEURL') ? SITEURL : '/', '/') . '/employees/index'; ?>"><i class="fa fa-arrow-left"></i> Back to employee panel</a>
+        <?php else : ?>
+            <a href="<?php echo rtrim(defined('SITEURL') ? SITEURL : '/', '/') . '/admin/users/dashboard'; ?>"><i class="fa fa-arrow-left"></i> Back to admin</a>
+        <?php endif; ?>
         <div class="sh-side-foot">
             <div>
                 <a href="<?= $this->Url->build(['controller' => 'SpecHub', 'action' => 'admin_projects']) ?>">PROJECTS</a>

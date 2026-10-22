@@ -1,0 +1,174 @@
+DUROTECH — PROJECT SPECIFICATION HUB
+Client flow summary (for review)
+
+This note describes the Specification Hub: how a customer asks for a specification,
+how Josh and management work the job, and how this sits next to DuroEzy Spec.
+
+
+1. WHAT THIS MODULE IS
+
+Specification Hub is a project workspace for waterproofing specification requests.
+
+  Customer  →  fills a 5-step request form
+  Josh      →  sees the request, reviews, drafts, prints/PDF
+  Management→  same workspace from the admin menu
+
+It is not a replacement for DuroEzy Spec.
+DuroEzy Spec remains the tool that creates and emails the issued specification PDF
+(#DTSPEC track numbers, Create / Smart Spec / Clone).
+
+Hub = intake + project tracking.
+DuroEzy = issued spec document.
+
+
+2. WHO LOGS IN WHERE
+
+Customer (no login)
+  Public form:
+    /specification-request
+  Thank-you page after send:
+    /specification-request/thanks
+
+Josh (employee login)
+  https://specs.durotechindustries.com.au/employees/login
+  After login: sidebar → Project Specifications
+  Opens the same hub. Back returns to the employee panel (DuroEzy list).
+
+Management (admin login)
+  Admin panel → Project specifications
+    Overview, Projects, Specification pipeline, Technical documents,
+    Josh & management (inbox)
+  Back returns to the admin dashboard.
+
+Josh and management see the same projects. There is one list, not two copies.
+
+
+3. CUSTOMER REQUEST FLOW (5 STEPS)
+
+The public form is titled “Let’s build your project specification”.
+
+Step 1 — Your details
+  Name, email, phone, company, role
+  Roles: architect/specifier, builder, waterproofing contractor,
+  engineer/consultant, owner/developer, distributor.
+
+Step 2 — Project
+  Project name, location, building type, project stage, structure,
+  request type, timing, extra notes.
+  Building types: house/townhouse, apartments, commercial, industrial, other.
+  Stages: design/documentation, tender, under construction, repair/refurbishment.
+
+Step 3 — Areas & products
+  Customer picks areas (wet areas, balconies, roof, podium, basement, pools,
+  tanks, façade joints, floor coatings, planter boxes) and can add a custom area.
+  Per area they can describe substrate, condition, finish, exposure,
+  preferred products, or ask Durotech to recommend a system.
+  Optional file per area.
+
+Step 4 — Documents
+  Optional uploads: plans/drawings, site photos, existing specs, other TDS.
+  Or they tick “Documents are not available” and give a reason for Josh.
+
+Step 5 — Review & send
+  Summary of all steps. Submit.
+
+On submit:
+  - A project is created with a DSP code (e.g. DSP-001).
+  - Status starts as “Brief received”.
+  - Source is “customer”.
+  - Files are stored against that project.
+  - Customer sees a thank-you page with the code.
+
+The form can be previewed from the hub banner (“Open customer request preview”)
+so Josh/management can walk the same steps without sending a live request.
+
+
+4. INSIDE THE HUB (JOSH & MANAGEMENT)
+
+Sidebar in the hub:
+
+  Overview
+    Counts and shortcuts: active jobs, technical review, issued, follow-ups due.
+    Click through to the matching lists.
+
+  Projects
+    Full register. Filter, open, edit, add a staff-logged project
+    (when Josh captures a brief that did not come from the public form).
+    Print page and PDF for a project.
+
+  Specification pipeline
+    Jobs moving through:
+      Brief received → Drafting → Technical review → Issued
+
+  Technical documents
+    Document / system links against projects (TDS, drawings on file).
+
+  Josh & management (inbox)
+    Customer-submitted requests only.
+    Search by name, code, email, company.
+    Request statuses Josh can set:
+      New request
+      In review
+      Clarification needed
+      Drafting
+      Issued
+    Internal notes and clarification back to the record.
+
+  PROJECTS → SYSTEMS → SPECIFICATIONS
+    Footer reminder of the intended order of work.
+
+Print / PDF
+  Printable project page with Durotech branding.
+  Optional PDF download of the same brief (for review, not the DuroEzy issued spec).
+
+Backup
+  Overview can export / import a JSON backup of hub projects
+  (staff copy, not the customer form).
+
+
+5. TYPICAL JOB PATH
+
+  1. Architect/builder completes /specification-request.
+  2. Job appears in Josh & management with code DSP-xxx.
+  3. Josh opens the record, checks areas, products, and uploads.
+  4. If drawings are missing, status → Clarification needed.
+  5. When enough is known, pipeline stage → Drafting.
+  6. Technical review if required.
+  7. Josh produces the issued specification in DuroEzy Spec
+     (existing employee Create / Smart Spec / Clone flow, #DTSPEC).
+  8. Hub stage → Issued so the board matches reality.
+
+Hub does not auto-create a DuroEzy mailer. That stays a deliberate Josh step,
+same as today.
+
+
+6. WHY THE MENU IS IN BOTH ADMIN AND EMPLOYEE
+
+Employee panel
+  Josh already works in DuroEzy all day. Project Specifications sits under
+  DuroEzy Spec so he can take a customer brief without an admin login.
+
+Admin panel
+  Management can see the same pipeline and inbox without an employee account.
+
+Same hub, two doors, one set of jobs.
+
+
+7. WHAT IS NOT IN THIS MODULE (ON PURPOSE)
+
+  - Not DuroEzy Create New Spec / Smart Spec / Clone a Spec.
+  - Not warranty certificates (that is the Warranty Portal).
+  - Customer form does not require login.
+  - Hub PDF is a project brief printout, not the 4-page issued DuroEzy spec.
+
+
+8. LINKS (LOCAL / PRODUCTION)
+
+  Customer form     /specification-request
+  Employee hub      /employees/spec-hub
+                    (after https://specs.durotechindustries.com.au/employees/login)
+  Admin hub         /admin/spec-hub
+                    (Project specifications in the admin sidebar)
+
+Prepared for client review. Specification Hub sits beside DuroEzy Spec;
+it does not replace it.

@@ -663,6 +663,21 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/stocks/warrant_request_v2', ['controller' => 'Stocks', 'action' => 'warrant_request_v2']);
     $routes->connect('/stocks/preview_warranty_certificate_v2/:id', ['controller' => 'Stocks', 'action' => 'preview_warranty_certificate_v2'], ['pass' => ['id']]);
     $routes->connect('/admin/spec-hub', ['controller' => 'SpecHub', 'action' => 'admin_overview']);
+    $routes->connect('/employees/spec-hub', ['controller' => 'SpecHub', 'action' => 'admin_overview']);
+    $routes->connect('/employees/spec-hub/projects', ['controller' => 'SpecHub', 'action' => 'admin_projects']);
+    $routes->connect('/employees/spec-hub/pipeline', ['controller' => 'SpecHub', 'action' => 'admin_pipeline']);
+    $routes->connect('/employees/spec-hub/documents', ['controller' => 'SpecHub', 'action' => 'admin_documents']);
+    $routes->connect('/employees/spec-hub/save', ['controller' => 'SpecHub', 'action' => 'admin_save_project']);
+    $routes->connect('/employees/spec-hub/delete', ['controller' => 'SpecHub', 'action' => 'admin_delete_project']);
+    $routes->connect('/employees/spec-hub/export', ['controller' => 'SpecHub', 'action' => 'admin_export']);
+    $routes->connect('/employees/spec-hub/import', ['controller' => 'SpecHub', 'action' => 'admin_import']);
+    $routes->connect('/employees/spec-hub/requests', ['controller' => 'SpecHub', 'action' => 'admin_requests']);
+    $routes->connect('/employees/spec-hub/requests/update', ['controller' => 'SpecHub', 'action' => 'admin_update_request']);
+    $routes->connect(
+        '/employees/spec-hub/print/:id',
+        ['controller' => 'SpecHub', 'action' => 'admin_print_project'],
+        ['pass' => ['id'], 'id' => '[0-9]+']
+    );
     $routes->connect('/admin/spec-hub/projects', ['controller' => 'SpecHub', 'action' => 'admin_projects']);
     $routes->connect('/admin/spec-hub/pipeline', ['controller' => 'SpecHub', 'action' => 'admin_pipeline']);
     $routes->connect('/admin/spec-hub/documents', ['controller' => 'SpecHub', 'action' => 'admin_documents']);

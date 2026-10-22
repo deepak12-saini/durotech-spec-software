@@ -83,7 +83,15 @@
 							<span class="menu-text">DuroEzy Spec</span>
 						</a>
 						<b class="arrow"></b>
-					</li>		
+					</li>
+
+					<li class="<?php echo ($activeController === 'spechub') ? 'active' : ''; ?>">
+						<a href="<?php echo SITEURL; ?>employees/spec-hub">
+							<i class="menu-icon fa fa-sitemap"></i>
+							<span class="menu-text">Project Specifications</span>
+						</a>
+						<b class="arrow"></b>
+					</li>
 
 					<li class="<?php echo $isSmartSpecActive ? 'active' : ''; ?>">
 						<a href="<?php echo SITEURL?>employees/employee_send_v3?mode=adaptive">
