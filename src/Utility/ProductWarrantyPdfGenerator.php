@@ -14,7 +14,7 @@ use Dompdf\Options;
 final class ProductWarrantyPdfGenerator
 {
     /**
-     * Build certificate filename for a request (uses area warranted / product text when available).
+     * Build certificate filename for a request (warranty serial, e.g. DT-10-2026-0001.pdf).
      *
      * @param array<string, mixed>|null $log Request row data; loaded from DB when omitted.
      */
@@ -29,21 +29,12 @@ final class ProductWarrantyPdfGenerator
             }
         }
 
-        $areaWarranted = trim((string)($log['area_warranted'] ?? ''));
-        $product = trim((string)($log['product'] ?? ''));
-
-        $label = $areaWarranted;
-        if ($areaWarranted !== '' && $product !== '') {
-            $label = $product . ' - ' . $areaWarranted;
-        } elseif ($areaWarranted === '' && $product !== '') {
-            $label = $product;
+        $serial = trim((string)($log['serialnumber'] ?? ''));
+        if ($serial !== '') {
+            return self::sanitizeFilename($serial) . '.pdf';
         }
 
-        if ($label === '') {
-            return self::legacyCertificateFilename($id);
-        }
-
-        return self::sanitizeFilename($label) . '.pdf';
+        return self::legacyCertificateFilename($id);
     }
 
     /**
