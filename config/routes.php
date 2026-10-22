@@ -662,6 +662,15 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/stocks/approve_warranty_request/:id', ['controller' => 'Stocks', 'action' => 'admin_approve_warranty_request'], ['pass' => ['id']]);
     $routes->connect('/stocks/warrant_request_v2', ['controller' => 'Stocks', 'action' => 'warrant_request_v2']);
     $routes->connect('/stocks/preview_warranty_certificate_v2/:id', ['controller' => 'Stocks', 'action' => 'preview_warranty_certificate_v2'], ['pass' => ['id']]);
+    $routes->connect('/admin/spec-hub', ['controller' => 'SpecHub', 'action' => 'admin_overview']);
+    $routes->connect('/admin/spec-hub/projects', ['controller' => 'SpecHub', 'action' => 'admin_projects']);
+    $routes->connect('/admin/spec-hub/pipeline', ['controller' => 'SpecHub', 'action' => 'admin_pipeline']);
+    $routes->connect('/admin/spec-hub/documents', ['controller' => 'SpecHub', 'action' => 'admin_documents']);
+    $routes->connect('/admin/spec-hub/save', ['controller' => 'SpecHub', 'action' => 'admin_save_project']);
+    $routes->connect('/admin/spec-hub/delete', ['controller' => 'SpecHub', 'action' => 'admin_delete_project']);
+    $routes->connect('/admin/spec-hub/export', ['controller' => 'SpecHub', 'action' => 'admin_export']);
+    $routes->connect('/admin/spec-hub/print/:id', ['controller' => 'SpecHub', 'action' => 'admin_print_project'], ['pass' => ['id']]);
+
     $routes->connect('/admin/warranty', ['controller' => 'Stocks', 'action' => 'admin_warranty_dashboard']);
     $routes->connect('/admin/warranty/register', ['controller' => 'Stocks', 'action' => 'admin_warranty_register']);
     $routes->connect('/admin/warranty/contractors', ['controller' => 'Stocks', 'action' => 'admin_warranty_contractors']);

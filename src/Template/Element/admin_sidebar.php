@@ -218,6 +218,58 @@
 						</ul>
 					</li>
 
+					<?php
+					$specHubActions = [
+						'admin_overview',
+						'admin_projects',
+						'admin_pipeline',
+						'admin_documents',
+						'admin_save_project',
+						'admin_delete_project',
+						'admin_print_project',
+						'admin_export',
+					];
+					$specHubOpen = ($reqController == 'spechub' && in_array($reqAction, $specHubActions, true));
+					?>
+					<li class="<?php if ($specHubOpen) {echo 'active open';}?>">
+						<a href="#" class="dropdown-toggle">
+							<i class="menu-icon fa fa-sitemap"></i>
+							<span class="menu-text">Project specifications</span>
+							<b class="arrow fa fa-angle-down"></b>
+						</a>
+						<b class="arrow"></b>
+						<ul class="submenu">
+							<li class="<?php if ($reqController=='spechub' && $reqAction=='admin_overview') {echo 'active';}?>">
+								<a href="<?php echo $this->Url->build(['controller' => 'SpecHub', 'action' => 'admin_overview']); ?>">
+									<i class="menu-icon fa fa-th-large"></i>
+									Overview
+								</a>
+								<b class="arrow"></b>
+							</li>
+							<li class="<?php if ($reqController=='spechub' && $reqAction=='admin_projects') {echo 'active';}?>">
+								<a href="<?php echo $this->Url->build(['controller' => 'SpecHub', 'action' => 'admin_projects']); ?>">
+									<i class="menu-icon fa fa-folder-open-o"></i>
+									Projects
+								</a>
+								<b class="arrow"></b>
+							</li>
+							<li class="<?php if ($reqController=='spechub' && $reqAction=='admin_pipeline') {echo 'active';}?>">
+								<a href="<?php echo $this->Url->build(['controller' => 'SpecHub', 'action' => 'admin_pipeline']); ?>">
+									<i class="menu-icon fa fa-long-arrow-right"></i>
+									Specification pipeline
+								</a>
+								<b class="arrow"></b>
+							</li>
+							<li class="<?php if ($reqController=='spechub' && $reqAction=='admin_documents') {echo 'active';}?>">
+								<a href="<?php echo $this->Url->build(['controller' => 'SpecHub', 'action' => 'admin_documents']); ?>">
+									<i class="menu-icon fa fa-file-text-o"></i>
+									Technical documents
+								</a>
+								<b class="arrow"></b>
+							</li>
+						</ul>
+					</li>
+
 					<li class="<?php if ($reqController=='casestudies' && $reqAction=='admin_index') {echo 'active';}?>">
 						<a href="<?= $this->Url->build(['controller' => 'CaseStudies', 'action' => 'adminIndex']); ?>">
 							<i class="menu-icon fa fa-briefcase"></i>
@@ -285,6 +337,7 @@
 						</ul>
 					</li>
 
+					<?php if (false) { ?>
 					<li class="<?php if ($reqController=='mailers' && $reqAction=='admin_spec_index') {echo 'active';}?>">
 						<a href="<?php echo SITEURL?>admin/mailers/spec_index">
 							<i class="menu-icon fa fa-file"></i>
@@ -304,6 +357,7 @@
 							<span class="menu-text">Warrant Request</span>
 						</a>
 					</li>
+					<?php } ?>
 					<!-- <li class="<?php //if ($reqController=='stocks' && ($reqAction=='admin_warrant_request_v2' || $reqAction=='adminWarrantRequestV2')) {echo 'active';}?>">
 						<a href="<?php// echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_warrant_request_v2']); ?>">
 							<i class="menu-icon fa fa-file-pdf-o "></i>
@@ -313,6 +367,7 @@
 
 					<?php } ?>
 
+					<?php if (false) { ?>
 					<li class="<?php if ($reqController=='mailers' && $reqAction=='admin_visitor') {echo 'active';}?>">
 						<a href="<?php echo SITEURL?>admin/mailers/visitor">
 							<i class="menu-icon fa fa-building-o"></i>
@@ -321,11 +376,13 @@
 
 						<b class="arrow"></b>
 					</li>
+					<?php } ?>
 					<?php
 					if ($userid != 7) {
 					?>
 					
 					
+					<?php if (false) { ?>
 					<li class="<?php if ($reqController=='duro_orders') { echo 'active';}?>">
 						<a href="<?php echo SITEURL?>admin/duro_orders">
 							<i class="menu-icon fa fa-file"></i>
@@ -350,6 +407,7 @@
 
 						<b class="arrow"></b>
 					</li>
+					<?php } ?>
 					<li class="<?php if ($reqController=='materials') {echo 'active';}?>">
 						<a href="#" class="dropdown-toggle">
 							<i class="menu-icon fa fa-file "></i>

@@ -24,7 +24,7 @@ $siteName = defined('SITENAME') ? SITENAME : 'Durotech';
         <a class="<?= $portalNav === 'reports' ? 'active' : '' ?>" href="<?= $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_warranty_reports']) ?>"><i class="fa fa-bar-chart"></i> Reports</a>
         <a class="<?= $portalNav === 'settings' ? 'active' : '' ?>" href="<?= $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_warranty_settings']) ?>"><i class="fa fa-cog"></i> Settings</a>
         <a class="<?= $portalNav === 'approve' ? 'active' : '' ?>" href="<?= $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_product_warranty_request']) ?>"><i class="fa fa-check-square-o"></i> Approve list</a>
-        <a href="<?= $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_index']) ?>"><i class="fa fa-arrow-left"></i> Back to admin</a>
+        <a href="<?php echo rtrim(defined('SITEURL') ? SITEURL : '/', '/') . '/admin/users/dashboard'; ?>"><i class="fa fa-arrow-left"></i> Back to admin</a>
     </aside>
     <div class="wp-main">
         <?= $this->Flash->render() ?>
