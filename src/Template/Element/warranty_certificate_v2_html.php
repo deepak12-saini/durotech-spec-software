@@ -304,7 +304,7 @@ $detailEndLines = $splitDetailFieldLines($endDate, 3);
             font-weight: 400;
             letter-spacing: -0.0001em;
             line-height: 1.117em;
-            background-color: #e6ebff;
+            background-color: #ffffff;
             padding: 1px 3px 2px;
         }
         .cover-field-line-indented .cover-f-val-txt {
