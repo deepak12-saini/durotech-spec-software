@@ -1177,6 +1177,53 @@ class StocksController extends AppController
 		return $this->admin_warranty_dashboard();
 	}
 
+	public function admin_warranty_view($id = null): ?Response
+	{
+		$auth = $this->checkAdminSession();
+		if ($auth instanceof Response) {
+			return $auth;
+		}
+		ProductWarrantyEventLogger::ensureTable();
+		$rid = $id !== null ? (int)$id : (int)$this->request->getQuery('id', 0);
+		if ($rid <= 0) {
+			$this->Flash->error('Select a warranty to view.');
+			return $this->redirect(['action' => 'admin_warranty_dashboard']);
+		}
+		try {
+			$entity = $this->ProductWarrantyRequests->get($rid);
+		} catch (\Throwable $e) {
+			$this->Flash->error('Warranty record not found.');
+			return $this->redirect(['action' => 'admin_warranty_dashboard']);
+		}
+
+		$events = [];
+		try {
+			$this->loadModel('ProductWarrantyEventLogs');
+			$eventRows = $this->ProductWarrantyEventLogs->find()
+				->where(['product_warranty_request_id' => $rid])
+				->order(['id' => 'DESC'])
+				->all();
+			foreach ($eventRows as $row) {
+				$events[] = $row->toArray();
+			}
+		} catch (\Throwable $e) {
+			$events = [];
+		}
+
+		$this->viewBuilder()->setLayout('warranty_portal');
+		$this->set('title_for_layout', SITENAME . ' | Warranty ' . (string)($entity->serialnumber ?? ('#' . $rid)));
+		$this->set('portalNav', 'register');
+		$this->set('record', $entity->toArray());
+		$this->set('events', $events);
+
+		return null;
+	}
+
+	public function adminWarrantyView($id = null): ?Response
+	{
+		return $this->admin_warranty_view($id);
+	}
+
 	public function admin_warranty_register(): ?Response
 	{
 		$auth = $this->checkAdminSession();

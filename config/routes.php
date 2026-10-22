@@ -669,9 +669,25 @@ Router::scope('/', function (RouteBuilder $routes) {
     $routes->connect('/admin/spec-hub/save', ['controller' => 'SpecHub', 'action' => 'admin_save_project']);
     $routes->connect('/admin/spec-hub/delete', ['controller' => 'SpecHub', 'action' => 'admin_delete_project']);
     $routes->connect('/admin/spec-hub/export', ['controller' => 'SpecHub', 'action' => 'admin_export']);
-    $routes->connect('/admin/spec-hub/print/:id', ['controller' => 'SpecHub', 'action' => 'admin_print_project'], ['pass' => ['id']]);
+    $routes->connect('/admin/spec-hub/import', ['controller' => 'SpecHub', 'action' => 'admin_import']);
+    $routes->connect(
+        '/spec-hub/print/:id',
+        ['controller' => 'SpecHub', 'action' => 'admin_print_project'],
+        ['pass' => ['id'], 'id' => '[0-9]+', '_name' => 'specHubPrint']
+    );
+    $routes->connect(
+        '/admin/spec-hub/print/:id',
+        ['controller' => 'SpecHub', 'action' => 'admin_print_project'],
+        ['pass' => ['id'], 'id' => '[0-9]+']
+    );
+    $routes->connect('/specification-request', ['controller' => 'SpecHub', 'action' => 'request']);
+    $routes->connect('/specification-request/thanks', ['controller' => 'SpecHub', 'action' => 'requestThanks']);
+    $routes->connect('/admin/spec-hub/requests', ['controller' => 'SpecHub', 'action' => 'admin_requests']);
+    $routes->connect('/admin/spec-hub/requests/update', ['controller' => 'SpecHub', 'action' => 'admin_update_request']);
 
     $routes->connect('/admin/warranty', ['controller' => 'Stocks', 'action' => 'admin_warranty_dashboard']);
+    $routes->connect('/admin/warranty/view/:id', ['controller' => 'Stocks', 'action' => 'admin_warranty_view'], ['pass' => ['id'], 'id' => '[0-9]+']);
+    $routes->connect('/admin/stocks/warranty_view/:id', ['controller' => 'Stocks', 'action' => 'admin_warranty_view'], ['pass' => ['id'], 'id' => '[0-9]+']);
     $routes->connect('/admin/warranty/register', ['controller' => 'Stocks', 'action' => 'admin_warranty_register']);
     $routes->connect('/admin/warranty/contractors', ['controller' => 'Stocks', 'action' => 'admin_warranty_contractors']);
     $routes->connect('/admin/warranty/documents', ['controller' => 'Stocks', 'action' => 'admin_warranty_documents']);

@@ -57,7 +57,7 @@ $statusOf = static function (array $row) {
                     <td><?= h($row['building_address'] ?? '') ?></td>
                     <td><?= h($row['product'] ?? '') ?></td>
                     <td><?= h($st) ?></td>
-                    <td><a href="<?= $this->Url->build(['action' => 'admin_warranty_dashboard', '?' => ['id' => $rid]]) ?>">View</a></td>
+                    <td><a href="<?= $this->Url->build(['action' => 'admin_warranty_view', $rid]) ?>">View</a></td>
                 </tr>
                 <?php endforeach; ?>
             <?php endif; ?>

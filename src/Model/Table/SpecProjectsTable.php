@@ -37,6 +37,7 @@ class SpecProjectsTable extends Table
         $this->setPrimaryKey('id');
         $this->setEntityClass('App\Model\Entity\SpecProject');
         $this->addBehavior('Timestamp');
+        $this->hasMany('SpecProjectAreas', ['foreignKey' => 'spec_project_id']);
     }
 
     public function validationDefault(Validator $validator): Validator
@@ -62,6 +63,18 @@ class SpecProjectsTable extends Table
         $validator->allowEmptyString('reviewer');
         $validator->allowEmptyDate('review_date');
         $validator->allowEmptyString('review_outcome');
+        $validator->allowEmptyString('request_json');
+        $validator->allowEmptyString('request_status');
+        $validator->allowEmptyString('contact_name');
+        $validator->allowEmptyString('contact_email');
+        $validator->allowEmptyString('contact_phone');
+        $validator->allowEmptyString('contact_company');
+        $validator->allowEmptyString('contact_role');
+        $validator->allowEmptyString('source');
+        $validator->allowEmptyString('internal_notes');
+        $validator->allowEmptyDate('confirmed_issue_date');
+        $validator->allowEmptyString('docs_missing_reason');
+        $validator->allowEmptyString('clarification');
 
         return $validator;
     }
@@ -113,9 +126,49 @@ class SpecProjectsTable extends Table
         }
         try {
             ConnectionManager::get('default')->execute($sql);
+            $this->ensureExtraColumns();
+            $areasSqlPath = defined('ROOT')
+                ? ROOT . DS . 'config' . DS . 'schema' . DS . 'spec_project_areas.sql'
+                : dirname($sqlPath) . DIRECTORY_SEPARATOR . 'spec_project_areas.sql';
+            $areasSql = is_file($areasSqlPath) ? file_get_contents($areasSqlPath) : false;
+            if (is_string($areasSql) && trim($areasSql) !== '') {
+                ConnectionManager::get('default')->execute($areasSql);
+            }
+            try {
+                $this->getAssociation('SpecProjectAreas')->getTarget()->ensureExtraColumns();
+            } catch (\Throwable $e) {
+                Log::warning('SpecProjectAreas extra columns: ' . $e->getMessage());
+            }
             $ready = true;
         } catch (\Throwable $e) {
             Log::error('SpecProjectsTable ensureTable: ' . $e->getMessage());
+        }
+    }
+
+    public function ensureExtraColumns(): void
+    {
+        $cols = [
+            'request_json' => 'MEDIUMTEXT NULL',
+            'request_status' => 'VARCHAR(40) NULL',
+            'contact_name' => 'VARCHAR(255) NULL',
+            'contact_email' => 'VARCHAR(255) NULL',
+            'contact_phone' => 'VARCHAR(64) NULL',
+            'contact_company' => 'VARCHAR(255) NULL',
+            'contact_role' => 'VARCHAR(80) NULL',
+            'source' => 'VARCHAR(20) NULL',
+            'internal_notes' => 'TEXT NULL',
+            'confirmed_issue_date' => 'DATE NULL',
+            'docs_not_available' => 'TINYINT(1) NOT NULL DEFAULT 0',
+            'docs_missing_reason' => 'TEXT NULL',
+            'clarification' => 'TEXT NULL',
+        ];
+        $conn = $this->getConnection();
+        foreach ($cols as $name => $ddl) {
+            try {
+                $conn->execute('ALTER TABLE `spec_projects` ADD COLUMN `' . $name . '` ' . $ddl);
+            } catch (\Throwable $e) {
+                // already exists
+            }
         }
     }
 

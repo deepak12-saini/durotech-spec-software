@@ -29,7 +29,7 @@
                         <td><?= h($row['contract_name'] ?? '') ?></td>
                         <td><?= h($row['email'] ?? '') ?></td>
                         <td><?= h($row['status'] ?? 'Pending') ?></td>
-                        <td><a href="<?= $this->Url->build(['action' => 'admin_warranty_dashboard', '?' => ['id' => $rid]]) ?>">View</a></td>
+                        <td><a href="<?= $this->Url->build(['action' => 'admin_warranty_view', $rid]) ?>">View</a></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>

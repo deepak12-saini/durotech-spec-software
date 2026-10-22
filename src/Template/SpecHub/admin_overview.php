@@ -37,10 +37,18 @@ $json = static function (array $row) use ($fmt) {
     <a class="sh-btn js-new-spec" href="#">Start a specification</a>
 </div>
 <div class="sh-stats">
-    <div class="sh-stat"><div class="l">Active projects</div><div class="n"><?= (int)($stats['active'] ?? 0) ?></div><div class="l">In the specification pipeline</div></div>
-    <div class="sh-stat"><div class="l">Technical review</div><div class="n"><?= (int)($stats['review'] ?? 0) ?></div><div class="l">Awaiting technical decision</div></div>
-    <div class="sh-stat"><div class="l">Issued specs</div><div class="n"><?= (int)($stats['issued'] ?? 0) ?></div><div class="l">Recorded as issued</div></div>
-    <div class="sh-stat"><div class="l">Follow-ups due</div><div class="n"><?= (int)($stats['due'] ?? 0) ?></div><div class="l">Today or overdue</div></div>
+    <a class="sh-stat" href="<?= $this->Url->build(['action' => 'admin_projects', '?' => ['active' => '1']]) ?>">
+        <div class="l">Active projects</div><div class="n"><?= (int)($stats['active'] ?? 0) ?></div><div class="l">In the specification pipeline</div>
+    </a>
+    <a class="sh-stat" href="<?= $this->Url->build(['action' => 'admin_projects', '?' => ['stage' => 'technical_review']]) ?>">
+        <div class="l">Technical review</div><div class="n"><?= (int)($stats['review'] ?? 0) ?></div><div class="l">Awaiting technical decision</div>
+    </a>
+    <a class="sh-stat" href="<?= $this->Url->build(['action' => 'admin_projects', '?' => ['stage' => 'issued']]) ?>">
+        <div class="l">Issued specs</div><div class="n"><?= (int)($stats['issued'] ?? 0) ?></div><div class="l">Recorded as issued</div>
+    </a>
+    <a class="sh-stat" href="<?= $this->Url->build(['action' => 'admin_projects', '?' => ['due' => '1']]) ?>">
+        <div class="l">Follow-ups due</div><div class="n"><?= (int)($stats['due'] ?? 0) ?></div><div class="l">Today or overdue</div>
+    </a>
 </div>
 <div class="sh-grid">
     <div class="sh-card">
@@ -78,3 +86,4 @@ $json = static function (array $row) use ($fmt) {
 <?php foreach (($rows ?? []) as $row) : ?>
     <span class="js-open-spec" data-id="<?= (int)$row['id'] ?>" data-project="<?= h($json($row)) ?>" style="display:none;"></span>
 <?php endforeach; ?>
+<?= $this->element('spec_hub_backup') ?>

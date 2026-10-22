@@ -107,7 +107,7 @@ $contractor = static function (array $row) {
                         <td><?= h($contractor($row)) ?><?php if (!empty($row['building_name'])) : ?><br><small><?= h($row['building_name']) ?></small><?php endif; ?></td>
                         <td><?= h($row['product'] ?? '') ?></td>
                         <td><span class="wp-pill <?= $pill($st) ?>"><i class="fa <?= $statusIcon($st) ?>"></i> <?= h($st) ?></span></td>
-                        <td><a href="<?= $this->Url->build(['action' => 'admin_warranty_dashboard', '?' => ['id' => $rid]]) ?>">View</a></td>
+                        <td><a href="<?= $this->Url->build(['action' => 'admin_warranty_view', $rid]) ?>">View</a></td>
                     </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
@@ -126,25 +126,30 @@ $contractor = static function (array $row) {
                 $sid = (int)($selected['id'] ?? 0);
                 $preview = $this->Url->build('/admin/stocks/preview_product_warranty_certificate/' . $sid);
                 $cert = $selected['certificate'] ?? '';
+                $viewUrl = $this->Url->build(['action' => 'admin_warranty_view', $sid]);
                 ?>
                 <h3 style="margin:0;"><?= h($selected['serialnumber'] ?? '') ?> <span class="wp-pill <?= $pill($st) ?>"><i class="fa <?= $statusIcon($st) ?>"></i> <?= h($st) ?></span></h3>
                 <dt>Contractor</dt><dd><?= h($contractor($selected)) ?></dd>
+                <dt>Email</dt><dd><?= h($selected['email'] ?? '') ?></dd>
+                <dt>Phone</dt><dd><?= h($selected['phone'] ?? '') ?></dd>
                 <dt>Site address</dt><dd><?= h($selected['building_address'] ?? '') ?></dd>
                 <dt>Product</dt><dd><?= h($selected['product'] ?? '') ?></dd>
+                <dt>Area warranted</dt><dd><?= h($selected['area_warranted'] ?? '') ?></dd>
                 <dt>Submitted</dt><dd><?= !empty($selected['created_at']) ? h(format_db_date('d M Y', $selected['created_at'])) : '' ?></dd>
                 <dt>Documents</dt>
                 <dd>
+                    <a href="<?= h($preview) ?>" target="_blank"><i class="fa fa-file-pdf-o"></i> Preview PDF</a>
                     <?php if (!empty($cert)) : ?>
-                        <a href="<?= h(rtrim((string)$this->getRequest()->getAttribute('webroot'), '/') . '/' . ltrim((string)$cert, '/')) ?>" target="_blank"><i class="fa fa-file-pdf-o"></i> Certificate PDF</a>
+                        <br><a href="<?= h(rtrim((string)$this->getRequest()->getAttribute('webroot'), '/') . '/' . ltrim((string)$cert, '/')) ?>" target="_blank"><i class="fa fa-file-pdf-o"></i> Issued certificate</a>
                     <?php else : ?>
-                        <i class="fa fa-file-o"></i> Not issued yet — use Preview PDF.
+                        <br><i class="fa fa-file-o"></i> Issued PDF not generated yet.
                     <?php endif; ?>
                 </dd>
                 <div class="wp-actions">
+                    <a class="wp-btn wp-btn-blue" href="<?= h($viewUrl) ?>"><i class="fa fa-eye"></i> Open full record</a>
                     <?php if ($st === 'Pending') : ?>
                         <a class="wp-btn wp-btn-outline" href="<?= $this->Url->build(['action' => 'admin_edit_product_warranty', $sid]) ?>"><i class="fa fa-pencil"></i> Edit request</a>
                     <?php endif; ?>
-                    <a class="wp-btn wp-btn-outline" href="<?= h($preview) ?>" target="_blank"><i class="fa fa-file-pdf-o"></i> Preview PDF</a>
                     <?php if ($st === 'Pending') : ?>
                         <button type="button" class="wp-btn wp-btn-blue approveBtn" data-id="<?= $sid ?>"><i class="fa fa-check"></i> Approve</button>
                         <button type="button" class="wp-btn wp-btn-red rejectBtn" data-id="<?= $sid ?>"><i class="fa fa-times"></i> Reject</button>

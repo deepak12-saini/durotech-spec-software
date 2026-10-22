@@ -176,6 +176,7 @@
 					$pwPortalActions = [
 						'admin_product_warranty_request',
 						'admin_warranty_dashboard',
+						'admin_warranty_view',
 						'admin_warranty_register',
 						'admin_add_product_warranty',
 						'admin_warranty_contractors',
@@ -201,7 +202,7 @@
 						</a>
 						<b class="arrow"></b>
 						<ul class="submenu">
-							<li class="<?php if ($reqController=='stocks' && in_array($reqAction, ['admin_warranty_dashboard', 'admin_warranty_register', 'admin_add_product_warranty', 'admin_warranty_contractors', 'admin_warranty_documents', 'admin_warranty_reports', 'admin_warranty_settings'], true)) {echo 'active';}?>">
+							<li class="<?php if ($reqController=='stocks' && in_array($reqAction, ['admin_warranty_dashboard', 'admin_warranty_view', 'admin_warranty_register', 'admin_add_product_warranty', 'admin_warranty_contractors', 'admin_warranty_documents', 'admin_warranty_reports', 'admin_warranty_settings'], true)) {echo 'active';}?>">
 								<a href="<?php echo $this->Url->build(['controller' => 'Stocks', 'action' => 'admin_warranty_dashboard']); ?>">
 									<i class="menu-icon fa fa-list-alt"></i>
 									Warranty portal
@@ -228,6 +229,9 @@
 						'admin_delete_project',
 						'admin_print_project',
 						'admin_export',
+						'admin_import',
+						'admin_requests',
+						'admin_update_request',
 					];
 					$specHubOpen = ($reqController == 'spechub' && in_array($reqAction, $specHubActions, true));
 					?>
@@ -264,6 +268,13 @@
 								<a href="<?php echo $this->Url->build(['controller' => 'SpecHub', 'action' => 'admin_documents']); ?>">
 									<i class="menu-icon fa fa-file-text-o"></i>
 									Technical documents
+								</a>
+								<b class="arrow"></b>
+							</li>
+							<li class="<?php if ($reqController=='spechub' && in_array($reqAction, ['admin_requests', 'admin_update_request'], true)) {echo 'active';}?>">
+								<a href="<?php echo $this->Url->build(['controller' => 'SpecHub', 'action' => 'admin_requests']); ?>">
+									<i class="menu-icon fa fa-inbox"></i>
+									Josh &amp; management
 								</a>
 								<b class="arrow"></b>
 							</li>

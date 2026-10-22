@@ -75,7 +75,7 @@ $statusIcon = static function ($status) {
                     <td><span class="wp-pill <?= $pill($statusVal) ?>"><i class="fa <?= $statusIcon($statusVal) ?>"></i> <?= h($statusVal) ?></span></td>
                     <td><?= !empty($row['created_at']) ? h(format_db_date('d/m/Y', $row['created_at'])) : '' ?></td>
                     <td>
-                        <a href="<?= $this->Url->build(['action' => 'admin_warranty_dashboard', '?' => ['id' => $rowId]]) ?>">View</a>
+                        <a href="<?= $this->Url->build(['action' => 'admin_warranty_view', $rowId]) ?>">View</a>
                         <a href="<?= h($preview) ?>" target="_blank">Preview</a>
                         <?php if ($isPending) : ?>
                             <a href="<?= $this->Url->build(['action' => 'admin_edit_product_warranty', $rowId]) ?>">Edit</a>

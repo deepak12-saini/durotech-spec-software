@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS spec_project_areas (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    spec_project_id INT UNSIGNED NOT NULL,
+    area_key VARCHAR(40) NOT NULL,
+    custom_label VARCHAR(255) NULL,
+    area_type VARCHAR(80) NULL,
+    location VARCHAR(255) NULL,
+    quantity VARCHAR(120) NULL,
+    substrate VARCHAR(80) NULL,
+    substrate_condition VARCHAR(80) NULL,
+    finish VARCHAR(80) NULL,
+    exposure VARCHAR(80) NULL,
+    preferred_products VARCHAR(255) NULL,
+    other_brands TEXT NULL,
+    issues TEXT NULL,
+    file_path VARCHAR(500) NULL,
+    created DATETIME NULL,
+    modified DATETIME NULL,
+    PRIMARY KEY (id),
+    KEY idx_spec_area_project (spec_project_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

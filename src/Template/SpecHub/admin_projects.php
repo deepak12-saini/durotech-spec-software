@@ -37,6 +37,8 @@ $json = static function (array $row) use ($fmt) {
                 <option value="<?= h($key) ?>" <?= ($stage ?? '') === $key ? 'selected' : '' ?>><?= h($label) ?></option>
             <?php endforeach; ?>
         </select>
+        <?php if (!empty($due)) : ?><input type="hidden" name="due" value="1"><?php endif; ?>
+        <?php if (!empty($activeOnly)) : ?><input type="hidden" name="active" value="1"><?php endif; ?>
         <button class="sh-btn sh-btn-outline" type="submit">Search</button>
     <?= $this->Form->end(); ?>
     <table class="sh-table">
@@ -73,3 +75,4 @@ $json = static function (array $row) use ($fmt) {
         </tbody>
     </table>
 </div>
+<?= $this->element('spec_hub_backup') ?>

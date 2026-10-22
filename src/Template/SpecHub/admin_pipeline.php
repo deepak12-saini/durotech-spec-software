@@ -50,6 +50,4 @@ $columns = $columns ?? [];
         </div>
     <?php endforeach; ?>
 </div>
-<p style="margin-top:14px;">
-    <a class="sh-btn sh-btn-outline" href="<?= $this->Url->build(['action' => 'admin_export']) ?>">Export backup</a>
-</p>
+<?= $this->element('spec_hub_backup') ?>

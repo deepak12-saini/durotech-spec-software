@@ -13,6 +13,7 @@
 /webroot/css/*
 !/webroot/css/warranty_portal.css
 !/webroot/css/spec_hub.css
+!/webroot/css/spec_request.css
 
 # OS generated files #
 ######################

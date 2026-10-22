@@ -56,7 +56,5 @@ $json = static function (array $row) use ($fmt) {
         </table>
     <?php endif; ?>
 </div>
-<p style="margin-top:14px;">
-    <a class="sh-btn sh-btn-outline" href="<?= $this->Url->build(['action' => 'admin_export']) ?>">Export backup</a>
-</p>
+<?= $this->element('spec_hub_backup') ?>
 <p class="sh-note">Proposed systems must be reviewed against current manufacturer TDS, project conditions and applicable requirements before issue. Reviewer names are recorded entries, not automated approvals.</p>

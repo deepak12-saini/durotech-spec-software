@@ -114,7 +114,7 @@ $openNew = !empty($openNew);
 window.specHubModal = {
     openNew: <?= $openNew ? 'true' : 'false' ?>,
     openEdit: <?= (int)$openEdit ?>,
-    printBase: <?= json_encode(rtrim($this->Url->build(['controller' => 'SpecHub', 'action' => 'admin_print_project', 0]), '0')) ?>
+    printUrl: <?= json_encode($this->Url->build(['_name' => 'specHubPrint', 'id' => 987654321])) ?>
 };
 </script>
 <?php $this->append('script'); ?>
@@ -142,7 +142,7 @@ $(function() {
         $('#sp_delete_id').val(id);
         if (id) {
             $('#sp_delete_btn, #sp_print').show();
-            $('#sp_print').attr('href', window.specHubModal.printBase + '/' + id);
+            $('#sp_print').attr('href', String(window.specHubModal.printUrl).replace('987654321', id));
         } else {
             $('#sp_delete_btn, #sp_print').hide();
         }

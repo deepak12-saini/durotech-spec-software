@@ -8,9 +8,13 @@ $siteName = defined('SITENAME') ? SITENAME : 'Durotech';
     <?= $this->Html->charset() ?>
     <title><?= h($title_for_layout ?? $siteName . ' | Warranty') ?></title>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <link rel="stylesheet" href="<?= h(defined('SITEURL') ? SITEURL : '/') ?>theme/css/bootstrap.css" />
-    <link rel="stylesheet" href="<?= h(defined('SITEURL') ? SITEURL : '/') ?>theme/css/font-awesome.css" />
-    <link rel="stylesheet" href="<?= h(defined('SITEURL') ? SITEURL : '/') ?>css/warranty_portal.css" />
+    <?php
+    $cssVer = @filemtime(WWW_ROOT . 'css' . DIRECTORY_SEPARATOR . 'warranty_portal.css') ?: time();
+    ?>
+    <?= $this->Html->css('/theme/css/bootstrap.css') ?>
+    <?= $this->Html->css('/theme/css/font-awesome.css') ?>
+    <?= $this->Html->css('/css/warranty_portal.css?v=' . $cssVer) ?>
+    <?= $this->fetch('css') ?>
 </head>
 <body class="wp-body">
 <div class="wp-shell">
@@ -31,8 +35,8 @@ $siteName = defined('SITENAME') ? SITENAME : 'Durotech';
         <?= $this->fetch('content') ?>
     </div>
 </div>
-<script src="<?= h(defined('SITEURL') ? SITEURL : '/') ?>theme/js/jquery.js"></script>
-<script src="<?= h(defined('SITEURL') ? SITEURL : '/') ?>theme/js/bootstrap.js"></script>
+<?= $this->Html->script('/theme/js/jquery.js') ?>
+<?= $this->Html->script('/theme/js/bootstrap.js') ?>
 <?= $this->fetch('script') ?>
 </body>
 </html>
