@@ -130,7 +130,7 @@ final class WarrantyCertificateHtmlV2Generator
         $wr = $meta['request'];
         $uniqueId = (string)$meta['unique_id'];
 
-        $product = self::normalizeText((string)($log['product'] ?? ''));
+        $product = self::normalizeProduct((string)($log['product'] ?? ''));
         $years = self::extractYears((string)($wr['year'] ?? '10 Year'));
 
         $serial = self::normalizeText((string)($log['serialnumber'] ?? ''));
@@ -241,6 +241,25 @@ final class WarrantyCertificateHtmlV2Generator
 
             return null;
         }
+    }
+
+    /**
+     * Keep one product per line for the certificate (do not collapse newlines).
+     */
+    private static function normalizeProduct(string $text): string
+    {
+        $text = str_replace(["\r\n", "\r"], "\n", $text);
+        $text = preg_replace('/(x\s+\d+[a-zA-Z]?)\s*[,;]?\s+(?=\S)/u', "$1\n", $text) ?? $text;
+        $lines = [];
+        foreach (preg_split("/\n+/", $text) ?: [] as $line) {
+            $line = trim(preg_replace('/[ \t]+/u', ' ', (string)$line) ?? (string)$line);
+            $line = trim($line, " \t,;");
+            if ($line !== '') {
+                $lines[] = $line;
+            }
+        }
+
+        return implode("\n", $lines);
     }
 
     private static function normalizeText(string $text): string

@@ -66,33 +66,49 @@ $termsPage4DataUri = $termsPage4DataUri ?? '';
 $yearsNum = preg_replace('/\D+/', '', (string)$warrantyYears) ?: '10';
 $yearsLabel = $yearsNum . ' YEARS PRODUCT WARRANTY';
 
-$wrapDetailFieldLines = static function (string $text, int $width = 44, int $minLines = 1): array {
-    $text = trim(str_replace(["\r\n", "\r", "\n"], ' ', $text));
-    if ($text === '') {
-        return array_fill(0, max(1, $minLines), '');
-    }
+// One product per line: honour typed newlines, and split after "x 11" / "x 48" if stored on one line.
+$product = str_replace(["\r\n", "\r"], "\n", (string)$product);
+$product = preg_replace('/(x\s+\d+[a-zA-Z]?)\s*[,;]?\s+(?=\S)/u', "$1\n", $product) ?? $product;
 
-    $tokens = strpos($text, ',') !== false
-        ? (preg_split('/\s*,\s*/u', $text) ?: [])
-        : (preg_split('/\s+/u', $text) ?: []);
-    $joiner = strpos($text, ',') !== false ? ', ' : ' ';
+$wrapDetailFieldLines = static function (string $text, int $width = 44, int $minLines = 1): array {
+    $text = str_replace(["\r\n", "\r"], "\n", $text);
+    $paragraphs = preg_split("/\n+/", $text) ?: [];
     $lines = [];
-    $current = '';
-    foreach ($tokens as $token) {
-        $token = trim((string)$token);
-        if ($token === '') {
+    foreach ($paragraphs as $para) {
+        $para = trim((string)$para);
+        if ($para === '') {
             continue;
         }
-        $trial = $current === '' ? $token : $current . $joiner . $token;
-        if (mb_strlen($trial) > $width && $current !== '') {
+        $tokens = preg_split('/\s+/u', $para) ?: [];
+        $merged = [];
+        foreach ($tokens as $token) {
+            $token = trim((string)$token);
+            if ($token === '') {
+                continue;
+            }
+            $n = count($merged);
+            if ($n > 0 && preg_match('/^\d+[a-zA-Z]?$/', $token) && preg_match('/x$/i', $merged[$n - 1])) {
+                $merged[$n - 1] .= ' ' . $token;
+                continue;
+            }
+            $merged[] = $token;
+        }
+        $current = '';
+        foreach ($merged as $token) {
+            $trial = $current === '' ? $token : $current . ' ' . $token;
+            if (mb_strlen($trial) > $width && $current !== '') {
+                $lines[] = $current;
+                $current = $token;
+            } else {
+                $current = $trial;
+            }
+        }
+        if ($current !== '') {
             $lines[] = $current;
-            $current = $token;
-        } else {
-            $current = $trial;
         }
     }
-    if ($current !== '') {
-        $lines[] = $current;
+    if ($lines === []) {
+        $lines[] = '';
     }
     while (count($lines) < $minLines) {
         $lines[] = '';
@@ -123,7 +139,7 @@ $coverProductLines = array_slice(
         }
     )),
     0,
-    2
+    4
 );
 if ($coverProductLines === []) {
     $coverProductLines = [''];
@@ -135,7 +151,7 @@ $coverFieldsWidthMm = 116;
 $coverLabelIndentMm = 22;
 $coverBlockBottomMm = 12;
 // Taller cover block so PRODUCT (2 lines) + PROJECT + APPLICATOR + DATE stay on page 1.
-$coverBlockHeightMm = 92;
+$coverBlockHeightMm = 84 + (count($coverProductLines) * 8);
 $coverSpacerTopMm = 297 - $coverBlockHeightMm - $coverBlockBottomMm;
 $coverFieldRowGapMm = 4;
 $detailProductLines = $wrapDetailFieldLines($product, 42, 6);

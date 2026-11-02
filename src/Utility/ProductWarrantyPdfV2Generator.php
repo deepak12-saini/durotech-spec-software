@@ -147,7 +147,7 @@ final class ProductWarrantyPdfV2Generator
      */
     public static function prepareViewVars(array $log): ?array
     {
-        $product = self::normalizeText((string)($log['product'] ?? ''));
+        $product = self::normalizeProduct((string)($log['product'] ?? ''));
         $buildingName = self::normalizeText((string)($log['building_name'] ?? ''));
         $buildingAddress = trim((string)($log['building_address'] ?? ''));
         $areaWarranted = trim((string)($log['area_warranted'] ?? ''));
@@ -268,6 +268,25 @@ final class ProductWarrantyPdfV2Generator
         }
 
         return array_slice($lines, 0, $maxLines);
+    }
+
+    /**
+     * Keep one product per line for the certificate (do not collapse newlines).
+     */
+    private static function normalizeProduct(string $text): string
+    {
+        $text = str_replace(["\r\n", "\r"], "\n", $text);
+        $text = preg_replace('/(x\s+\d+[a-zA-Z]?)\s*[,;]?\s+(?=\S)/u', "$1\n", $text) ?? $text;
+        $lines = [];
+        foreach (preg_split("/\n+/", $text) ?: [] as $line) {
+            $line = trim(preg_replace('/[ \t]+/u', ' ', (string)$line) ?? (string)$line);
+            $line = trim($line, " \t,;");
+            if ($line !== '') {
+                $lines[] = $line;
+            }
+        }
+
+        return implode("\n", $lines);
     }
 
     private static function normalizeText(string $text): string

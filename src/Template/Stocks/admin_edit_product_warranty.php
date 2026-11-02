@@ -16,12 +16,16 @@ $dateVal = static function ($value) {
     <div class="page-header">
         <h1>
             Edit Product Warranty Request
-            <small>#<?= (int)$entity->id ?> — Pending</small>
+            <small>#<?= (int)$entity->id ?> — <?= h(trim((string)($row['status'] ?? '')) !== '' ? $row['status'] : 'Pending') ?></small>
         </h1>
     </div>
     <p class="text-muted">
         Change the details, then save. This does <strong>not</strong> email the customer.
-        After saving, use <strong>Preview PDF</strong> and then <strong>Approve</strong> on the list.
+        <?php if (strcasecmp(trim((string)($row['status'] ?? '')), 'Approved') === 0) : ?>
+            Approved certificates are regenerated on save so the PDF matches the new wording.
+        <?php else : ?>
+            After saving, use <strong>Preview PDF</strong> and then <strong>Approve</strong> on the list.
+        <?php endif; ?>
     </p>
 
     <?= $this->Form->create(null, [
@@ -48,7 +52,8 @@ $dateVal = static function ($value) {
             <div class="form-group">
                 <label class="col-sm-3 control-label">Product</label>
                 <div class="col-sm-7">
-                    <?= $this->Form->control('product', ['label' => false, 'class' => 'form-control', 'value' => $row['product'] ?? '', 'required' => true]); ?>
+                    <?= $this->Form->control('product', ['label' => false, 'type' => 'textarea', 'rows' => 3, 'class' => 'form-control', 'value' => $row['product'] ?? '', 'required' => true]); ?>
+                    <p class="help-block">One product per line, website names. Example: Durotech WBE Hibuild x 11 then Duroproof NEP HV x 48 on the next line. Capital letter at the start of each line.</p>
                 </div>
             </div>
             <div class="form-group">
@@ -72,7 +77,8 @@ $dateVal = static function ($value) {
             <div class="form-group">
                 <label class="col-sm-3 control-label">Area Warranted</label>
                 <div class="col-sm-7">
-                    <?= $this->Form->control('area_warranted', ['label' => false, 'class' => 'form-control', 'value' => $row['area_warranted'] ?? '']); ?>
+                    <?= $this->Form->control('area_warranted', ['label' => false, 'type' => 'textarea', 'rows' => 2, 'class' => 'form-control', 'value' => $row['area_warranted'] ?? '']); ?>
+                    <p class="help-block">Capital at the start of each sentence (e.g. Outdoor Childcare, not outdoor childcare).</p>
                 </div>
             </div>
             <div class="form-group">

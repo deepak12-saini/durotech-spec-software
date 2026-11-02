@@ -32,7 +32,8 @@ $dateVal = static function ($value) {
         </div>
         <div class="col-sm-6 form-group">
             <label>Product</label>
-            <input type="text" class="form-control" name="product" value="<?= h($row['product'] ?? '') ?>" required>
+            <textarea class="form-control" name="product" rows="3" required placeholder="One product per line, website names. Example:&#10;Durotech WBE Hibuild x 11&#10;Duroproof NEP HV x 48"><?= h($row['product'] ?? '') ?></textarea>
+            <small>One product per line. Use website names. Capital letter at the start of each line.</small>
         </div>
     </div>
     <div class="form-group">
@@ -45,7 +46,8 @@ $dateVal = static function ($value) {
     </div>
     <div class="form-group">
         <label>Area warranted</label>
-        <input type="text" class="form-control" name="area_warranted" value="<?= h($row['area_warranted'] ?? '') ?>">
+            <textarea class="form-control" name="area_warranted" rows="2" placeholder="e.g. Outdoor Childcare area 53m2"><?= h($row['area_warranted'] ?? '') ?></textarea>
+            <small>Start each sentence with a capital (e.g. Outdoor Childcare, not outdoor childcare).</small>
     </div>
     <div class="row">
         <div class="col-sm-6 form-group">
