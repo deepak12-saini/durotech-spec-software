@@ -1002,6 +1002,10 @@ class StocksController extends AppController
 		if ($statusVal === '') {
 			$statusVal = 'Pending';
 		}
+		if (strcasecmp($statusVal, 'Approved') === 0) {
+			$this->Flash->error('Approved warranties cannot be edited. The issued certificate is final.');
+			return $this->redirect(['action' => 'admin_warranty_view', $rid]);
+		}
 
 		if ($this->request->is(['post', 'put', 'patch'])) {
 			$allowed = [
@@ -1034,11 +1038,6 @@ class StocksController extends AppController
 						? ('Updated: ' . implode(', ', array_keys($changed)))
 						: 'Saved with no field changes.',
 				]);
-				if (strcasecmp($statusVal, 'Approved') === 0) {
-					ProductWarrantyPdfGenerator::generateAndSave($rid);
-					$this->Flash->success('Warranty updated and certificate PDF regenerated. Download from View or Preview PDF.');
-					return $this->redirect(['action' => 'admin_warranty_view', $rid]);
-				}
 				$this->Flash->success('Warranty request updated. Preview the PDF, then Approve to send the certificate.');
 				return $this->redirect(['action' => 'admin_product_warranty_request', '?' => ['q' => (string)$rid]]);
 			}

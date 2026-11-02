@@ -16,16 +16,13 @@ $dateVal = static function ($value) {
     <div class="page-header">
         <h1>
             Edit Product Warranty Request
-            <small>#<?= (int)$entity->id ?> — <?= h(trim((string)($row['status'] ?? '')) !== '' ? $row['status'] : 'Pending') ?></small>
+            <small>#<?= (int)$entity->id ?> — Pending</small>
         </h1>
     </div>
     <p class="text-muted">
         Change the details, then save. This does <strong>not</strong> email the customer.
-        <?php if (strcasecmp(trim((string)($row['status'] ?? '')), 'Approved') === 0) : ?>
-            Approved certificates are regenerated on save so the PDF matches the new wording.
-        <?php else : ?>
-            After saving, use <strong>Preview PDF</strong> and then <strong>Approve</strong> on the list.
-        <?php endif; ?>
+        After saving, use <strong>Preview PDF</strong> and then <strong>Approve</strong> on the list.
+        Approved warranties cannot be edited.
     </p>
 
     <?= $this->Form->create(null, [

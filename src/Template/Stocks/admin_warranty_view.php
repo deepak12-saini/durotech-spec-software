@@ -66,8 +66,8 @@ $row = static function ($label, $valueHtml) {
     <h1><?= h($serial) ?> <span class="wp-pill <?= h($pill) ?>"><i class="fa <?= h($statusIcon) ?>"></i> <?= h($statusVal) ?></span></h1>
     <p class="wp-view-meta"><?= h($val($record['product'] ?? '')) ?> · <?= h($val($record['contract_company_name'] ?? '')) ?> · <?= h($val($record['building_name'] ?? '')) ?></p>
     <div class="wp-view-bar">
-        <a class="wp-btn wp-btn-outline" href="<?= $this->Url->build(['action' => 'admin_edit_product_warranty', $sid]) ?>"><i class="fa fa-pencil"></i> Edit</a>
         <?php if ($statusVal === 'Pending') : ?>
+            <a class="wp-btn wp-btn-outline" href="<?= $this->Url->build(['action' => 'admin_edit_product_warranty', $sid]) ?>"><i class="fa fa-pencil"></i> Edit</a>
             <button type="button" class="wp-btn wp-btn-blue approveBtn" data-id="<?= $sid ?>"><i class="fa fa-check"></i> Approve</button>
             <button type="button" class="wp-btn wp-btn-red rejectBtn" data-id="<?= $sid ?>"><i class="fa fa-times"></i> Reject</button>
         <?php endif; ?>
