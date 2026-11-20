@@ -73,7 +73,6 @@ class AuthController extends ApiAppController
         $body = [
             'success' => true,
             'token' => $token,
-            'user' => $this->formatEmployee($employee),
         ];
 
         return $this->response

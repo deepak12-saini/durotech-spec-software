@@ -34,16 +34,10 @@ Browser GET on this URL cannot log in; use POST.
 ```json
 {
   "success": true,
-  "token": "64-char-hex-bearer-token",
-  "user": {
-    "id": 1,
-    "name": "James Harrington",
-    "username": "james.h",
-    "email": "j.harrington@durotech.com.au",
-    "role": "employee"
-  }
+  "token": "64-char-hex-bearer-token"
 }
 ```
+
 
 **Errors:** `401` wrong credentials, `403` inactive account, `422` missing fields.
 
