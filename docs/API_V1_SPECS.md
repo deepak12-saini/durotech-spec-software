@@ -1,5 +1,7 @@
 # API v1 — Duro Ezy Spec (Employee)
 
+Client read-only handout (list / view / PDF only): [EASYSPEC_READONLY_API.md](EASYSPEC_READONLY_API.md).
+
 JSON API for the Duro Ezy Spec mobile app. Authentication uses the **`employees`** table (same as web employee login at `/employees/login`), **not** staff `napp_users`.
 
 Base URL (local): `http://localhost/cake3app/api/v1`
@@ -11,6 +13,8 @@ All responses are JSON. Append `.json` to URLs (CakePHP extension).
 ### Login
 
 `POST /api/v1/auth/login.json`
+
+Browser GET on this URL cannot log in; use POST.
 
 **Body:**
 

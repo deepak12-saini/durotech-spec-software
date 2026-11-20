@@ -866,7 +866,7 @@ Router::prefix('api', function (RouteBuilder $routes) {
     $routes->setExtensions(['json']);
 
     $routes->prefix('v1', function (RouteBuilder $routes) {
-        $routes->connect('/auth/login', ['controller' => 'Auth', 'action' => 'login'], ['_method' => ['POST', 'OPTIONS']]);
+        $routes->connect('/auth/login', ['controller' => 'Auth', 'action' => 'login'], ['_method' => ['GET', 'POST', 'OPTIONS']]);
         $routes->connect('/auth/logout', ['controller' => 'Auth', 'action' => 'logout'], ['_method' => ['POST', 'OPTIONS']]);
         $routes->connect('/auth/me', ['controller' => 'Auth', 'action' => 'me'], ['_method' => ['GET', 'OPTIONS']]);
 

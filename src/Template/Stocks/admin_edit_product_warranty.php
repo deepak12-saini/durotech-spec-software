@@ -141,13 +141,15 @@ $dateVal = static function ($value) {
             <div class="form-group">
                 <label class="col-sm-3 control-label">Email</label>
                 <div class="col-sm-7">
-                    <?= $this->Form->control('email', ['label' => false, 'type' => 'email', 'class' => 'form-control', 'value' => $row['email'] ?? '', 'required' => true]); ?>
+                    <?= $this->Form->control('email', ['label' => false, 'type' => 'email', 'class' => 'form-control', 'value' => $row['email'] ?? '', 'required' => false]); ?>
+                    <p class="help-block">Optional. Needed later if you Approve and email the certificate.</p>
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-sm-3 control-label">Mobile</label>
                 <div class="col-sm-7">
-                    <?= $this->Form->control('phone', ['label' => false, 'class' => 'form-control', 'value' => $row['phone'] ?? '', 'required' => true, 'maxlength' => 32]); ?>
+                    <?= $this->Form->control('phone', ['label' => false, 'class' => 'form-control', 'value' => $row['phone'] ?? '', 'required' => false, 'maxlength' => 32]); ?>
+                    <p class="help-block">Optional.</p>
                 </div>
             </div>
             <div class="form-group">

@@ -89,14 +89,14 @@ $dateVal = static function ($value) {
             <input type="text" class="form-control" name="contract_name" value="<?= h($row['contract_name'] ?? '') ?>" required>
         </div>
         <div class="col-sm-6 form-group">
-            <label>Email</label>
-            <input type="email" class="form-control" name="email" value="<?= h($row['email'] ?? '') ?>" required>
+            <label>Email <small>(optional)</small></label>
+            <input type="email" class="form-control" name="email" value="<?= h($row['email'] ?? '') ?>">
         </div>
     </div>
     <div class="row">
         <div class="col-sm-6 form-group">
-            <label>Mobile</label>
-            <input type="text" class="form-control" name="phone" value="<?= h($row['phone'] ?? '') ?>" required>
+            <label>Mobile <small>(optional)</small></label>
+            <input type="text" class="form-control" name="phone" value="<?= h($row['phone'] ?? '') ?>">
         </div>
         <div class="col-sm-6 form-group">
             <label>Sign date</label>

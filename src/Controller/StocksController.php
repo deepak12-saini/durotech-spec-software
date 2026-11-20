@@ -1022,7 +1022,7 @@ class StocksController extends AppController
 			$data = array_intersect_key(is_array($raw) ? $raw : [], array_flip($allowed));
 			$data = $this->_normalizeAdminProductWarrantyData($data);
 			$before = ProductWarrantyEventLogger::snapshot($entity);
-			$entity = $this->ProductWarrantyRequests->patchEntity($entity, $data);
+			$entity = $this->ProductWarrantyRequests->patchEntity($entity, $data, ['validate' => 'adminAdd']);
 			$entity->status = $statusVal;
 			if ($this->ProductWarrantyRequests->save($entity)) {
 				$after = ProductWarrantyEventLogger::snapshot($entity);

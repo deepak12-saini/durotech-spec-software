@@ -39,6 +39,19 @@ class ProductWarrantyRequestsTable extends Table
         $validator->offsetUnset('contractor_signature');
         $validator->allowEmptyString('contractor_signature');
 
+        $validator->offsetUnset('email');
+        $validator
+            ->scalar('email')
+            ->maxLength('email', 255)
+            ->allowEmptyString('email')
+            ->email('email', false, 'Enter a valid email address.');
+
+        $validator->offsetUnset('phone');
+        $validator
+            ->scalar('phone')
+            ->maxLength('phone', 32)
+            ->allowEmptyString('phone');
+
         return $validator;
     }
 

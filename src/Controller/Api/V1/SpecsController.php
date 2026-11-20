@@ -37,6 +37,10 @@ class SpecsController extends ApiAppController
         $this->applySearchFilter($baseQuery, $search);
 
         $total = (int)$baseQuery->count();
+        $totalPages = $total > 0 ? (int)ceil($total / $limit) : 1;
+        if ($page > $totalPages) {
+            $page = $totalPages;
+        }
 
         $statsQuery = $this->buildEmployeeSpecsQuery((int)$this->employeeId);
         $this->applySearchFilter($statsQuery, $search);
@@ -44,6 +48,7 @@ class SpecsController extends ApiAppController
 
         $listQuery = $this->buildEmployeeSpecsQuery((int)$this->employeeId);
         $this->applySearchFilter($listQuery, $search);
+        $this->containSpecRelations($listQuery);
         $rows = $listQuery
             ->orderDesc('Mailer.id')
             ->limit($limit)
@@ -55,6 +60,9 @@ class SpecsController extends ApiAppController
             $data[] = $this->formatSpecListItem($mailer);
         }
 
+        $from = $total === 0 ? 0 : (($page - 1) * $limit) + 1;
+        $to = $total === 0 ? 0 : min($total, $page * $limit);
+
         $body = [
             'success' => true,
             'data' => $data,
@@ -62,6 +70,11 @@ class SpecsController extends ApiAppController
                 'total' => $total,
                 'page' => $page,
                 'limit' => $limit,
+                'total_pages' => $totalPages,
+                'has_prev' => $page > 1,
+                'has_next' => $page < $totalPages,
+                'from' => $from,
+                'to' => $to,
                 'stats' => $stats,
             ],
         ];
@@ -227,8 +240,21 @@ class SpecsController extends ApiAppController
             ]);
 
         $this->applyMailerNotDeletedToQuery($query);
+        $this->containSpecRelations($query);
 
         return $query->first();
+    }
+
+    protected function containSpecRelations(Query $query): void
+    {
+        $query->contain([
+            'SpecUsearea' => function (Query $q) {
+                return $q->orderAsc('SpecUsearea.id');
+            },
+            'MailerComment' => function (Query $q) {
+                return $q->orderAsc('MailerComment.id');
+            },
+        ]);
     }
 
     /**
@@ -237,17 +263,7 @@ class SpecsController extends ApiAppController
      */
     protected function formatSpecListItem($mailer): array
     {
-        $company = trim((string)($mailer->company ?? ''));
-        $name = trim((string)($mailer->name ?? ''));
-
-        return [
-            'id' => (int)$mailer->id,
-            'track_number' => (string)($mailer->tracknumber ?? ''),
-            'project' => $company !== '' ? $company : $name,
-            'client' => $company !== '' ? $company : $name,
-            'status' => $this->deriveStatus($mailer),
-            'date' => $this->formatDate($mailer->date ?? null),
-        ];
+        return $this->formatSpecDetail($mailer);
     }
 
     /**
@@ -259,20 +275,111 @@ class SpecsController extends ApiAppController
         $company = trim((string)($mailer->company ?? ''));
         $name = trim((string)($mailer->name ?? ''));
         $project = $company !== '' ? $company : $name;
+        $typeId = (int)($mailer->type ?? 0);
+        $useAreaFlag = (int)($mailer->use_area ?? 0);
 
         return [
             'id' => (int)$mailer->id,
             'track_number' => (string)($mailer->tracknumber ?? ''),
+            'name' => $name,
+            'email' => (string)($mailer->email ?? ''),
+            'company' => $company,
+            'address' => (string)($mailer->address ?? ''),
+            'specification' => (string)($mailer->specification ?? ''),
+            'created' => $this->formatDateTime($mailer->created ?? null),
+            'date' => $this->formatDate($mailer->date ?? null),
             'project' => $project,
             'project_full' => $project,
             'client' => $company !== '' ? $company : $name,
-            'address' => (string)($mailer->address ?? ''),
-            'email' => (string)($mailer->email ?? ''),
-            'spec_type' => (string)($mailer->specification ?? ''),
+            'mailer_type_id' => $typeId,
+            'mailer_type' => $this->mailerTypeLabel($typeId),
+            'subject' => (string)($mailer->subject ?? ''),
+            'spec_type' => $useAreaFlag === 0 ? 'With Warranty Column' : 'Without Warranty Column',
+            'spec_type_code' => $useAreaFlag === 0 ? 1 : 0,
             'status' => $this->deriveStatus($mailer),
-            'date' => $this->formatDate($mailer->date ?? null),
             'has_pdf' => trim((string)($mailer->pdf_attachment ?? '')) !== '',
+            'use_areas' => $this->formatUseAreas($mailer),
+            'comments' => $this->formatComments($mailer),
         ];
+    }
+
+    /**
+     * @param \Cake\Datasource\EntityInterface $mailer
+     * @return array<int, array<string, mixed>>
+     */
+    protected function formatUseAreas($mailer): array
+    {
+        $rows = $mailer->spec_usearea ?? $mailer->spec_useareas ?? [];
+        $grouped = [];
+        foreach ($rows as $row) {
+            $title = trim((string)($row->title ?? ''));
+            $key = $title !== '' ? $title : ('section-' . (string)($row->types ?? '0'));
+            if (!isset($grouped[$key])) {
+                $grouped[$key] = [
+                    'title' => $title,
+                    'products' => [],
+                ];
+            }
+            $grouped[$key]['products'][] = [
+                'id' => (int)($row->id ?? 0),
+                'serial' => (string)($row->serial ?? ''),
+                'product_type' => (string)($row->coverage ?? ''),
+                'product' => (string)($row->product ?? ''),
+                'mft' => (string)($row->coverage_by_pack ?? ''),
+                'warranty_period' => (string)($row->Warranty ?? $row->warranty ?? ''),
+            ];
+        }
+
+        return array_values($grouped);
+    }
+
+    /**
+     * @param \Cake\Datasource\EntityInterface $mailer
+     * @return array<int, array<string, mixed>>
+     */
+    protected function formatComments($mailer): array
+    {
+        $rows = $mailer->mailer_comment ?? $mailer->mailer_comments ?? [];
+        $out = [];
+        foreach ($rows as $row) {
+            $text = trim((string)($row->comment ?? ''));
+            if ($text === '') {
+                continue;
+            }
+            $out[] = [
+                'id' => (int)($row->id ?? 0),
+                'comment' => $text,
+            ];
+        }
+
+        return $out;
+    }
+
+    protected function mailerTypeLabel(int $typeId): string
+    {
+        $labels = [
+            1 => 'INSTALLATION OF DUROMASTIC P-15 WATERPROOFING MEMBRANE',
+            2 => 'Waterproofing Specification – Wet area shower',
+            3 => 'External Liquid WPM',
+        ];
+
+        return $labels[$typeId] ?? '';
+    }
+
+    /**
+     * @param mixed $value
+     */
+    protected function formatDateTime($value): string
+    {
+        if ($value === null || $value === '') {
+            return '';
+        }
+        if (is_object($value) && method_exists($value, 'format')) {
+            return $value->format('Y-m-d H:i:s');
+        }
+        $ts = strtotime((string)$value);
+
+        return $ts === false ? (string)$value : date('Y-m-d H:i:s', $ts);
     }
 
     /**

@@ -10,7 +10,14 @@ class AuthController extends ApiAppController
 {
     public function login(): ?Response
     {
-        $this->request->allowMethod(['post']);
+        $this->request->allowMethod(['get', 'post']);
+
+        if ($this->request->is('get')) {
+            return $this->jsonError(
+                'Login requires POST. Send JSON {"username":"...","password":"..."} to this URL. Opening it in a browser (GET) cannot log you in.',
+                405
+            );
+        }
 
         $data = $this->request->getData();
         if (empty($data)) {
